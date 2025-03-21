@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 
-const TITLE = ""
+const TITLE = "FORGE"
 const DESCRIPTION = ""
 
 export const siteConfig: Metadata = {
@@ -34,5 +34,5 @@ export const siteConfig: Metadata = {
     },
     keywords: [
     ],
-    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL!)
+    //metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL!)
 }
