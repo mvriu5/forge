@@ -1,14 +1,19 @@
 "use client"
 
-import {Button, Form, FormField, FormInput, FormItem, FormLabel, FormMessage } from "lunalabs-ui";
+import {Button, Form, FormField, FormInput, FormItem, FormLabel, FormMessage, useToast} from "lunalabs-ui";
 import { z } from "zod";
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
+import { useState } from "react";
+import {ButtonSpinner} from "@/components/ButtonSpinner"
+import { CloudAlert } from "lucide-react";
 
 function SignInCard({onSignUp, onForgotPassword}: {onSignUp: () => void, onForgotPassword: () => void}) {
     const router = useRouter()
+    const { addToast } = useToast()
+    const [loading, setLoading] = useState(false)
 
     const formSchema = z.object({
         email: z.string()
@@ -29,16 +34,22 @@ function SignInCard({onSignUp, onForgotPassword}: {onSignUp: () => void, onForgo
         const { data, error } = await authClient.signIn.email({
             email: values.email,
             password: values.password,
-            callbackURL: "/"
+            callbackURL: "/dashboard"
         }, {
             onRequest: (ctx) => {
-                //show loading
+                setLoading(true)
             },
             onSuccess: (ctx) => {
-                router.push("/")
+                router.push("/dashboard")
+                setLoading(false)
             },
             onError: (ctx) => {
-                alert(ctx.error.message)
+                setLoading(false)
+                addToast({
+                    title: "An error occurred",
+                    subtitle: ctx.error.message,
+                    icon: <CloudAlert size={24}/>
+                })
             }
         })
     }
@@ -46,8 +57,8 @@ function SignInCard({onSignUp, onForgotPassword}: {onSignUp: () => void, onForgo
     return (
         <div className={"w-80 h-max rounded-md border border-main/60 bg-primary p-8 flex flex-col gap-8"}>
             <div className={"flex flex-col gap-2"}>
-                <p className={"text-lg text-primary font-bold"}>Sign Up</p>
-                <p className={"text-sm text-secondary"}>Create an account to continue.</p>
+                <p className={"text-lg text-primary font-bold"}>Sign In</p>
+                <p className={"text-sm text-secondary"}>Log into your account to continue.</p>
             </div>
 
             <Form {...form}>
@@ -78,6 +89,7 @@ function SignInCard({onSignUp, onForgotPassword}: {onSignUp: () => void, onForgo
                         type="submit"
                         className={"bg-brand hover:bg-brand/90 text-primary w-full"}
                     >
+                        {loading && <ButtonSpinner/>}
                         Sign in
                     </Button>
                     <div className={"flex items-center gap-2"}>

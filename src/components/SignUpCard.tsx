@@ -1,14 +1,19 @@
 "use client"
 
-import {Button, Form, FormField, FormInput, FormItem, FormLabel, FormMessage } from "lunalabs-ui";
+import {Button, Form, FormField, FormInput, FormItem, FormLabel, FormMessage, useToast} from "lunalabs-ui";
 import { z } from "zod";
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
+import { useState } from "react";
+import {CloudAlert} from "lucide-react"
+import {ButtonSpinner} from "@/components/ButtonSpinner"
 
 function SignUpCard({onSignIn}: {onSignIn: () => void}) {
     const router = useRouter()
+    const { addToast } = useToast()
+    const [loading, setLoading] = useState(false)
 
     const formSchema = z.object({
         name: z.string()
@@ -33,16 +38,22 @@ function SignUpCard({onSignIn}: {onSignIn: () => void}) {
             email: values.email,
             password: values.password,
             name: values.name,
-            callbackURL: "/"
+            callbackURL: "/dashboard"
         }, {
             onRequest: (ctx) => {
-                //show loading
+                setLoading(true)
             },
             onSuccess: (ctx) => {
-                router.push("/")
+                router.push("/dashboard")
+                setLoading(false)
             },
             onError: (ctx) => {
-                alert(ctx.error.message)
+                setLoading(false)
+                addToast({
+                    title: "An error occurred",
+                    subtitle: ctx.error.message,
+                    icon: <CloudAlert size={24}/>
+                })
             }
         })
     }
@@ -93,6 +104,7 @@ function SignUpCard({onSignIn}: {onSignIn: () => void}) {
                         type="submit"
                         className={"bg-brand hover:bg-brand/90 text-primary w-full"}
                     >
+                        {loading && <ButtonSpinner/>}
                         Sign up
                     </Button>
                     <div className={"flex items-center gap-2"}>

@@ -1,6 +1,6 @@
 import {boolean, pgTable, text, timestamp} from "drizzle-orm/pg-core"
 
-export const users = pgTable("users", {
+export const user = pgTable("users", {
     id: text("id").primaryKey(),
     name: text('name').notNull(),
     email: text('email').notNull().unique(),
@@ -10,7 +10,7 @@ export const users = pgTable("users", {
     updatedAt: timestamp('updated_at').notNull()
 })
 
-export const sessions = pgTable("session", {
+export const session = pgTable("session", {
     id: text("id").primaryKey(),
     expiresAt: timestamp('expires_at').notNull(),
     token: text('token').notNull().unique(),
@@ -18,14 +18,14 @@ export const sessions = pgTable("session", {
     updatedAt: timestamp('updated_at').notNull(),
     ipAddress: text('ip_address'),
     userAgent: text('user_agent'),
-    userId: text('user_id').notNull().references(()=> users.id, { onDelete: 'cascade' })
+    userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' })
 })
 
-export const accounts = pgTable("account", {
+export const account = pgTable("account", {
     id: text("id").primaryKey(),
     accountId: text('account_id').notNull(),
     providerId: text('provider_id').notNull(),
-    userId: text('user_id').notNull().references(()=> users.id, { onDelete: 'cascade' }),
+    userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' }),
     accessToken: text('access_token'),
     refreshToken: text('refresh_token'),
     idToken: text('id_token'),
@@ -45,3 +45,5 @@ export const verification = pgTable("verification", {
     createdAt: timestamp('created_at'),
     updatedAt: timestamp('updated_at')
 })
+
+export const schema = { user, session, account, verification }

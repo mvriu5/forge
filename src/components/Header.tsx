@@ -1,28 +1,36 @@
 "use client"
 
-import {Avatar, AvatarFallback, AvatarImage, Button} from "lunalabs-ui"
-import {Plus} from "lucide-react"
-import {useSession} from "@/lib/auth-client"
+import {Button, tooltip} from "lunalabs-ui"
+import {Anvil, LayoutTemplate} from "lucide-react"
+import {ProfilePopover} from "@/components/ProfilePopover"
+import {WidgetDialog} from "@/components/WidgetDialog"
 
 function Header() {
-    const { data: session } = useSession()
 
-    console.log(session)
-
+    const layoutTooltip = tooltip<HTMLButtonElement>({
+        message: "Change your dashboard layout",
+        anchor: "bc",
+        offset: 12
+    })
 
     return (
         <div className={"w-full top-0 left-0 h-12 px-2 flex justify-between items-center bg-primary border-b border-main/40"}>
-            <Button className={"bg-brand hover:bg-brand/80 text-primary border-0 h-6"}>
-                <Plus size={16} className={"mr-2"}/>
-                Widget
-            </Button>
-            <div className={"flex items-center gap-2"}>
-                <p>{session?.user?.name}</p>
-                <Avatar className={"size-8 border border-main/20"}>
-                    <AvatarImage src={session?.user?.image ?? ""}/>
-                    <AvatarFallback className={"bg-gradient-to-br from-green-400 to-brand"}></AvatarFallback>
-                </Avatar>
+
+            <div className={"flex items-center gap-4"}>
+                <div className={"flex items-center gap-2"}>
+                    <Anvil size={22}/>
+                    <span className={"text-xl font-semibold"}>Forge</span>
+                </div>
+                <div className={"h-6 w-px border-r-2 border-main"}/>
+                <div className={"flex gap-2"}>
+                    <WidgetDialog/>
+                    <Button className={"size-8"} {...layoutTooltip}>
+                        <LayoutTemplate size={16}/>
+                    </Button>
+                </div>
             </div>
+
+            <ProfilePopover/>
 
         </div>
 
