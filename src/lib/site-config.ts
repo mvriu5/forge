@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 
-const TITLE = "FORGE"
+const TITLE = "Forge"
 const DESCRIPTION = ""
 
 export const siteConfig: Metadata = {

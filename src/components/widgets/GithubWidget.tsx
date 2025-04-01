@@ -201,11 +201,10 @@ const GithubWidget: React.FC = () => {
                 </Tabs>
                 {loading ? (
                     <div className="h-80 flex flex-col gap-4 pt-2">
-                        <Skeleton className={"w-full h-12 px-2"} />
-                        <Skeleton className={"w-full h-12 px-2"} />
-                        <Skeleton className={"w-full h-12 px-2"} />
-                        <Skeleton className={"w-full h-12 px-2"} />
-                        <Skeleton className={"w-full h-12 px-2"} />
+                        <Skeleton className={"w-full h-10 px-2"} />
+                        <Skeleton className={"w-full h-10 px-2"} />
+                        <Skeleton className={"w-full h-10 px-2"} />
+                        <Skeleton className={"w-full h-10 px-2"} />
                     </div>
                     ) : (
                     <ScrollArea className={"h-80"} thumbClassname={"bg-primary"}>

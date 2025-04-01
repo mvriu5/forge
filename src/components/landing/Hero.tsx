@@ -1,12 +1,20 @@
-import {Calendar, CloudSun, GitBranch, Notebook} from "lucide-react"
+import {Calendar, CloudSun, GitBranch, Github, Notebook} from "lucide-react"
 import { TextAnimate } from "./TextAnimate"
 
 function Hero() {
     return (
         <div className={"flex flex-col gap-8 w-full items-center px-52 pt-52"}>
-            <div className={"rounded-full border border-brand px-4 py-1 bg-brand/10"}>
-                <p className={"text-sm text-primary"}>v0.9 Closed Beta</p>
+            <div className={"flex items-center gap-4"}>
+                <div className={"rounded-full border border-brand/40 px-4 py-1 bg-brand/10"}>
+                    <p className={"text-sm text-primary"}>v0.2 Closed Beta</p>
+                </div>
+                <a href={"https://github.com/mvriu5/forge"}>
+                    <div className={"flex items-center gap-2 cursor-pointer hover:bg-brand/10 text-brand rounded-md p-2"}>
+                        <Github size={20}/>
+                    </div>
+                </a>
             </div>
+
             <TextAnimate animation="blurInUp" by="character" className={"text-6xl text-primary font-medium"} duration={0.7} once>
                 A new way of building dashboards
             </TextAnimate>

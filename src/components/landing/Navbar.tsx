@@ -29,7 +29,7 @@ function Navbar() {
         {title: "Home", href: ""},
         {title: "Widgets", href: ""},
         {title: "Contribute", href: ""},
-        {title: "Download", href: ""}
+        {title: "Download", href: ""},
     ]
 
     useEffect(() => {
