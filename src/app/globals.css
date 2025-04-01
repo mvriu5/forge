@@ -1,0 +1,118 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@config "../../tailwind.config.ts";
+
+:root {
+  /* Background colors */
+  --bg-primary: 0 0% 100%; /* Primary background color (war #ffffff */
+  --bg-secondary: 0 0% 97%; /* Secondary background color (war #f7f7f7 */
+  --bg-tertiary: 0 0% 93%; /* Tertiary background color (war #eaeaea */
+  --bg-brand: 17 84% 56%; /* (war #248721 */
+  --bg-error: 0 65% 51%; /* (war #d32f2f */
+  --bg-warning: 30 100% 48%; /* (war #f57c00 */
+  --bg-success: 123 43% 39%; /* (war #388e3c */
+  --bg-info: 214 92% 56%; /* (war #2982f6 */
+  --bg-inverted: 0 0% 12%; /* Inverted background color (war #1e1e1e */
+
+  /* Text colors */
+  --text-primary: 0 0% 9%; /* (war #171717 */
+  --text-secondary: 0 0% 35%; /* (war #4a4a4a */
+  --text-tertiary: 0 0% 48%; /* (war #7a7a7a */
+  --text-error: 0 65% 51%; /* (war #d32f2f */
+  --text-warning: 30 100% 48%; /* (war #f57c00 */
+  --text-success: 123 43% 39%; /* (war #388e3c */
+  --text-info: 214 92% 56%; /* (war #2982f6 */
+  --text-placeholder: 0 0% 48%; /* (war #7a7a7a */
+  --text-brand: 17 84% 56%; /* (war #248721 */
+  --text-inverted: 0 0% 54%; /* Inverted text color (war #8a8a8a */
+
+  /* Fill colors */
+  --fill-primary: 0 0% 9%; /* (war #171717 */
+  --fill-secondary: 0 0% 35%; /* (war #4a4a4a */
+  --fill-tertiary: 0 0% 48%; /* (war #7a7a7a */
+  --fill-error: 0 65% 51%; /* (war #d32f2f */
+  --fill-warning: 30 100% 48%; /* (war #f57c00 */
+  --fill-success: 123 43% 39%; /* (war #388e3c */
+  --fill-info: 214 92% 56%; /* (war #2982f6 */
+  --fill-placeholder: 0 0% 48%; /* (war #7a7a7a */
+  --fill-brand: 17 84% 56%; /* (war #248721 */
+
+  /* Border colors */
+  --border-main: 0 0% 88%; /* Primary border color (war #e0e0e0 */
+  --border-success: 123 43% 39%; /* (war #388e3c */
+  --border-warning: 30 100% 48%; /* (war #f57c00 */
+  --border-error: 0 65% 51%; /* (war #d32f2f */
+  --border-info: 214 92% 56%; /* (war #2982f6 */
+  --border-brand: 17 84% 56%; /* (war #248721 */
+
+  /* Outline colors */
+  --outline-success: 123 43% 39%; /* (war #388e3c */
+  --outline-warning: 30 100% 48%; /* (war #f57c00 */
+  --outline-error: 0 65% 51%; /* (war #d32f2f */
+  --outline-info: 214 92% 56%; /* (war #2982f6 */
+  --outline-brand: 17 84% 56%; /* (war #248721 */
+}
+
+.dark {
+  /* Background colors */
+  --bg-primary: 0 0% 7%; /* Primary background color for dark mode (war #111111 */
+  --bg-secondary: 0 0% 10%; /* Secondary background color for dark mode (war #1a1a1a */
+  --bg-tertiary: 0 0% 12%; /* Tertiary background color for dark mode (war #1e1e1e */
+  --bg-brand: 17 84% 56%; /* (war #284721 */
+  --bg-error: 0 65% 51%; /* (war #d32f2f */
+  --bg-warning: 30 100% 48%; /* (war #f57c00 */
+  --bg-success: 123 43% 39%; /* (war #388e3c */
+  --bg-info: 214 92% 56%; /* (war #2982f6 */
+  --bg-inverted: 0 0% 92%; /* Inverted background color for dark mode (war #eaeaea */
+
+  /* Text colors */
+  --text-primary: 0 0% 93%; /* (war #ededed */
+  --text-secondary: 0 0% 74%; /* (war #bcbcbc */
+  --text-tertiary: 0 0% 54%; /* (war #8a8a8a */
+  --text-error: 1 83% 63%; /* (war #ef5350 */
+  --text-warning: 36 100% 57%; /* (war #ffa726 */
+  --text-success: 123 38% 57%; /* (war #66bb6a */
+  --text-info: 214 92% 56%; /* (war #2982f6 */
+  --text-placeholder: 0 0% 24%; /* (war #3d3d3d */
+  --text-brand: 17 84% 56%; /* (war #248721 */
+  --text-inverted: 0 0% 48%; /* Inverted text color for dark mode (war #7a7a7a */
+
+  /* Fill colors */
+  --fill-primary: 0 0% 93%; /* (war #ededed */
+  --fill-secondary: 0 0% 74%; /* (war #bcbcbc */
+  --fill-tertiary: 0 0% 54%; /* (war #8a8a8a */
+  --fill-error: 1 83% 63%; /* (war #ef5350 */
+  --fill-warning: 36 100% 57%; /* (war #ffa726 */
+  --fill-success: 123 38% 57%; /* (war #66bb6a */
+  --fill-info: 214 92% 56%; /* (war #2982f6 */
+  --fill-placeholder: 0 0% 24%; /* (war #3d3d3d */
+  --fill-brand: 17 84% 56%; /* (war #248721 */
+
+  /* Border colors */
+  --border-main: 0 0% 21%; /* Primary border color for dark mode (war #363636 */
+  --border-success: 123 43% 39%; /* (war #388e3c */
+  --border-warning: 30 100% 48%; /* (war #f57c00 */
+  --border-error: 0 65% 51%; /* (war #d32f2f */
+  --border-info: 214 92% 56%; /* (war #2982f6 */
+  --border-brand: 17 84% 56%; /* (war #248721 */
+
+  /* Outline colors */
+  --outline-success: 123 43% 39%; /* (war #388e3c */
+  --outline-warning: 30 100% 48%; /* (war #f57c00 */
+  --outline-error: 0 65% 51%; /* (war #d32f2f */
+  --outline-info: 214 92% 56%; /* (war #2982f6 */
+  --outline-brand: 17 84% 56%; /* (war #248721 */
+}
+
+body {
+  @apply bg-secondary text-secondary;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none; /* für IE und Edge */
+  scrollbar-width: none; /* für Firefox */
+}
