@@ -20,7 +20,6 @@ function SignInCard() {
         email: z.string()
             .email({message: "Please enter a valid email address."}),
         password: z.string()
-            .min(6, {message: "Password must be at least 6 characters."}),
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -44,12 +43,19 @@ function SignInCard() {
                 setLoading(false)
             },
             onError: (ctx) => {
+                if (ctx.error.status === 403) {
+                    addToast({
+                        title: "Verify your email first!",
+                        icon: <CloudAlert size={24}/>
+                    })
+                } else {
+                    addToast({
+                        title: "An error occurred",
+                        subtitle: ctx.error.message,
+                        icon: <CloudAlert size={24}/>
+                    })
+                }
                 setLoading(false)
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
             }
         })
     }
@@ -156,7 +162,7 @@ function SignInCard() {
                     <Button
                         type={"button"}
                         variant="ghost"
-                        onClick={() => router.replace("/forgot-password")}
+                        onClick={() => router.replace("/forgot")}
                         className={"bg-transparent hover:bg-transparent hover:text-secondary text-tertiary font-normal w-max hover:underline text-xs px-0"}
                     >
                         Forgot Password

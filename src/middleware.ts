@@ -4,7 +4,7 @@ import {betterFetch} from "@better-fetch/fetch"
 import type { Session } from "@/lib/auth"
 
 const authRoutes = ["/signin", "/signup"]
-const passwordRoutes = ["/reset-password", "/forgot-password"]
+const passwordRoutes = ["/reset", "/forgot"]
 const landingRoute = "/"
 
 export async function middleware(request: NextRequest) {

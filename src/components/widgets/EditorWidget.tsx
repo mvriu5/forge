@@ -55,15 +55,15 @@ const EditorWidget: React.FC = () => {
                         setContent(json)
                     }}
                 >
-                    <EditorCommand className="z-50 max-h-80 w-72 rounded-md border border-main/60 bg-primary p-2 shadow-md transition-all">
+                    <EditorCommand className="z-50 w-72 rounded-md border border-main/60 bg-primary shadow-md transition-all">
                         <EditorCommandEmpty className="flex items-center justify-center px-2 text-tertiary">No results</EditorCommandEmpty>
                         <ScrollArea className="h-80">
-                            <EditorCommandList className={"overflow-hidden"}>
+                            <EditorCommandList className={"p-2 pr-4"}>
                                 {suggestionItems.map((item) => (
                                     <EditorCommandItem
                                         value={item.title}
                                         onCommand={(val) => item.command && item.command(val)}
-                                        className="group cursor-pointer flex w-full items-center gap-2 rounded-md py-1 px-2 text-left text-sm hover:bg-secondary aria-selected:bg-secondary last:mb-2"
+                                        className="group cursor-pointer flex w-full items-center gap-2 rounded-md py-1 px-2 text-left text-sm hover:bg-secondary aria-selected:bg-secondary"
                                         key={item.title}
                                     >
                                         <div className="flex h-10 w-10 items-center justify-center rounded-md border border-main/40 bg-primary group-hover:text-brand group-aria-selected:text-brand">

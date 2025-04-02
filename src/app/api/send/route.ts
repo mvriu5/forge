@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import {ForgotPasswordEmail} from "@/components/emails/ForgotPasswordEmail"
+import {ResetPasswordEmail} from "@/components/emails/ResetPasswordEmail"
 import type {ReactNode} from "react"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -10,7 +10,7 @@ export async function POST() {
             from: 'Acme <onboarding@resend.dev>',
             to: ['delivered@resend.dev'],
             subject: 'Hello world',
-            react: ForgotPasswordEmail({ firstName: 'John' }) as ReactNode
+            react: ResetPasswordEmail({ firstName: 'John' }) as ReactNode
         })
 
         if (error) {

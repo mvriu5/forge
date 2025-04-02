@@ -28,13 +28,13 @@ function ProfilePopover() {
                     className={"h-8 flex items-center gap-2 bg-secondary hover:bg-tertiary data-[state=open]:bg-tertiary rounded-md px-2"}>
                     <Avatar className={"size-6 border border-main/20"}>
                         <AvatarImage src={session?.user?.image ?? ""}/>
-                        <AvatarFallback className={"bg-gradient-to-br from-blue-400 to-brand"}/>
+                        <AvatarFallback className={"bg-gradient-to-br from-brand/20 to-brand"}/>
                     </Avatar>
                     <p>{session?.user?.name}</p>
                 </div>
             </PopoverTrigger>
             <PopoverContent
-                className={"p-1 w-36 gap-1"}
+                className={"p-1 w-36 gap-1 border-main/40"}
                 align={"end"}
             >
                 <SettingsDialog/>
