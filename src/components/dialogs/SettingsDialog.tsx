@@ -20,8 +20,8 @@ import {
     ToggleGroup,
     ToggleGroupItem, useToast
 } from "lunalabs-ui"
-import React, {useState} from "react"
-import {Blocks, CloudAlert, Github, ImageIcon, Settings} from "lucide-react"
+import React, {useRef, useState} from "react"
+import {Blocks, CloudAlert, Github, ImageIcon, Settings, Trash, UserRoundCheck} from "lucide-react"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {useSessionStore} from "@/store/sessionStore"
 import {z} from "zod"
@@ -31,6 +31,7 @@ import {GoogleIcon} from "@/components/GoogleIcon"
 import {useIntegrationStore} from "@/store/integrationStore"
 import {cn} from "@/lib/utils"
 import {authClient} from "@/lib/auth-client"
+import {PutBlobResult} from "@vercel/blob"
 
 function SettingsDialog() {
     const {addToast} = useToast()
@@ -145,7 +146,7 @@ function SettingsDialog() {
 
                     <div className={"flex flex-col w-full h-full p-4 gap-4"}>
                         {tab === "profile" &&
-                            <ProfileSection session={session} onClose={() => setOpen(false)} />
+                            <ProfileSection session={session} onClose={() => setOpen(false)}/>
                         }
                         {tab === "integrations" &&
                             <div className={"grid grid-cols-2 gap-4"}>
@@ -180,14 +181,18 @@ function SettingsDialog() {
 }
 
 interface ProfileProps {
-    session: any
+    session: any,
     onClose: () => void
 }
 
 const ProfileSection: React.FC<ProfileProps> = ({session, onClose}) => {
-    const [file, setFile] = useState<File | null>(null)
+    const {updateUser} = useSessionStore()
+    const {addToast} = useToast()
     const [uploading, setUploading] = useState(false)
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+    const [avatarUrl, setAvatarUrl] = useState<string | undefined>(session?.user?.image)
+    const [blob, setBlob] = useState<PutBlobResult | undefined>(undefined)
+
+    const inputFileRef = useRef<HTMLInputElement>(null)
 
     const formSchema = z.object({
         name: z.string()
@@ -203,98 +208,129 @@ const ProfileSection: React.FC<ProfileProps> = ({session, onClose}) => {
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            let imageUrl = session?.user?.image || null
+            const file = inputFileRef.current?.files ? inputFileRef.current.files[0] : null
 
-            if (file && !avatarUrl) {
-                await handleUpload()
-                imageUrl = avatarUrl
-            } else if (avatarUrl) {
-                imageUrl = avatarUrl
+            let imageUrl = session?.user?.image || null;
+
+            if (file) {
+                const uploadedBlob = await handleUpload();
+                imageUrl = uploadedBlob?.url || imageUrl;
             }
 
-            const response = await fetch("/api/user/update", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    name: values.name,
-                    image: imageUrl,
-                }),
+            await authClient.updateUser({
+                image: imageUrl,
+                name: values.name,
+            });
+
+            updateUser({ image: imageUrl, name: values.name })
+
+            addToast({
+                title: "Successfully updated your profile",
+                icon: <UserRoundCheck size={24} className={"text-brand"}/>
             })
-
-            if (!response.ok) {
-                throw new Error("Failed to update profile")
-            }
 
             onClose()
         } catch (error) {
-            console.error("Error updating profile:", error)
+            addToast({
+                title: "An error occurred while uploading your avatar",
+                icon: <CloudAlert size={24} className={"text-error"}/>
+            })
         }
     }
 
-    const handleUpload = async (): Promise<string | null> => {
-        if (!file) return null
-
+    const handleUpload = async () => {
         try {
+            const file = inputFileRef.current!.files![0]
             setUploading(true)
 
-            const formData = new FormData()
-            formData.append("file", file)
-
-            // Upload the file to the server
-            const response = await fetch("/api/upload", {
+            const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
                 method: "POST",
-                body: formData,
+                body: inputFileRef.current!.files![0],
             })
 
-            if (!response.ok) {
-                throw new Error("Upload failed")
-            }
+            const data = (await response.json()) as PutBlobResult;
+            setBlob(data)
+            return data
 
-            const data = await response.json()
-            setAvatarUrl(data.url)
-            return data.url
         } catch (error) {
-            console.error("Error uploading file:", error)
+            addToast({
+                title: "An error occurred while uploading your avatar",
+                icon: <CloudAlert size={24} className={"text-error"}/>
+            })
             return null
         } finally {
             setUploading(false)
         }
     }
 
+    const handleDelete = async () => {
+        try {
+            setBlob(undefined)
+            setAvatarUrl(undefined)
+            inputFileRef.current!.value = ""
+
+            const filename = session?.user?.image
+            if (!filename) return
+
+            await fetch(`/api/upload?filename=${encodeURIComponent(filename)}`, {
+                method: "DELETE"
+            })
+
+            await authClient.updateUser({
+                image: null
+            })
+
+            updateUser({ image: null })
+
+            onClose()
+            addToast({
+                title: "Successfully removed your avatar",
+                icon: <UserRoundCheck size={24} className={"text-brand"}/>
+            })
+        } catch (error) {
+            addToast({
+                title: "An error occurred while removing your avatar",
+                icon: <CloudAlert size={24} className={"text-error"}/>
+            })
+        }
+    }
+
     return (
         <div className={"flex flex-col gap-4 h-full justify-between"}>
-            <div className={"flex flex-col gap-4"}>
+            <div className={"flex flex-col gap-4 h-full"}>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between space-y-4 h-full">
                         <div className="flex items-center justify-center space-x-4">
                             <Avatar className="h-20 w-20">
-                                <AvatarImage src={avatarUrl || session?.user?.image || ""} />
-                                <AvatarFallback>{session?.user?.name?.charAt(0)}</AvatarFallback>
+                                <AvatarImage src={blob?.url || avatarUrl || undefined} />
+                                <AvatarFallback className={"bg-gradient-to-br from-brand/20 to-brand"}/>
                             </Avatar>
-                        </div>
-                        <div className="flex items-center justify-center space-x-4">
-                            <Input
-                                id="picture"
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                    if (e.target.files && e.target.files.length > 0) {
-                                        const file = e.target.files[0]
-                                        setFile(file)
-                                        setAvatarUrl(URL.createObjectURL(file))
-                                    }
-                                }}
-                                className="hidden"
-                            />
-                            <FormLabel
-                                htmlFor="picture"
-                                className="cursor-pointer rounded-md bg-secondary p-2 text-muted-foreground hover:bg-secondary/80"
-                            >
-                                <ImageIcon className="mr-2 h-4 w-4" />
-                                <span>Change Picture</span>
-                            </FormLabel>
+                            <div className="flex items-center justify-center space-x-4">
+                                <Input
+                                    ref={inputFileRef}
+                                    id="picture"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={() => setAvatarUrl(URL.createObjectURL(inputFileRef.current!.files![0]))}
+                                    className="hidden"
+                                />
+                                <FormLabel
+                                    htmlFor="picture"
+                                    className="flex items-center cursor-pointer rounded-md bg-secondary p-2 text-secondary hover:bg-tertiary"
+                                >
+                                    <ImageIcon className="mr-2 h-4 w-4" />
+                                    <span>Change Picture</span>
+                                </FormLabel>
+                                {(blob?.url || avatarUrl) &&
+                                    <Button
+                                        type={"button"}
+                                        className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error"}
+                                        onClick={handleDelete}
+                                    >
+                                        <Trash size={20}/>
+                                    </Button>
+                                }
+                            </div>
                         </div>
                         <FormField
                             control={form.control}
@@ -307,25 +343,24 @@ const ProfileSection: React.FC<ProfileProps> = ({session, onClose}) => {
                                 </FormItem>
                             )}
                         />
+                        <div className={"w-full flex gap-2 justify-end"}>
+                            <Button
+                                className={"w-max"}
+                                onClick={onClose}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant={"brand"}
+                                className={"w-max"}
+                                type={"submit"}
+                                disabled={form.formState.isSubmitting || uploading}
+                            >
+                                {form.formState.isSubmitting || uploading ? "Saving..." : "Save"}
+                            </Button>
+                        </div>
                     </form>
                 </Form>
-            </div>
-
-            <div className={"w-full flex gap-2 justify-end"}>
-                <Button
-                    className={"w-max"}
-                    onClick={onClose}
-                >
-                    Cancel
-                </Button>
-                <Button
-                    variant={"brand"}
-                    className={"w-max"}
-                    type={"submit"}
-                    disabled={form.formState.isSubmitting || uploading}
-                >
-                    {form.formState.isSubmitting || uploading ? "Saving..." : "Save"}
-                </Button>
             </div>
         </div>
     )

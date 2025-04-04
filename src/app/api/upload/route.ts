@@ -1,35 +1,35 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { put } from "@vercel/blob"
+import {NextResponse} from "next/server"
+import {put, del} from "@vercel/blob"
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
+    const { searchParams } = new URL(request.url)
+    const filename = searchParams.get('filename')
+
+    if (!filename || !request.body) {
+        return NextResponse.json({ error: "Filename is required" }, { status: 400 })
+    }
+
+    const blob = await put(filename, request.body, {
+        access: 'public'
+    })
+
+    return NextResponse.json(blob)
+}
+
+export async function DELETE(request: Request) {
+    const { searchParams } = new URL(request.url)
+    const filename = searchParams.get('filename')
+
+    if (!filename) {
+        return NextResponse.json({ error: "Filename is required" }, { status: 400 });
+    }
+
     try {
-        const formData = await request.formData()
-        const file = formData.get("file") as File
-
-        if (!file) {
-            return NextResponse.json({ error: "File is required" }, { status: 400 })
-        }
-
-        // Check if the file is an image
-        if (!file.type.startsWith("image/")) {
-            return NextResponse.json({ error: "File must be an image" }, { status: 400 })
-        }
-
-        // Generate a unique filename
-        const filename = `${Date.now()}-${file.name}`
-
-        // Upload to Vercel Blob
-        const blob = await put(filename, file, {
-            access: "public",
-        })
-
-        return NextResponse.json({
-            url: blob.url,
-            success: true,
-        })
+        await del(filename)
+        return NextResponse.json({ success: true })
     } catch (error) {
-        console.error("Error uploading file:", error)
-        return NextResponse.json({ error: "Error uploading file" }, { status: 500 })
+        console.error("Error deleting file:", error)
+        return NextResponse.json({ error: "Deletion failed" }, { status: 500 })
     }
 }
 
