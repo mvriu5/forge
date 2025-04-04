@@ -135,7 +135,7 @@ const GithubWidget: React.FC = () => {
 
     if (!githubIntegration?.accessToken) {
         return (
-            <WidgetTemplate className="col-span-1">
+            <WidgetTemplate className="col-span-1" name={"github"}>
                 <div className="h-full flex flex-col gap-2 items-center justify-center ">
                     <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
                         <TriangleAlert size={32}/>
@@ -150,7 +150,7 @@ const GithubWidget: React.FC = () => {
     }
 
     return (
-        <WidgetTemplate className="col-span-1">
+        <WidgetTemplate className="col-span-1" name={"github"}>
             <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-4">
                     <div className={"flex items-center gap-2"}>

@@ -6,6 +6,7 @@ interface WidgetStore {
     addWidget: (userId: string, widget: WidgetInsert) => Promise<void>
     refreshWidget: (widget: Widget) => Promise<void>
     removeWidget: (widget: Widget) => Promise<void>
+    getWidget: (widgetName: string) => Widget | undefined
     getAllWidgets: (userId: string) => Promise<void>
 }
 
@@ -50,6 +51,9 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
         } catch (error) {
             console.error('Failed to delete widget', error)
         }
+    },
+    getWidget: (widgetName: string) => {
+        return get().widgets!.find((widget) => widget.widgetType === widgetName)
     },
     getAllWidgets: async (userId: string) => {
         try {

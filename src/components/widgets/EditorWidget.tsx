@@ -39,7 +39,7 @@ const EditorWidget: React.FC = () => {
     ]
 
     return (
-        <WidgetTemplate className={"max-row-span-2"}>
+        <WidgetTemplate className={"max-row-span-2"} name={"editor"}>
             <EditorRoot>
                 <EditorContent
                     extensions={extensions}
