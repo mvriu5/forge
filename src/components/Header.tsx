@@ -5,7 +5,12 @@ import {Anvil, LayoutTemplate} from "lucide-react"
 import {ProfilePopover} from "@/components/popovers/ProfilePopover"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
 
-function Header() {
+interface HeaderProps {
+    onEdit: () => void
+    editMode: boolean
+}
+
+function Header({onEdit, editMode}: HeaderProps) {
 
     const layoutTooltip = tooltip<HTMLButtonElement>({
         message: "Change your dashboard layout",
@@ -23,14 +28,14 @@ function Header() {
                 </div>
                 <div className={"h-6 w-px border-r-2 border-main"}/>
                 <div className={"flex gap-2"}>
-                    <WidgetDialog/>
-                    <Button className={"size-8"} {...layoutTooltip}>
+                    <WidgetDialog editMode={editMode}/>
+                    <Button className={"size-8"} {...layoutTooltip} onClick={onEdit} disabled={editMode}>
                         <LayoutTemplate size={16}/>
                     </Button>
                 </div>
             </div>
 
-            <ProfilePopover/>
+            <ProfilePopover editMode={editMode}/>
 
         </div>
 

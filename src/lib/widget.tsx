@@ -23,7 +23,7 @@ export interface WidgetElement {
 export const widgetRegistry: WidgetElement[] = [
     {
         preview: {
-            widgetType: "EditorWidget",
+            widgetType: "editor",
             height: 2,
             width: 2,
             previewImage: '/sample.jpg',
@@ -35,9 +35,9 @@ export const widgetRegistry: WidgetElement[] = [
     },
     {
         preview: {
-            widgetType: "GithubWidget",
+            widgetType: "github",
             height: 2,
-            width: 2,
+            width: 1,
             previewImage: '/sample.jpg',
             title: 'Github',
             description: 'See your open github issues & pull requests',
@@ -49,7 +49,11 @@ export const widgetRegistry: WidgetElement[] = [
 
 
 export const getWidgetComponent = (name: string) => {
-    return widgetRegistry.find((widget) => widget.preview.widgetType === name)?.component
+    const WidgetComponent = widgetRegistry.find((widget) => widget.preview.widgetType === name)?.component
+
+    if (!WidgetComponent) return null
+
+    return (props: any) => <WidgetComponent {...props} name={name} />
 }
 
 export const getWidgetPreview = (name: string) => {

@@ -20,7 +20,8 @@ import {
     ToggleGroup,
     ToggleGroupItem, useToast
 } from "lunalabs-ui"
-import React, {useRef, useState} from "react"
+import type React from "react"
+import {useRef, useState} from "react"
 import {Blocks, CloudAlert, Github, ImageIcon, Settings, Trash, UserRoundCheck} from "lucide-react"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {useSessionStore} from "@/store/sessionStore"
@@ -31,7 +32,8 @@ import {GoogleIcon} from "@/components/GoogleIcon"
 import {useIntegrationStore} from "@/store/integrationStore"
 import {cn} from "@/lib/utils"
 import {authClient} from "@/lib/auth-client"
-import {PutBlobResult} from "@vercel/blob"
+import type {PutBlobResult} from "@vercel/blob"
+import {ButtonSpinner} from "@/components/ButtonSpinner"
 
 function SettingsDialog() {
     const {addToast} = useToast()
@@ -356,7 +358,8 @@ const ProfileSection: React.FC<ProfileProps> = ({session, onClose}) => {
                                 type={"submit"}
                                 disabled={form.formState.isSubmitting || uploading}
                             >
-                                {form.formState.isSubmitting || uploading ? "Saving..." : "Save"}
+                                {(form.formState.isSubmitting || uploading) && <ButtonSpinner/>}
+                                Save
                             </Button>
                         </div>
                     </form>

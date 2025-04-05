@@ -21,7 +21,7 @@ import {useWidgetStore} from "@/store/widgetStore"
 import {useSessionStore} from "@/store/sessionStore"
 import {getAllWidgetPreviews, type WidgetPreview} from "@/lib/widget"
 
-function WidgetDialog() {
+function WidgetDialog({editMode}: {editMode: boolean}) {
     const {widgets, addWidget} = useWidgetStore()
     const {session} = useSessionStore()
     const [selectedWidget, setSelectedWidget] = useState<WidgetPreview | null>(null)
@@ -38,8 +38,7 @@ function WidgetDialog() {
 
     const filteredWidgets = allWidgets.filter((widget) => {
         const matchesSearch = widget.title.toLowerCase().includes(query.toLowerCase())
-        const matchesTags = tagValue === "" || (widget.tags && widget.tags.some((tag: any) => tag === tagValue))
-
+        const matchesTags = tagValue === "" || widget.tags?.some((tag: any) => tag === tagValue)
         return matchesSearch && matchesTags
     })
 
@@ -74,7 +73,7 @@ function WidgetDialog() {
             if (selectedWidget) setSelectedWidget(null)
         }}>
             <DialogTrigger asChild>
-                <Button className={"size-8"} {...widgetTooltip} variant={"brand"}>
+                <Button className={"size-8"} {...widgetTooltip} variant={"brand"} disabled={editMode}>
                     <Grid2x2Plus size={16}/>
                 </Button>
             </DialogTrigger>

@@ -1,6 +1,7 @@
 "use client"
 
-import React, {useCallback, useEffect, useState} from "react"
+import type React from "react"
+import {useCallback, useEffect, useState} from "react"
 import {fetchOpenIssuesAndPullsFromAllRepos} from "@/actions/github"
 import {WidgetTemplate} from "./WidgetTemplate"
 import {
@@ -26,11 +27,15 @@ import {
     TriangleAlert
 } from "lucide-react"
 import {formatDate} from "date-fns"
-import {MenuItem} from "@/lib/menu-types"
+import type {MenuItem} from "@/lib/menu-types"
 import {useIntegrationStore} from "@/store/integrationStore"
 import {authClient} from "@/lib/auth-client"
 
-const GithubWidget: React.FC = () => {
+interface GithubWidgetProps {
+    editMode: boolean
+}
+
+const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
     const {githubIntegration} = useIntegrationStore()
     const {addToast} = useToast()
     const [activeTab, setActiveTab] = useState<string>("issues")
@@ -104,7 +109,7 @@ const GithubWidget: React.FC = () => {
             issue.repository_url.split('/').pop().toLowerCase().includes(searchQuery.toLowerCase())
 
         const matchesLabels =
-            selectedLabels.length === 0 || (issue.labels && issue.labels.some((label: any) => selectedLabels.includes(label)))
+            selectedLabels.length === 0 || (issue.labels?.some((label: any) => selectedLabels.includes(label)))
 
         return matchesSearch && matchesLabels
     })
@@ -135,7 +140,7 @@ const GithubWidget: React.FC = () => {
 
     if (!githubIntegration?.accessToken) {
         return (
-            <WidgetTemplate className="col-span-1" name={"github"}>
+            <WidgetTemplate className="col-span-1" name={"github"} editMode={editMode}>
                 <div className="h-full flex flex-col gap-2 items-center justify-center ">
                     <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
                         <TriangleAlert size={32}/>
@@ -150,7 +155,7 @@ const GithubWidget: React.FC = () => {
     }
 
     return (
-        <WidgetTemplate className="col-span-1" name={"github"}>
+        <WidgetTemplate className="col-span-1" name={"github"} editMode={editMode}>
             <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-4">
                     <div className={"flex items-center gap-2"}>

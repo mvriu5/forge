@@ -1,6 +1,6 @@
 import { Octokit } from "@octokit/rest";
 
-async function fetchPaginated<T>(fetchFunction: (page: number) => Promise<{ data: T[] }>, perPage: number = 100): Promise<T[]> {
+async function fetchPaginated<T>(fetchFunction: (page: number) => Promise<{ data: T[] }>, perPage = 100): Promise<T[]> {
     const results: T[] = []
     let page = 1
 
@@ -35,7 +35,7 @@ export async function getAllRepos(accessToken: string):  Promise<{ repos: any[],
         )
     )
     const orgReposList = await Promise.all(orgReposPromises)
-    orgReposList.forEach((orgRepos) => repos.push(...orgRepos))
+    orgReposList.map((orgRepos) => repos.push(...orgRepos))
 
     return {repos, octokit}
 }
@@ -67,8 +67,6 @@ export async function fetchOpenIssuesAndPullsFromAllRepos(userId: string) {
                 per_page: 100,
                 page,
             })).data
-
-            console.log(issues)
 
             const pulls = issues.filter(issue => issue.pull_request !== undefined &&
                 (issue.assignees.some((a: any) => a.login === user.data.login) || issue.assignee?.login === user.data.login))

@@ -21,8 +21,12 @@ import {TextButtons} from "@/components/TextButtons"
 import GlobalDragHandle from "tiptap-extension-global-drag-handle"
 import AutoJoiner from "tiptap-extension-auto-joiner"
 
+interface EditorWidgetProps {
+    editMode: boolean
+}
 
-const EditorWidget: React.FC = () => {
+
+const EditorWidget: React.FC<EditorWidgetProps> = ({editMode}) => {
     const [content, setContent] = useState<JSONContent | undefined>(undefined)
     const [openNode, setOpenNode] = useState(false)
 
@@ -39,7 +43,7 @@ const EditorWidget: React.FC = () => {
     ]
 
     return (
-        <WidgetTemplate className={"max-row-span-2"} name={"editor"}>
+        <WidgetTemplate className={"max-row-span-2"} name={"editor"} editMode={editMode}>
             <EditorRoot>
                 <EditorContent
                     extensions={extensions}
@@ -62,7 +66,7 @@ const EditorWidget: React.FC = () => {
                                 {suggestionItems.map((item) => (
                                     <EditorCommandItem
                                         value={item.title}
-                                        onCommand={(val) => item.command && item.command(val)}
+                                        onCommand={(val) => item.command?.(val)}
                                         className="group cursor-pointer flex w-full items-center gap-2 rounded-md py-1 px-2 text-left text-sm hover:bg-secondary aria-selected:bg-secondary"
                                         key={item.title}
                                     >

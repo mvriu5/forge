@@ -53,7 +53,6 @@ export async function GET(req: Request) {
     }
 }
 
-// UPDATE (PUT) - Update a specific widget
 export async function PUT(req: Request) {
     try {
         const body = await req.json();

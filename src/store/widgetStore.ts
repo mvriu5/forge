@@ -1,4 +1,5 @@
 import {create} from "zustand/react"
+// biome-ignore lint/style/useImportType: <explanation>
 import {Widget, WidgetInsert} from "@/database"
 
 interface WidgetStore {
@@ -8,6 +9,7 @@ interface WidgetStore {
     removeWidget: (widget: Widget) => Promise<void>
     getWidget: (widgetName: string) => Widget | undefined
     getAllWidgets: (userId: string) => Promise<void>
+    updateWidgetPosition: (id: string, x: number, y: number) => void
 }
 
 export const useWidgetStore = create<WidgetStore>((set, get) => ({
@@ -63,5 +65,12 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
         } catch (error) {
             console.error('Failed to fetch widgets', error)
         }
-    }
+    },
+    updateWidgetPosition: (id: string, x: number, y: number) => {
+        set((state) => ({
+            widgets: state.widgets!.map((widget) =>
+                widget.id === id || widget.widgetType === id ? { ...widget, positionX: x, positionY: y } : widget,
+            ),
+        }))
+    },
 }))

@@ -16,16 +16,16 @@ const GridCell = ({ x, y, isDroppable }: GridCellProps) => {
     return (
         <div
             ref={setNodeRef}
-            className={`h-[minmax(180px,180px)] rounded-md border ${
+            className={`min-h-[180px] rounded-md border-2 ${
                 isDroppable
                     ? isOver
-                        ? "border-dashed border-main bg-primary/10"
+                        ? "border-dashed border-main bg-tertiary"
                         : "border-dashed border-main/50"
                     : "border-transparent"
             }`}
             style={{
-                gridColumnStart: x + 1,
-                gridRowStart: y + 1,
+                gridColumnStart: x,
+                gridRowStart: y,
             }}
         />
     )

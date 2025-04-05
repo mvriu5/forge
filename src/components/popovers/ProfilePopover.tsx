@@ -7,8 +7,9 @@ import {authClient} from "@/lib/auth-client"
 import {useRouter} from "next/navigation"
 import {useSessionStore} from "@/store/sessionStore"
 import {SettingsDialog} from "@/components/dialogs/SettingsDialog"
+import {cn} from "@/lib/utils"
 
-function ProfilePopover() {
+function ProfilePopover({editMode}: {editMode: boolean}) {
     const { session, setSession } = useSessionStore()
     const router = useRouter()
     const [open, setOpen] = useState(false)
@@ -27,10 +28,15 @@ function ProfilePopover() {
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger>
+            <PopoverTrigger disabled={loading || editMode} data-state={editMode ? "disabled" : "enabled"} className={"group"}>
                 <div
                     data-state={open ? "open" : "closed"}
-                    className={"h-8 flex items-center gap-2 bg-secondary hover:bg-tertiary data-[state=open]:bg-tertiary rounded-md px-3"}>
+                    className={cn(
+                        "h-8 flex items-center gap-2 bg-secondary hover:bg-tertiary data-[state=open]:bg-tertiary",
+                        "rounded-md px-3 group-data-[state=disabled]:bg-secondary",
+                        "group-data-[state=disabled]:hover:bg-secondary"
+                    )}
+                >
                     {loading ?
                         <Skeleton className={"size-6 rounded-full"}/> :
                         <Avatar className={"size-6 border border-main/20"}>
