@@ -21,7 +21,8 @@
 		"rules": {
 			"recommended": true,
 			"style": {
-				"noNonNullAssertion": "off"
+				"noNonNullAssertion": "off",
+				"useImportType": "off"
 			},
 			"a11y": {
 				"useKeyWithClickEvents": "off"

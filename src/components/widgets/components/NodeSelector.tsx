@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import {Button, Popover, PopoverContent, PopoverTrigger} from "lunalabs-ui";
 import { EditorBubbleItem, useEditor } from "novel";
-import {CONTAINER_STYLES} from "@/lib/consts"
 
 
 export type SelectorItem = {

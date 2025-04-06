@@ -1,5 +1,4 @@
 import {create} from "zustand/react"
-// biome-ignore lint/style/useImportType: <explanation>
 import {Widget, WidgetInsert} from "@/database"
 
 interface WidgetStore {
@@ -37,7 +36,7 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
             const newWidget = await response.json()
             set({ widgets: [...(get().widgets || []), newWidget[0]] })
         } catch (error) {
-            console.error('Failed to add widget', error)
+            set({ widgets: get().widgets })
         }
     },
     refreshWidget: async (widget: Widget) => {
@@ -54,7 +53,7 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
                 )
             })
         } catch (error) {
-            console.error('Failed to update widget', error)
+            set({ widgets: get().widgets })
         }
     },
     removeWidget: async (widget: Widget) => {
@@ -64,7 +63,7 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
                 widgets: get().widgets!.filter((w) => w.id !== widget.id)
             })
         } catch (error) {
-            console.error('Failed to delete widget', error)
+            set({ widgets: get().widgets })
         }
     },
     getWidget: (widgetName: string) => {
@@ -76,7 +75,7 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
             const widgets = await response.json()
             set({ widgets })
         } catch (error) {
-            console.error('Failed to fetch widgets', error)
+            set({ widgets: get().widgets })
         }
     },
     updateWidgetPosition: (id: string, x: number, y: number) => {
@@ -101,6 +100,7 @@ const findNextAvailablePosition = (widgets: Widget[] | null, newWidgetWidth: num
             for (let j = 0; j < widget.height; j++) {
                 const x = widget.positionX + i
                 const y = widget.positionY + j
+
                 if (x < gridSize && y < gridSize) {
                     occupiedCells[y][x] = true
                 }
@@ -127,9 +127,7 @@ const findNextAvailablePosition = (widgets: Widget[] | null, newWidgetWidth: num
                 if (!canPlace) break
             }
 
-            if (canPlace) {
-                return { x, y }
-            }
+            if (canPlace) return { x, y }
         }
     }
 

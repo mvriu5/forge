@@ -4,13 +4,13 @@ const TITLE = "Forge"
 const DESCRIPTION = ""
 
 export const siteConfig: Metadata = {
-    title: TITLE,
-    description: DESCRIPTION,
+    title: "Forge",
+    description: "Build your own dashboard",
     icons: {
         icon: "/favicon.ico",
     },
-    applicationName: "",
-    creator: "",
+    applicationName: "Forge",
+    creator: "mvriu5",
     openGraph: {
         title: TITLE,
         description: DESCRIPTION,
