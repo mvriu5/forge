@@ -16,8 +16,7 @@ function ResetPasswordCard() {
     const [loading, setLoading] = useState(false)
 
     const formSchema = z.object({
-        password: z.string()
-            .min(8, {message: "Password must be at least 8 characters."}),
+        password: z.string().min(8, {message: "Password must be at least 8 characters."}),
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -31,11 +30,11 @@ function ResetPasswordCard() {
         const token = new URLSearchParams(window.location.search).get("token");
 
         if (!token) {
-            // Handle the error
+            router.push("/signin")
             return
         }
 
-        const { data, error } = await authClient.resetPassword({
+        await authClient.resetPassword({
             newPassword: values.password,
             token,
         }, {

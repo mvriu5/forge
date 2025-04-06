@@ -19,7 +19,7 @@ import {cn} from "@/lib/utils"
 import Image from "next/image"
 import {useWidgetStore} from "@/store/widgetStore"
 import {useSessionStore} from "@/store/sessionStore"
-import {getAllWidgetPreviews, type WidgetPreview} from "@/lib/widget"
+import {getAllWidgetPreviews, type WidgetPreview} from "@/lib/widgetRegistry"
 
 function WidgetDialog({editMode}: {editMode: boolean}) {
     const {widgets, addWidget} = useWidgetStore()

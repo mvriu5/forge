@@ -21,7 +21,7 @@ export const auth = betterAuth({
         }
     },
     emailVerification: {
-        sendVerificationEmail: async ( { user, url, token }, request) => {
+        sendVerificationEmail: async ({ user, url }) => {
             await resend.emails.send({
                 from: "hello@tryforge.io",
                 to: [user.email],
@@ -34,7 +34,7 @@ export const auth = betterAuth({
         enabled: true,
         autoSignIn: true,
         requireEmailVerification: true,
-        sendResetPassword: async ({user, url, token}, request) => {
+        sendResetPassword: async ({user, url}) => {
             await resend.emails.send({
                 from: "hello@tryforge.io",
                 to: [user.email],
@@ -57,10 +57,10 @@ export const auth = betterAuth({
     },
     session: {
         expiresIn: 60 * 60 * 24 * 7, // 7 days
-        updateAge: 60 * 60 * 24, // 1 day (every 1 day the session expiration is updated)
+        updateAge: 60 * 60 * 24, // 1 day
         cookieCache: {
             enabled: true,
-            maxAge: 5 * 60 // Cache duration in seconds
+            maxAge: 5 * 60 // 5 minutes
         }
     }
 })

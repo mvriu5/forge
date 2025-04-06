@@ -16,7 +16,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         set((state) => ({
             session: state.session
                 ? { ...state.session, user: { ...state.session.user, ...update } }
-                : null,
+                : null
         })),
     fetchSession: async () => {
         try {
@@ -36,7 +36,6 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
             set({session: data})
         } catch (error) {
-            console.error("Failed to fetch session:", error)
             set({session: null})
         }
     }

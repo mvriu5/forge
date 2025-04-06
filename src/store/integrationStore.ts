@@ -28,9 +28,8 @@ export const useIntegrationStore = create<IntegrationStore>((set, get) => ({
     fetchIntegrations: async (userId) => {
         try {
             const response = await fetch(`/api/accounts?userId=${userId}`)
-            if (!response.ok) {
-                console.error('Fehler beim Abrufen des Accounts')
-            }
+            if (!response.ok) return
+
             const accounts: Account[] = await response.json()
 
             const integrations = accounts.map(account => ({
@@ -47,10 +46,8 @@ export const useIntegrationStore = create<IntegrationStore>((set, get) => ({
                 githubIntegration: integrations.find(i => i.accessToken && i.provider === 'github') ?? null,
                 googleIntegration: integrations.find(i => i.accessToken && i.provider === 'google') ?? null,
             })
-
-
         } catch (error) {
-            console.error('Fehler beim Abrufen des Accounts', error)
+            set({ integrations: null })
         }
     },
     addIntegration: async (userId) => {

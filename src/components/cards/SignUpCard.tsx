@@ -17,12 +17,9 @@ function SignUpCard() {
     const [loading, setLoading] = useState(false)
 
     const formSchema = z.object({
-        name: z.string()
-            .min(3, {message: "Name must be at least 3 characters."}),
-        email: z.string()
-            .email({message: "Please enter a valid email address."}),
-        password: z.string()
-            .min(8, {message: "Password must be at least 8 characters."}),
+        name: z.string().min(3, {message: "Name must be at least 3 characters."}),
+        email: z.string().email({message: "Please enter a valid email address."}),
+        password: z.string().min(8, {message: "Password must be at least 8 characters."})
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -30,12 +27,12 @@ function SignUpCard() {
         defaultValues: {
             name: "",
             email: "",
-            password: "",
-        },
+            password: ""
+        }
     })
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const { data, error } = await authClient.signUp.email({
+        await authClient.signUp.email({
             email: values.email,
             password: values.password,
             name: values.name,
@@ -60,7 +57,7 @@ function SignUpCard() {
     }
 
     const onGithubSignin = async () => {
-        const data = await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
+        await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
             onRequest: (ctx) => {
             },
             onSuccess: (ctx) => {
@@ -76,7 +73,7 @@ function SignUpCard() {
     }
 
     const onGoogleSignin = async () => {
-        const data = await authClient.signIn.social({provider: "google", callbackURL: "/dashboard"}, {
+        await authClient.signIn.social({provider: "google", callbackURL: "/dashboard"}, {
             onRequest: (ctx) => {
             },
             onSuccess: (ctx) => {

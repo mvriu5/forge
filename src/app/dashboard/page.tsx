@@ -1,27 +1,23 @@
 "use client"
 
 import {Header} from "@/components/Header"
-import {Button, ToastProvider, TooltipProvider, useToast} from "lunalabs-ui"
+import {Button, ToastProvider, TooltipProvider} from "lunalabs-ui"
 import type React from "react"
-import {type ReactNode, useEffect, useState} from "react"
+import {useEffect, useState} from "react"
 import {useSessionStore} from "@/store/sessionStore"
 import {useWidgetStore} from "@/store/widgetStore"
-import {getWidgetComponent} from "@/lib/widget"
+import {getWidgetComponent} from "@/lib/widgetRegistry"
 import {useIntegrationStore} from "@/store/integrationStore"
-// biome-ignore lint/style/useImportType: <explanation>
 import {
     DndContext,
     DragEndEvent,
-    DragOverlay,
     DragStartEvent,
     MouseSensor,
-    TouchSensor,
+    TouchSensor, useDroppable,
     useSensor,
     useSensors
 } from "@dnd-kit/core"
-import {GridCell} from "@/components/GridCell"
 import type { Widget } from "@/database"
-import {Blocks, CloudAlert} from "lucide-react"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 
 export default function Dashboard() {
@@ -228,5 +224,36 @@ export default function Dashboard() {
                 </div>
             </ToastProvider>
         </TooltipProvider>
+    )
+}
+
+interface GridCellProps {
+    x: number
+    y: number
+    isDroppable: boolean
+}
+
+const GridCell = ({ x, y, isDroppable }: GridCellProps) => {
+    const { isOver, setNodeRef } = useDroppable({
+        id: `cell-${x}-${y}`,
+        data: {x, y},
+        disabled: !isDroppable
+    })
+
+    return (
+        <div
+            ref={setNodeRef}
+            className={`min-h-[180px] rounded-md border-2 ${
+                isDroppable
+                    ? isOver
+                        ? "border-dashed border-main bg-tertiary"
+                        : "border-dashed border-main/50"
+                    : "border-transparent"
+            }`}
+            style={{
+                gridColumnStart: x + 1,
+                gridRowStart: y + 1,
+            }}
+        />
     )
 }

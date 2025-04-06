@@ -20,7 +20,6 @@ function Header({onEdit, editMode}: HeaderProps) {
 
     return (
         <div className={"w-full top-0 left-0 h-14 px-2 flex justify-between items-center bg-primary border-b border-main/40"}>
-
             <div className={"flex items-center gap-4"}>
                 <div className={"flex items-center gap-2"}>
                     <Anvil size={22}/>
@@ -34,11 +33,8 @@ function Header({onEdit, editMode}: HeaderProps) {
                     </Button>
                 </div>
             </div>
-
             <ProfilePopover editMode={editMode}/>
-
         </div>
-
     )
 }
 

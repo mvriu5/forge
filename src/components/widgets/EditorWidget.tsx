@@ -60,7 +60,9 @@ const EditorWidget: React.FC<EditorWidgetProps> = ({editMode}) => {
                     }}
                 >
                     <EditorCommand className="z-50 w-72 rounded-md border border-main/60 bg-primary shadow-md transition-all">
-                        <EditorCommandEmpty className="flex items-center justify-center px-2 text-tertiary">No results</EditorCommandEmpty>
+                        <EditorCommandEmpty className="flex items-center justify-center px-2 text-tertiary">
+                            No results
+                        </EditorCommandEmpty>
                         <ScrollArea className="h-80">
                             <EditorCommandList className={"p-2 pr-4"}>
                                 {suggestionItems.map((item) => (
@@ -83,10 +85,9 @@ const EditorWidget: React.FC<EditorWidgetProps> = ({editMode}) => {
                         </ScrollArea>
                     </EditorCommand>
                     <EditorBubble
-                        tippyOptions={{
-                            placement: "top",
-                        }}
-                        className='flex w-fit max-w-[90vw] overflow-hidden rounded-md border border-main bg-primary shadow-lg'>
+                        tippyOptions={{placement: "top"}}
+                        className='flex w-fit max-w-[90vw] overflow-hidden rounded-md border border-main bg-primary shadow-lg'
+                    >
                         <NodeSelector open={openNode} onOpenChange={setOpenNode} />
                         <TextButtons />
                     </EditorBubble>

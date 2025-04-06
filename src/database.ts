@@ -2,7 +2,6 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import {account, widget} from "@/db/schema"
 import {and, eq} from "drizzle-orm"
 
-// biome-ignore lint/style/noNonNullAssertion: <explanation>
 export const db = drizzle(process.env.DATABASE_URI!)
 
 export type Widget = {
