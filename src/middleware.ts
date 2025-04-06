@@ -3,13 +3,13 @@ import {getSessionCookie} from "better-auth/cookies"
 
 const authRoutes = ["/signin", "/signup"]
 const passwordRoutes = ["/reset", "/forgot"]
-const landingRoute = "/"
+const landingRoutes = ["/", "/sitemap.xml"]
 
 export async function middleware(request: NextRequest) {
     const pathName = request.nextUrl.pathname
     const isAuthRoute = authRoutes.includes(pathName)
     const isPasswordRoute = passwordRoutes.includes(pathName)
-    const isLanding = pathName === landingRoute
+    const isLanding = landingRoutes.includes(pathName)
 
     const session = getSessionCookie(request)
 

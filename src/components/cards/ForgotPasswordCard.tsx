@@ -11,13 +11,13 @@ import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {CloudAlert} from "lucide-react"
 
 function ForgotPasswordCard() {
+    const {addToast} = useToast()
     const router = useRouter()
-    const { addToast } = useToast()
+
     const [loading, setLoading] = useState(false)
 
     const formSchema = z.object({
-        email: z.string()
-            .email({message: "Please enter a valid email address."})
+        email: z.string().email({message: "Please enter a valid email address."})
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -28,10 +28,7 @@ function ForgotPasswordCard() {
     })
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const { data, error } = await authClient.forgetPassword({
-            email: values.email,
-            redirectTo: "/reset"
-        }, {
+        await authClient.forgetPassword({email: values.email, redirectTo: "/reset"}, {
             onRequest: (ctx) => {
                 setLoading(true)
             },

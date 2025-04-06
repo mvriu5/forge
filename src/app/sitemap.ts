@@ -13,7 +13,7 @@ type SitemapEntry = {
 }
 
 export default async function sitemap(): Promise<SitemapEntry[]> {
-    const baseUrl = ""
+    const baseUrl = "tryforge.io"
 
     const staticPages: SitemapEntry[] = [
         {
@@ -27,7 +27,7 @@ export default async function sitemap(): Promise<SitemapEntry[]> {
             lastModified: new Date().toISOString(),
             changeFrequency: "weekly",
             priority: 0.8,
-        },
+        }
     ]
 
     return [...staticPages]

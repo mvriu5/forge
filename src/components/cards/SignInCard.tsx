@@ -17,8 +17,7 @@ function SignInCard() {
     const [loading, setLoading] = useState(false)
 
     const formSchema = z.object({
-        email: z.string()
-            .email({message: "Please enter a valid email address."}),
+        email: z.string().email({message: "Please enter a valid email address."}),
         password: z.string()
     })
 
@@ -26,12 +25,12 @@ function SignInCard() {
         resolver: zodResolver(formSchema),
         defaultValues: {
             email: "",
-            password: "",
+            password: ""
         },
     })
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const { data, error } = await authClient.signIn.email({
+        await authClient.signIn.email({
             email: values.email,
             password: values.password,
             callbackURL: "/dashboard"
@@ -61,7 +60,7 @@ function SignInCard() {
     }
 
     const onGithubSignin = async () => {
-        const data = await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
+        await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
             onRequest: (ctx) => {
             },
             onSuccess: (ctx) => {
@@ -77,7 +76,7 @@ function SignInCard() {
     }
 
     const onGoogleSignin = async () => {
-        const data = await authClient.signIn.social({provider: "google", callbackURL: "/dashboard"}, {
+        await authClient.signIn.social({provider: "google", callbackURL: "/dashboard"}, {
             onRequest: (ctx) => {
             },
             onSuccess: (ctx) => {

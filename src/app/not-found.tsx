@@ -17,7 +17,6 @@ export default function NotFound() {
                     </div>
                 </div>
 
-                {/* Message */}
                 <div className="space-y-2">
                     <h2 className="text-2xl font-semibold tracking-tight">Page Not Found</h2>
                     <p className="text-secondary">
@@ -25,7 +24,6 @@ export default function NotFound() {
                     </p>
                 </div>
 
-                {/* Button */}
                 <Button
                     variant="default"
                     onClick={() => router.back()}

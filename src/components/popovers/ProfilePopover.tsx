@@ -10,8 +10,9 @@ import {SettingsDialog} from "@/components/dialogs/SettingsDialog"
 import {cn} from "@/lib/utils"
 
 function ProfilePopover({editMode}: {editMode: boolean}) {
-    const { session, setSession } = useSessionStore()
+    const {session, setSession} = useSessionStore()
     const router = useRouter()
+
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(true)
 
@@ -28,7 +29,11 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger disabled={loading || editMode} data-state={editMode ? "disabled" : "enabled"} className={"group"}>
+            <PopoverTrigger
+                disabled={loading || editMode}
+                data-state={editMode ? "disabled" : "enabled"}
+                className={"group"}
+            >
                 <div
                     data-state={open ? "open" : "closed"}
                     className={cn(
