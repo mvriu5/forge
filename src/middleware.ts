@@ -1,7 +1,6 @@
 // biome-ignore lint/style/useImportType: <explanation>
-import { NextRequest, NextResponse } from "next/server"
-import {betterFetch} from "@better-fetch/fetch"
-import type { Session } from "@/lib/auth"
+import {NextRequest, NextResponse} from "next/server"
+import {getSessionCookie} from "better-auth/cookies"
 
 const authRoutes = ["/signin", "/signup"]
 const passwordRoutes = ["/reset", "/forgot"]
@@ -13,10 +12,7 @@ export async function middleware(request: NextRequest) {
     const isPasswordRoute = passwordRoutes.includes(pathName)
     const isLanding = pathName === landingRoute
 
-    const { data: session } = await betterFetch<Session>("/api/auth/get-session", {
-        baseURL: process.env.BETTER_AUTH_URL,
-        headers: { cookie: request.headers.get("cookie") || "" }
-    })
+    const session = getSessionCookie(request)
 
     if (!session) {
         if (isAuthRoute || isPasswordRoute || isLanding) return NextResponse.next()
