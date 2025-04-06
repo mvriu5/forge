@@ -15,11 +15,24 @@ interface WidgetStore {
 export const useWidgetStore = create<WidgetStore>((set, get) => ({
     widgets: null,
     addWidget: async (userId: string, widget: WidgetInsert) => {
+        const { x, y } = findNextAvailablePosition(
+            get().widgets,
+            widget.width,
+            widget.height
+        )
+
+        const widgetWithPosition = {
+            ...widget,
+            positionX: x,
+            positionY: y,
+            userId
+        }
+
         try {
             const response = await fetch('/api/widgets', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...widget, userId })
+                body: JSON.stringify(widgetWithPosition)
             })
             const newWidget = await response.json()
             set({ widgets: [...(get().widgets || []), newWidget[0]] })
@@ -72,5 +85,53 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
                 widget.id === id || widget.widgetType === id ? { ...widget, positionX: x, positionY: y } : widget,
             ),
         }))
-    },
+    }
 }))
+
+const findNextAvailablePosition = (widgets: Widget[] | null, newWidgetWidth: number, newWidgetHeight: number): { x: number, y: number } => {
+    if (!widgets || widgets.length === 0) return { x: 0, y: 0 };
+
+    const gridSize = 4; // 4x4 Grid
+    const occupiedCells: boolean[][] = Array(gridSize)
+        .fill(false)
+        .map(() => Array(gridSize).fill(false))
+
+    widgets.map(widget => {
+        for (let i = 0; i < widget.width; i++) {
+            for (let j = 0; j < widget.height; j++) {
+                const x = widget.positionX + i
+                const y = widget.positionY + j
+                if (x < gridSize && y < gridSize) {
+                    occupiedCells[y][x] = true
+                }
+            }
+        }
+    })
+
+    for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+            let canPlace = true
+
+            if (x + newWidgetWidth > gridSize || y + newWidgetHeight > gridSize) {
+                canPlace = false
+                continue
+            }
+
+            for (let i = 0; i < newWidgetWidth; i++) {
+                for (let j = 0; j < newWidgetHeight; j++) {
+                    if (occupiedCells[y + j][x + i]) {
+                        canPlace = false
+                        break
+                    }
+                }
+                if (!canPlace) break
+            }
+
+            if (canPlace) {
+                return { x, y }
+            }
+        }
+    }
+
+    return { x: 0, y: 0 }
+}

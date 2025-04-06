@@ -24,8 +24,8 @@ const GridCell = ({ x, y, isDroppable }: GridCellProps) => {
                     : "border-transparent"
             }`}
             style={{
-                gridColumnStart: x,
-                gridRowStart: y,
+                gridColumnStart: x + 1,
+                gridRowStart: y + 1,
             }}
         />
     )

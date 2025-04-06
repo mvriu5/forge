@@ -56,7 +56,7 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
     try {
         const body = await req.json();
-        const { id, ...updateData } = body;
+        const { id, height, width, positionX, positionY } = body;
 
         if (!id) {
             return NextResponse.json(
@@ -65,10 +65,14 @@ export async function PUT(req: Request) {
             );
         }
 
-        const updatedWidget = await updateWidget(id, {
-            ...updateData,
-            updatedAt: new Date()
-        });
+        const updateData = {
+            height,
+            width,
+            positionX,
+            positionY
+        };
+
+        const updatedWidget = await updateWidget(id, updateData);
 
         if (!updatedWidget) {
             return NextResponse.json(

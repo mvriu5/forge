@@ -67,9 +67,11 @@ export default function Dashboard() {
         widgets?.map((widget) => {
             if (activeWidget && widget.id === activeWidget.id) return
 
-            for (let i = 0; i < widget.width; i++) {
-                for (let j = 0; j < widget.height; j++) {
-                    occupiedCells[`${widget.positionX + i},${widget.positionY + j}`] = true
+            const { width, height, positionX, positionY } = widget
+
+            for (let i = 0; i < width; i++) {
+                for (let j = 0; j < height; j++) {
+                    occupiedCells[`${positionX + i},${positionY + j}`] = true
                 }
             }
         })
@@ -77,36 +79,45 @@ export default function Dashboard() {
         return occupiedCells
     }
 
-    const canPlaceWidget = (widget: Widget, x: number, y: number) => {
+    const canPlaceWidget = (widget: { width: number; height: number }, x: number, y: number) => {
+        const { width, height } = widget
         const occupiedCells = getOccupiedCells()
 
-        if (x + widget.width - 1 > 4 || y + widget.height - 1 > 4) return false
+        if (x + width > 4 || y + height > 4) {
+            return false
+        }
 
-        for (let i = 0; i < widget.width; i++) {
-            for (let j = 0; j < widget.height; j++) {
+        for (let i = 0; i < width; i++) {
+            for (let j = 0; j < height; j++) {
                 const cellKey = `${x + i},${y + j}`
-                if (occupiedCells[cellKey]) return false
+                if (occupiedCells[cellKey]) {
+                    return false
+                }
             }
         }
+
         return true
     }
 
     useEffect(() => {
         const cells = []
+        const occupiedCells = getOccupiedCells()
 
-        for (let y = 1; y <= 4; y++) {
-            for (let x = 1; x <= 4; x++) {
-                const occupied = getOccupiedCells()[`${x},${y}`] || false
+        for (let y = 0; y < 4; y++) {
+            for (let x = 0; x < 4; x++) {
+                const isOccupied = occupiedCells[`${x},${y}`]
                 let isDroppable = false
-                if (activeWidget && !occupied) {
+
+                if (activeWidget && !isOccupied) {
                     isDroppable = canPlaceWidget(activeWidget, x, y)
                 }
+
                 cells.push({ x, y, isDroppable })
             }
         }
 
         setGridCells(cells)
-    }, [activeWidget])
+    }, [activeWidget, widgets])
 
     const handleDragStart = (event: DragStartEvent) => {
         if (!editMode) return
@@ -140,19 +151,21 @@ export default function Dashboard() {
     const handleEditModeSave = async () => {
         try {
             setLoading(true)
-            const response = await fetch('/api/widget', {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ widgets })
+            if (!widgets) return;
+
+            const updatePromises = widgets.map(async (widget) => {
+                const response = await fetch('/api/widgets', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(widget),
+                });
+
+                if (!response.ok) throw new Error(`Fehler beim Aktualisieren von Widget ${widget.id}`)
+
+                return response.json();
             })
 
-            if (!response.ok){
-                /*addToast({
-                    title: "An error occurred",
-                    icon: <CloudAlert size={24} className={"text-error"}/>
-                })*/
-                return
-            }
+            const results = await Promise.all(updatePromises)
 
             /*addToast({
                 title: "Successfully updated your layout",
@@ -186,7 +199,10 @@ export default function Dashboard() {
                         onDragStart={handleDragStart}
                         onDragEnd={handleDragEnd}
                     >
-                        <div className={"relative w-full h-full grid grid-cols-4 auto-rows-[minmax(180px,180px)] gap-8 p-8"}>
+                        <div
+                            className="relative w-full h-[calc(100vh-64px)] grid grid-cols-4 gap-8 p-8"
+                            style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
+                        >
                             {gridCells.map((cell) => (
                                 <GridCell key={`${cell.x},${cell.y}`} x={cell.x} y={cell.y} isDroppable={cell.isDroppable} />
                             ))}

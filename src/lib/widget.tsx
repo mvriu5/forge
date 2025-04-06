@@ -16,7 +16,7 @@ export interface WidgetPreview {
 
 export interface WidgetElement {
     preview: WidgetPreview
-    component: React.FC
+    component: React.FC<any>
 }
 
 

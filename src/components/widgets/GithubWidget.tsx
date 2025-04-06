@@ -140,7 +140,7 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
 
     if (!githubIntegration?.accessToken) {
         return (
-            <WidgetTemplate className="col-span-1" name={"github"} editMode={editMode}>
+            <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode}>
                 <div className="h-full flex flex-col gap-2 items-center justify-center ">
                     <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
                         <TriangleAlert size={32}/>
@@ -205,14 +205,14 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
                     </TabsList>
                 </Tabs>
                 {loading ? (
-                    <div className="h-80 flex flex-col gap-4 pt-2">
-                        <Skeleton className={"w-full h-10 px-2"} />
-                        <Skeleton className={"w-full h-10 px-2"} />
-                        <Skeleton className={"w-full h-10 px-2"} />
-                        <Skeleton className={"w-full h-10 px-2"} />
+                    <div className="h-48 flex flex-col gap-4 pt-2">
+                        <Skeleton className={"w-full h-8 px-2"} />
+                        <Skeleton className={"w-full h-8 px-2"} />
+                        <Skeleton className={"w-full h-8 px-2"} />
+                        <Skeleton className={"w-full h-8 px-2"} />
                     </div>
                     ) : (
-                    <ScrollArea className={"h-80"} thumbClassname={"bg-primary"}>
+                    <ScrollArea className={"h-48"} thumbClassname={"bg-primary"}>
                         {activeTab === "issues" && filteredIssues.map((issue) => (
                             <IssueCard issue={issue} key={issue.id}/>
                         ))}

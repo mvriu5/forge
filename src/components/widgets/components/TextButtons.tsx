@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { EditorBubbleItem, useEditor } from "novel";
 import { BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, CodeIcon } from "lucide-react";
-import {SelectorItem} from "@/components/NodeSelector"
+import {SelectorItem} from "@/components/widgets/components/NodeSelector"
 import {Button} from "lunalabs-ui"
 
 export const TextButtons = () => {

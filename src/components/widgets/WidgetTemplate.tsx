@@ -1,11 +1,9 @@
 import type React from "react"
 import type {HTMLAttributes} from "react"
 import {cn} from "@/lib/utils"
-import { useDraggable } from "@dnd-kit/core"
-import { CSS } from "@dnd-kit/utilities"
+import {useDraggable} from "@dnd-kit/core"
+import {CSS} from "@dnd-kit/utilities"
 import {useWidgetStore} from "@/store/widgetStore"
-import {Button} from "lunalabs-ui"
-import {Trash} from "lucide-react"
 
 interface WidgetTemplateProps extends HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode
@@ -27,10 +25,10 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
     const style = {
         transform: CSS.Transform.toString(transform),
         transition: isDragging ? "none" : "transform 200ms ease",
-        gridColumnStart: widget.positionX,
-        gridRowStart: widget.positionY,
-        gridColumnEnd: widget.positionX + widget.width,
-        gridRowEnd: widget.positionY + widget.height,
+        gridColumnStart: widget.positionX + 1,
+        gridRowStart: widget.positionY + 1,
+        gridColumnEnd: widget.positionX + 1 + widget.width,
+        gridRowEnd: widget.positionY + 1 + widget.height,
         zIndex: isDragging ? 30 : 20,
     }
 
@@ -39,7 +37,7 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
             {editMode ? (
                 <div
                     className={cn(
-                        "col-span-2 row-span-2 rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden cursor-grab active:cursor-grabbing",
+                        "rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden cursor-grab active:cursor-grabbing",
                         isDragging && "opacity-50",
                         className
                     )}
@@ -49,16 +47,11 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
                     {...listeners}
                 >
                     {children}
-                    <div className={"z-50 sticky bottom-0 left-0"}>
-                        <Button className={"px-1.5 bg-error/10 border-error/20 text-error hover:bg-error/40 hover:text-error shadow-lg"}>
-                            <Trash size={20}/>
-                        </Button>
-                    </div>
                 </div>
                 ) : (
                 <div
                     className={cn(
-                        "col-span-2 row-span-2 rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden",
+                        "rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden",
                         className
                     )}
                     style={style}

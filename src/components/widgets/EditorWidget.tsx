@@ -14,10 +14,10 @@ import {
 } from "novel"
 import {defaultExtensions} from "@/lib/extensions"
 import {WidgetTemplate} from "@/components/widgets/WidgetTemplate"
-import {slashCommand, suggestionItems} from "@/components/SlashCommand"
+import {slashCommand, suggestionItems} from "@/components/widgets/components/SlashCommand"
 import {ScrollArea} from "lunalabs-ui"
-import {NodeSelector } from "../NodeSelector"
-import {TextButtons} from "@/components/TextButtons"
+import {NodeSelector } from "./components/NodeSelector"
+import {TextButtons} from "@/components/widgets/components/TextButtons"
 import GlobalDragHandle from "tiptap-extension-global-drag-handle"
 import AutoJoiner from "tiptap-extension-auto-joiner"
 
@@ -43,7 +43,7 @@ const EditorWidget: React.FC<EditorWidgetProps> = ({editMode}) => {
     ]
 
     return (
-        <WidgetTemplate className={"max-row-span-2"} name={"editor"} editMode={editMode}>
+        <WidgetTemplate className={"col-span-2 row-span-2"} name={"editor"} editMode={editMode}>
             <EditorRoot>
                 <EditorContent
                     extensions={extensions}
