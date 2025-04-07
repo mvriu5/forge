@@ -103,6 +103,9 @@ function WidgetDialog({editMode}: {editMode: boolean}) {
                         <ToggleGroupItem value="github" className={"text-sm px-2 h-8 data-[state=on]:bg-tertiary border border-main/60"}>
                             Github
                         </ToggleGroupItem>
+                        <ToggleGroupItem value="stock" className={"text-sm px-2 h-8 data-[state=on]:bg-tertiary border border-main/60"}>
+                            Stock
+                        </ToggleGroupItem>
                     </ToggleGroup>
                 </div>
 

@@ -3,6 +3,7 @@
 import type React from "react"
 import {EditorWidget} from "@/components/widgets/EditorWidget"
 import {GithubWidget} from "@/components/widgets/GithubWidget"
+import { StockSmallWidget } from "@/components/widgets/StockSmallWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -44,6 +45,18 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["github"]
         },
         component: GithubWidget
+    },
+    {
+        preview: {
+            widgetType: "stockSmall",
+            height: 1,
+            width: 1,
+            previewImage: '/sample.jpg',
+            title: 'Stock',
+            description: 'Track your stock data',
+            tags: ["stock"]
+        },
+        component: StockSmallWidget
     }
 ]
 

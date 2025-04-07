@@ -30,6 +30,7 @@ import {formatDate} from "date-fns"
 import type {MenuItem} from "@/lib/menu-types"
 import {useIntegrationStore} from "@/store/integrationStore"
 import {authClient} from "@/lib/auth-client"
+import {shouldRefetchData, useGithubStore} from "@/store/githubStore"
 
 interface GithubWidgetProps {
     editMode: boolean
@@ -37,11 +38,10 @@ interface GithubWidgetProps {
 
 const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
     const {githubIntegration} = useIntegrationStore()
+    const { data, loading, setLoading, setData } = useGithubStore()
     const {addToast} = useToast()
+
     const [activeTab, setActiveTab] = useState<string>("issues")
-    const [issues, setIssues] = useState<any[]>([])
-    const [pullRequests, setPullRequests] = useState<any[]>([])
-    const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState<string>("")
     const [selectedLabels, setSelectedLabels] = useState<string[]>([])
 
@@ -55,7 +55,7 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
         anchor: "bc",
     })
 
-    const allLabels = Array.from(new Set(issues
+    const allLabels = Array.from(new Set(data.issues
         .flatMap((issue) => issue.labels || [])
         .filter((label, index, self) => index === self.findIndex((l) => l.name === label.name))))
 
@@ -67,8 +67,9 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
         onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]))
     }))))
 
-    const fetchData = useCallback(() => {
+    const fetchData = useCallback((force: boolean = false) => {
         if (!githubIntegration?.accessToken) return
+        if (!force && !shouldRefetchData(data.lastFetched)) return
         setLoading(true)
 
         fetchOpenIssuesAndPullsFromAllRepos(githubIntegration.accessToken).then((data) => {
@@ -93,17 +94,16 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
                 return true
             })
 
-            setIssues(fIssues)
-            setPullRequests(fPrs)
+            setData({ issues: fIssues, pullRequests: fPrs })
             setLoading(false)
         })
-    }, [fetchOpenIssuesAndPullsFromAllRepos, githubIntegration])
+    }, [fetchOpenIssuesAndPullsFromAllRepos, githubIntegration, data.lastFetched, setData, setLoading])
 
     useEffect(() => {
         fetchData()
     }, [fetchData])
 
-    const filteredIssues = issues.filter((issue) => {
+    const filteredIssues = data.issues.filter((issue) => {
         const matchesSearch =
             issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             issue.repository_url.split('/').pop().toLowerCase().includes(searchQuery.toLowerCase())
@@ -114,7 +114,7 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
         return matchesSearch && matchesLabels
     })
 
-    const filteredPRs = pullRequests.filter((pr: any) =>
+    const filteredPRs = data.pullRequests.filter((pr: any) =>
         pr.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         pr.repository_url.split('/').pop().toLowerCase().includes(searchQuery.toLowerCase()))
 
@@ -156,7 +156,7 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
 
     return (
         <WidgetTemplate className="col-span-1" name={"github"} editMode={editMode}>
-            <div className="flex flex-col gap-2">
+            <div className="h-full flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-4">
                     <div className={"flex items-center gap-2"}>
                         <GitGraphIcon size={18} className={"text-brand"}/>
@@ -165,7 +165,7 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
                     <Badge
                         variant="brand"
                         className="text-xs font-normal bg-brand/10 border-brand/40"
-                        title={`${activeTab === "issues" ? issues.length : pullRequests.length} open`}
+                        title={`${activeTab === "issues" ? data.issues.length : data.pullRequests.length} open`}
                     />
                 </div>
                 <div className="flex items-center gap-2">
@@ -184,7 +184,7 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
                     }
                     <Button
                         className={"px-2 group"}
-                        onClick={fetchData}
+                        onClick={() => fetchData(true)}
                         data-loading={loading ? "true" : "false"}
                         {...refreshTooltip}
                     >
@@ -205,14 +205,14 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
                     </TabsList>
                 </Tabs>
                 {loading ? (
-                    <div className="h-48 flex flex-col gap-4 pt-2">
-                        <Skeleton className={"w-full h-8 px-2"} />
-                        <Skeleton className={"w-full h-8 px-2"} />
-                        <Skeleton className={"w-full h-8 px-2"} />
-                        <Skeleton className={"w-full h-8 px-2"} />
+                    <div className="h-full grid grid-cols-1 gap-4 pt-2">
+                        <Skeleton className={"h-full w-full px-2"} />
+                        <Skeleton className={"h-full w-full px-2"} />
+                        <Skeleton className={"h-full w-full px-2"} />
+                        <Skeleton className={"h-full w-full px-2"} />
                     </div>
                     ) : (
-                    <ScrollArea className={"h-48"} thumbClassname={"bg-primary"}>
+                    <ScrollArea className={"h-full"} thumbClassname={"bg-primary"}>
                         {activeTab === "issues" && filteredIssues.map((issue) => (
                             <IssueCard issue={issue} key={issue.id}/>
                         ))}
