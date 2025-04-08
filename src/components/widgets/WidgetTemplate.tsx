@@ -37,7 +37,7 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
             {editMode ? (
                 <div
                     className={cn(
-                        "rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden cursor-grab active:cursor-grabbing",
+                        "relative rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden cursor-grab active:cursor-grabbing",
                         isDragging && "opacity-50",
                         className
                     )}
@@ -46,7 +46,10 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
                     {...attributes}
                     {...listeners}
                 >
-                    {children}
+                    <div className={"absolute inset-0 w-full h-full z-50 rounded-md bg-white/2"}/>
+                    <div className={"pointer-events-none"}>
+                        {children}
+                    </div>
                 </div>
                 ) : (
                 <div

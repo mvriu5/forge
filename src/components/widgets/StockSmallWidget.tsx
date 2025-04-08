@@ -1,47 +1,100 @@
 "use client"
 
-import type React from "react"
-import {useState} from "react"
+import React, {useEffect, useMemo, useState} from "react"
 import {WidgetTemplate} from "@/components/widgets/WidgetTemplate"
-import {Bitcoin, ChartCandlestick, ChartSpline, TrendingDown, TrendingUp} from "lucide-react"
+import {TrendingDown, TrendingUp} from "lucide-react"
 import {
-    Badge,
     ChartConfig,
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
-    Tabs,
-    TabsList,
-    TabsTrigger
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
 } from "lunalabs-ui"
-import {CartesianGrid, Line, LineChart, ResponsiveContainer, XAxis } from "recharts"
+import {Area, AreaChart, YAxis} from "recharts"
+import {
+    AssetData,
+    fetchCryptoData,
+    fetchStockData,
+} from "@/actions/alphavantage"
+import {cn} from "@/lib/utils"
+import {ButtonSpinner} from "@/components/ButtonSpinner"
+import {getAssetType, getPopularAssets} from "@/lib/assetList"
 
 interface StockSmallWidgetProps {
     editMode: boolean
 }
 
 const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode}) => {
-    const [activeTab, setActiveTab] = useState<string>("spline")
+    const [assetData, setAssetData] = useState<AssetData | null>({
+        chartData: [],
+        currentPrice: null,
+        priceChange: 0,
+        priceChangePercent: 0
+    })
+    const [loading, setLoading] = useState<boolean>(true)
+    const [timespan, setTimespan] = useState<string>("7")
+    const [stock, setStock] = useState<string>("AAPL")
+    const [assetType, setAssetType] = useState<"stock" | "crypto">("stock")
 
-    const chartData = [
-        { month: "January", desktop: 186 },
-        { month: "February", desktop: 305 },
-        { month: "March", desktop: 237 },
-        { month: "April", desktop: 73 },
-        { month: "May", desktop: 209 },
-        { month: "June", desktop: 214 },
-        { month: "July", desktop: 154 },
-        { month: "August", desktop: 200 },
-        { month: "September", desktop: 300 },
-        { month: "October", desktop: 100 },
-        { month: "November", desktop: 325 },
-        { month: "December", desktop: 240 },
-    ]
+    const assetOptions = useMemo(() => getPopularAssets(), [])
+
+    const yAxisDomain = useMemo(() => {
+        if (!assetData?.chartData || assetData?.chartData.length === 0) return [0, 0]
+
+        const prices = assetData?.chartData.map(item => item.price)
+        const minPrice = Math.min(...prices)
+        const maxPrice = Math.max(...prices)
+
+        const avgPrice = (minPrice + maxPrice) / 2
+        const priceRange = maxPrice - minPrice
+
+        const effectiveRange = Math.max(priceRange, avgPrice * 0.1)
+
+        const yMin = avgPrice - effectiveRange
+        const yMax = avgPrice + effectiveRange
+
+        return [yMin, yMax]
+    }, [assetData?.chartData])
+
     const chartConfig = {
-        desktop: {
-            label: "BTC",
-        },
+        price: {
+            label: "Price"
+        }
     } satisfies ChartConfig
+
+    useEffect(() => {
+        const updateAssetInfo = () => {
+            const type = getAssetType(stock)
+            setAssetType(type)
+        }
+        updateAssetInfo()
+    }, [stock])
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true)
+            const days = Number(timespan)
+
+            try {
+                const data = assetType === "stock" ? await fetchStockData(stock, days) : await fetchCryptoData(stock, days)
+                setAssetData(data)
+            } catch (error) {
+                console.error("Fehler beim Abrufen der Daten:", error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchData()
+
+        const intervalId = setInterval(() => fetchData(), 5 * 60 * 1000)
+
+        return () => clearInterval(intervalId)
+    }, [stock, assetType, timespan])
 
     return (
         <WidgetTemplate className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode}>
@@ -49,65 +102,95 @@ const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode}) => {
 
                 <div className={"flex items-center justify-between gap-4"}>
                     <div className={"flex items-center gap-2"}>
-                        <Bitcoin size={26} className={"text-brand bg-primary p-1 rounded-md shadow-lg"}/>
-                        <p className={"text-lg font-semibold text-primary"}>BTC</p>
+                        <Select value={stock} onValueChange={setStock}>
+                            <SelectTrigger className={" border-0 bg-0 px-0 gap-2 justify-normal text-primary text-lg font-semibold"}>
+                                <SelectValue placeholder="Stock" className={"text-lg font-semibold text-primary"}/>
+                            </SelectTrigger>
+                            <SelectContent align={"start"} className={"border-main/40"}>
+                                {assetOptions.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                        {option.label} ({option.value})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
-
-                    <Tabs defaultValue="spline" onValueChange={setActiveTab}>
-                        <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md h-8">
-                            <TabsTrigger value="spline" className={"h-6 px-6 data-[state=active]:text-brand"}>
-                                <ChartSpline size={16}/>
-                            </TabsTrigger>
-                            <TabsTrigger value="candle" className={"h-6 px-6 data-[state=active]:text-brand"}>
-                                <ChartCandlestick size={16}/>
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+                    <div className={"flex items-center gap-2"}>
+                        <div className={"text-primary text-sm"}>{`$${assetData?.currentPrice}`}</div>
+                        <Select value={timespan} onValueChange={setTimespan}>
+                            <SelectTrigger className={"w-[100px] border-main/60"}>
+                                <SelectValue placeholder="Timespan"/>
+                            </SelectTrigger>
+                            <SelectContent align={"end"} className={"border-main/40"}>
+                                <SelectItem value="1">24 hours</SelectItem>
+                                <SelectItem value="7">7 days</SelectItem>
+                                <SelectItem value="30">30 days</SelectItem>
+                                <SelectItem value="90">90 days</SelectItem>
+                                <SelectItem value="365">1 year</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
 
-                <div className={"flex items-center gap-4 bg-secondary rounded-md px-2"}>
-                    <ChartContainer config={chartConfig} className={"max-h-[108px] w-3/4 "}>
-                        <LineChart
+                <div className={"h-min bg-secondary rounded-md overflow-hidden"}>
+                    <ChartContainer config={chartConfig} className={"max-h-[108px] w-full"}>
+                        <AreaChart
                             accessibilityLayer
-                            data={chartData}
+                            data={assetData?.chartData}
                             margin={{
                                 top: 5,
-                                right: 5,
-                                left: 5,
                             }}
                         >
                             <ChartTooltip
                                 cursor={false}
-                                content={<ChartTooltipContent hideLabel />}
+                                content={
+                                    <ChartTooltipContent
+                                        hideLabel className={"z-50"}
+                                    />
+                                }
                             />
-                            <Line
-                                dataKey="desktop"
+                            <YAxis
+                                domain={yAxisDomain}
+                                hide={true}
+                            />
+                            <Area
+                                dataKey="price"
                                 type="linear"
-                                stroke="#398e3d"
+                                stroke={assetData?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
+                                fill="url(#fillArea)"
+                                fillOpacity={0.3}
                                 strokeWidth={2}
                                 dot={false}
                             />
-                        </LineChart>
+                            <defs>
+                                <linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1">
+                                    <stop
+                                        offset="5%"
+                                        stopColor={assetData?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
+                                        stopOpacity={0.8}
+                                    />
+                                    <stop
+                                        offset="95%"
+                                        stopColor={assetData?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
+                                        stopOpacity={0.1}
+                                    />
+                                </linearGradient>
+                            </defs>
+                        </AreaChart>
                     </ChartContainer>
-                    <div className={"w-1/4 flex flex-col gap-2"}>
-                        <div className={"flex items-center justify-center gap-2 px-2 py-1 bg-tertiary rounded-xl border border-main/40"}>
-                            <p className={"text-xs"}>24 hours</p>
-                            <TrendingUp size={14} className={"text-success"}/>
-                        </div>
-                        <div className={"flex items-center justify-center gap-2 px-2 py-1 bg-tertiary rounded-xl border border-main/40"}>
-                            <p className={"text-xs"}>7 days</p>
-                            <TrendingDown size={14} className={"text-error"}/>
-                        </div>
-                        <div className={"flex items-center justify-center gap-2 px-2 py-1 bg-tertiary rounded-xl border border-main/40"}>
-                            <p className={"text-xs"}>30 days</p>
-                            <TrendingUp size={14} className={"text-success"}/>
-                        </div>
-                    </div>
+                </div>
+                <div
+                    className={cn(
+                        "relative bottom-10 left-1 flex items-center gap-1 px-2 py-0.5 bg-white/2 rounded-md shadow-xl w-max h-max",
+                        assetData?.priceChangePercent! >= 0 ? "text-success" : "text-error"
+                    )}
+                >
+                    {assetData?.priceChangePercent! >= 0 ? <TrendingUp size={20}/> : <TrendingDown size={20}/>}
+                    {`${Number(assetData?.priceChangePercent.toFixed(2))}%`}
                 </div>
 
             </div>
         </WidgetTemplate>
     )
 }
-
 export { StockSmallWidget }
