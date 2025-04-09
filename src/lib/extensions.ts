@@ -15,7 +15,7 @@ import { cx } from "class-variance-authority"
 const placeholder = Placeholder
 const tiptapLink = TiptapLink.configure({
     HTMLAttributes: {
-        class: cx("text-muted-foreground underline underline-offset-[3px] hover:text-primary transition-colors cursor-pointer")
+        class: cx("text-info/60 underline underline-offset-[3px] hover:text-info transition-colors cursor-pointer")
     }
 })
 
@@ -33,7 +33,7 @@ const taskItem = TaskItem.configure({
 
 const horizontalRule = HorizontalRule.configure({
     HTMLAttributes: {
-        class: cx("mt-4 mb-6 border-t border-muted-foreground")
+        class: cx("mt-4 mb-6 border-t border-main/60")
     }
 })
 
@@ -55,17 +55,17 @@ const starterKit = StarterKit.configure({
     },
     blockquote: {
         HTMLAttributes: {
-            class: cx("border-l-4 border-primary")
+            class: cx("border-l-2 border-white/50")
         }
     },
     codeBlock: {
         HTMLAttributes: {
-            class: cx("rounded-sm bg-muted border p-5 font-mono font-medium")
+            class: cx("rounded-sm bg-primary/50 border border-main/60 p-5 font-mono font-medium")
         }
     },
     code: {
         HTMLAttributes: {
-            class: cx("rounded-md bg-muted  px-1.5 py-1 font-mono font-medium"),
+            class: cx("rounded-md bg-primary/50 border border-main/60 px-1.5 py-1 font-mono font-medium"),
             spellcheck: "false"
         }
     },

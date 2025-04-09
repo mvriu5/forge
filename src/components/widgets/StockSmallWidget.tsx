@@ -12,7 +12,7 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue
+    SelectValue, Skeleton
 } from "lunalabs-ui"
 import {Area, AreaChart, YAxis} from "recharts"
 import {
@@ -98,7 +98,7 @@ const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode}) => {
 
     return (
         <WidgetTemplate className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode}>
-            <div className={"flex flex-col gap-2"}>
+            <div className={"flex flex-col gap-2 h-full"}>
 
                 <div className={"flex items-center justify-between gap-4"}>
                     <div className={"flex items-center gap-2"}>
@@ -116,7 +116,10 @@ const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode}) => {
                         </Select>
                     </div>
                     <div className={"flex items-center gap-2"}>
-                        <div className={"text-primary text-sm"}>{`$${assetData?.currentPrice}`}</div>
+                        {loading || isNaN(assetData?.currentPrice ?? 0) || assetData?.currentPrice === undefined ?
+                            <Skeleton className="h-6 w-12"/> :
+                            <div className={"text-primary text-sm"}>{`$${assetData?.currentPrice}`}</div>
+                        }
                         <Select value={timespan} onValueChange={setTimespan}>
                             <SelectTrigger className={"w-[100px] border-main/60"}>
                                 <SelectValue placeholder="Timespan"/>
@@ -132,7 +135,12 @@ const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode}) => {
                     </div>
                 </div>
 
-                <div className={"h-min bg-secondary rounded-md overflow-hidden"}>
+                {!assetData?.chartData &&
+                    <div className={"flex items-center justify-center h-full w-full"}>
+                        <p className={"text-sm text-error"}>Error loading data</p>
+                    </div>
+                }
+                <div className={cn("h-min bg-secondary rounded-md overflow-hidden", !assetData?.chartData && "hidden")}>
                     <ChartContainer config={chartConfig} className={"max-h-[108px] w-full"}>
                         <AreaChart
                             accessibilityLayer
@@ -179,15 +187,17 @@ const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode}) => {
                         </AreaChart>
                     </ChartContainer>
                 </div>
-                <div
-                    className={cn(
-                        "relative bottom-10 left-1 flex items-center gap-1 px-2 py-0.5 bg-white/2 rounded-md shadow-xl w-max h-max",
-                        assetData?.priceChangePercent! >= 0 ? "text-success" : "text-error"
-                    )}
-                >
-                    {assetData?.priceChangePercent! >= 0 ? <TrendingUp size={20}/> : <TrendingDown size={20}/>}
-                    {`${Number(assetData?.priceChangePercent.toFixed(2))}%`}
-                </div>
+                {(!isNaN(assetData?.priceChangePercent ?? 0) && !assetData?.priceChangePercent === undefined) &&
+                    <div
+                        className={cn(
+                            "relative bottom-10 left-1 flex items-center gap-1 px-2 py-0.5 bg-white/2 rounded-md shadow-xl w-max h-max",
+                            assetData?.priceChangePercent! >= 0 ? "text-success" : "text-error"
+                        )}
+                    >
+                        {assetData?.priceChangePercent! >= 0 ? <TrendingUp size={20}/> : <TrendingDown size={20}/>}
+                        {`${Number(assetData?.priceChangePercent.toFixed(2))}%`}
+                    </div>
+                }
 
             </div>
         </WidgetTemplate>

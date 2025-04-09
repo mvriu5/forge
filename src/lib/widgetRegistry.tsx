@@ -32,7 +32,7 @@ export const widgetRegistry: WidgetElement[] = [
             description: 'A simple text editor widget',
             tags: ["notes"]
         },
-        component: EditorWidget
+        component: EditorWidget,
     },
     {
         preview: {
@@ -44,7 +44,7 @@ export const widgetRegistry: WidgetElement[] = [
             description: 'See your open github issues & pull requests',
             tags: ["github"]
         },
-        component: GithubWidget
+        component: GithubWidget,
     },
     {
         preview: {
@@ -56,7 +56,7 @@ export const widgetRegistry: WidgetElement[] = [
             description: 'Track your stock data',
             tags: ["stock"]
         },
-        component: StockSmallWidget
+        component: StockSmallWidget,
     }
 ]
 

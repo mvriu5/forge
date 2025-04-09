@@ -1,4 +1,4 @@
-import {boolean, integer, pgTable, text, timestamp, uuid} from "drizzle-orm/pg-core"
+import {boolean, integer, jsonb, pgTable, text, timestamp, uuid} from "drizzle-orm/pg-core"
 
 export const user = pgTable("users", {
     id: text("id").primaryKey(),
@@ -52,6 +52,7 @@ export const widget = pgTable("widget", {
     widgetType: text('widget_type').notNull(),
     height: integer('height').notNull(),
     width: integer('width').notNull(),
+    config: jsonb('config'),
     positionX: integer('position_x').notNull(),
     positionY: integer('position_y').notNull(),
     createdAt: timestamp('created_at').notNull(),

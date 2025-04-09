@@ -46,7 +46,6 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
                     {...attributes}
                     {...listeners}
                 >
-                    <div className={"absolute inset-0 w-full h-full z-50 rounded-md bg-white/2"}/>
                     <div className={"pointer-events-none"}>
                         {children}
                     </div>

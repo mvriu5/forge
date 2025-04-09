@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import {useState} from "react"
+import {useEffect, useState} from "react"
 import {
     EditorRoot,
     EditorContent,
@@ -10,7 +10,8 @@ import {
     EditorCommandEmpty,
     EditorCommandList,
     EditorCommandItem, handleCommandNavigation,
-    EditorBubble
+    EditorBubble,
+    EditorInstance
 } from "novel"
 import {defaultExtensions} from "@/lib/extensions"
 import {WidgetTemplate} from "@/components/widgets/WidgetTemplate"
@@ -20,6 +21,7 @@ import {NodeSelector } from "./components/NodeSelector"
 import {TextButtons} from "@/components/widgets/components/TextButtons"
 import GlobalDragHandle from "tiptap-extension-global-drag-handle"
 import AutoJoiner from "tiptap-extension-auto-joiner"
+import {useDebouncedCallback} from "use-debounce"
 
 interface EditorWidgetProps {
     editMode: boolean
@@ -42,6 +44,26 @@ const EditorWidget: React.FC<EditorWidgetProps> = ({editMode}) => {
         slashCommand
     ]
 
+    const highlightCodeblocks = (content: string) => {
+        const doc = new DOMParser().parseFromString(content, "text/html");
+        doc.querySelectorAll("pre code").forEach((el) => {
+            // @ts-ignore
+            // https://highlightjs.readthedocs.io/en/latest/api.html?highlight=highlightElement#highlightelement
+            hljs.highlightElement(el);
+        });
+        return new XMLSerializer().serializeToString(doc);
+    };
+
+    const debouncedUpdates = useDebouncedCallback(async (editor: EditorInstance) => {
+        setContent(editor.getJSON)
+        window.localStorage.setItem("html-content", highlightCodeblocks(editor.getHTML()))
+        //save to db
+    }, 500)
+
+    useEffect(() => {
+        //get content from db
+    }, [])
+
     return (
         <WidgetTemplate className={"col-span-2 row-span-2"} name={"editor"} editMode={editMode}>
             <EditorRoot>
@@ -55,8 +77,7 @@ const EditorWidget: React.FC<EditorWidgetProps> = ({editMode}) => {
                         attributes: {class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",},
                     }}
                     onUpdate={({ editor }) => {
-                        const json = editor.getJSON()
-                        setContent(json)
+                        debouncedUpdates(editor)
                     }}
                 >
                     <EditorCommand className="z-50 w-72 rounded-md border border-main/60 bg-primary shadow-md transition-all">
