@@ -4,6 +4,8 @@ import {cn} from "@/lib/utils"
 import {useDraggable} from "@dnd-kit/core"
 import {CSS} from "@dnd-kit/utilities"
 import {useWidgetStore} from "@/store/widgetStore"
+import {Trash} from "lucide-react"
+import {Button, tooltip} from "lunalabs-ui"
 
 interface WidgetTemplateProps extends HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode
@@ -22,6 +24,12 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
         data: {widget}
     })
 
+    const deleteTooltip = tooltip<HTMLButtonElement>({
+        message: "Delete this widget",
+        anchor: "tc",
+        offset: 8
+    })
+
     const style = {
         transform: CSS.Transform.toString(transform),
         transition: isDragging ? "none" : "transform 200ms ease",
@@ -32,13 +40,17 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
         zIndex: isDragging ? 30 : 20,
     }
 
+    const handleDelete = () => {
+        //delete widget
+    }
+
     return (
         <>
             {editMode ? (
                 <div
                     className={cn(
-                        "relative rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden cursor-grab active:cursor-grabbing",
-                        isDragging && "opacity-50",
+                        "relative rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
+                        isDragging && "opacity-50 animate-none",
                         className
                     )}
                     ref={setNodeRef}
@@ -46,6 +58,13 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
                     {...attributes}
                     {...listeners}
                 >
+                    <Button
+                        className={"absolute z-50 size-8 bg-error/10 hover:bg-error/20 text-error hover:text-error border-error/40 bottom-4"}
+                        onClick={handleDelete}
+                        {...deleteTooltip}
+                    >
+                        <Trash size={20}/>
+                    </Button>
                     <div className={"pointer-events-none"}>
                         {children}
                     </div>

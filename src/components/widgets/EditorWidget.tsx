@@ -21,7 +21,7 @@ import {NodeSelector } from "./components/NodeSelector"
 import {TextButtons} from "@/components/widgets/components/TextButtons"
 import GlobalDragHandle from "tiptap-extension-global-drag-handle"
 import AutoJoiner from "tiptap-extension-auto-joiner"
-import {useDebouncedCallback} from "use-debounce"
+import {useWidgetStore} from "@/store/widgetStore"
 
 interface EditorWidgetProps {
     editMode: boolean
@@ -29,8 +29,11 @@ interface EditorWidgetProps {
 
 
 const EditorWidget: React.FC<EditorWidgetProps> = ({editMode}) => {
-    const [content, setContent] = useState<JSONContent | undefined>(undefined)
+    const {refreshWidget} = useWidgetStore()
     const [openNode, setOpenNode] = useState(false)
+
+    const widget = useWidgetStore(state => state.getWidget("editor"))
+    if (!widget) return null
 
     const extensions = [
         GlobalDragHandle.configure({
@@ -54,30 +57,34 @@ const EditorWidget: React.FC<EditorWidgetProps> = ({editMode}) => {
         return new XMLSerializer().serializeToString(doc);
     };
 
-    const debouncedUpdates = useDebouncedCallback(async (editor: EditorInstance) => {
-        setContent(editor.getJSON)
-        window.localStorage.setItem("html-content", highlightCodeblocks(editor.getHTML()))
-        //save to db
-    }, 500)
+    const handleSave = async (editor: EditorInstance) => {
+        const json = editor.getJSON()
+        const html = highlightCodeblocks(editor.getHTML())
+        window.localStorage.setItem("html-content", highlightCodeblocks(html))
 
-    useEffect(() => {
-        //get content from db
-    }, [])
+        await refreshWidget({
+            ...widget,
+            config: {
+                ...widget.config,
+                content: json
+            }
+        })
+    }
 
     return (
         <WidgetTemplate className={"col-span-2 row-span-2"} name={"editor"} editMode={editMode}>
             <EditorRoot>
                 <EditorContent
                     extensions={extensions}
-                    initialContent={content}
+                    initialContent={widget?.config?.content}
                     immediatelyRender={false}
+                    onBlur={(params) => handleSave(params.editor)}
                     className="relative p-2 rounded-md min-h-full w-full border border-main/40 bg-secondary"
                     editorProps={{
-                        handleDOMEvents: {keydown: (_view, event) => handleCommandNavigation(event)},
+                        handleDOMEvents: {
+                            keydown: (_view, event) => handleCommandNavigation(event)
+                        },
                         attributes: {class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",},
-                    }}
-                    onUpdate={({ editor }) => {
-                        debouncedUpdates(editor)
                     }}
                 >
                     <EditorCommand className="z-50 w-72 rounded-md border border-main/60 bg-primary shadow-md transition-all">

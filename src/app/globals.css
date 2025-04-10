@@ -116,3 +116,16 @@ body {
   -ms-overflow-style: none; /* für IE und Edge */
   scrollbar-width: none; /* für Firefox */
 }
+
+@theme {
+  --animate-wiggle: wiggle 2s ease-in-out infinite;
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(-0.3deg);
+    }
+    50% {
+      transform: rotate(0.3deg);
+    }
+  }
+}

@@ -55,7 +55,7 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
     try {
         const body = await req.json()
-        const { id, height, width, positionX, positionY } = body
+        const { id, height, width, positionX, positionY, config } = body
 
         if (!id) {
             return NextResponse.json(
@@ -67,7 +67,8 @@ export async function PUT(req: Request) {
             height,
             width,
             positionX,
-            positionY
+            positionY,
+            config
         }
 
         const updatedWidget = await updateWidget(id, updateData)

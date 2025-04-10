@@ -41,7 +41,7 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
     },
     refreshWidget: async (widget: Widget) => {
         try {
-            const response = await fetch(`/api/widgets/${widget.id}`, {
+            const response = await fetch(`/api/widgets?id=${widget.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(widget)
