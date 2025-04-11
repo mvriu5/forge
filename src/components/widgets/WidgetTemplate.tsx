@@ -11,9 +11,10 @@ interface WidgetTemplateProps extends HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode
     name: string
     editMode: boolean
+    onWidgetDelete: (widgetType: string) => void
 }
 
-const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, name, editMode}) => {
+const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, name, editMode, onWidgetDelete}) => {
     const {getWidget} = useWidgetStore()
     const widget = getWidget(name)
 
@@ -40,10 +41,6 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
         zIndex: isDragging ? 30 : 20,
     }
 
-    const handleDelete = () => {
-        //delete widget
-    }
-
     return (
         <>
             {editMode ? (
@@ -60,7 +57,7 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
                 >
                     <Button
                         className={"absolute z-50 size-8 bg-error/10 hover:bg-error/20 text-error hover:text-error border-error/40 bottom-4"}
-                        onClick={handleDelete}
+                        onClick={() => onWidgetDelete(widget?.widgetType)}
                         {...deleteTooltip}
                     >
                         <Trash size={20}/>

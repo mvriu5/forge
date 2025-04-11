@@ -34,9 +34,10 @@ import {shouldRefetchData, useGithubStore} from "@/store/githubStore"
 
 interface GithubWidgetProps {
     editMode: boolean
+    onWidgetDelete: (widgetType: string) => void
 }
 
-const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
+const GithubWidget: React.FC<GithubWidgetProps> = ({editMode, onWidgetDelete}) => {
     const {githubIntegration} = useIntegrationStore()
     const { data, loading, setLoading, setData } = useGithubStore()
     const {addToast} = useToast()
@@ -138,9 +139,9 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
         })
     }
 
-    if (!githubIntegration?.accessToken) {
+    if (!githubIntegration?.accessToken && !loading) {
         return (
-            <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode}>
+            <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <div className="h-full flex flex-col gap-2 items-center justify-center ">
                     <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
                         <TriangleAlert size={32}/>
@@ -155,7 +156,7 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode}) => {
     }
 
     return (
-        <WidgetTemplate className="col-span-1" name={"github"} editMode={editMode}>
+        <WidgetTemplate className="col-span-1" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <div className="h-full flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-4">
                     <div className={"flex items-center gap-2"}>

@@ -21,14 +21,14 @@ import {
     fetchStockData,
 } from "@/actions/alphavantage"
 import {cn} from "@/lib/utils"
-import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {getAssetType, getPopularAssets} from "@/lib/assetList"
 
 interface StockSmallWidgetProps {
     editMode: boolean
+    onWidgetDelete: (widgetType: string) => void
 }
 
-const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode}) => {
+const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode, onWidgetDelete}) => {
     const [assetData, setAssetData] = useState<AssetData | null>({
         chartData: [],
         currentPrice: null,
@@ -97,7 +97,7 @@ const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode}) => {
     }, [stock, assetType, timespan])
 
     return (
-        <WidgetTemplate className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode}>
+        <WidgetTemplate className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <div className={"flex flex-col gap-2 h-full"}>
 
                 <div className={"flex items-center justify-between gap-4"}>

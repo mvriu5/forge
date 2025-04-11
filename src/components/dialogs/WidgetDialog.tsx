@@ -21,7 +21,7 @@ import {useWidgetStore} from "@/store/widgetStore"
 import {useSessionStore} from "@/store/sessionStore"
 import {getAllWidgetPreviews, type WidgetPreview} from "@/lib/widgetRegistry"
 
-function WidgetDialog({editMode}: {editMode: boolean}) {
+function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
     const {widgets, addWidget} = useWidgetStore()
     const {session} = useSessionStore()
     const [selectedWidget, setSelectedWidget] = useState<WidgetPreview | null>(null)
@@ -73,8 +73,9 @@ function WidgetDialog({editMode}: {editMode: boolean}) {
             if (selectedWidget) setSelectedWidget(null)
         }}>
             <DialogTrigger asChild>
-                <Button className={"size-8"} {...widgetTooltip} variant={"brand"} disabled={editMode}>
+                <Button className={"px-1.5 gap-2"} {...widgetTooltip} variant={"brand"} disabled={editMode}>
                     <Grid2x2Plus size={16}/>
+                    {title}
                 </Button>
             </DialogTrigger>
             <DialogContent className={"min-w-[800px] border-main/40 pl-8 pt-8"}>

@@ -25,10 +25,11 @@ import {useWidgetStore} from "@/store/widgetStore"
 
 interface EditorWidgetProps {
     editMode: boolean
+    onWidgetDelete: (widgetType: string) => void
 }
 
 
-const EditorWidget: React.FC<EditorWidgetProps> = ({editMode}) => {
+const EditorWidget: React.FC<EditorWidgetProps> = ({editMode, onWidgetDelete}) => {
     const {refreshWidget} = useWidgetStore()
     const [openNode, setOpenNode] = useState(false)
 
@@ -72,7 +73,7 @@ const EditorWidget: React.FC<EditorWidgetProps> = ({editMode}) => {
     }
 
     return (
-        <WidgetTemplate className={"col-span-2 row-span-2"} name={"editor"} editMode={editMode}>
+        <WidgetTemplate className={"col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <EditorRoot>
                 <EditorContent
                     extensions={extensions}

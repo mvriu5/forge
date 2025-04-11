@@ -1,7 +1,7 @@
 "use client"
 
 import {Header} from "@/components/Header"
-import {Button, ToastProvider, TooltipProvider} from "lunalabs-ui"
+import {Button, Skeleton, useToast} from "lunalabs-ui"
 import type React from "react"
 import {useEffect, useState} from "react"
 import {useSessionStore} from "@/store/sessionStore"
@@ -13,24 +13,30 @@ import {
     DragEndEvent,
     DragStartEvent,
     MouseSensor,
-    TouchSensor, useDroppable,
+    TouchSensor,
+    useDroppable,
     useSensor,
     useSensors
 } from "@dnd-kit/core"
-import type { Widget } from "@/database"
+import type {Widget} from "@/database"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
+import {EmptyAddSVG} from "@/components/svg/EmptyAddSVG"
+import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
+import {Blocks, CloudAlert} from "lucide-react"
 
 export default function Dashboard() {
     const {session, fetchSession} = useSessionStore()
-    const {widgets, getAllWidgets, updateWidgetPosition} = useWidgetStore()
+    const {widgets, getAllWidgets, updateWidgetPosition, removeWidget} = useWidgetStore()
     const {fetchIntegrations} = useIntegrationStore()
-    //const {addToast} = useToast()
+    const {addToast} = useToast()
 
     const [gridCells, setGridCells] = useState<{ x: number; y: number; isDroppable: boolean }[]>([])
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
     const [cachedWidgets, setCachedWidgets] = useState<Widget[]>([])
+    const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
     const [editMode, setEditMode] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
+    const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -47,6 +53,7 @@ export default function Dashboard() {
     )
 
     useEffect(() => {
+        setLoading(true)
         fetchSession()
     }, [fetchSession])
 
@@ -54,6 +61,7 @@ export default function Dashboard() {
         if (session?.user) {
             getAllWidgets(session.user.id)
             fetchIntegrations(session.user.id)
+            setLoading(false)
         }
     }, [session, getAllWidgets, fetchIntegrations])
 
@@ -146,8 +154,12 @@ export default function Dashboard() {
 
     const handleEditModeSave = async () => {
         try {
-            setLoading(true)
+            setEditModeLoading(true)
             if (!widgets) return;
+
+            widgetsToRemove.map(widget => {
+                removeWidget(widget)
+            })
 
             const updatePromises = widgets.map(async (widget) => {
                 const response = await fetch('/api/widgets', {
@@ -163,18 +175,18 @@ export default function Dashboard() {
 
             const results = await Promise.all(updatePromises)
 
-            /*addToast({
+            addToast({
                 title: "Successfully updated your layout",
                 icon: <Blocks size={24} className={"text-brand"}/>
-            })*/
+            })
         } catch (error) {
-            /*addToast({
+            addToast({
                 title: "An error occurred",
                 icon: <CloudAlert size={24} className={"text-error"}/>
-            })*/
+            })
         } finally {
             setEditMode(false)
-            setLoading(false)
+            setEditModeLoading(false)
         }
     }
 
@@ -185,45 +197,80 @@ export default function Dashboard() {
         })
     }
 
-    return (
-        <TooltipProvider>
-            <ToastProvider>
-                <div className={"flex flex-col w-full h-full"}>
-                    <Header onEdit={handleEditModeEnter} editMode={editMode}/>
-                    <DndContext
-                        sensors={sensors}
-                        onDragStart={handleDragStart}
-                        onDragEnd={handleDragEnd}
-                    >
-                        <div
-                            className="relative w-full h-[calc(100vh-64px)] grid grid-cols-4 gap-8 p-8"
-                            style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
-                        >
-                            {gridCells.map((cell) => (
-                                <GridCell key={`${cell.x},${cell.y}`} x={cell.x} y={cell.y} isDroppable={cell.isDroppable} />
-                            ))}
+    const handleEditModeDelete = async (widgetType: string) => {
+        const widget = widgets?.find((w) => w.id === widgetType)
+        if (!widget) return
+        setWidgetsToRemove(w => [...w, widget])
+    }
 
-                            {widgets?.map((widget) => {
-                                const Component = getWidgetComponent(widget.widgetType)
-                                if (!Component) return null
-                                return <Component key={widget.id} name={widget.widgetType} editMode={editMode}/>
-                            })}
-                        </div>
-                    </DndContext>
-                    {editMode &&
-                        <div className={"px-12 py-2 z-50 fixed flex items-center gap-4 bg-primary rounded-xl bottom-2 left-1/2 transform -translate-x-1/2 shadow-xl border border-main/40"}>
-                            <Button onClick={handleEditModeCancel} className={"px-6"}>
-                                Cancel
-                            </Button>
-                            <Button variant="brand" onClick={handleEditModeSave} className={"px-6"}>
-                                {loading && <ButtonSpinner/>}
-                                Save
-                            </Button>
-                        </div>
-                    }
+    if (loading) {
+        return (
+            <div className={"flex flex-col w-full h-full"}>
+                <Header onEdit={handleEditModeEnter} editMode={editMode}/>
+                <div
+                    className={"grid gird-cols-4 gap-8 p-8 h-[calc(100vh-64px)] w-full"}
+                    style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
+                >
+                    <Skeleton className={"col-span-3 row-span-2 bg-secondary rounded-md "}/>
+                    <Skeleton className={"col-span-1 row-span-4 bg-secondary rounded-md "}/>
+                    <Skeleton className={"col-span-2 row-span-2 bg-secondary rounded-md "}/>
+                    <Skeleton className={"col-span-1 row-span-1 bg-secondary rounded-md "}/>
+                    <Skeleton className={"col-span-1 row-span-1 bg-secondary rounded-md "}/>
                 </div>
-            </ToastProvider>
-        </TooltipProvider>
+            </div>
+        )
+    }
+
+    if (widgets?.length === 0) {
+        return (
+            <div className={"flex flex-col w-full h-screen"}>
+                <Header onEdit={handleEditModeEnter} editMode={editMode}/>
+                <div className={"w-full h-full flex items-center justify-center"}>
+                    <div className={"flex flex-col gap-4 items-center justify-center p-12 border border-main border-dashed rounded-md shadow-xl"}>
+                        <EmptyAddSVG/>
+                        <p className={"w-80 text-center text-sm"}>You dont have any widgets in your dashboard. Add a new widget, by visiting the widget store.</p>
+                        <WidgetDialog editMode={false} title={"Widget-Store"}/>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div className={"flex flex-col w-full h-full"}>
+            <Header onEdit={handleEditModeEnter} editMode={editMode}/>
+            <DndContext
+                sensors={sensors}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+            >
+                <div
+                    className="relative w-full h-[calc(100vh-64px)] grid grid-cols-4 gap-8 p-8"
+                    style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
+                >
+                    {gridCells.map((cell) => (
+                        <GridCell key={`${cell.x},${cell.y}`} x={cell.x} y={cell.y} isDroppable={cell.isDroppable} />
+                    ))}
+
+                    {widgets?.map((widget) => {
+                        const Component = getWidgetComponent(widget.widgetType)
+                        if (!Component) return null
+                        return <Component key={widget.id} name={widget.widgetType} editMode={editMode} onWidgetDelete={(name: string) => handleEditModeDelete(name)}/>
+                    })}
+                </div>
+            </DndContext>
+            {editMode &&
+                <div className={"px-12 py-2 z-50 fixed flex items-center gap-4 bg-primary rounded-xl bottom-2 left-1/2 transform -translate-x-1/2 shadow-xl border border-main/40"}>
+                    <Button onClick={handleEditModeCancel} className={"px-6"}>
+                        Cancel
+                    </Button>
+                    <Button variant="brand" onClick={handleEditModeSave} className={"px-6"}>
+                        {editModeLoading && <ButtonSpinner/>}
+                        Save
+                    </Button>
+                </div>
+            }
+        </div>
     )
 }
 
