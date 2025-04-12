@@ -1,25 +1,18 @@
 "use client"
 
-import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DialogClose,
-    Input,
-    tooltip,
-    DialogFooter,
-    ScrollArea, ToggleGroup, ToggleGroupItem
-} from "lunalabs-ui"
-import {Grid2x2Plus} from "lucide-react"
+import {Button} from "@/components/ui/Button"
+import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter} from "@/components/ui/Dialog"
+import {Input} from "@/components/ui/Input"
+import {Grid2x2Plus, PanelsTopLeft} from "lucide-react"
 import React, { useState } from "react"
 import {cn} from "@/lib/utils"
 import Image from "next/image"
 import {useWidgetStore} from "@/store/widgetStore"
 import {useSessionStore} from "@/store/sessionStore"
 import {getAllWidgetPreviews, type WidgetPreview} from "@/lib/widgetRegistry"
+import { tooltip } from "@/components/ui/TooltipProvider"
+import {ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup"
+import { ScrollArea } from "@/components/ui/ScrollArea"
 
 function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
     const {widgets, addWidget} = useWidgetStore()
@@ -78,10 +71,13 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                     {title}
                 </Button>
             </DialogTrigger>
-            <DialogContent className={"min-w-[800px] border-main/40 pl-8 pt-8"}>
+            <DialogContent className={"min-w-[800px] pl-8 pt-8"}>
                 <DialogHeader className={"flex flex-row justify-between items-center pr-4"}>
                     <DialogTitle>
-                        {`Select a widget (${allWidgets.length})`}
+                        <p className={"flex items-center gap-2"}>
+                            Select a widget
+                            <span className={"inline break-words text-tertiary font-normal"}>{`(${allWidgets.length})`}</span>
+                        </p>
                     </DialogTitle>
                     <DialogClose/>
                 </DialogHeader>
@@ -90,21 +86,21 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder={"Search widgets"}
-                        className={"w-full border-main/60 -mb-2 focus:ring-brand/40"}
+                        className={"w-full border-main/60 -mb-2"}
                     />
                 </div>
                 <div className={"flex"}>
                     <ToggleGroup type="single" className={"border-0 bg-transparent px-0"} value={tagValue} onValueChange={(tag) => setTagValue(tag)}>
-                        <ToggleGroupItem value="weather" className={"text-sm px-2 h-8 data-[state=on]:bg-tertiary border border-main/60"}>
+                        <ToggleGroupItem value="weather" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60 "}>
                             Weather
                         </ToggleGroupItem>
-                        <ToggleGroupItem value="notes" className={"text-sm px-2 h-8 data-[state=on]:bg-tertiary border border-main/60"}>
+                        <ToggleGroupItem value="notes" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
                             Notes
                         </ToggleGroupItem>
-                        <ToggleGroupItem value="github" className={"text-sm px-2 h-8 data-[state=on]:bg-tertiary border border-main/60"}>
+                        <ToggleGroupItem value="github" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
                             Github
                         </ToggleGroupItem>
-                        <ToggleGroupItem value="stock" className={"text-sm px-2 h-8 data-[state=on]:bg-tertiary border border-main/60"}>
+                        <ToggleGroupItem value="stock" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
                             Stock
                         </ToggleGroupItem>
                     </ToggleGroup>

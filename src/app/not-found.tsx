@@ -2,7 +2,7 @@
 
 import { AlertCircle, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
-import {Button} from "lunalabs-ui"
+import {Button} from "@/components/ui/Button"
 
 export default function NotFound() {
     const router = useRouter()

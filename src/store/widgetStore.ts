@@ -9,28 +9,20 @@ interface WidgetStore {
     getWidget: (widgetName: string) => Widget | undefined
     getAllWidgets: (userId: string) => Promise<void>
     updateWidgetPosition: (id: string, x: number, y: number) => void
+    resetWidgets: (widgets: Widget[]) => void
+    saveWidgetsLayout: () => Promise<void>
 }
 
 export const useWidgetStore = create<WidgetStore>((set, get) => ({
     widgets: null,
+
     addWidget: async (userId: string, widget: WidgetInsert) => {
-        const { x, y } = findNextAvailablePosition(
-            get().widgets,
-            widget.width,
-            widget.height
-        )
-
-        const widgetWithPosition = {
-            ...widget,
-            positionX: x,
-            positionY: y,
-            userId
-        }
-
+        const { x, y } = findNextAvailablePosition(get().widgets, widget.width, widget.height)
+        const widgetWithPosition = { ...widget, positionX: x, positionY: y, userId }
         try {
-            const response = await fetch('/api/widgets', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const response = await fetch("/api/widgets", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(widgetWithPosition)
             })
             const newWidget = await response.json()
@@ -39,11 +31,12 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
             set({ widgets: get().widgets })
         }
     },
+
     refreshWidget: async (widget: Widget) => {
         try {
             const response = await fetch(`/api/widgets?id=${widget.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(widget)
             })
             const updatedWidget = await response.json()
@@ -56,9 +49,10 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
             set({ widgets: get().widgets })
         }
     },
+
     removeWidget: async (widget: Widget) => {
         try {
-            await fetch(`/api/widgets/${widget.id}`, { method: 'DELETE' })
+            await fetch(`/api/widgets/${widget.id}`, { method: "DELETE" })
             set({
                 widgets: get().widgets!.filter((w) => w.id !== widget.id)
             })
@@ -66,9 +60,11 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
             set({ widgets: get().widgets })
         }
     },
+
     getWidget: (widgetName: string) => {
-        return get().widgets!.find((widget) => widget.widgetType === widgetName)
+        return get().widgets?.find((widget) => widget.widgetType === widgetName)
     },
+
     getAllWidgets: async (userId: string) => {
         try {
             const response = await fetch(`/api/widgets?userId=${userId}`)
@@ -78,12 +74,34 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
             set({ widgets: get().widgets })
         }
     },
+
     updateWidgetPosition: (id: string, x: number, y: number) => {
         set((state) => ({
             widgets: state.widgets!.map((widget) =>
-                widget.id === id || widget.widgetType === id ? { ...widget, positionX: x, positionY: y } : widget,
-            ),
+                widget.id === id ? { ...widget, positionX: x, positionY: y } : widget
+            )
         }))
+    },
+
+    resetWidgets: (widgets: Widget[]) => {
+        set({ widgets })
+    },
+
+    saveWidgetsLayout: async () => {
+        const { widgets } = get()
+        if (!widgets) return
+        await Promise.all(
+            widgets.map(async (widget) => {
+                const response = await fetch("/api/widgets", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(widget)
+                })
+                if (!response.ok) {
+                    throw new Error(`Error saving widget ${widget.id}`)
+                }
+            })
+        )
     }
 }))
 

@@ -5,7 +5,6 @@ import { motion } from "motion/react"
 import React, {useEffect, useId, useMemo, useRef, useState} from "react"
 import { debounce } from 'lodash'
 
-
 interface DotPatternProps extends React.SVGProps<SVGSVGElement> {
     width?: number
     height?: number
@@ -77,7 +76,7 @@ export function DotPattern({width = 16, height = 16, className, glow = false, ..
                     animate={glow && {opacity: [0.4, 1, 0.4]}}
                     transition={glow ? {
                         duration: dot.duration,
-                        repeat: Infinity,
+                        repeat: Number.POSITIVE_INFINITY,
                         repeatType: "reverse",
                         delay: dot.delay,
                         ease: "easeInOut"} : {}

@@ -1,25 +1,5 @@
 "use client"
 
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-    Button, Callout,
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    Form,
-    FormField,
-    FormInput,
-    FormItem,
-    FormLabel,
-    FormMessage,
-    Input,
-    ToggleGroup,
-    ToggleGroupItem, useToast
-} from "lunalabs-ui"
 import type React from "react"
 import {useRef, useState} from "react"
 import {Blocks, CloudAlert, Github, ImageIcon, Settings, Trash, UserRoundCheck} from "lucide-react"
@@ -28,12 +8,19 @@ import {useSessionStore} from "@/store/sessionStore"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
-import {GoogleIcon} from "@/components/GoogleIcon"
+import {GoogleIcon} from "@/components/svg/GoogleIcon"
 import {useIntegrationStore} from "@/store/integrationStore"
 import {cn} from "@/lib/utils"
 import {authClient} from "@/lib/auth-client"
 import type {PutBlobResult} from "@vercel/blob"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/Dialog"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup"
+import { Button } from "@/components/ui/Button"
+import { useToast } from "@/components/ui/ToastProvider"
+import { Form, FormLabel, FormField, FormItem, FormInput, FormMessage } from "@/components/ui/Form"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar"
+import {Input} from "@/components/ui/Input"
 
 function SettingsDialog() {
     const {addToast} = useToast()
@@ -116,7 +103,7 @@ function SettingsDialog() {
                     <p>Settings</p>
                 </button>
             </DialogTrigger>
-            <DialogContent className={"p-0 border-main/40"}>
+            <DialogContent className={"p-0"}>
                 <VisuallyHidden>
                     <DialogHeader>
                         <DialogTitle>
@@ -157,8 +144,9 @@ function SettingsDialog() {
                                         data-state={integration.active ? "active" : "inactive"}
                                         key={integration.name}
                                         className={cn(
-                                            "group w-full h-32 flex flex-col gap-2 items-center justify-between rounded-md bg-secondary border border-main/40 p-2 pt-4",
-                                            "data-[state=active]:bg-success/5 data-[state=inactive]:bg-error/5"
+                                            "group w-full h-32 flex flex-col gap-2 items-center justify-between rounded-md bg-secondary border-2 p-2 pt-4",
+                                            "data-[state=active]:bg-success/5 data-[state=inactive]:bg-error/5",
+                                            "data-[state=active]:border-success/20 data-[state=inactive]:border-error/20"
                                         )}
                                     >
                                         <integration.icon className={"size-8"}/>
@@ -305,7 +293,7 @@ const ProfileSection: React.FC<ProfileProps> = ({session, onClose}) => {
                         <div className="flex items-center justify-center space-x-4">
                             <Avatar className="h-20 w-20">
                                 <AvatarImage src={blob?.url || avatarUrl || undefined} />
-                                <AvatarFallback className={"bg-gradient-to-br from-brand/20 to-brand"}/>
+                                <AvatarFallback/>
                             </Avatar>
                             <div className="flex items-center justify-center space-x-4">
                                 <Input
@@ -340,7 +328,7 @@ const ProfileSection: React.FC<ProfileProps> = ({session, onClose}) => {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Name</FormLabel>
-                                    <FormInput placeholder="Name" className={"focus:ring-brand/40"} {...field} />
+                                    <FormInput placeholder="Name" {...field} />
                                     <FormMessage />
                                 </FormItem>
                             )}

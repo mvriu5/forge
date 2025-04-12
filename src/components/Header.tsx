@@ -1,9 +1,10 @@
 "use client"
 
-import {Button, tooltip} from "lunalabs-ui"
+import {Button} from "@/components/ui/Button"
 import {Anvil, LayoutTemplate} from "lucide-react"
 import {ProfilePopover} from "@/components/popovers/ProfilePopover"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
+import { tooltip } from "@/components/ui/TooltipProvider"
 
 interface HeaderProps {
     onEdit: () => void
@@ -28,7 +29,7 @@ function Header({onEdit, editMode}: HeaderProps) {
                 <div className={"h-6 w-px border-r-2 border-main"}/>
                 <div className={"flex gap-2"}>
                     <WidgetDialog editMode={editMode}/>
-                    <Button className={"size-8"} {...layoutTooltip} onClick={onEdit} disabled={editMode}>
+                    <Button className={"size-8 bg-secondary border-main/60"} {...layoutTooltip} onClick={onEdit} disabled={editMode}>
                         <LayoutTemplate size={16}/>
                     </Button>
                 </div>

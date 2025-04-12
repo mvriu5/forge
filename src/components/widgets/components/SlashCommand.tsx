@@ -6,7 +6,6 @@ import {
     Heading3,
     List,
     ListOrdered,
-    MessageSquarePlus,
     Text,
     TextQuote,
 } from "lucide-react";

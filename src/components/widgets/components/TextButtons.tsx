@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import { EditorBubbleItem, useEditor } from "novel";
-import { BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, CodeIcon } from "lucide-react";
+import { BoldIcon, ItalicIcon, StrikethroughIcon, CodeIcon } from "lucide-react";
 import {SelectorItem} from "@/components/widgets/components/NodeSelector"
-import {Button} from "lunalabs-ui"
+import {Button} from "@/components/ui/Button"
 
 export const TextButtons = () => {
     const { editor } = useEditor();
@@ -41,9 +41,9 @@ export const TextButtons = () => {
     ];
     return (
         <div className='flex'>
-            {items.map((item, index) => (
+            {items.map((item) => (
                 <EditorBubbleItem
-                    key={index}
+                    key={item.name}
                     onSelect={(editor) => {
                         item.command(editor);
                     }}>

@@ -280,7 +280,6 @@ export function TextAnimate({
         case "line":
             segments = children.split("\n")
             break
-        case "text":
         default:
             segments = [children]
             break
@@ -345,6 +344,7 @@ export function TextAnimate({
             >
                 {segments.map((segment, i) => (
                     <motion.span
+                        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                         key={`${by}-${segment}-${i}`}
                         variants={finalVariants.item}
                         custom={i * staggerTimings[by]}

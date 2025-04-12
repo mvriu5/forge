@@ -1,7 +1,7 @@
 "use client"
 
-import {Button} from "lunalabs-ui"
 import {Download} from "lucide-react"
+import { Button } from "@/components/ui/Button"
 
 function DownloadSection() {
     return (

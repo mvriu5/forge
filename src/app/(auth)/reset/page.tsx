@@ -2,7 +2,7 @@
 
 import {DotPattern} from "@/components/DotPattern"
 import {cn} from "@/lib/utils"
-import {ToastProvider} from "lunalabs-ui"
+import {ToastProvider} from "@/components/ui/ToastProvider"
 import {ResetPasswordCard} from "@/components/cards/ResetPasswordCard"
 
 export default function ResetPasswordPage() {

@@ -1,14 +1,14 @@
 "use client"
 
+import { Button } from "@/components/ui/Button"
 import React, { useEffect } from "react"
-import {Button} from "lunalabs-ui"
 
 interface ErrorProps {
     error: Error
     reset: () => void
 }
 
-export default function Error({ error, reset }: ErrorProps) {
+export default function CustomError({ error, reset }: ErrorProps) {
 
     useEffect(() => {
         console.error(error)
@@ -23,15 +23,13 @@ export default function Error({ error, reset }: ErrorProps) {
                     <p className="text-secondary">See the console for more information.</p>
                 </div>
 
-
-                <div className="mt-2">
-                    <Button
-                        variant="default"
-                        onClick={() => reset()}
-                    >
-                        Try Again
-                    </Button>
-                </div>
+                <Button
+                    variant="default"
+                    className={"mt-2"}
+                    onClick={() => reset()}
+                >
+                    Try Again
+                </Button>
             </div>
         </div>
     )

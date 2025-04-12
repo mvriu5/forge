@@ -1,6 +1,8 @@
 "use client"
 
-import {Button, Form, FormField, FormInput, FormItem, FormLabel, FormMessage, useToast} from "lunalabs-ui";
+import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form";
+import { useToast } from "@/components/ui/ToastProvider";
+import {Button} from "@/components/ui/Button"
 import {z} from "zod";
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
@@ -9,7 +11,7 @@ import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {CloudAlert, Github} from "lucide-react";
-import {GoogleIcon} from "@/components/GoogleIcon"
+import {GoogleIcon} from "@/components/svg/GoogleIcon"
 
 function SignInCard() {
     const router = useRouter()
@@ -106,7 +108,7 @@ function SignInCard() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>E-Mail</FormLabel>
-                                <FormInput placeholder="E-Mail" className={"focus:ring-brand/40"} {...field} />
+                                <FormInput placeholder="E-Mail" {...field} />
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -117,7 +119,7 @@ function SignInCard() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Password</FormLabel>
-                                <FormInput placeholder="Password" type={"password"} className={"focus:ring-brand/40"} {...field} />
+                                <FormInput placeholder="Password" type={"password"} {...field} />
                                 <FormMessage />
                             </FormItem>
                         )}

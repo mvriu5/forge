@@ -1,7 +1,8 @@
 "use client"
 
 import {ReactNode} from "react"
-import {ToastProvider, TooltipProvider} from "lunalabs-ui"
+import {ToastProvider} from "@/components/ui/ToastProvider"
+import {TooltipProvider} from "@/components/ui/TooltipProvider"
 
 function Providers({children}: {children: ReactNode}) {
     return (

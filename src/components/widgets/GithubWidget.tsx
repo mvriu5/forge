@@ -5,18 +5,6 @@ import {useCallback, useEffect, useState} from "react"
 import {fetchOpenIssuesAndPullsFromAllRepos} from "@/actions/github"
 import {WidgetTemplate} from "./WidgetTemplate"
 import {
-    Badge,
-    Button, Callout,
-    DropdownMenu,
-    Input,
-    ScrollArea,
-    Skeleton,
-    Tabs,
-    TabsList,
-    TabsTrigger,
-    tooltip, useToast
-} from "lunalabs-ui"
-import {
     AlertCircle, Blocks,
     CloudAlert,
     Filter,
@@ -31,10 +19,20 @@ import type {MenuItem} from "@/lib/menu-types"
 import {useIntegrationStore} from "@/store/integrationStore"
 import {authClient} from "@/lib/auth-client"
 import {shouldRefetchData, useGithubStore} from "@/store/githubStore"
+import { Callout } from "@/components/ui/Callout"
+import { Button } from "@/components/ui/Button"
+import { Badge } from "@/components/ui/Badge"
+import { Input } from "@/components/ui/Input"
+import { DropdownMenu } from "@/components/ui/Dropdown"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs"
+import { Skeleton } from "@/components/ui/Skeleton"
+import { ScrollArea } from "@/components/ui/ScrollArea"
+import {useToast} from "@/components/ui/ToastProvider"
+import {tooltip} from "@/components/ui/TooltipProvider"
 
 interface GithubWidgetProps {
     editMode: boolean
-    onWidgetDelete: (widgetType: string) => void
+    onWidgetDelete: (id: string) => void
 }
 
 const GithubWidget: React.FC<GithubWidgetProps> = ({editMode, onWidgetDelete}) => {
@@ -68,7 +66,7 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode, onWidgetDelete}) =
         onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]))
     }))))
 
-    const fetchData = useCallback((force: boolean = false) => {
+    const fetchData = useCallback((force = false) => {
         if (!githubIntegration?.accessToken) return
         if (!force && !shouldRefetchData(data.lastFetched)) return
         setLoading(true)
@@ -172,7 +170,7 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode, onWidgetDelete}) =
                 <div className="flex items-center gap-2">
                     <Input
                         placeholder="Search..."
-                        className="bg-tertiary ring-brand/40"
+                        className="bg-tertiary"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />

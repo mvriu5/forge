@@ -3,17 +3,9 @@
 import React, {useEffect, useMemo, useState} from "react"
 import {WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {TrendingDown, TrendingUp} from "lucide-react"
-import {
-    ChartConfig,
-    ChartContainer,
-    ChartTooltip,
-    ChartTooltipContent,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue, Skeleton
-} from "lunalabs-ui"
+import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/Chart"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
+import {Skeleton} from "@/components/ui/Skeleton"
 import {Area, AreaChart, YAxis} from "recharts"
 import {
     AssetData,
@@ -25,7 +17,7 @@ import {getAssetType, getPopularAssets} from "@/lib/assetList"
 
 interface StockSmallWidgetProps {
     editMode: boolean
-    onWidgetDelete: (widgetType: string) => void
+    onWidgetDelete: (id: string) => void
 }
 
 const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode, onWidgetDelete}) => {
@@ -116,7 +108,7 @@ const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode, onWidgetDe
                         </Select>
                     </div>
                     <div className={"flex items-center gap-2"}>
-                        {loading || isNaN(assetData?.currentPrice ?? 0) || assetData?.currentPrice === undefined ?
+                        {loading || Number.isNaN(assetData?.currentPrice ?? 0) || assetData?.currentPrice === undefined ?
                             <Skeleton className="h-6 w-12"/> :
                             <div className={"text-primary text-sm"}>{`$${assetData?.currentPrice}`}</div>
                         }
@@ -187,7 +179,7 @@ const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode, onWidgetDe
                         </AreaChart>
                     </ChartContainer>
                 </div>
-                {(!isNaN(assetData?.priceChangePercent ?? 0) && !assetData?.priceChangePercent === undefined) &&
+                {(!Number.isNaN(assetData?.priceChangePercent ?? 0) && !assetData?.priceChangePercent === undefined) &&
                     <div
                         className={cn(
                             "relative bottom-10 left-1 flex items-center gap-1 px-2 py-0.5 bg-white/2 rounded-md shadow-xl w-max h-max",

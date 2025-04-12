@@ -1,8 +1,7 @@
 "use client"
 
 import {Header} from "@/components/Header"
-import {Button, Skeleton, useToast} from "lunalabs-ui"
-import type React from "react"
+import React, {useRef} from "react"
 import {useEffect, useState} from "react"
 import {useSessionStore} from "@/store/sessionStore"
 import {useWidgetStore} from "@/store/widgetStore"
@@ -23,20 +22,31 @@ import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {EmptyAddSVG} from "@/components/svg/EmptyAddSVG"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
 import {Blocks, CloudAlert} from "lucide-react"
+import { Skeleton } from "@/components/ui/Skeleton"
+import { Button } from "@/components/ui/Button"
+import {useToast} from "@/components/ui/ToastProvider"
 
 export default function Dashboard() {
     const {session, fetchSession} = useSessionStore()
-    const {widgets, getAllWidgets, updateWidgetPosition, removeWidget} = useWidgetStore()
-    const {fetchIntegrations} = useIntegrationStore()
-    const {addToast} = useToast()
+    const {
+        widgets,
+        getAllWidgets,
+        updateWidgetPosition,
+        removeWidget,
+        resetWidgets,
+        saveWidgetsLayout
+    } = useWidgetStore()
+    const { fetchIntegrations } = useIntegrationStore()
+    const { addToast } = useToast()
 
     const [gridCells, setGridCells] = useState<{ x: number; y: number; isDroppable: boolean }[]>([])
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
-    const [cachedWidgets, setCachedWidgets] = useState<Widget[]>([])
     const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
     const [editMode, setEditMode] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
+
+    const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -149,7 +159,7 @@ export default function Dashboard() {
 
     const handleEditModeEnter = () => {
         setEditMode(true)
-        setCachedWidgets(widgets ? [...widgets] : [])
+        cachedWidgetsRef.current = widgets ?? null
     }
 
     const handleEditModeSave = async () => {
@@ -157,23 +167,9 @@ export default function Dashboard() {
             setEditModeLoading(true)
             if (!widgets) return;
 
-            widgetsToRemove.map(widget => {
-                removeWidget(widget)
-            })
+            await Promise.all(widgetsToRemove.map((widget) => removeWidget(widget)))
 
-            const updatePromises = widgets.map(async (widget) => {
-                const response = await fetch('/api/widgets', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(widget),
-                });
-
-                if (!response.ok) throw new Error(`Fehler beim Aktualisieren von Widget ${widget.id}`)
-
-                return response.json();
-            })
-
-            const results = await Promise.all(updatePromises)
+            await saveWidgetsLayout()
 
             addToast({
                 title: "Successfully updated your layout",
@@ -191,14 +187,13 @@ export default function Dashboard() {
     }
 
     const handleEditModeCancel = () => {
+        if (!cachedWidgetsRef.current) return
+        resetWidgets(cachedWidgetsRef.current)
         setEditMode(false)
-        cachedWidgets.map(widget => {
-            updateWidgetPosition(widget.id, widget.positionX, widget.positionY)
-        })
     }
 
-    const handleEditModeDelete = async (widgetType: string) => {
-        const widget = widgets?.find((w) => w.id === widgetType)
+    const handleEditModeDelete = async (id: string) => {
+        const widget = widgets?.find((w) => w.id === id)
         if (!widget) return
         setWidgetsToRemove(w => [...w, widget])
     }
@@ -255,13 +250,13 @@ export default function Dashboard() {
                     {widgets?.map((widget) => {
                         const Component = getWidgetComponent(widget.widgetType)
                         if (!Component) return null
-                        return <Component key={widget.id} name={widget.widgetType} editMode={editMode} onWidgetDelete={(name: string) => handleEditModeDelete(name)}/>
+                        return <Component key={widget.id} name={widget.widgetType} editMode={editMode} onWidgetDelete={(id: string) => handleEditModeDelete(id)}/>
                     })}
                 </div>
             </DndContext>
             {editMode &&
-                <div className={"px-12 py-2 z-50 fixed flex items-center gap-4 bg-primary rounded-xl bottom-2 left-1/2 transform -translate-x-1/2 shadow-xl border border-main/40"}>
-                    <Button onClick={handleEditModeCancel} className={"px-6"}>
+                <div className={"px-8 py-2.5 z-50 fixed flex items-center gap-4 bg-primary rounded-md bottom-2 left-1/2 transform -translate-x-1/2 shadow-xl border border-main/40"}>
+                    <Button onClick={handleEditModeCancel} className={"px-6 bg-secondary border-main/60"}>
                         Cancel
                     </Button>
                     <Button variant="brand" onClick={handleEditModeSave} className={"px-6"}>

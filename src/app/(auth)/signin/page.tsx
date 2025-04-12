@@ -3,7 +3,7 @@
 import {SignInCard} from "@/components/cards/SignInCard"
 import {cn} from "@/lib/utils"
 import {DotPattern} from "@/components/DotPattern"
-import {ToastProvider} from "lunalabs-ui"
+import { ToastProvider } from "@/components/ui/ToastProvider"
 
 export default function SignIn() {
 

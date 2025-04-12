@@ -5,7 +5,6 @@ import {useEffect, useState} from "react"
 import {
     EditorRoot,
     EditorContent,
-    type JSONContent,
     EditorCommand,
     EditorCommandEmpty,
     EditorCommandList,
@@ -16,7 +15,7 @@ import {
 import {defaultExtensions} from "@/lib/extensions"
 import {WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {slashCommand, suggestionItems} from "@/components/widgets/components/SlashCommand"
-import {ScrollArea} from "lunalabs-ui"
+import {ScrollArea} from "@/components/ui/ScrollArea"
 import {NodeSelector } from "./components/NodeSelector"
 import {TextButtons} from "@/components/widgets/components/TextButtons"
 import GlobalDragHandle from "tiptap-extension-global-drag-handle"
@@ -25,7 +24,7 @@ import {useWidgetStore} from "@/store/widgetStore"
 
 interface EditorWidgetProps {
     editMode: boolean
-    onWidgetDelete: (widgetType: string) => void
+    onWidgetDelete: (id: string) => void
 }
 
 
@@ -50,6 +49,7 @@ const EditorWidget: React.FC<EditorWidgetProps> = ({editMode, onWidgetDelete}) =
 
     const highlightCodeblocks = (content: string) => {
         const doc = new DOMParser().parseFromString(content, "text/html");
+        // biome-ignore lint/complexity/noForEach: <explanation>
         doc.querySelectorAll("pre code").forEach((el) => {
             // @ts-ignore
             // https://highlightjs.readthedocs.io/en/latest/api.html?highlight=highlightElement#highlightelement

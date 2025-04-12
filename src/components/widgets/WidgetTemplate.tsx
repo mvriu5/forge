@@ -5,13 +5,14 @@ import {useDraggable} from "@dnd-kit/core"
 import {CSS} from "@dnd-kit/utilities"
 import {useWidgetStore} from "@/store/widgetStore"
 import {Trash} from "lucide-react"
-import {Button, tooltip} from "lunalabs-ui"
+import {Button} from "@/components/ui/Button"
+import { tooltip } from "@/components/ui/TooltipProvider"
 
 interface WidgetTemplateProps extends HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode
     name: string
     editMode: boolean
-    onWidgetDelete: (widgetType: string) => void
+    onWidgetDelete: (id: string) => void
 }
 
 const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, name, editMode, onWidgetDelete}) => {
@@ -57,7 +58,7 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
                 >
                     <Button
                         className={"absolute z-50 size-8 bg-error/10 hover:bg-error/20 text-error hover:text-error border-error/40 bottom-4"}
-                        onClick={() => onWidgetDelete(widget?.widgetType)}
+                        onClick={() => onWidgetDelete(widget?.id)}
                         {...deleteTooltip}
                     >
                         <Trash size={20}/>

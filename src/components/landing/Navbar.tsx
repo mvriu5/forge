@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation"
 import type React from "react"
 import {useEffect, useRef, useState} from "react"
 import {cn} from "@/lib/utils"
-import {Button} from "lunalabs-ui"
 import {Anvil} from "lucide-react"
+import { Button } from "@/components/ui/Button"
 
 type NavItem = {
     title: string

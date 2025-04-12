@@ -1,13 +1,15 @@
 "use client"
 
 import {LogOut} from "lucide-react";
-import {Avatar, AvatarFallback, AvatarImage, Popover, PopoverContent, PopoverTrigger, Skeleton} from "lunalabs-ui";
 import React, {useEffect, useState} from "react"
 import {authClient} from "@/lib/auth-client"
 import {useRouter} from "next/navigation"
 import {useSessionStore} from "@/store/sessionStore"
 import {SettingsDialog} from "@/components/dialogs/SettingsDialog"
 import {cn} from "@/lib/utils"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/Popover";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
 
 function ProfilePopover({editMode}: {editMode: boolean}) {
     const {session, setSession} = useSessionStore()
@@ -37,7 +39,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 <div
                     data-state={open ? "open" : "closed"}
                     className={cn(
-                        "h-8 flex items-center gap-2 bg-secondary hover:bg-tertiary data-[state=open]:bg-tertiary",
+                        "h-8 border border-main/20 flex items-center gap-3 bg-secondary hover:bg-tertiary data-[state=open]:bg-tertiary",
                         "rounded-md px-3 group-data-[state=disabled]:bg-secondary",
                         "group-data-[state=disabled]:hover:bg-secondary"
                     )}
@@ -46,7 +48,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                         <Skeleton className={"size-6 rounded-full"}/> :
                         <Avatar className={"size-6 border border-main/20"}>
                             <AvatarImage src={session?.user?.image ?? undefined} />
-                            <AvatarFallback className={"bg-gradient-to-br from-brand/20 to-brand"}/>
+                            <AvatarFallback/>
                         </Avatar>
                     }
                     {loading ?
@@ -56,7 +58,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 </div>
             </PopoverTrigger>
             <PopoverContent
-                className={"p-1 w-36 gap-1 border-main/40"}
+                className={"p-1 w-36 gap-1"}
                 align={"end"}
             >
                 <SettingsDialog/>

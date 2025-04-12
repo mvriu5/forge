@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/Button"
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import { cn } from "@/lib/utils"
 import {
     Check,
@@ -12,7 +14,6 @@ import {
     CheckSquare,
     type LucideIcon,
 } from "lucide-react"
-import {Button, Popover, PopoverContent, PopoverTrigger} from "lunalabs-ui"
 import { EditorBubbleItem, useEditor } from "novel"
 
 
@@ -105,9 +106,9 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
                 </Button>
             </PopoverTrigger>
             <PopoverContent sideOffset={5} align='start' className={cn('flex flex-col gap-1 w-48 p-1')}>
-                {items.map((item, index) => (
+                {items.map((item) => (
                     <EditorBubbleItem
-                        key={index}
+                        key={item.name}
                         onSelect={(editor) => {
                             item.command(editor)
                             onOpenChange(false)

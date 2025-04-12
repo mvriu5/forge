@@ -4,6 +4,7 @@ import type React from "react"
 import {EditorWidget} from "@/components/widgets/EditorWidget"
 import {GithubWidget} from "@/components/widgets/GithubWidget"
 import { StockSmallWidget } from "@/components/widgets/StockSmallWidget"
+import { WeatherWidget } from "@/components/widgets/WeatherWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -57,6 +58,18 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["stock"]
         },
         component: StockSmallWidget,
+    },
+    {
+        preview: {
+            widgetType: "weather",
+            height: 1,
+            width: 1,
+            previewImage: '/sample.jpg',
+            title: 'Weather',
+            description: 'See the weather in your location',
+            tags: ["weather"]
+        },
+        component: WeatherWidget
     }
 ]
 

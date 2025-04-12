@@ -1,6 +1,8 @@
 "use client"
 
-import {Button, Form, FormField, FormInput, FormItem, FormLabel, FormMessage, useToast} from "lunalabs-ui";
+import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form";
+import { useToast } from "@/components/ui/ToastProvider";
+import {Button} from "@/components/ui/Button"
 import {z} from "zod";
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
@@ -72,7 +74,7 @@ function ResetPasswordCard() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>New Password</FormLabel>
-                                <FormInput placeholder="Password" className={"focus:ring-brand/40"} type={"password"} {...field} />
+                                <FormInput placeholder="Password" type={"password"} {...field} />
                                 <FormMessage />
                             </FormItem>
                         )}
