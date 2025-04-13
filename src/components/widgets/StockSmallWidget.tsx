@@ -14,6 +14,7 @@ import {
 } from "@/actions/alphavantage"
 import {cn} from "@/lib/utils"
 import {getAssetType, getPopularAssets} from "@/lib/assetList"
+import {useStock} from "@/hooks/useStock"
 
 interface StockSmallWidgetProps {
     editMode: boolean
@@ -21,72 +22,22 @@ interface StockSmallWidgetProps {
 }
 
 const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode, onWidgetDelete}) => {
-    const [assetData, setAssetData] = useState<AssetData | null>({
-        chartData: [],
-        currentPrice: null,
-        priceChange: 0,
-        priceChangePercent: 0
-    })
-    const [loading, setLoading] = useState<boolean>(true)
-    const [timespan, setTimespan] = useState<string>("7")
-    const [stock, setStock] = useState<string>("AAPL")
-    const [assetType, setAssetType] = useState<"stock" | "crypto">("stock")
-
-    const assetOptions = useMemo(() => getPopularAssets(), [])
-
-    const yAxisDomain = useMemo(() => {
-        if (!assetData?.chartData || assetData?.chartData.length === 0) return [0, 0]
-
-        const prices = assetData?.chartData.map(item => item.price)
-        const minPrice = Math.min(...prices)
-        const maxPrice = Math.max(...prices)
-
-        const avgPrice = (minPrice + maxPrice) / 2
-        const priceRange = maxPrice - minPrice
-
-        const effectiveRange = Math.max(priceRange, avgPrice * 0.1)
-
-        const yMin = avgPrice - effectiveRange
-        const yMax = avgPrice + effectiveRange
-
-        return [yMin, yMax]
-    }, [assetData?.chartData])
+    const {
+        assetData,
+        loading,
+        stock,
+        setStock,
+        timespan,
+        setTimespan,
+        yAxisDomain,
+        assetOptions
+    } = useStock()
 
     const chartConfig = {
         price: {
             label: "Price"
         }
     } satisfies ChartConfig
-
-    useEffect(() => {
-        const updateAssetInfo = () => {
-            const type = getAssetType(stock)
-            setAssetType(type)
-        }
-        updateAssetInfo()
-    }, [stock])
-
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true)
-            const days = Number(timespan)
-
-            try {
-                const data = assetType === "stock" ? await fetchStockData(stock, days) : await fetchCryptoData(stock, days)
-                setAssetData(data)
-            } catch (error) {
-                console.error("Fehler beim Abrufen der Daten:", error)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchData()
-
-        const intervalId = setInterval(() => fetchData(), 5 * 60 * 1000)
-
-        return () => clearInterval(intervalId)
-    }, [stock, assetType, timespan])
 
     return (
         <WidgetTemplate className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
@@ -145,7 +96,8 @@ const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode, onWidgetDe
                                 cursor={false}
                                 content={
                                     <ChartTooltipContent
-                                        hideLabel className={"z-50"}
+                                        hideLabel
+                                        className={"z-50"}
                                     />
                                 }
                             />

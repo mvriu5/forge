@@ -52,7 +52,7 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
 
     removeWidget: async (widget: Widget) => {
         try {
-            await fetch(`/api/widgets/${widget.id}`, { method: "DELETE" })
+            await fetch(`/api/widgets?id=${widget.id}`, { method: "DELETE" })
             set({
                 widgets: get().widgets!.filter((w) => w.id !== widget.id)
             })

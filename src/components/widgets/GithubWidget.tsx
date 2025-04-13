@@ -16,9 +16,7 @@ import {
 } from "lucide-react"
 import {formatDate} from "date-fns"
 import type {MenuItem} from "@/lib/menu-types"
-import {useIntegrationStore} from "@/store/integrationStore"
 import {authClient} from "@/lib/auth-client"
-import {shouldRefetchData, useGithubStore} from "@/store/githubStore"
 import { Callout } from "@/components/ui/Callout"
 import { Button } from "@/components/ui/Button"
 import { Badge } from "@/components/ui/Badge"
@@ -29,6 +27,7 @@ import { Skeleton } from "@/components/ui/Skeleton"
 import { ScrollArea } from "@/components/ui/ScrollArea"
 import {useToast} from "@/components/ui/ToastProvider"
 import {tooltip} from "@/components/ui/TooltipProvider"
+import { useGithub } from "@/hooks/useGithub"
 
 interface GithubWidgetProps {
     editMode: boolean
@@ -36,13 +35,8 @@ interface GithubWidgetProps {
 }
 
 const GithubWidget: React.FC<GithubWidgetProps> = ({editMode, onWidgetDelete}) => {
-    const {githubIntegration} = useIntegrationStore()
-    const { data, loading, setLoading, setData } = useGithubStore()
+    const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, fetchData, loading, githubIntegration} = useGithub()
     const {addToast} = useToast()
-
-    const [activeTab, setActiveTab] = useState<string>("issues")
-    const [searchQuery, setSearchQuery] = useState<string>("")
-    const [selectedLabels, setSelectedLabels] = useState<string[]>([])
 
     const filterTooltip = tooltip<HTMLButtonElement>({
         message: "Filter your issues",
@@ -54,10 +48,6 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode, onWidgetDelete}) =
         anchor: "bc",
     })
 
-    const allLabels = Array.from(new Set(data.issues
-        .flatMap((issue) => issue.labels || [])
-        .filter((label, index, self) => index === self.findIndex((l) => l.name === label.name))))
-
     const dropdownFilterItems: MenuItem[] = Array.from(new Set(allLabels.map((label) => ({
         type: "checkbox",
         key: label.id,
@@ -65,57 +55,6 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode, onWidgetDelete}) =
         checked: selectedLabels.includes(label),
         onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]))
     }))))
-
-    const fetchData = useCallback((force = false) => {
-        if (!githubIntegration?.accessToken) return
-        if (!force && !shouldRefetchData(data.lastFetched)) return
-        setLoading(true)
-
-        fetchOpenIssuesAndPullsFromAllRepos(githubIntegration.accessToken).then((data) => {
-            if (!data) return
-
-            const seenIssueIds = new Set<number>()
-            const seenPrIds = new Set<number>()
-
-            const fIssues = data.allIssues.filter(item => {
-                if (seenIssueIds.has(item.id)) {
-                    return false
-                }
-                seenIssueIds.add(item.id)
-                return true
-            })
-
-            const fPrs = data.allPullRequests.filter(item => {
-                if (seenPrIds.has(item.id)) {
-                    return false
-                }
-                seenPrIds.add(item.id)
-                return true
-            })
-
-            setData({ issues: fIssues, pullRequests: fPrs })
-            setLoading(false)
-        })
-    }, [fetchOpenIssuesAndPullsFromAllRepos, githubIntegration, data.lastFetched, setData, setLoading])
-
-    useEffect(() => {
-        fetchData()
-    }, [fetchData])
-
-    const filteredIssues = data.issues.filter((issue) => {
-        const matchesSearch =
-            issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            issue.repository_url.split('/').pop().toLowerCase().includes(searchQuery.toLowerCase())
-
-        const matchesLabels =
-            selectedLabels.length === 0 || (issue.labels?.some((label: any) => selectedLabels.includes(label)))
-
-        return matchesSearch && matchesLabels
-    })
-
-    const filteredPRs = data.pullRequests.filter((pr: any) =>
-        pr.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        pr.repository_url.split('/').pop().toLowerCase().includes(searchQuery.toLowerCase()))
 
     const handleIntegrate = async () => {
         const data = await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
@@ -140,7 +79,7 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode, onWidgetDelete}) =
     if (!githubIntegration?.accessToken && !loading) {
         return (
             <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <div className="h-full flex flex-col gap-2 items-center justify-center ">
+                <div className="h-full flex flex-col gap-2 items-center justify-center">
                     <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
                         <TriangleAlert size={32}/>
                         If you want to use this widget, you need to integrate your Github account first!
@@ -164,7 +103,7 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode, onWidgetDelete}) =
                     <Badge
                         variant="brand"
                         className="text-xs font-normal bg-brand/10 border-brand/40"
-                        title={`${activeTab === "issues" ? data.issues.length : data.pullRequests.length} open`}
+                        title={`${activeTab === "issues" ? filteredIssues.length : filteredPRs.length} open`}
                     />
                 </div>
                 <div className="flex items-center gap-2">

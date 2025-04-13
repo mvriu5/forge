@@ -42,43 +42,48 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
         zIndex: isDragging ? 30 : 20,
     }
 
-    return (
-        <>
-            {editMode ? (
-                <div
-                    className={cn(
-                        "relative rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
-                        isDragging && "opacity-50 animate-none",
-                        className
-                    )}
-                    ref={setNodeRef}
-                    style={style}
-                    {...attributes}
-                    {...listeners}
+    if (editMode) {
+        return (
+            <div
+                className={cn(
+                    "relative rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
+                    isDragging && "opacity-50 animate-none",
+                    className
+                )}
+                ref={setNodeRef}
+                style={style}
+                {...attributes}
+                {...listeners}
+            >
+                <Button
+                    className={"absolute z-50 size-8 bg-error/10 hover:bg-error/20 text-error hover:text-error border-error/40 bottom-4"}
+                    onClick={() => {
+                        if (deleteTooltip.onMouseLeave) {
+                            deleteTooltip?.onMouseLeave()
+                        }
+                        onWidgetDelete(widget?.id)
+                    }}
+                    {...deleteTooltip}
                 >
-                    <Button
-                        className={"absolute z-50 size-8 bg-error/10 hover:bg-error/20 text-error hover:text-error border-error/40 bottom-4"}
-                        onClick={() => onWidgetDelete(widget?.id)}
-                        {...deleteTooltip}
-                    >
-                        <Trash size={20}/>
-                    </Button>
-                    <div className={"pointer-events-none"}>
-                        {children}
-                    </div>
-                </div>
-                ) : (
-                <div
-                    className={cn(
-                        "rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden",
-                        className
-                    )}
-                    style={style}
-                >
+                    <Trash size={20}/>
+                </Button>
+                <div className={"pointer-events-none"}>
                     {children}
                 </div>
+            </div>
+        )
+    }
+
+    return (
+        <div
+            className={cn(
+                "rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden",
+                className
             )}
-        </>
+            style={style}
+        >
+            {children}
+        </div>
     )
 }
 

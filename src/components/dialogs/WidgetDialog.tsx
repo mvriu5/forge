@@ -13,6 +13,7 @@ import {getAllWidgetPreviews, type WidgetPreview} from "@/lib/widgetRegistry"
 import { tooltip } from "@/components/ui/TooltipProvider"
 import {ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup"
 import { ScrollArea } from "@/components/ui/ScrollArea"
+import {ButtonSpinner} from "@/components/ButtonSpinner"
 
 function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
     const {widgets, addWidget} = useWidgetStore()
@@ -22,6 +23,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
     const [query, setQuery] = useState<string>("")
     const [tagValue, setTagValue] = useState<string>("")
     const [dialogOpen, setDialogOpen] = useState(false)
+    const [addLoading, setAddLoading] = useState<boolean>(false)
 
     const widgetTooltip = tooltip<HTMLButtonElement>({
         message: "Add a new widget",
@@ -41,11 +43,12 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
         else setSelectedWidget(widgetPreview)
     }
 
-    const handleAddWidget = () => {
+    const handleAddWidget = async () => {
         if (!selectedWidget) return
         if (!session || !session.user) return
+        setAddLoading(true)
 
-        addWidget(session.user.id, {
+        await addWidget(session.user.id, {
             userId: session.user.id,
             widgetType: selectedWidget.widgetType,
             height: selectedWidget.height,
@@ -54,10 +57,11 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
             positionY: 0,
             createdAt: new Date(Date.now()),
             updatedAt: new Date(Date.now())
+        }).then(() => {
+            setDialogOpen(false)
+            setSelectedWidget(null)
+            setAddLoading(false)
         })
-
-        setDialogOpen(false)
-        setSelectedWidget(null)
     }
 
     return (
@@ -115,13 +119,13 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                                 data-selected={widget.widgetType === selectedWidget?.widgetType ? "true" : "false"}
                                 className={cn(
                                     "group col-span-1 flex flex-col p-2 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
-                                    "data-[selected=true]:border-brand data-[used=true]:border-success/60"
+                                    "data-[selected=true]:border-brand/60 data-[used=true]:border-success/20 data-[selected=true]:bg-tertiary"
                                 )}
                                 onClick={() => handleSelect(widget)}
                             >
                                 <div className={"flex justify-between items-center"}>
                                     <p className={"text-primary"}>{widget.title}</p>
-                                    <div className={"px-2 rounded-md bg-white/10 border border-main/20 group-data-[used=true]:bg-success/20 group-data-[used=true]:text-primary"}>
+                                    <div className={"px-2 rounded-md bg-white/5 border border-main/40 group-data-[used=true]:bg-success/10 group-data-[used=true]:text-success group-data-[used=true]:border-success/20"}>
                                         {widgets?.find((w) => w.widgetType === widget.widgetType) ?
                                             "In use" :
                                             `${widget.width}x${widget.height}`
@@ -141,6 +145,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                         disabled={!selectedWidget}
                         onClick={handleAddWidget}
                     >
+                        {addLoading && <ButtonSpinner/>}
                         Add widget
                     </Button>
                 </DialogFooter>

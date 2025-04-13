@@ -41,7 +41,7 @@ export default function Dashboard() {
 
     const [gridCells, setGridCells] = useState<{ x: number; y: number; isDroppable: boolean }[]>([])
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
-    const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
+    const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[] | null>([])
     const [editMode, setEditMode] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
@@ -165,9 +165,10 @@ export default function Dashboard() {
     const handleEditModeSave = async () => {
         try {
             setEditModeLoading(true)
-            if (!widgets) return;
+            if (!widgets) return
 
-            await Promise.all(widgetsToRemove.map((widget) => removeWidget(widget)))
+            if (widgetsToRemove)
+                await Promise.all(widgetsToRemove.map((widget) => removeWidget(widget)))
 
             await saveWidgetsLayout()
 
@@ -190,12 +191,13 @@ export default function Dashboard() {
         if (!cachedWidgetsRef.current) return
         resetWidgets(cachedWidgetsRef.current)
         setEditMode(false)
+        setWidgetsToRemove(null)
     }
 
     const handleEditModeDelete = async (id: string) => {
         const widget = widgets?.find((w) => w.id === id)
         if (!widget) return
-        setWidgetsToRemove(w => [...w, widget])
+        if (widgetsToRemove) setWidgetsToRemove((w) => (w ? [...w, widget] : [widget]))
     }
 
     if (loading) {
@@ -206,11 +208,11 @@ export default function Dashboard() {
                     className={"grid gird-cols-4 gap-8 p-8 h-[calc(100vh-64px)] w-full"}
                     style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
                 >
-                    <Skeleton className={"col-span-3 row-span-2 bg-secondary rounded-md "}/>
-                    <Skeleton className={"col-span-1 row-span-4 bg-secondary rounded-md "}/>
-                    <Skeleton className={"col-span-2 row-span-2 bg-secondary rounded-md "}/>
-                    <Skeleton className={"col-span-1 row-span-1 bg-secondary rounded-md "}/>
-                    <Skeleton className={"col-span-1 row-span-1 bg-secondary rounded-md "}/>
+                    <Skeleton className={"col-span-3 row-span-1 dark:bg-tertiary rounded-md"}/>
+                    <Skeleton className={"col-span-2 row-span-2 dark:bg-tertiary rounded-md"}/>
+                    <Skeleton className={"col-span-1 row-span-2 dark:bg-tertiary rounded-md"}/>
+                    <Skeleton className={"col-span-1 row-span-1 dark:bg-tertiary rounded-md"}/>
+                    <Skeleton className={"col-span-2 row-span-1 dark:bg-tertiary rounded-md"}/>
                 </div>
             </div>
         )
@@ -232,7 +234,7 @@ export default function Dashboard() {
     }
 
     return (
-        <div className={"flex flex-col w-full h-full"}>
+        <div className={"flex flex-col w-full h-full max-h-screen max-w-screen overflow-hidden"}>
             <Header onEdit={handleEditModeEnter} editMode={editMode}/>
             <DndContext
                 sensors={sensors}
@@ -247,11 +249,14 @@ export default function Dashboard() {
                         <GridCell key={`${cell.x},${cell.y}`} x={cell.x} y={cell.y} isDroppable={cell.isDroppable} />
                     ))}
 
-                    {widgets?.map((widget) => {
-                        const Component = getWidgetComponent(widget.widgetType)
-                        if (!Component) return null
-                        return <Component key={widget.id} name={widget.widgetType} editMode={editMode} onWidgetDelete={(id: string) => handleEditModeDelete(id)}/>
-                    })}
+                    {widgets
+                        ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
+                        .map((widget) => {
+                            const Component = getWidgetComponent(widget.widgetType)
+                            if (!Component) return null
+                            return <Component key={widget.id} name={widget.widgetType} editMode={editMode} onWidgetDelete={(id: string) => handleEditModeDelete(id)}/>
+                        }
+                    )}
                 </div>
             </DndContext>
             {editMode &&
