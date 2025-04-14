@@ -50,48 +50,36 @@ export function getPopularAssets(): AssetOption[] {
 
     const popularCryptos: AssetOption[] = [
         {
-            value: "BTC",
+            value: "BTC/USD",
             label: "Bitcoin",
             type: "crypto",
         },
         {
-            value: "ETH",
+            value: "ETH/USD",
             label: "Ethereum",
             type: "crypto",
         },
         {
-            value: "XRP",
+            value: "XRP/USD",
             label: "Ripple",
             type: "crypto",
         },
         {
-            value: "SOL",
+            value: "SOL/USD",
             label: "Solana",
             type: "crypto",
         },
         {
-            value: "ADA",
+            value: "ADA/USD",
             label: "Cardano",
             type: "crypto",
         },
         {
-            value: "DOGE",
+            value: "DOGE/USD",
             label: "Dogecoin",
             type: "crypto",
         },
     ]
 
     return [...popularStocks, ...popularCryptos]
-}
-
-
-export function getAssetType(assetValue: string): "stock" | "crypto" {
-    const assets = getPopularAssets()
-    const asset = assets.find((a) => a.value === assetValue)
-
-    if (!asset) {
-        return ["BTC", "ETH", "XRP", "SOL", "ADA", "DOGE"].includes(assetValue) ? "crypto" : "stock"
-    }
-
-    return asset.type
 }

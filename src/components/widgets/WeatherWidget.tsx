@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import {WidgetTemplate} from "@/components/widgets/WidgetTemplate"
+import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {
     Cloud,
     CloudDrizzle,
@@ -20,12 +20,7 @@ import {Callout} from "@/components/ui/Callout"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {useWeather} from "@/hooks/useWeather"
 
-interface WeatherWidgetProps {
-    editMode: boolean
-    onWidgetDelete: (id: string) => void
-}
-
-const WeatherWidget: React.FC<WeatherWidgetProps> = ({editMode, onWidgetDelete}) => {
+const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {currentWeather, nextWeather, location, loading, error} = useWeather()
 
     const getWeatherIcon = (code: number, size = 24) => {

@@ -5,6 +5,7 @@ import {EditorWidget} from "@/components/widgets/EditorWidget"
 import {GithubWidget} from "@/components/widgets/GithubWidget"
 import { StockSmallWidget } from "@/components/widgets/StockSmallWidget"
 import { WeatherWidget } from "@/components/widgets/WeatherWidget"
+import {StockMediumWidget} from "@/components/widgets/StockMediumWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -58,6 +59,18 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["stock"]
         },
         component: StockSmallWidget,
+    },
+    {
+        preview: {
+            widgetType: "stockMedium",
+            height: 2,
+            width: 1,
+            previewImage: '/sample.jpg',
+            title: 'Stock Overview',
+            description: 'Track your stock data',
+            tags: ["stock"]
+        },
+        component: StockMediumWidget,
     },
     {
         preview: {

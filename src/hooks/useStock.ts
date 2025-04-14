@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { fetchCryptoData, fetchStockData, AssetData } from "@/actions/alphavantage"
-import { getAssetType, getPopularAssets } from "@/lib/assetList"
+import { fetchStockData, AssetData } from "@/actions/twelvedata"
+import {getPopularAssets } from "@/lib/assetList"
 
-export const useStock = () => {
+export const useStock = (initialStock?: string, initialTimespan?: string) => {
     const [assetData, setAssetData] = useState<AssetData | null>({
         chartData: [],
         currentPrice: null,
@@ -10,30 +10,24 @@ export const useStock = () => {
         priceChangePercent: 0
     })
     const [loading, setLoading] = useState<boolean>(true)
-    const [timespan, setTimespan] = useState<string>("7")
-    const [stock, setStock] = useState<string>("AAPL")
-    const [assetType, setAssetType] = useState<"stock" | "crypto">("stock")
+    const [timespan, setTimespan] = useState<string>(initialTimespan ?? "7")
+    const [stock, setStock] = useState<string>(initialStock ?? "AAPL")
 
     const assetOptions = useMemo(() => getPopularAssets(), [])
 
-    useEffect(() => {
-        setAssetType(getAssetType(stock))
-    }, [stock])
-
     const fetchData = useCallback(async () => {
         setLoading(true)
+
         try {
             const days = Number(timespan)
-            const data = assetType === "stock"
-                ? await fetchStockData(stock, days)
-                : await fetchCryptoData(stock, days)
+            const data = await fetchStockData(stock, days)
             setAssetData(data)
         } catch (error) {
             console.error("Fehler beim Abrufen der Daten:", error)
         } finally {
             setLoading(false)
         }
-    }, [stock, timespan, assetType])
+    }, [stock, timespan])
 
     useEffect(() => {
         fetchData()

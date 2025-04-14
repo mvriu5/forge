@@ -31,6 +31,7 @@
     "better-auth": "^1.1.19",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.40.1",
     "framer-motion": "^12.4.3",

@@ -1,27 +1,16 @@
 "use client"
 
-import React, {useEffect, useMemo, useState} from "react"
-import {WidgetTemplate} from "@/components/widgets/WidgetTemplate"
+import React from "react"
+import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {TrendingDown, TrendingUp} from "lucide-react"
-import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/Chart"
+import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {Area, AreaChart, YAxis} from "recharts"
-import {
-    AssetData,
-    fetchCryptoData,
-    fetchStockData,
-} from "@/actions/alphavantage"
 import {cn} from "@/lib/utils"
-import {getAssetType, getPopularAssets} from "@/lib/assetList"
 import {useStock} from "@/hooks/useStock"
 
-interface StockSmallWidgetProps {
-    editMode: boolean
-    onWidgetDelete: (id: string) => void
-}
-
-const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode, onWidgetDelete}) => {
+const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {
         assetData,
         loading,
@@ -61,7 +50,7 @@ const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode, onWidgetDe
                     <div className={"flex items-center gap-2"}>
                         {loading || Number.isNaN(assetData?.currentPrice ?? 0) || assetData?.currentPrice === undefined ?
                             <Skeleton className="h-6 w-12"/> :
-                            <div className={"text-primary text-sm"}>{`$${assetData?.currentPrice}`}</div>
+                            <div className={"text-primary text-md text-semibold"}>{`$${Number(assetData?.currentPrice?.toFixed(2))}`}</div>
                         }
                         <Select value={timespan} onValueChange={setTimespan}>
                             <SelectTrigger className={"w-[100px] border-main/60"}>
@@ -83,7 +72,17 @@ const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode, onWidgetDe
                         <p className={"text-sm text-error"}>Error loading data</p>
                     </div>
                 }
-                <div className={cn("h-min bg-secondary rounded-md overflow-hidden", !assetData?.chartData && "hidden")}>
+                <div className={cn("relative h-max bg-secondary rounded-md overflow-hidden", !assetData?.chartData && "hidden")}>
+                    <div
+                        className={cn(
+                            "absolute bottom-1 left-1 flex items-center gap-1 px-2 py-0.5 bg-white/2 rounded-md shadow-xl w-max h-max",
+                            assetData?.priceChangePercent! >= 0 ? "text-success" : "text-error"
+                        )}
+                    >
+                        {assetData?.priceChangePercent! >= 0 ? <TrendingUp size={20}/> : <TrendingDown size={20}/>}
+                        {`${Number(assetData?.priceChangePercent.toFixed(2))}%`}
+                    </div>
+
                     <ChartContainer config={chartConfig} className={"max-h-[108px] w-full"}>
                         <AreaChart
                             accessibilityLayer
@@ -131,18 +130,6 @@ const StockSmallWidget: React.FC<StockSmallWidgetProps> = ({editMode, onWidgetDe
                         </AreaChart>
                     </ChartContainer>
                 </div>
-                {(!Number.isNaN(assetData?.priceChangePercent ?? 0) && !assetData?.priceChangePercent === undefined) &&
-                    <div
-                        className={cn(
-                            "relative bottom-10 left-1 flex items-center gap-1 px-2 py-0.5 bg-white/2 rounded-md shadow-xl w-max h-max",
-                            assetData?.priceChangePercent! >= 0 ? "text-success" : "text-error"
-                        )}
-                    >
-                        {assetData?.priceChangePercent! >= 0 ? <TrendingUp size={20}/> : <TrendingDown size={20}/>}
-                        {`${Number(assetData?.priceChangePercent.toFixed(2))}%`}
-                    </div>
-                }
-
             </div>
         </WidgetTemplate>
     )

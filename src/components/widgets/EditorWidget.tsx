@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import {useEffect, useState} from "react"
+import {useState} from "react"
 import {
     EditorRoot,
     EditorContent,
@@ -13,7 +13,7 @@ import {
     EditorInstance
 } from "novel"
 import {defaultExtensions} from "@/lib/extensions"
-import {WidgetTemplate} from "@/components/widgets/WidgetTemplate"
+import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {slashCommand, suggestionItems} from "@/components/widgets/components/SlashCommand"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {NodeSelector } from "./components/NodeSelector"
@@ -22,15 +22,10 @@ import GlobalDragHandle from "tiptap-extension-global-drag-handle"
 import AutoJoiner from "tiptap-extension-auto-joiner"
 import {useWidgetStore} from "@/store/widgetStore"
 
-interface EditorWidgetProps {
-    editMode: boolean
-    onWidgetDelete: (id: string) => void
-}
-
-
-const EditorWidget: React.FC<EditorWidgetProps> = ({editMode, onWidgetDelete}) => {
+const EditorWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {refreshWidget} = useWidgetStore()
     const [openNode, setOpenNode] = useState(false)
+    const [saved, setSaved] = useState(true)
 
     const widget = useWidgetStore(state => state.getWidget("editor"))
     if (!widget) return null
@@ -63,6 +58,8 @@ const EditorWidget: React.FC<EditorWidgetProps> = ({editMode, onWidgetDelete}) =
         const html = highlightCodeblocks(editor.getHTML())
         window.localStorage.setItem("html-content", highlightCodeblocks(html))
 
+        setSaved(true)
+
         await refreshWidget({
             ...widget,
             config: {
@@ -80,6 +77,7 @@ const EditorWidget: React.FC<EditorWidgetProps> = ({editMode, onWidgetDelete}) =
                     initialContent={widget?.config?.content}
                     immediatelyRender={false}
                     onBlur={(params) => handleSave(params.editor)}
+                    onUpdate={() => setSaved(false)}
                     className="relative p-2 rounded-md min-h-full w-full border border-main/40 bg-secondary"
                     editorProps={{
                         handleDOMEvents: {
@@ -88,6 +86,8 @@ const EditorWidget: React.FC<EditorWidgetProps> = ({editMode, onWidgetDelete}) =
                         attributes: {class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",},
                     }}
                 >
+                    <p className={"absolute z-50 top-2 right-2 text-tertiary/50 text-end text-sm"}>{saved ? "Saved" : "Unsaved"}</p>
+
                     <EditorCommand className="z-50 w-72 rounded-md border border-main/60 bg-primary shadow-md transition-all">
                         <EditorCommandEmpty className="flex items-center justify-center px-2 text-tertiary">
                             No results

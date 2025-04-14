@@ -3,7 +3,7 @@
 import type React from "react"
 import {useCallback, useEffect, useState} from "react"
 import {fetchOpenIssuesAndPullsFromAllRepos} from "@/actions/github"
-import {WidgetTemplate} from "./WidgetTemplate"
+import {WidgetProps, WidgetTemplate} from "./WidgetTemplate"
 import {
     AlertCircle, Blocks,
     CloudAlert,
@@ -29,12 +29,7 @@ import {useToast} from "@/components/ui/ToastProvider"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import { useGithub } from "@/hooks/useGithub"
 
-interface GithubWidgetProps {
-    editMode: boolean
-    onWidgetDelete: (id: string) => void
-}
-
-const GithubWidget: React.FC<GithubWidgetProps> = ({editMode, onWidgetDelete}) => {
+const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, fetchData, loading, githubIntegration} = useGithub()
     const {addToast} = useToast()
 
@@ -150,7 +145,7 @@ const GithubWidget: React.FC<GithubWidgetProps> = ({editMode, onWidgetDelete}) =
                         <Skeleton className={"h-full w-full px-2"} />
                     </div>
                     ) : (
-                    <ScrollArea className={"h-full"} thumbClassname={"bg-primary"}>
+                    <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
                         {activeTab === "issues" && filteredIssues.map((issue) => (
                             <IssueCard issue={issue} key={issue.id}/>
                         ))}
@@ -182,7 +177,7 @@ const IssueCard = ({issue}: { issue: any }) => {
                 key={issue.id}
                 className="flex items-start gap-2 p-2 pr-4 mb-2 rounded-md hover:bg-secondary cursor-pointer"
             >
-                <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
+                <AlertCircle className="h-5 w-5 text-info mt-0.5" />
                 <div className="flex-1 space-y-1">
                     <p className="font-medium text-sm text-primary">{issue.title}</p>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -210,9 +205,7 @@ const PulLRequestCard = ({pr}: {pr: any}) => {
             className="flex items-start gap-2 p-2 pr-4 mb-2 rounded-md hover:bg-secondary cursor-pointer"
             onClick={() => window.open(pr.html_url, '_blank', 'noopener,noreferrer')}
         >
-            <GitPullRequest
-                className={"h-5 w-5 text-blue-500 mt-0.5"}
-            />
+            <GitPullRequest className={"h-5 w-5 text-info-500 mt-0.5"}/>
             <div className="flex-1 space-y-1">
                 <p className="font-medium text-sm text-primary">{pr.title}</p>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">

@@ -8,14 +8,14 @@ import {Trash} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import { tooltip } from "@/components/ui/TooltipProvider"
 
-interface WidgetTemplateProps extends HTMLAttributes<HTMLDivElement> {
+interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode
     name: string
     editMode: boolean
     onWidgetDelete: (id: string) => void
 }
 
-const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, name, editMode, onWidgetDelete}) => {
+const WidgetTemplate: React.FC<WidgetProps> = ({className, children, name, editMode, onWidgetDelete}) => {
     const {getWidget} = useWidgetStore()
     const widget = getWidget(name)
 
@@ -87,4 +87,4 @@ const WidgetTemplate: React.FC<WidgetTemplateProps> = ({className, children, nam
     )
 }
 
-export { WidgetTemplate }
+export { WidgetTemplate, type WidgetProps }
