@@ -9,16 +9,19 @@ import { useState } from "react"
 import {ChartCandlestick, CheckIcon} from "lucide-react"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 
+interface StockSelectProps {
+    value: string[]
+    onValueChange: (selectedStocks: string[]) => void
+}
 
-const StockSelect = () => {
-    const [value, setValue] = useState<string[]>([])
+const StockSelect = ({value, onValueChange}: StockSelectProps) => {
     const [open, setOpen] = useState(false)
 
     const handleValueChange = (stock: string) => {
         if (value.includes(stock)) {
-            setValue(prev => prev.filter(item => item !== stock))
+            onValueChange(value.filter((item) => item !== stock))
         } else {
-            setValue(prev => [...prev, stock])
+            onValueChange([...value, stock])
         }
         setOpen(false)
     }
@@ -28,14 +31,14 @@ const StockSelect = () => {
             <PopoverTrigger asChild>
                 <Button
                     data-state={open ? "open" : "closed"}
-                    className={cn("font-normal text-sm items-center gap-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary px-2")}
+                    className={cn("font-normal bg-secondary border-main/60 text-sm items-center gap-2 data-[state=open]:text-primary px-2")}
                 >
                     <ChartCandlestick size={18}/>
                     Stocks
                 </Button>
             </PopoverTrigger>
             <PopoverContent className={"border-0 p-0 w-[160px]"} align={"start"}>
-                <Command>
+                <Command className={"border-main/60"}>
                     <CommandList className={"scrollbar-hide"}>
                         <CommandGroup>
                             <ScrollArea className={"h-56"}>

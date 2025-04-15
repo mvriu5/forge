@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, {useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {useStock} from "@/hooks/useStock"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
@@ -9,25 +9,71 @@ import {cn} from "@/lib/utils"
 import {TrendingDown, TrendingUp} from "lucide-react"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {StockSelect} from "@/components/widgets/components/StockSelect"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
+import {useWidgetStore} from "@/store/widgetStore"
 
 const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
+    const {refreshWidget} = useWidgetStore()
+    const widget = useWidgetStore(state => state.getWidget("stockMedium"))
+    if (!widget) return null
+
+    const initialStocks = widget.config?.stocks
+    const initialTimespan = widget.config?.timespan
+
+    const [selectedStocks, setSelectedStocks] = useState<string[]>(initialStocks ?? [])
+    const [timespan, setTimespan] = useState<string>(initialTimespan ?? "365")
+
+    const handleSave = async (updatedConfig: Partial<{ stocks: string[], timespan: string }>) => {
+        await refreshWidget({
+            ...widget,
+            config: {
+                ...widget.config,
+                ...updatedConfig
+            }
+        })
+    }
 
     return (
         <WidgetTemplate className={"col-span-1 row-span-2"} name={"stockMedium"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
 
             <div className={"h-full flex flex-col gap-2"}>
 
-                <div className={"flex items-center gap-2"}>
+                <div className={"flex items-center justify-between gap-2"}>
                     <p className={"text-lg text-primary font-semibold"}>Stock Overview</p>
-                    <StockSelect/>
+                    <div className={"flex items-center gap-2"}>
+                        <StockSelect
+                            value={selectedStocks}
+                            onValueChange={(value) => {
+                                setSelectedStocks(value)
+                                handleSave({ stocks: value })
+                            }}
+                        />
+                        <Select
+                            value={timespan}
+                            onValueChange={(value) => {
+                                setTimespan(value)
+                                handleSave({ timespan: value })
+                            }}
+                        >
+                            <SelectTrigger className={"w-[100px]"}>
+                                <SelectValue placeholder="Timespan"/>
+                            </SelectTrigger>
+                            <SelectContent align={"end"} className={"border-main/40"}>
+                                <SelectItem value="1">24 hours</SelectItem>
+                                <SelectItem value="7">7 days</SelectItem>
+                                <SelectItem value="30">30 days</SelectItem>
+                                <SelectItem value="90">90 days</SelectItem>
+                                <SelectItem value="365">1 year</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
 
                 <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
                     <div className={"flex flex-col gap-2"}>
-                        <Stock selectedStock={"AAPL"} selectedTimespan={"365"}/>
-                        <Stock selectedStock={"MSFT"} selectedTimespan={"365"}/>
-                        <Stock selectedStock={"BTC/USD"} selectedTimespan={"365"}/>
-                        <Stock selectedStock={"SOL/USD"} selectedTimespan={"365"}/>
+                        {selectedStocks.map((stock) => (
+                            <Stock key={stock} selectedStock={stock} selectedTimespan={timespan} />
+                        ))}
                     </div>
                 </ScrollArea>
             </div>

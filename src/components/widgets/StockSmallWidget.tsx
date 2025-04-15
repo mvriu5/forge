@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, {useEffect} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {TrendingDown, TrendingUp} from "lucide-react"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
@@ -9,18 +9,17 @@ import {Skeleton} from "@/components/ui/Skeleton"
 import {Area, AreaChart, YAxis} from "recharts"
 import {cn} from "@/lib/utils"
 import {useStock} from "@/hooks/useStock"
+import {useWidgetStore} from "@/store/widgetStore"
 
 const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
-    const {
-        assetData,
-        loading,
-        stock,
-        setStock,
-        timespan,
-        setTimespan,
-        yAxisDomain,
-        assetOptions
-    } = useStock()
+    const {refreshWidget} = useWidgetStore()
+    const widget = useWidgetStore(state => state.getWidget("stockSmall"))
+    if (!widget) return null
+
+    const initialStock = widget.config?.stock
+    const initialTimespan = widget.config?.timespan
+
+    const {assetData, loading, stock, setStock, timespan, setTimespan, yAxisDomain, assetOptions} = useStock(initialStock, initialTimespan)
 
     const chartConfig = {
         price: {
@@ -28,14 +27,30 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
         }
     } satisfies ChartConfig
 
+    const handleSave = async (updatedConfig: Partial<{ stock: string, timespan: string }>) => {
+        await refreshWidget({
+            ...widget,
+            config: {
+                ...widget.config,
+               ...updatedConfig
+            }
+        })
+    }
+
     return (
         <WidgetTemplate className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <div className={"flex flex-col gap-2 h-full"}>
 
                 <div className={"flex items-center justify-between gap-4"}>
                     <div className={"flex items-center gap-2"}>
-                        <Select value={stock} onValueChange={setStock}>
-                            <SelectTrigger className={" border-0 bg-0 px-0 gap-2 justify-normal text-primary text-lg font-semibold"}>
+                        <Select
+                            value={stock}
+                            onValueChange={(value) => {
+                                setStock(value)
+                                handleSave({ stock: value })
+                            }}
+                        >
+                            <SelectTrigger className={"border-0 bg-0 px-0 gap-2 justify-normal text-primary text-lg font-semibold"}>
                                 <SelectValue placeholder="Stock" className={"text-lg font-semibold text-primary"}/>
                             </SelectTrigger>
                             <SelectContent align={"start"} className={"border-main/40"}>
@@ -52,8 +67,14 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                             <Skeleton className="h-6 w-12"/> :
                             <div className={"text-primary text-md text-semibold"}>{`$${Number(assetData?.currentPrice?.toFixed(2))}`}</div>
                         }
-                        <Select value={timespan} onValueChange={setTimespan}>
-                            <SelectTrigger className={"w-[100px] border-main/60"}>
+                        <Select
+                            value={timespan}
+                            onValueChange={(value) => {
+                                setTimespan(value)
+                                handleSave({ timespan: value })
+                            }}
+                        >
+                            <SelectTrigger className={"w-[100px]"}>
                                 <SelectValue placeholder="Timespan"/>
                             </SelectTrigger>
                             <SelectContent align={"end"} className={"border-main/40"}>

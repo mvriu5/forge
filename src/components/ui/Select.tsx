@@ -26,7 +26,7 @@ const SelectTrigger = React.forwardRef<React.ComponentRef<typeof SelectPrimitive
     return (
         <SelectPrimitive.Trigger
             className={cn(
-                "flex h-8 w-full items-center justify-between rounded-md border border-main bg-secondary px-2 py-1 text-sm",
+                "group flex h-8 w-full items-center justify-between rounded-md border border-main/60 bg-secondary px-2 py-1 text-sm",
                 "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 focus:outline-0",
                 className
             )}
@@ -35,7 +35,7 @@ const SelectTrigger = React.forwardRef<React.ComponentRef<typeof SelectPrimitive
         >
             {children}
             <SelectPrimitive.Icon asChild>
-                <ChevronDown size={12} className="text-secondary"/>
+                <ChevronDown size={12} className="text-secondary group-data-[state=open]:rotate-180 transition-all"/>
             </SelectPrimitive.Icon>
         </SelectPrimitive.Trigger>
     )
