@@ -9,9 +9,10 @@ import { tooltip } from "@/components/ui/TooltipProvider"
 interface HeaderProps {
     onEdit: () => void
     editMode: boolean
+    widgetsEmpty?: boolean
 }
 
-function Header({onEdit, editMode}: HeaderProps) {
+function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
 
     const layoutTooltip = tooltip<HTMLButtonElement>({
         message: "Change your dashboard layout",
@@ -29,7 +30,7 @@ function Header({onEdit, editMode}: HeaderProps) {
                 <div className={"h-6 w-px border-r-2 border-main"}/>
                 <div className={"flex gap-2"}>
                     <WidgetDialog editMode={editMode}/>
-                    <Button className={"size-8 bg-secondary border-main/60"} {...layoutTooltip} onClick={onEdit} disabled={editMode}>
+                    <Button className={"size-8 bg-secondary border-main/60"} {...layoutTooltip} onClick={onEdit} disabled={editMode || widgetsEmpty}>
                         <LayoutTemplate size={16}/>
                     </Button>
                 </div>

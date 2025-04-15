@@ -3,9 +3,10 @@
 import type React from "react"
 import {EditorWidget} from "@/components/widgets/EditorWidget"
 import {GithubWidget} from "@/components/widgets/GithubWidget"
-import { StockSmallWidget } from "@/components/widgets/StockSmallWidget"
-import { WeatherWidget } from "@/components/widgets/WeatherWidget"
+import {StockSmallWidget} from "@/components/widgets/StockSmallWidget"
+import {WeatherWidget} from "@/components/widgets/WeatherWidget"
 import {StockMediumWidget} from "@/components/widgets/StockMediumWidget"
+import {BookmarkWidget} from "@/components/widgets/BookmarkWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -83,7 +84,20 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["weather"]
         },
         component: WeatherWidget
+    },
+    {
+        preview: {
+            widgetType: "bookmark",
+            height: 2,
+            width: 1,
+            previewImage: '/sample.jpg',
+            title: 'Bookmark',
+            description: 'Store your bookmarks',
+            tags: ["bookmark"]
+        },
+        component: BookmarkWidget
     }
+
 ]
 
 

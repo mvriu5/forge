@@ -221,7 +221,7 @@ export default function Dashboard() {
     if (widgets?.length === 0) {
         return (
             <div className={"flex flex-col w-full h-screen"}>
-                <Header onEdit={handleEditModeEnter} editMode={editMode}/>
+                <Header onEdit={handleEditModeEnter} editMode={editMode} widgetsEmpty={true}/>
                 <div className={"w-full h-full flex items-center justify-center"}>
                     <div className={"flex flex-col gap-4 items-center justify-center p-12 border border-main border-dashed rounded-md shadow-xl"}>
                         <EmptyAddSVG/>
