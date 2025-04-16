@@ -33,7 +33,7 @@ export const widgetRegistry: WidgetElement[] = [
             previewImage: '/sample.jpg',
             title: 'Editor',
             description: 'A simple text editor widget',
-            tags: ["notes"]
+            tags: ["productivity"]
         },
         component: EditorWidget,
     },
@@ -93,7 +93,7 @@ export const widgetRegistry: WidgetElement[] = [
             previewImage: '/sample.jpg',
             title: 'Bookmark',
             description: 'Store your bookmarks',
-            tags: ["bookmark"]
+            tags: ["productivity"]
         },
         component: BookmarkWidget
     }

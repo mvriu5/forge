@@ -41,7 +41,7 @@ export default function Dashboard() {
 
     const [gridCells, setGridCells] = useState<{ x: number; y: number; isDroppable: boolean }[]>([])
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
-    const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[] | null>([])
+    const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
     const [editMode, setEditMode] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
@@ -191,7 +191,7 @@ export default function Dashboard() {
         if (!cachedWidgetsRef.current) return
         resetWidgets(cachedWidgetsRef.current)
         setEditMode(false)
-        setWidgetsToRemove(null)
+        setWidgetsToRemove([])
     }
 
     const handleEditModeDelete = async (id: string) => {

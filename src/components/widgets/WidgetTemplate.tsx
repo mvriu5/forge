@@ -1,4 +1,4 @@
-import type React from "react"
+import React, {ReactNode} from "react"
 import type {HTMLAttributes} from "react"
 import {cn} from "@/lib/utils"
 import {useDraggable} from "@dnd-kit/core"
@@ -46,7 +46,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({className, children, name, editM
         return (
             <div
                 className={cn(
-                    "relative rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
+                    "relative rounded-md bg-tertiary border overflow-hidden border-main/40 p-4 cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
                     isDragging && "opacity-50 animate-none",
                     className
                 )}
@@ -67,7 +67,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({className, children, name, editM
                 >
                     <Trash size={20}/>
                 </Button>
-                <div className={"pointer-events-none"}>
+                <div className={cn("pointer-events-none", className)} style={{ display: "contents" }}>
                     {children}
                 </div>
             </div>
