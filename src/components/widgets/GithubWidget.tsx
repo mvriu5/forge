@@ -30,7 +30,7 @@ import {tooltip} from "@/components/ui/TooltipProvider"
 import { useGithub } from "@/hooks/useGithub"
 
 const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
-    const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, fetchData, loading, githubIntegration} = useGithub()
+    const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch, githubIntegration} = useGithub()
     const {addToast} = useToast()
 
     const filterTooltip = tooltip<HTMLButtonElement>({
@@ -71,7 +71,7 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
         })
     }
 
-    if (!githubIntegration?.accessToken && !loading) {
+    if (!githubIntegration?.accessToken && !isLoading) {
         return (
             <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <div className="h-full flex flex-col gap-2 items-center justify-center">
@@ -117,8 +117,8 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                     }
                     <Button
                         className={"px-2 group"}
-                        onClick={() => fetchData(true)}
-                        data-loading={loading ? "true" : "false"}
+                        onClick={() => refetch()}
+                        data-loading={isLoading ? "true" : "false"}
                         {...refreshTooltip}
                     >
                         <RefreshCw
@@ -137,7 +137,7 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                         </TabsTrigger>
                     </TabsList>
                 </Tabs>
-                {loading ? (
+                {(isLoading || isFetching) ? (
                     <div className="h-full grid grid-cols-1 gap-4 pt-2">
                         <Skeleton className={"h-full w-full px-2"} />
                         <Skeleton className={"h-full w-full px-2"} />
@@ -153,12 +153,12 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                             <PulLRequestCard pr={pr} key={pr.id}/>
                         ))}
                         {activeTab === "issues" && filteredIssues.length === 0 &&
-                            <div className={"flex justify-center items-center text-tertiary"}>
+                            <div className={"mt-4 flex justify-center items-center text-sm text-tertiary"}>
                                 No results found
                             </div>
                         }
                         {activeTab === "pull-requests" && filteredPRs.length === 0 &&
-                            <div className={"flex justify-center items-center text-tertiary"}>
+                            <div className={"mt-4 flex justify-center items-center text-sm text-tertiary"}>
                                 No results found
                             </div>
                         }

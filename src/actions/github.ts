@@ -3,84 +3,70 @@
 import { Octokit } from "@octokit/rest"
 
 async function fetchPaginated<T>(fetchFunction: (page: number) => Promise<{ data: T[] }>, perPage = 100): Promise<T[]> {
-    const results: T[] = []
+    const all: T[] = []
     let page = 1
 
     while (true) {
         const response = await fetchFunction(page)
-        const data = response.data
-        results.push(...data)
-        if (data.length < perPage) break
+        all.push(...response.data)
+        if (response.data.length < perPage) break
         page++
     }
-    return results
+    return all
 }
 
+
 export async function getAllRepos(accessToken: string):  Promise<{ repos: any[], octokit: Octokit | null }> {
-    const repos: any[] = []
+    const octokit = new Octokit({ auth: accessToken})
 
-    const octokit = new Octokit({
-        auth: accessToken,
-    })
+    const [userRepos, orgsResponse] = await Promise.all([
+        fetchPaginated(page => octokit.repos.listForAuthenticatedUser({ per_page: 100, page })),
+        octokit.orgs.listForAuthenticatedUser()])
 
-    const userRepos = await fetchPaginated((page) =>
-        octokit.repos.listForAuthenticatedUser({per_page: 100, page})
-    )
-    repos.push(...userRepos)
+    const orgReposLists = await Promise.all(
+        orgsResponse.data.map(org => fetchPaginated(page => octokit.repos.listForOrg({ org: org.login, per_page: 100, page }))))
 
-    const orgsResponse = await octokit.orgs.listForAuthenticatedUser()
-    const orgs = orgsResponse.data
+    const allRepos = [...userRepos, ...orgReposLists.flat()]
+    const repos = Array.from(new Map(allRepos.map(repo => [repo.id, repo])).values())
 
-    const orgReposPromises = orgs.map((org) =>
-        fetchPaginated((page) =>
-            octokit.repos.listForOrg({org: org.login, per_page: 100, page})
-        )
-    )
-    const orgReposList = await Promise.all(orgReposPromises)
-    orgReposList.map((orgRepos) => repos.push(...orgRepos))
-
-    return {repos, octokit}
+    return { repos, octokit }
 }
 
 export async function fetchOpenIssuesAndPullsFromAllRepos(userId: string) {
     const {repos, octokit} = await getAllRepos(userId)
     if (!octokit) return
 
-    const allIssues: any[] = []
-    const allPullRequests: any[] = []
-
-    const user = await octokit.request('GET /user', {
-        headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-        }
+    const userResponse = await octokit.request("GET /user", {
+        headers: { 'X-GitHub-Api-Version': '2022-11-28' }
     })
 
-    if (!user.data) return null
+    const login = userResponse.data.login
 
-    for (const repo of repos) {
-        let page = 1
-        let issues: any[]
-
-        do {
-            issues = (await octokit.issues.listForRepo({
+    const tasks = repos.map(repo =>
+        fetchPaginated(page =>
+            octokit.issues.listForRepo({
                 owner: repo.owner.login,
                 repo: repo.name,
                 state: "open",
                 per_page: 100,
                 page,
-            })).data
+            })
+        ).then(items => {
+            const issues = items
+                .filter(i => !i.pull_request)
+                .filter(i => i.assignees?.some(a => a.login === login) || i.assignee?.login === login)
+            const pulls = items
+                .filter(i => !!i.pull_request)
+                .filter(i => i.assignees?.some(a => a.login === login) || i.assignee?.login === login)
 
-            const pulls = issues.filter(issue => issue.pull_request !== undefined &&
-                (issue.assignees.some((a: any) => a.login === user.data.login) || issue.assignee?.login === user.data.login))
-            const issuesOnly = issues.filter(issue => issue.pull_request === undefined &&
-                (issue.assignees.some((a: any) => a.login === user.data.login) || issue.assignee?.login === user.data.login))
+            return { issues, pulls }
+        })
+    );
 
-            allIssues.push(...issuesOnly)
-            allPullRequests.push(...pulls)
+    const results = await Promise.all(tasks);
 
-            page++
-        } while (issues.length === 100)
-    }
+    const allIssues = results.flatMap(r => r.issues);
+    const allPullRequests = results.flatMap(r => r.pulls);
 
     return {allIssues, allPullRequests}
 }
