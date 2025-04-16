@@ -1,6 +1,5 @@
 "use server"
 
-import { cache } from "react"
 
 export interface ChartDataPoint {
     date: string
@@ -22,10 +21,9 @@ interface TwelveDataTimeSeriesItem {
     [key: string]: any
 }
 
-const CACHE_DURATION = 15 * 60 * 1000
 const TWELVEDATA_API_KEY = process.env.TWELVEDATA_API_KEY
 
-export const fetchStockData = cache(async (symbol: string, days = 7): Promise<AssetData | null> => {
+export const fetchStockData = async (symbol: string, days = 7): Promise<AssetData | null> => {
     const formatDate = (dateStr: string, isDay = false): string => {
         const date = new Date(dateStr)
 
@@ -34,15 +32,6 @@ export const fetchStockData = cache(async (symbol: string, days = 7): Promise<As
     }
 
     try {
-
-        const cacheKey = `stock-${symbol}-${days}`
-
-        const cachedData = globalThis.__stockCache?.[cacheKey] as AssetData | undefined
-
-        if (cachedData && cachedData.lastUpdated && Date.now() - cachedData.lastUpdated < CACHE_DURATION) {
-            return cachedData
-        }
-
         let url: string
         const isDay = days === 1
 
@@ -85,23 +74,14 @@ export const fetchStockData = cache(async (symbol: string, days = 7): Promise<As
             priceChangePercent = ((latestPrice - firstPrice) / firstPrice) * 100
         }
 
-        const result = {
+        return {
             chartData: dataPoints,
             currentPrice,
             priceChange,
             priceChangePercent,
             lastUpdated: Date.now(),
         }
-
-        if (!globalThis.__stockCache) globalThis.__stockCache = {}
-        globalThis.__stockCache[cacheKey] = result
-
-        return result
     } catch (err: any) {
         return null
     }
-})
-
-declare global {
-    var __stockCache: Record<string, AssetData> | undefined
 }

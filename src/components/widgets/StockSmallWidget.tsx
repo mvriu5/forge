@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useEffect} from "react"
+import React from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {TrendingDown, TrendingUp} from "lucide-react"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
@@ -19,7 +19,7 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
     const initialStock = widget.config?.stock
     const initialTimespan = widget.config?.timespan
 
-    const {assetData, loading, stock, setStock, timespan, setTimespan, yAxisDomain, assetOptions} = useStock(initialStock, initialTimespan)
+    const {data, isLoading, isError, stock, setStock, timespan, setTimespan, yAxisDomain, assetOptions} = useStock(initialStock, initialTimespan)
 
     const chartConfig = {
         price: {
@@ -63,9 +63,9 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                         </Select>
                     </div>
                     <div className={"flex items-center gap-2"}>
-                        {loading || Number.isNaN(assetData?.currentPrice ?? 0) || assetData?.currentPrice === undefined ?
+                        {isLoading || Number.isNaN(data?.currentPrice ?? 0) || data?.currentPrice === undefined ?
                             <Skeleton className="h-6 w-12"/> :
-                            <div className={"text-primary text-md text-semibold"}>{`$${Number(assetData?.currentPrice?.toFixed(2))}`}</div>
+                            <div className={"text-primary text-md text-semibold"}>{`$${Number(data?.currentPrice?.toFixed(2))}`}</div>
                         }
                         <Select
                             value={timespan}
@@ -88,26 +88,26 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                     </div>
                 </div>
 
-                {!assetData?.chartData &&
+                {!data?.chartData ||isError &&
                     <div className={"flex items-center justify-center h-full w-full"}>
                         <p className={"text-sm text-error"}>Error loading data</p>
                     </div>
                 }
-                <div className={cn("relative h-max bg-secondary rounded-md overflow-hidden", !assetData?.chartData && "hidden")}>
+                <div className={cn("relative h-max bg-secondary rounded-md overflow-hidden", (!data?.chartData || isError) && "hidden")}>
                     <div
                         className={cn(
                             "absolute bottom-1 left-1 flex items-center gap-1 px-2 py-0.5 bg-white/2 rounded-md shadow-xl w-max h-max",
-                            assetData?.priceChangePercent! >= 0 ? "text-success" : "text-error"
+                            data?.priceChangePercent! >= 0 ? "text-success" : "text-error"
                         )}
                     >
-                        {assetData?.priceChangePercent! >= 0 ? <TrendingUp size={20}/> : <TrendingDown size={20}/>}
-                        {`${Number(assetData?.priceChangePercent.toFixed(2))}%`}
+                        {data?.priceChangePercent! >= 0 ? <TrendingUp size={20}/> : <TrendingDown size={20}/>}
+                        {`${Number(data?.priceChangePercent.toFixed(2))}%`}
                     </div>
 
                     <ChartContainer config={chartConfig} className={"max-h-[108px] w-full"}>
                         <AreaChart
                             accessibilityLayer
-                            data={assetData?.chartData}
+                            data={data?.chartData}
                             margin={{
                                 top: 5,
                             }}
@@ -128,7 +128,7 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                             <Area
                                 dataKey="price"
                                 type="linear"
-                                stroke={assetData?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
+                                stroke={data?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
                                 fill="url(#fillArea)"
                                 fillOpacity={0.3}
                                 strokeWidth={2}
@@ -138,12 +138,12 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                                 <linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1">
                                     <stop
                                         offset="5%"
-                                        stopColor={assetData?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
+                                        stopColor={data?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
                                         stopOpacity={0.8}
                                     />
                                     <stop
                                         offset="95%"
-                                        stopColor={assetData?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
+                                        stopColor={data?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
                                         stopOpacity={0.1}
                                     />
                                 </linearGradient>

@@ -21,7 +21,7 @@ import {Skeleton} from "@/components/ui/Skeleton"
 import {useWeather} from "@/hooks/useWeather"
 
 const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
-    const {currentWeather, nextWeather, location, loading, error} = useWeather()
+    const {currentWeather, nextWeather, location, isLoading, isError, geolocationError} = useWeather()
 
     const getWeatherIcon = (code: number, size = 24) => {
         switch (code) {
@@ -41,7 +41,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
         }
     }
 
-    if (error) {
+    if (isError) {
         return (
             <WidgetTemplate className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
@@ -51,12 +51,23 @@ const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
             </WidgetTemplate>
         )
     }
+
+    if (geolocationError) {
+        return (
+            <WidgetTemplate className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+                <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
+                    <TriangleAlert size={32}/>
+                    Please enable your geolocation info.
+                </Callout>
+            </WidgetTemplate>
+        )
+    }
     
     return (
         <WidgetTemplate className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
 
             <div className={"h-full flex flex-col justify-between gap-4"}>
-                {loading ? (
+                {isLoading ? (
                     <Skeleton className={"w-full h-14"} />
                     ) : (
                     <div className={"h-full flex items-center gap-2 rounded-md bg-info/5 border border-info/20 px-2 h-10"}>
@@ -76,7 +87,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
 
 
                 <div className={"flex items-center gap-2 justify-between"}>
-                    {loading ? (
+                    {isLoading ? (
                         <div className={"h-full w-full flex items-center gap-4 px-4"}>
                             <Skeleton className={"h-16 w-1/5"}/>
                             <Skeleton className={"h-16 w-1/5"}/>
