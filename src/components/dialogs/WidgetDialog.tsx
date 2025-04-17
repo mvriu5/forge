@@ -118,7 +118,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                                 data-used={widgets?.find((w) => w.widgetType === widget.widgetType) ? "true" : "false"}
                                 data-selected={widget.widgetType === selectedWidget?.widgetType ? "true" : "false"}
                                 className={cn(
-                                    "group col-span-1 flex flex-col p-2 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
+                                    "relative group col-span-1 flex flex-col p-2 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
                                     "data-[selected=true]:border-brand/60 data-[used=true]:border-success/20 data-[selected=true]:bg-tertiary"
                                 )}
                                 onClick={() => handleSelect(widget)}
@@ -133,7 +133,9 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                                     </div>
                                 </div>
                                 <p className={"text-sm text-secondary"}>{widget.description}</p>
-                                <Image src={widget.previewImage} alt={widget.title} width={236} height={300} className={"mt-2 rounded-md opacity-50"}/>
+                                <div className={"absolute -right-2 -bottom-6 rounded-md shadow-md pt-0.5 pl-0.5 border border-main/40 bg-secondary"}>
+                                    <Image src={widget.previewImage} alt={widget.title} width={330} height={300}/>
+                                </div>
                             </div>
                         ))}
                     </div>

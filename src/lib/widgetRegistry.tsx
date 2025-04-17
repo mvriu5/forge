@@ -30,7 +30,7 @@ export const widgetRegistry: WidgetElement[] = [
             widgetType: "editor",
             height: 2,
             width: 2,
-            previewImage: '/sample.jpg',
+            previewImage: '/editor_preview.png',
             title: 'Editor',
             description: 'A simple text editor widget',
             tags: ["productivity"]
@@ -42,7 +42,7 @@ export const widgetRegistry: WidgetElement[] = [
             widgetType: "github",
             height: 2,
             width: 1,
-            previewImage: '/sample.jpg',
+            previewImage: '/github_preview.png',
             title: 'Github',
             description: 'See your open github issues & pull requests',
             tags: ["github"]
@@ -54,7 +54,7 @@ export const widgetRegistry: WidgetElement[] = [
             widgetType: "stockSmall",
             height: 1,
             width: 1,
-            previewImage: '/sample.jpg',
+            previewImage: '/stocksmall_preview.png',
             title: 'Stock',
             description: 'Track your stock data',
             tags: ["stock"]
@@ -66,7 +66,7 @@ export const widgetRegistry: WidgetElement[] = [
             widgetType: "stockMedium",
             height: 2,
             width: 1,
-            previewImage: '/sample.jpg',
+            previewImage: '/stockmedium_preview.png',
             title: 'Stock Overview',
             description: 'Track your stock data',
             tags: ["stock"]
@@ -78,7 +78,7 @@ export const widgetRegistry: WidgetElement[] = [
             widgetType: "weather",
             height: 1,
             width: 1,
-            previewImage: '/sample.jpg',
+            previewImage: '/weather_preview.png',
             title: 'Weather',
             description: 'See the weather in your location',
             tags: ["weather"]
@@ -90,7 +90,7 @@ export const widgetRegistry: WidgetElement[] = [
             widgetType: "bookmark",
             height: 2,
             width: 1,
-            previewImage: '/sample.jpg',
+            previewImage: '/bookmark_preview.png',
             title: 'Bookmark',
             description: 'Store your bookmarks',
             tags: ["productivity"]
