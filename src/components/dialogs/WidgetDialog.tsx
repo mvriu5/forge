@@ -80,7 +80,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                     <DialogTitle>
                         <p className={"flex items-center gap-2"}>
                             Select a widget
-                            <span className={"inline break-words text-tertiary font-normal"}>{`(${allWidgets.length})`}</span>
+                            <span className={"inline break-words text-tertiary font-normal"}>{`(${filteredWidgets.length})`}</span>
                         </p>
                     </DialogTitle>
                     <DialogClose/>
