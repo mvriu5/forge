@@ -1,31 +1,28 @@
 "use client"
 
-import React from "react"
+import React, {useMemo} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {TrendingDown, TrendingUp} from "lucide-react"
-import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
+import {ChartConfig} from "@/components/ui/Chart"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import {Skeleton} from "@/components/ui/Skeleton"
-import {Area, AreaChart, YAxis} from "recharts"
 import {cn} from "@/lib/utils"
 import {useStock} from "@/hooks/useStock"
 import {useWidgetStore} from "@/store/widgetStore"
+import {StockChart} from "@/components/widgets/components/StockChart"
 
 const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {refreshWidget} = useWidgetStore()
     const widget = useWidgetStore(state => state.getWidget("stockSmall"))
     if (!widget) return null
 
-    const initialStock = widget.config?.stock
-    const initialTimespan = widget.config?.timespan
+    const {data, isLoading, isError, stock, setStock, timespan, setTimespan, yAxisDomain, assetOptions} = useStock(widget.config?.stock, widget.config?.timespan)
 
-    const {data, isLoading, isError, stock, setStock, timespan, setTimespan, yAxisDomain, assetOptions} = useStock(initialStock, initialTimespan)
-
-    const chartConfig = {
-        price: {
-            label: "Price"
-        }
-    } satisfies ChartConfig
+    const chartData = useMemo(() => data?.chartData ?? [], [data?.chartData])
+    const percent = useMemo(() => data?.priceChangePercent ?? 0, [data?.priceChangePercent])
+    const gradientId = useMemo(() => `stockGrad-${widget.id}`, [widget.id])
+    const yDomain   = useMemo(() => yAxisDomain, [yAxisDomain])
+    const chartConfig = useMemo<ChartConfig>(() => ({ price: { label: "Price" } }), [])
 
     const handleSave = async (updatedConfig: Partial<{ stock: string, timespan: string }>) => {
         await refreshWidget({
@@ -103,53 +100,7 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                         {data?.priceChangePercent! >= 0 ? <TrendingUp size={20}/> : <TrendingDown size={20}/>}
                         {`${Number(data?.priceChangePercent.toFixed(2))}%`}
                     </div>
-
-                    <ChartContainer config={chartConfig} className={"max-h-[108px] w-full"}>
-                        <AreaChart
-                            accessibilityLayer
-                            data={data?.chartData}
-                            margin={{
-                                top: 5,
-                            }}
-                        >
-                            <ChartTooltip
-                                cursor={false}
-                                content={
-                                    <ChartTooltipContent
-                                        hideLabel
-                                        className={"z-50"}
-                                    />
-                                }
-                            />
-                            <YAxis
-                                domain={yAxisDomain}
-                                hide={true}
-                            />
-                            <Area
-                                dataKey="price"
-                                type="linear"
-                                stroke={data?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
-                                fill="url(#fillArea)"
-                                fillOpacity={0.3}
-                                strokeWidth={2}
-                                dot={false}
-                            />
-                            <defs>
-                                <linearGradient id="fillArea" x1="0" y1="0" x2="0" y2="1">
-                                    <stop
-                                        offset="5%"
-                                        stopColor={data?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
-                                        stopOpacity={0.8}
-                                    />
-                                    <stop
-                                        offset="95%"
-                                        stopColor={data?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
-                                        stopOpacity={0.1}
-                                    />
-                                </linearGradient>
-                            </defs>
-                        </AreaChart>
-                    </ChartContainer>
+                    <StockChart data={chartData} yAxisDomain={yDomain} priceChangePercent={percent} gradientId={gradientId} chartConfig={chartConfig}/>
                 </div>
             </div>
         </WidgetTemplate>

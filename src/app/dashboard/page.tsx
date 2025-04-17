@@ -1,7 +1,7 @@
 "use client"
 
 import {Header} from "@/components/Header"
-import React, {useRef} from "react"
+import React, {memo, useCallback, useRef} from "react"
 import {useEffect, useState} from "react"
 import {useSessionStore} from "@/store/sessionStore"
 import {useWidgetStore} from "@/store/widgetStore"
@@ -25,6 +25,7 @@ import {Blocks, CloudAlert} from "lucide-react"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { Button } from "@/components/ui/Button"
 import {useToast} from "@/components/ui/ToastProvider"
+import { useShallow } from "zustand/react/shallow"
 
 export default function Dashboard() {
     const {session, fetchSession} = useSessionStore()
@@ -47,6 +48,8 @@ export default function Dashboard() {
     const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
+
+    const widgetIds = useWidgetStore(useShallow((s) => s.widgets?.map((w) => w.id)))
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -157,12 +160,12 @@ export default function Dashboard() {
         setActiveWidget(null)
     }
 
-    const handleEditModeEnter = () => {
+    const handleEditModeEnter = useCallback(() => {
         setEditMode(true)
-        cachedWidgetsRef.current = widgets ?? null
-    }
+        cachedWidgetsRef.current = useWidgetStore.getState().widgets
+    }, [])
 
-    const handleEditModeSave = async () => {
+    const handleEditModeSave = useCallback(async () => {
         try {
             setEditModeLoading(true)
             if (!widgets) return
@@ -185,20 +188,18 @@ export default function Dashboard() {
             setEditMode(false)
             setEditModeLoading(false)
         }
-    }
+    }, [widgetsToRemove, removeWidget, saveWidgetsLayout, addToast])
 
-    const handleEditModeCancel = () => {
-        if (!cachedWidgetsRef.current) return
-        resetWidgets(cachedWidgetsRef.current)
+    const handleEditModeCancel = useCallback(() => {
+        if (cachedWidgetsRef.current) resetWidgets(cachedWidgetsRef.current)
         setEditMode(false)
         setWidgetsToRemove([])
-    }
+    }, [resetWidgets])
 
-    const handleEditModeDelete = async (id: string) => {
-        const widget = widgets?.find((w) => w.id === id)
-        if (!widget) return
-        if (widgetsToRemove) setWidgetsToRemove((w) => (w ? [...w, widget] : [widget]))
-    }
+    const handleEditModeDelete = useCallback((id: string) => {
+        const widget = useWidgetStore.getState().widgets?.find(w => w.id === id)
+        if (widget) setWidgetsToRemove((w) => [...w, widget])
+    }, [])
 
     if (loading) {
         return (
@@ -249,13 +250,9 @@ export default function Dashboard() {
                         <GridCell key={`${cell.x},${cell.y}`} x={cell.x} y={cell.y} isDroppable={cell.isDroppable} />
                     ))}
 
-                    {widgets
-                        ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
-                        .map((widget) => {
-                            const Component = getWidgetComponent(widget.widgetType)
-                            if (!Component) return null
-                            return <Component key={widget.id} name={widget.widgetType} editMode={editMode} onWidgetDelete={(id: string) => handleEditModeDelete(id)}/>
-                        }
+                    {widgetIds
+                        ?.filter((id) => !widgetsToRemove?.some((w) => w.id === id))
+                        .map((id) => <MemoizedWidget key={id} id={id} editMode={editMode} onDelete={handleEditModeDelete} />
                     )}
                 </div>
             </DndContext>
@@ -273,6 +270,22 @@ export default function Dashboard() {
         </div>
     )
 }
+
+interface WidgetProps {
+    id: string
+    onDelete: (id: string) => void
+    editMode: boolean
+}
+
+const Widget = ({ id, onDelete, editMode }: WidgetProps) => {
+    const widget = useWidgetStore(useShallow((s) => s.widgets?.find((w) => w.id === id)!))
+    const Component = getWidgetComponent(widget.widgetType)
+    const handleDelete = useCallback(() => onDelete(id), [onDelete, id])
+    if (!Component) return null
+    return <Component key={widget.id} id={widget.id} editMode={editMode} onWidgetDelete={handleDelete} />
+}
+
+const MemoizedWidget = memo(Widget, (prev, next) => prev.id === next.id && prev.onDelete === next.onDelete && prev.editMode === next.editMode)
 
 interface GridCellProps {
     x: number

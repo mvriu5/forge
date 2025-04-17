@@ -1,16 +1,19 @@
 "use client"
 
-import React, {useState} from "react"
+import React, {useMemo, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {useStock} from "@/hooks/useStock"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
 import {Area, AreaChart, YAxis} from "recharts"
 import {cn} from "@/lib/utils"
-import {TrendingDown, TrendingUp} from "lucide-react"
+import {TrendingDown, TrendingUp, TriangleAlert} from "lucide-react"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {StockSelect} from "@/components/widgets/components/StockSelect"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import {useWidgetStore} from "@/store/widgetStore"
+import {Skeleton} from "@/components/ui/Skeleton"
+import {Callout} from "@/components/ui/Callout"
+import {StockChart} from "@/components/widgets/components/StockChart"
 
 const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {refreshWidget} = useWidgetStore()
@@ -64,10 +67,13 @@ const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) =>
                     </div>
                 </div>
                 <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
-                    <div className={"flex flex-col gap-2"}>
+                    <div className={"w-full flex flex-col gap-2 items-center"}>
                         {selectedStocks.map((stock) => (
                             <Stock key={stock} selectedStock={stock} selectedTimespan={timespan} />
                         ))}
+                        {selectedStocks.length === 0 &&
+                            <p className={"text-sm text-tertiary mt-4"}>No stock added yet.</p>
+                        }
                     </div>
                 </ScrollArea>
             </div>
@@ -83,18 +89,21 @@ interface StockProps {
 const Stock = ({selectedStock, selectedTimespan}: StockProps) => {
     const { data, isLoading, isError, stock, yAxisDomain } = useStock(selectedStock, selectedTimespan)
 
-    const chartConfig = {
-        price: {
-            label: "Price"
-        }
-    } satisfies ChartConfig
+    const chartData = useMemo(() => data?.chartData ?? [], [data?.chartData])
+    const percent = useMemo(() => data?.priceChangePercent ?? 0, [data?.priceChangePercent])
+    const gradientId = useMemo(() => `stockGrad-${stock}`, [stock])
+    const yDomain   = useMemo(() => yAxisDomain, [yAxisDomain])
+    const chartConfig = useMemo<ChartConfig>(() => ({ price: { label: "Price" } }), [])
 
     return (
-        <div className="relative flex items-center gap-2 bg-secondary rounded-md py-2 shadow-md">
+        <div className="relative w-full flex items-center gap-2 bg-secondary rounded-md py-2 shadow-md">
             <div className={"flex flex-col items-center gap-2 px-2"}>
                 <div className={"w-full flex flex-col items-center gap-2 p-1 rounded-md border border-main/20"}>
                     <p className={"text-primary font-semibold"}>{stock}</p>
-                    <p className={"text-secondary"}>{`$${Number(data?.currentPrice?.toFixed(2))}`}</p>
+                    {isLoading ?
+                        <Skeleton className={"w-16 h-6"}/> :
+                        <p className={"text-secondary"}>{`$${Number(data?.currentPrice?.toFixed(2))}`}</p>
+                    }
                 </div>
 
                 <div
@@ -108,51 +117,13 @@ const Stock = ({selectedStock, selectedTimespan}: StockProps) => {
                 </div>
 
             </div>
-            <ChartContainer config={chartConfig} className={"max-h-[100px] w-full"}>
-                <AreaChart
-                    accessibilityLayer
-                    data={data?.chartData}
-                    margin={{
-                    }}
-                >
-                    <ChartTooltip
-                        cursor={false}
-                        content={
-                            <ChartTooltipContent
-                                hideLabel
-                                className={"z-50"}
-                            />
-                        }
-                    />
-                    <YAxis
-                        domain={yAxisDomain}
-                        hide={true}
-                    />
-                    <Area
-                        dataKey="price"
-                        type="linear"
-                        stroke={data?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
-                        fill={`url(#fillArea-${selectedStock})`}
-                        fillOpacity={0.3}
-                        strokeWidth={2}
-                        dot={false}
-                    />
-                    <defs>
-                        <linearGradient id={`fillArea-${selectedStock}`} x1="0" y1="0" x2="0" y2="1">
-                            <stop
-                                offset="5%"
-                                stopColor={data?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
-                                stopOpacity={0.8}
-                            />
-                            <stop
-                                offset="95%"
-                                stopColor={data?.priceChangePercent! >= 0 ? "#398e3d" : "#d33131"}
-                                stopOpacity={0.1}
-                            />
-                        </linearGradient>
-                    </defs>
-                </AreaChart>
-            </ChartContainer>
+            {isError &&
+                <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
+                    <TriangleAlert size={32}/>
+                    An error occurred while loading chart data. Try again later.
+                </Callout>
+            }
+            <StockChart data={chartData} yAxisDomain={yDomain} priceChangePercent={percent} gradientId={gradientId} chartConfig={chartConfig}/>
         </div>
     )
 }
