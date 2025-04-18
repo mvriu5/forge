@@ -19,6 +19,7 @@ import {useToast} from "@/components/ui/ToastProvider"
 import { useShallow } from "zustand/react/shallow"
 import {useGrid} from "@/hooks/useGrid"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
+import {ForgeLogo} from "@/components/svg/ForgeLogo"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
@@ -95,17 +96,12 @@ export default function Dashboard() {
 
     if (loading) {
         return (
-            <div className={"flex flex-col w-full h-full"}>
+            <div className={"flex flex-col w-screen h-screen"}>
                 <Header onEdit={handleEditModeEnter} editMode={editMode}/>
-                <div
-                    className={"grid gird-cols-4 gap-8 p-8 h-[calc(100vh-64px)] w-full"}
-                    style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
-                >
-                    <Skeleton className={"col-span-3 row-span-1 dark:bg-tertiary rounded-md"}/>
-                    <Skeleton className={"col-span-2 row-span-2 dark:bg-tertiary rounded-md"}/>
-                    <Skeleton className={"col-span-1 row-span-2 dark:bg-tertiary rounded-md"}/>
-                    <Skeleton className={"col-span-1 row-span-1 dark:bg-tertiary rounded-md"}/>
-                    <Skeleton className={"col-span-2 row-span-1 dark:bg-tertiary rounded-md"}/>
+                <div className={"h-full w-full flex items-center justify-center"}>
+                    <div className={"animate-spin"}>
+                        <ForgeLogo size={56}/>
+                    </div>
                 </div>
             </div>
         )

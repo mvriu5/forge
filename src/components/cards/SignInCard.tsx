@@ -12,6 +12,7 @@ import {useState} from "react";
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {CloudAlert, Github} from "lucide-react";
 import {GoogleIcon} from "@/components/svg/GoogleIcon"
+import {ForgeLogo} from "@/components/svg/ForgeLogo"
 
 function SignInCard() {
     const router = useRouter()
@@ -39,9 +40,6 @@ function SignInCard() {
         }, {
             onRequest: (ctx) => {
                 setLoading(true)
-            },
-            onSuccess: (ctx) => {
-                setLoading(false)
             },
             onError: (ctx) => {
                 if (ctx.error.status === 403) {
@@ -96,7 +94,10 @@ function SignInCard() {
     return (
         <div className={"w-80 h-max rounded-md border border-main/60 bg-primary p-8 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
-                <p className={"text-lg text-primary font-bold"}>Sign In</p>
+                <div className={"flex gap-2 items-center"}>
+                    <ForgeLogo/>
+                    <p className={"text-lg text-primary font-bold"}>Sign In</p>
+                </div>
                 <p className={"text-sm text-secondary"}>Log into your account to continue.</p>
             </div>
 
@@ -155,7 +156,7 @@ function SignInCard() {
                             type={"button"}
                             variant="ghost"
                             onClick={() => router.replace("/signup")}
-                            className={"bg-transparent hover:bg-transparent hover:text-primary font-normal w-max hover:underline text-sm px-0"}
+                            className={"bg-transparent hover:bg-transparent hover:text-primary font-mono font-normal w-max hover:underline text-sm px-0"}
                         >
                             Sign Up
                         </Button>
@@ -164,7 +165,7 @@ function SignInCard() {
                         type={"button"}
                         variant="ghost"
                         onClick={() => router.replace("/forgot")}
-                        className={"bg-transparent hover:bg-transparent hover:text-secondary text-tertiary font-normal w-max hover:underline text-xs px-0"}
+                        className={"bg-transparent hover:bg-transparent hover:text-secondary font-mono text-tertiary font-normal w-max hover:underline text-xs px-0"}
                     >
                         Forgot Password
                     </Button>

@@ -7,6 +7,7 @@ import {useEffect, useRef, useState} from "react"
 import {cn} from "@/lib/utils"
 import {Anvil} from "lucide-react"
 import { Button } from "@/components/ui/Button"
+import {ForgeLogo} from "@/components/svg/ForgeLogo"
 
 type NavItem = {
     title: string
@@ -72,8 +73,8 @@ function Navbar() {
                             animate={{opacity: 1, filter: 'blur(0px)', y: 0}}
                             transition={{duration: 0.65}}
                 >
-                    <Anvil size={22}/>
-                    <p className={cn("font-bold text-xl font-mono")}>Forge</p>
+                    <ForgeLogo/>
+                    <p className={cn("font-semibold text-xl font-mono")}>forge</p>
                 </motion.div>
 
                 <div className={"relative flex flex-row items-center pl-4"}

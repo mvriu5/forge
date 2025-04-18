@@ -5,6 +5,7 @@ import {Anvil, LayoutTemplate} from "lucide-react"
 import {ProfilePopover} from "@/components/popovers/ProfilePopover"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
 import { tooltip } from "@/components/ui/TooltipProvider"
+import {ForgeLogo} from "@/components/svg/ForgeLogo"
 
 interface HeaderProps {
     onEdit: () => void
@@ -23,9 +24,9 @@ function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
     return (
         <div className={"w-full top-0 left-0 h-14 px-8 flex justify-between items-center bg-primary border-b border-main/40"}>
             <div className={"flex items-center gap-4"}>
-                <div className={"flex items-center gap-2"}>
-                    <Anvil size={22}/>
-                    <span className={"text-xl font-semibold"}>Forge</span>
+                <div className={"flex items-center gap-4"}>
+                    <ForgeLogo/>
+                    <span className={"text-xl text-primary font-mono font-semibold"}>forge</span>
                 </div>
                 <div className={"h-6 w-px border-r-2 border-main"}/>
                 <div className={"flex gap-2"}>

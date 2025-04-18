@@ -10,6 +10,7 @@ import {cn} from "@/lib/utils"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/Popover";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
+import {ButtonSpinner} from "@/components/ButtonSpinner"
 
 function ProfilePopover({editMode}: {editMode: boolean}) {
     const {session, setSession} = useSessionStore()
@@ -17,16 +18,22 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [signOutLoading, setSignOutLoading] = useState(false)
 
     useEffect(() => {
         if (session) setLoading(false)
     }, [session])
 
     const onSignout = async () => {
-        setOpen(false)
-        setSession(null)
+        setSignOutLoading(true)
+
         await authClient.signOut()
+
         router.replace("/")
+
+        setTimeout(() => {
+            setSession(null)
+        }, 500)
     }
 
     return (
@@ -67,7 +74,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                     className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-error/10 text-error"}
                     onClick={onSignout}
                 >
-                    <LogOut size={16} className={"text-error/65"}/>
+                    {signOutLoading ? <ButtonSpinner className={"text-error"}/> : <LogOut size={16} className={"text-error/65"}/>}
                     <p>Logout</p>
                 </button>
             </PopoverContent>

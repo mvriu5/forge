@@ -12,6 +12,7 @@ import {useState} from "react";
 import {CloudAlert, Github} from "lucide-react"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {GoogleIcon} from "@/components/svg/GoogleIcon"
+import {ForgeLogo} from "@/components/svg/ForgeLogo"
 
 function SignUpCard() {
     const router = useRouter()
@@ -45,7 +46,6 @@ function SignUpCard() {
             },
             onSuccess: (ctx) => {
                 router.push("/signin")
-                setLoading(false)
             },
             onError: (ctx) => {
                 setLoading(false)
@@ -93,7 +93,10 @@ function SignUpCard() {
     return (
         <div className={"w-80 h-max rounded-md border border-main/60 bg-primary p-8 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
-                <p className={"text-lg text-primary font-bold"}>Sign Up</p>
+                <div className={"flex gap-2 items-center"}>
+                    <ForgeLogo/>
+                    <p className={"text-lg text-primary font-bold"}>Sign Up</p>
+                </div>
                 <p className={"text-sm text-secondary"}>Create an account to continue.</p>
             </div>
 
@@ -163,7 +166,7 @@ function SignUpCard() {
                             type={"button"}
                             variant="ghost"
                             onClick={() => router.replace("/signin")}
-                            className={"bg-transparent hover:bg-transparent hover:text-primary font-normal w-max hover:underline text-sm px-0"}
+                            className={"bg-transparent hover:bg-transparent hover:text-primary font-mono font-normal w-max hover:underline text-sm px-0"}
                         >
                             Sign In
                         </Button>

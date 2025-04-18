@@ -11,6 +11,7 @@ import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {CloudAlert} from "lucide-react"
+import {ForgeLogo} from "@/components/svg/ForgeLogo"
 
 function ResetPasswordCard() {
     const router = useRouter()
@@ -45,7 +46,6 @@ function ResetPasswordCard() {
             },
             onSuccess: (ctx) => {
                 router.push("/signin")
-                setLoading(false)
             },
             onError: (ctx) => {
                 addToast({
@@ -62,7 +62,10 @@ function ResetPasswordCard() {
     return (
         <div className={"w-80 h-max rounded-md border border-main/60 bg-primary p-8 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
-                <p className={"text-lg text-primary font-bold"}>Reset password</p>
+                <div className={"flex gap-2 items-center"}>
+                    <ForgeLogo/>
+                    <p className={"text-lg text-primary font-bold"}>Reset password</p>
+                </div>
                 <p className={"text-sm text-secondary"}>Type your new password to continue.</p>
             </div>
 
@@ -73,7 +76,7 @@ function ResetPasswordCard() {
                         name="password"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>New Password</FormLabel>
+                                <FormLabel>New password</FormLabel>
                                 <FormInput placeholder="Password" type={"password"} {...field} />
                                 <FormMessage />
                             </FormItem>

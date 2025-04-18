@@ -7,10 +7,11 @@ import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
 import {ButtonSpinner} from "@/components/ButtonSpinner"
-import {CloudAlert} from "lucide-react"
+import {CloudAlert, Mailbox} from "lucide-react"
 import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form";
 import { useToast } from "@/components/ui/ToastProvider";
 import {Button} from "@/components/ui/Button"
+import {ForgeLogo} from "@/components/svg/ForgeLogo"
 
 function ForgotPasswordCard() {
     const {addToast} = useToast()
@@ -35,6 +36,11 @@ function ForgotPasswordCard() {
                 setLoading(true)
             },
             onSuccess: (ctx) => {
+                addToast({
+                    title: "Reset E-Mail was sent.",
+                    subtitle: "Please check your mails.",
+                    icon: <Mailbox size={24} className={"text-brand"}/>
+                })
                 setLoading(false)
             },
             onError: (ctx) => {
@@ -51,7 +57,10 @@ function ForgotPasswordCard() {
     return (
         <div className={"w-80 h-max rounded-md border border-main/60 bg-primary p-8 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
-                <p className={"text-lg text-primary font-bold"}>Forgot password</p>
+                <div className={"flex gap-2 items-center"}>
+                    <ForgeLogo/>
+                    <p className={"text-lg text-primary font-bold"}>Forgot password</p>
+                </div>
                 <p className={"text-sm text-secondary"}>Submit your email to continue.</p>
             </div>
 

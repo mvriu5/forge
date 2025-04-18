@@ -4,6 +4,8 @@ import "./globals.css"
 import type {ReactNode} from "react"
 import {siteConfig} from "@/lib/site-config"
 import {Providers} from "@/components/Providers"
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const geistSans = Geist({variable: "--font-geist-sans", subsets: ["latin"]})
 
@@ -15,6 +17,8 @@ export default function RootLayout({children}: Readonly<{ children: ReactNode }>
     return (
         <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}>
+                <Analytics />
+                <SpeedInsights />
                 <Providers>
                     {children}
                 </Providers>
