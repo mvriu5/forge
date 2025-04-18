@@ -13,9 +13,11 @@ export const useWeather = () => {
         }
 
         navigator.geolocation.getCurrentPosition((position) => {
-            setCoords({lat: position.coords.latitude, lon: position.coords.longitude})},
-            () => setGeolocationError(true))
+            setCoords({lat: position.coords.latitude, lon: position.coords.longitude})
+        }, () => setGeolocationError(true))
     }, [])
+
+    const isGeoLoading = coords === null && !geolocationError
 
     const { data: locationData } = useQuery({
         queryKey: ["reverse-geocoding", coords],
@@ -25,7 +27,7 @@ export const useWeather = () => {
 
     const location = locationData?.address?.town ?? null
 
-    const { data: weatherData, isLoading, isError } = useQuery({
+    const { data: weatherData, isLoading: isWeatherLoading, isError } = useQuery({
         queryKey: ["weather", coords],
         queryFn: async () => await fetchWeatherData(coords!.lat, coords!.lon),
         enabled: !!coords,
@@ -71,7 +73,7 @@ export const useWeather = () => {
         location,
         currentWeather,
         nextWeather,
-        isLoading,
+        isLoading: isGeoLoading || isWeatherLoading,
         isError,
         geolocationError
     }

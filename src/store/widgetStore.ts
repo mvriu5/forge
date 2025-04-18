@@ -9,7 +9,6 @@ interface WidgetStore {
     getWidget: (widgetName: string) => Widget | undefined
     getAllWidgets: (userId: string) => Promise<void>
     updateWidgetPosition: (id: string, x: number, y: number) => void
-    resetWidgets: (widgets: Widget[]) => void
     saveWidgetsLayout: () => Promise<void>
 }
 
@@ -81,10 +80,6 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
                 widget.id === id ? { ...widget, positionX: x, positionY: y } : widget
             )
         }))
-    },
-
-    resetWidgets: (widgets: Widget[]) => {
-        set({ widgets })
     },
 
     saveWidgetsLayout: async () => {

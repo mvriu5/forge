@@ -7,16 +7,7 @@ import {useSessionStore} from "@/store/sessionStore"
 import {useWidgetStore} from "@/store/widgetStore"
 import {getWidgetComponent} from "@/lib/widgetRegistry"
 import {useIntegrationStore} from "@/store/integrationStore"
-import {
-    DndContext,
-    DragEndEvent,
-    DragStartEvent,
-    MouseSensor,
-    TouchSensor,
-    useDroppable,
-    useSensor,
-    useSensors
-} from "@dnd-kit/core"
+import {DndContext, useDroppable} from "@dnd-kit/core"
 import type {Widget} from "@/database"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {EmptyAddSVG} from "@/components/svg/EmptyAddSVG"
@@ -26,44 +17,27 @@ import { Skeleton } from "@/components/ui/Skeleton"
 import { Button } from "@/components/ui/Button"
 import {useToast} from "@/components/ui/ToastProvider"
 import { useShallow } from "zustand/react/shallow"
+import {useGrid} from "@/hooks/useGrid"
+import {useDragAndDrop} from "@/hooks/useDragAndDrop"
 
 export default function Dashboard() {
-    const {session, fetchSession} = useSessionStore()
-    const {
-        widgets,
-        getAllWidgets,
-        updateWidgetPosition,
-        removeWidget,
-        resetWidgets,
-        saveWidgetsLayout
-    } = useWidgetStore()
+    const { session, fetchSession } = useSessionStore()
+    const { widgets, getAllWidgets, removeWidget, saveWidgetsLayout } = useWidgetStore()
     const { fetchIntegrations } = useIntegrationStore()
     const { addToast } = useToast()
 
-    const [gridCells, setGridCells] = useState<{ x: number; y: number; isDroppable: boolean }[]>([])
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
     const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
     const [editMode, setEditMode] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
 
+    const gridCells = useGrid(activeWidget)
+    const { sensors, handleDragStart, handleDragEnd } = useDragAndDrop(editMode, setActiveWidget)
+
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
     const widgetIds = useWidgetStore(useShallow((s) => s.widgets?.map((w) => w.id)))
-
-    const sensors = useSensors(
-        useSensor(MouseSensor, {
-            activationConstraint: {
-                distance: 10,
-            },
-        }),
-        useSensor(TouchSensor, {
-            activationConstraint: {
-                delay: 250,
-                tolerance: 5,
-            },
-        })
-    )
 
     useEffect(() => {
         setLoading(true)
@@ -77,88 +51,6 @@ export default function Dashboard() {
             setLoading(false)
         }
     }, [session, getAllWidgets, fetchIntegrations])
-
-    const getOccupiedCells = () => {
-        const occupiedCells: Record<string, boolean> = {}
-
-        widgets?.map((widget) => {
-            if (activeWidget && widget.id === activeWidget.id) return
-
-            const { width, height, positionX, positionY } = widget
-
-            for (let i = 0; i < width; i++) {
-                for (let j = 0; j < height; j++) {
-                    occupiedCells[`${positionX + i},${positionY + j}`] = true
-                }
-            }
-        })
-
-        return occupiedCells
-    }
-
-    const canPlaceWidget = (widget: { width: number; height: number }, x: number, y: number) => {
-        const { width, height } = widget
-        const occupiedCells = getOccupiedCells()
-
-        if (x + width > 4 || y + height > 4) {
-            return false
-        }
-
-        for (let i = 0; i < width; i++) {
-            for (let j = 0; j < height; j++) {
-                const cellKey = `${x + i},${y + j}`
-                if (occupiedCells[cellKey]) {
-                    return false
-                }
-            }
-        }
-
-        return true
-    }
-
-    useEffect(() => {
-        const cells = []
-        const occupiedCells = getOccupiedCells()
-
-        for (let y = 0; y < 4; y++) {
-            for (let x = 0; x < 4; x++) {
-                const isOccupied = occupiedCells[`${x},${y}`]
-                let isDroppable = false
-
-                if (activeWidget && !isOccupied) {
-                    isDroppable = canPlaceWidget(activeWidget, x, y)
-                }
-
-                cells.push({ x, y, isDroppable })
-            }
-        }
-
-        setGridCells(cells)
-    }, [activeWidget, widgets])
-
-    const handleDragStart = (event: DragStartEvent) => {
-        if (!editMode) return
-
-        const { active } = event
-        const activeWidgetData = widgets?.find((w) => w.id === active.id)
-        if (activeWidgetData) {
-            setActiveWidget(activeWidgetData)
-        }
-    }
-
-    const handleDragEnd = (event: DragEndEvent) => {
-        if (!editMode) return
-
-        const { active, over } = event
-
-        if (over && active.id !== over.id) {
-            const { x, y } = over.data.current as { x: number; y: number }
-
-            updateWidgetPosition(active.id as string, x, y)
-        }
-
-        setActiveWidget(null)
-    }
 
     const handleEditModeEnter = useCallback(() => {
         setEditMode(true)
@@ -188,13 +80,13 @@ export default function Dashboard() {
             setEditMode(false)
             setEditModeLoading(false)
         }
-    }, [widgetsToRemove, removeWidget, saveWidgetsLayout, addToast])
+    }, [removeWidget, saveWidgetsLayout, addToast, widgets])
 
     const handleEditModeCancel = useCallback(() => {
-        if (cachedWidgetsRef.current) resetWidgets(cachedWidgetsRef.current)
+        if (cachedWidgetsRef.current) useWidgetStore.setState({ widgets: cachedWidgetsRef.current })
         setEditMode(false)
         setWidgetsToRemove([])
-    }, [resetWidgets])
+    }, [])
 
     const handleEditModeDelete = useCallback((id: string) => {
         const widget = useWidgetStore.getState().widgets?.find(w => w.id === id)
@@ -277,7 +169,7 @@ interface WidgetProps {
     editMode: boolean
 }
 
-const Widget = ({ id, onDelete, editMode }: WidgetProps) => {
+const WidgetComponent = ({ id, onDelete, editMode }: WidgetProps) => {
     const widget = useWidgetStore(useShallow((s) => s.widgets?.find((w) => w.id === id)!))
     const Component = getWidgetComponent(widget.widgetType)
     const handleDelete = useCallback(() => onDelete(id), [onDelete, id])
@@ -285,7 +177,7 @@ const Widget = ({ id, onDelete, editMode }: WidgetProps) => {
     return <Component key={widget.id} id={widget.id} editMode={editMode} onWidgetDelete={handleDelete} />
 }
 
-const MemoizedWidget = memo(Widget, (prev, next) => prev.id === next.id && prev.onDelete === next.onDelete && prev.editMode === next.editMode)
+const MemoizedWidget = memo(WidgetComponent, (prev, next) => prev.id === next.id && prev.onDelete === next.onDelete && prev.editMode === next.editMode)
 
 interface GridCellProps {
     x: number
@@ -303,7 +195,7 @@ const GridCell = ({ x, y, isDroppable }: GridCellProps) => {
     return (
         <div
             ref={setNodeRef}
-            className={`min-h-[180px] rounded-md border-2 ${
+            className={`min-h-[160px] rounded-md border-2 ${
                 isDroppable
                     ? isOver
                         ? "border-dashed border-main bg-tertiary"

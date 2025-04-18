@@ -41,6 +41,26 @@ const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
         }
     }
 
+    if (isLoading) {
+        return (
+            <WidgetTemplate
+                className={"col-span-1 row-span-1 h-full flex flex-col justify-between gap-4"}
+                name={"weather"}
+                editMode={editMode}
+                onWidgetDelete={onWidgetDelete}
+            >
+                <Skeleton className={"w-full h-14"} />
+                <div className={"h-full w-full flex items-center gap-4 px-4"}>
+                    <Skeleton className={"h-16 w-1/5"}/>
+                    <Skeleton className={"h-16 w-1/5"}/>
+                    <Skeleton className={"h-16 w-1/5"}/>
+                    <Skeleton className={"h-16 w-1/5"}/>
+                    <Skeleton className={"h-16 w-1/5"}/>
+                </div>
+            </WidgetTemplate>
+        )
+    }
+
     if (isError) {
         return (
             <WidgetTemplate className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
@@ -67,46 +87,29 @@ const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
         <WidgetTemplate className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
 
             <div className={"h-full flex flex-col justify-between gap-4"}>
-                {isLoading ? (
-                    <Skeleton className={"w-full h-14"} />
-                    ) : (
-                    <div className={"h-full flex items-center gap-2 rounded-md bg-info/5 border border-info/20 px-2 h-10"}>
-                        <div className={"text-primary"}>
-                            {getWeatherIcon(currentWeather?.weathercode, 28)}
-                        </div>
-                        <p className={"text-lg text-primary font-semibold"}>{`${currentWeather?.temperature}°C`}</p>
-                        <div
-                            data-state={location ? "true" : "false"}
-                            className={"w-full flex gap-1 items-center justify-end text-sm text-tertiary data-[state=false]:hidden"}
-                        >
-                            <MapPinned size={14}/>
-                            <p className={"font-mono"}>{location}</p>
-                        </div>
+                <div className={"h-full flex items-center gap-2 rounded-md bg-info/5 border border-info/20 px-2 py-1"}>
+                    <div className={"text-primary"}>
+                        {getWeatherIcon(currentWeather?.weathercode, 28)}
                     </div>
-                )}
-
-
+                    <p className={"text-lg text-primary font-semibold"}>{`${currentWeather?.temperature}°C`}</p>
+                    <div
+                        data-state={location ? "true" : "false"}
+                        className={"w-full flex gap-1 items-center justify-end text-sm text-tertiary data-[state=false]:hidden"}
+                    >
+                        <MapPinned size={14}/>
+                        <p className={"font-mono"}>{location}</p>
+                    </div>
+                </div>
                 <div className={"flex items-center gap-2 justify-between"}>
-                    {isLoading ? (
-                        <div className={"h-full w-full flex items-center gap-4 px-4"}>
-                            <Skeleton className={"h-16 w-1/5"}/>
-                            <Skeleton className={"h-16 w-1/5"}/>
-                            <Skeleton className={"h-16 w-1/5"}/>
-                            <Skeleton className={"h-16 w-1/5"}/>
-                            <Skeleton className={"h-16 w-1/5"}/>
-                        </div>
-                        ) : (
-                        <div className={" h-full w-full flex items-center justify-between px-4"}>
-                            {nextWeather?.map((weather: any) =>
-                                <div className={"flex flex-col items-center gap-1"} key={weather.time}>
-                                    <p className={"text-xs text-tertiary"}>{formatDate(weather.time, "hh aa")}</p>
-                                    {getWeatherIcon(weather.weathercode)}
-                                    <p className={"text-primary"}>{`${Number(weather.temperature.toFixed(0))}°C`}</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
+                    <div className={"h-full w-full flex items-center justify-between px-4"}>
+                        {nextWeather?.map((weather: any) =>
+                            <div className={"flex flex-col items-center gap-1"} key={weather.time}>
+                                <p className={"text-xs text-tertiary"}>{formatDate(weather.time, "hh aa")}</p>
+                                {getWeatherIcon(weather.weathercode)}
+                                <p className={"text-primary"}>{`${Number(weather.temperature.toFixed(0))}°C`}</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </WidgetTemplate>
