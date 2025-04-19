@@ -14,3 +14,12 @@ export const CONTAINER_STYLES = {
         "origin-[--radix-dropdown-menu-content-transform-origin] origin-[--radix-hover-card-content-transform-origin]"
     )
 }
+
+export function hexToRgba(hex: string, alpha: number) {
+    const [r, g, b] = hex
+        .replace(/^#/, "")
+        .match(/.{2}/g)!
+        .map((h) => Number.parseInt(h, 16))
+
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}

@@ -37,7 +37,7 @@ const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) =>
         <WidgetTemplate className={"col-span-1 row-span-2"} name={"stockMedium"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <div className={"h-full flex flex-col gap-2"}>
                 <div className={"flex items-center justify-between gap-2"}>
-                    <p className={"text-lg text-primary font-semibold"}>Stock Overview</p>
+                    <p className={"text-lg text-primary font-semibold truncate"}>Stock Overview</p>
                     <div className={"flex items-center gap-2"}>
                         <StockSelect
                             value={selectedStocks}
@@ -96,9 +96,9 @@ const Stock = ({selectedStock, selectedTimespan}: StockProps) => {
     const chartConfig = useMemo<ChartConfig>(() => ({ price: { label: "Price" } }), [])
 
     return (
-        <div className="relative w-full flex items-center gap-2 bg-secondary rounded-md py-2 shadow-md">
+        <div className="relative w-full flex items-center gap-2 bg-secondary rounded-md py-2 shadow-md border border-main/20">
             <div className={"flex flex-col items-center gap-2 px-2"}>
-                <div className={"w-full flex flex-col items-center gap-2 p-1 rounded-md border border-main/20"}>
+                <div className={"w-full flex flex-col items-center gap-2 p-1 bg-linear-to-b from-primary/20 via-primary/50 to-brand/5 rounded-md"}>
                     <p className={"text-primary font-semibold"}>{stock}</p>
                     {isLoading ?
                         <Skeleton className={"w-16 h-6"}/> :

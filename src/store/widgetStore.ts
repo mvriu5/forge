@@ -52,6 +52,7 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
     removeWidget: async (widget: Widget) => {
         try {
             await fetch(`/api/widgets?id=${widget.id}`, { method: "DELETE" })
+
             set({
                 widgets: get().widgets!.filter((w) => w.id !== widget.id)
             })
@@ -85,6 +86,7 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
     saveWidgetsLayout: async () => {
         const { widgets } = get()
         if (!widgets) return
+
         await Promise.all(
             widgets.map(async (widget) => {
                 const response = await fetch("/api/widgets", {

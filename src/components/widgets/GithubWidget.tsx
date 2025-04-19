@@ -1,11 +1,10 @@
 "use client"
 
 import type React from "react"
-import {useCallback, useEffect, useState} from "react"
-import {fetchOpenIssuesAndPullsFromAllRepos} from "@/actions/github"
 import {WidgetProps, WidgetTemplate} from "./WidgetTemplate"
 import {
-    AlertCircle, Blocks,
+    AlertCircle,
+    Blocks,
     CloudAlert,
     Filter,
     FolderGit,
@@ -17,17 +16,17 @@ import {
 import {formatDate} from "date-fns"
 import type {MenuItem} from "@/lib/menu-types"
 import {authClient} from "@/lib/auth-client"
-import { Callout } from "@/components/ui/Callout"
-import { Button } from "@/components/ui/Button"
-import { Badge } from "@/components/ui/Badge"
-import { Input } from "@/components/ui/Input"
-import { DropdownMenu } from "@/components/ui/Dropdown"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs"
-import { Skeleton } from "@/components/ui/Skeleton"
-import { ScrollArea } from "@/components/ui/ScrollArea"
+import {Callout} from "@/components/ui/Callout"
+import {Button} from "@/components/ui/Button"
+import {Badge} from "@/components/ui/Badge"
+import {Input} from "@/components/ui/Input"
+import {DropdownMenu} from "@/components/ui/Dropdown"
+import {Tabs, TabsList, TabsTrigger} from "@/components/ui/Tabs"
+import {Skeleton} from "@/components/ui/Skeleton"
+import {ScrollArea} from "@/components/ui/ScrollArea"
 import {useToast} from "@/components/ui/ToastProvider"
 import {tooltip} from "@/components/ui/TooltipProvider"
-import { useGithub } from "@/hooks/useGithub"
+import {useGithub} from "@/hooks/useGithub"
 
 const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch, githubIntegration} = useGithub()

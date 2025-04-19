@@ -7,6 +7,7 @@ import {StockSmallWidget} from "@/components/widgets/StockSmallWidget"
 import {WeatherWidget} from "@/components/widgets/WeatherWidget"
 import {StockMediumWidget} from "@/components/widgets/StockMediumWidget"
 import {BookmarkWidget} from "@/components/widgets/BookmarkWidget"
+import {LinearWidget} from "@/components/widgets/LinearWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -96,6 +97,18 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["productivity"]
         },
         component: BookmarkWidget
+    },
+    {
+        preview: {
+            widgetType: "linear",
+            height: 2,
+            width: 2,
+            previewImage: '/linear_preview.png',
+            title: 'Linear Tasks',
+            description: 'See all your assigned linear tasks',
+            tags: ["productivity"]
+        },
+        component: LinearWidget
     }
 
 ]

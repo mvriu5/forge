@@ -1,8 +1,7 @@
 "use client"
 
 import {Header} from "@/components/Header"
-import React, {memo, useCallback, useRef} from "react"
-import {useEffect, useState} from "react"
+import React, {memo, useCallback, useEffect, useState, useRef} from "react"
 import {useSessionStore} from "@/store/sessionStore"
 import {useWidgetStore} from "@/store/widgetStore"
 import {getWidgetComponent} from "@/lib/widgetRegistry"
@@ -13,7 +12,6 @@ import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {EmptyAddSVG} from "@/components/svg/EmptyAddSVG"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
 import {Blocks, CloudAlert} from "lucide-react"
-import { Skeleton } from "@/components/ui/Skeleton"
 import { Button } from "@/components/ui/Button"
 import {useToast} from "@/components/ui/ToastProvider"
 import { useShallow } from "zustand/react/shallow"
@@ -63,8 +61,7 @@ export default function Dashboard() {
             setEditModeLoading(true)
             if (!widgets) return
 
-            if (widgetsToRemove)
-                await Promise.all(widgetsToRemove.map((widget) => removeWidget(widget)))
+            if (widgetsToRemove.length > 0)  await Promise.all(widgetsToRemove.map((widget) => removeWidget(widget)))
 
             await saveWidgetsLayout()
 
@@ -80,8 +77,9 @@ export default function Dashboard() {
         } finally {
             setEditMode(false)
             setEditModeLoading(false)
+            setWidgetsToRemove([])
         }
-    }, [removeWidget, saveWidgetsLayout, addToast, widgets])
+    }, [removeWidget, saveWidgetsLayout, addToast, widgets, widgetsToRemove])
 
     const handleEditModeCancel = useCallback(() => {
         if (cachedWidgetsRef.current) useWidgetStore.setState({ widgets: cachedWidgetsRef.current })

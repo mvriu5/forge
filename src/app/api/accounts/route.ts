@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server"
-import {getGithubAccount} from "@/database"
+import {Account, getGithubAccount, getLinearAccount} from "@/database"
 
 export async function GET(req: Request) {
     try {
@@ -12,10 +12,11 @@ export async function GET(req: Request) {
                 { status: 400 }
             )
         }
+        const accounts: Account[] = []
+        accounts.push((await getGithubAccount(userId))[0])
+        accounts.push((await getLinearAccount(userId))[0])
 
-        const account = await getGithubAccount(userId)
-
-        return NextResponse.json(account, { status: 200 })
+        return NextResponse.json(accounts, { status: 200 })
     } catch (error) {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }

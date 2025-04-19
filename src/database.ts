@@ -63,3 +63,13 @@ export const getGithubAccount = async (userId: string): Promise<Account[]> => {
             eq(account.providerId, "github")
         ))
 }
+
+export const getLinearAccount = async (userId: string): Promise<Account[]> => {
+    return db
+        .select()
+        .from(account)
+        .where(and(
+            eq(account.userId, userId),
+            eq(account.providerId, "linear")
+        ))
+}

@@ -1,5 +1,5 @@
 import React, {memo} from "react"
-import {Area, AreaChart, YAxis} from "recharts"
+import {Area, AreaChart, XAxis, YAxis} from "recharts"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
 import { ChartDataPoint } from "@/actions/twelvedata"
 
@@ -12,13 +12,17 @@ interface StockChartProps {
 }
 
 const StockChart = memo(function StockChart({data, yAxisDomain, priceChangePercent, gradientId, chartConfig}: StockChartProps) {
+    console.log(data)
+
     return (
         <ChartContainer className="max-h-[108px] w-full" config={chartConfig}>
             <AreaChart data={data} margin={{ top: 5 }}>
                 <ChartTooltip
                     cursor={false}
-                    content={<ChartTooltipContent hideLabel />}
+                    labelFormatter={(date: string) => date}
+                    content={<ChartTooltipContent />}
                 />
+                <XAxis dataKey="date" hide />
                 <YAxis domain={yAxisDomain} hide />
                 <defs>
                     <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">

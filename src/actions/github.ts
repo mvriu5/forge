@@ -32,8 +32,8 @@ export async function getAllRepos(accessToken: string):  Promise<{ repos: any[],
     return { repos, octokit }
 }
 
-export async function fetchOpenIssuesAndPullsFromAllRepos(userId: string) {
-    const {repos, octokit} = await getAllRepos(userId)
+export async function fetchOpenIssuesAndPullsFromAllRepos(accessToken: string) {
+    const {repos, octokit} = await getAllRepos(accessToken)
     if (!octokit) return
 
     const userResponse = await octokit.request("GET /user", {

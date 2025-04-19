@@ -18,6 +18,7 @@ interface IntegrationStore {
     removeIntegration: (provider: string) => Promise<void>
     githubIntegration: Integration | null
     googleIntegration: Integration | null
+    linearIntegration: Integration | null
 }
 
 
@@ -25,6 +26,7 @@ export const useIntegrationStore = create<IntegrationStore>((set, get) => ({
     integrations: null,
     githubIntegration: null,
     googleIntegration: null,
+    linearIntegration: null,
     fetchIntegrations: async (userId) => {
         try {
             const response = await fetch(`/api/accounts?userId=${userId}`)
@@ -45,6 +47,7 @@ export const useIntegrationStore = create<IntegrationStore>((set, get) => ({
                 integrations,
                 githubIntegration: integrations.find(i => i.accessToken && i.provider === 'github') ?? null,
                 googleIntegration: integrations.find(i => i.accessToken && i.provider === 'google') ?? null,
+                linearIntegration: integrations.find(i => i.accessToken && i.provider === 'linear') ?? null
             })
         } catch (error) {
             set({ integrations: null })
@@ -64,7 +67,8 @@ export const useIntegrationStore = create<IntegrationStore>((set, get) => ({
             return {
                 integrations: updatedIntegrations,
                 githubIntegration: provider === "github" ? null : state.githubIntegration,
-                googleIntegration: provider === "google" ? null : state.googleIntegration
+                googleIntegration: provider === "google" ? null : state.googleIntegration,
+                linearIntegration: provider === "linear" ? null : state.linearIntegration,
             }
         })
     }

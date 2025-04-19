@@ -27,16 +27,26 @@ export const fetchStockData = async (symbol: string, days = 7): Promise<AssetDat
     const formatDate = (dateStr: string, isDay = false): string => {
         const date = new Date(dateStr)
 
-        if (isDay) return date.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
-        return date.toLocaleDateString("de-DE", { month: "short", day: "numeric" })
+        if (isDay) return date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+        return date.toLocaleDateString("en-US")
     }
 
     try {
         let url: string
         const isDay = days === 1
 
-        if (isDay) url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1h&outputsize=24&apikey=${TWELVEDATA_API_KEY}`
-        else url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1day&outputsize=${days}&apikey=${TWELVEDATA_API_KEY}`
+        if (isDay) {
+            url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1h&outputsize=24&apikey=${TWELVEDATA_API_KEY}`
+        } else {
+            const end = new Date();
+            const start = new Date();
+            start.setDate(start.getDate() - days);
+
+            const startDate = start.toISOString().slice(0,10);
+            const endDate   = end  .toISOString().slice(0,10);
+
+            url = `https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1day&start_date=${startDate}&end_date=${endDate}&apikey=${TWELVEDATA_API_KEY}`
+        }
 
         const response = await fetch(url)
 
