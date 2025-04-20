@@ -1,5 +1,3 @@
-import {cn} from "@/lib/utils"
-
 const LinearIcon = () => {
     return (
         <svg width="24px"

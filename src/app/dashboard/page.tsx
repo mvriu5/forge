@@ -129,7 +129,7 @@ export default function Dashboard() {
                 onDragEnd={handleDragEnd}
             >
                 <div
-                    className="relative w-full h-[calc(100vh-64px)] grid grid-cols-4 gap-8 p-8"
+                    className="relative w-full h-[calc(100vh-64px)] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 p-8"
                     style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
                 >
                     {gridCells.map((cell) => (

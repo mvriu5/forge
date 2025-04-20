@@ -52,7 +52,7 @@ function SignUpCard() {
                 addToast({
                     title: "An error occurred",
                     subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
+                    icon: <CloudAlert size={24} className={"text-error"}/>
                 })
             }
         })

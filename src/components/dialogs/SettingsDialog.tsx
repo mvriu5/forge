@@ -209,7 +209,7 @@ const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
                             {integration.active ? "Disconnect" : "Connect"}
                         </Button>
                     </div>
-                    <div className={"z-[60] absolute right-2 top-2 text-xs group-data-[state=active]:bg-success/10 group-data-[state=inactive]:bg-error/10 rounded-md p-1"}>
+                    <div className={"z-[60] absolute right-1 top-1 text-xs group-data-[state=active]:bg-success/10 group-data-[state=inactive]:bg-error/10 rounded-md p-0.5"}>
                         <p>{integration.active ? <Check size={16} className={"text-success"}/> : <X size={16} className={"text-error"}/>}</p>
                     </div>
                 </div>
@@ -337,50 +337,52 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
         <div className={"flex flex-col gap-4 h-full justify-between"}>
             <div className={"flex flex-col gap-4 h-full"}>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between space-y-4 h-full">
-                        <div className="flex items-center justify-center space-x-4">
-                            <Avatar className="h-20 w-20">
-                                <AvatarImage src={blob?.url || avatarUrl || undefined} />
-                                <AvatarFallback/>
-                            </Avatar>
-                            <div className="flex items-center justify-center space-x-4">
-                                <Input
-                                    ref={inputFileRef}
-                                    id="picture"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={() => setAvatarUrl(URL.createObjectURL(inputFileRef.current!.files![0]))}
-                                    className="hidden"
-                                />
-                                <FormLabel
-                                    htmlFor="picture"
-                                    className="flex items-center cursor-pointer rounded-md bg-secondary p-2 text-secondary hover:bg-tertiary"
-                                >
-                                    <ImageIcon className="mr-2 h-4 w-4" />
-                                    <span>Change Picture</span>
-                                </FormLabel>
-                                {(blob?.url || avatarUrl) &&
-                                    <Button
-                                        type={"button"}
-                                        className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error"}
-                                        onClick={handleDelete}
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between gap-4 h-full">
+                        <div className="flex flex-col justify-center gap-4">
+                            <div className={"flex flex-col md:flex-row items-center gap-4"}>
+                                <Avatar className="h-20 w-20">
+                                    <AvatarImage src={blob?.url || avatarUrl || undefined} />
+                                    <AvatarFallback/>
+                                </Avatar>
+                                <div className="flex items-center justify-center space-x-4">
+                                    <Input
+                                        ref={inputFileRef}
+                                        id="picture"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={() => setAvatarUrl(URL.createObjectURL(inputFileRef.current!.files![0]))}
+                                        className="hidden"
+                                    />
+                                    <FormLabel
+                                        htmlFor="picture"
+                                        className="flex items-center cursor-pointer rounded-md bg-secondary p-2 text-secondary hover:bg-tertiary"
                                     >
-                                        <Trash size={20}/>
-                                    </Button>
-                                }
+                                        <ImageIcon className="mr-2 h-4 w-4" />
+                                        <span>Change Picture</span>
+                                    </FormLabel>
+                                    {(blob?.url || avatarUrl) &&
+                                        <Button
+                                            type={"button"}
+                                            className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error"}
+                                            onClick={handleDelete}
+                                        >
+                                            <Trash size={20}/>
+                                        </Button>
+                                    }
+                                </div>
                             </div>
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Name</FormLabel>
+                                        <FormInput placeholder="Name" {...field} />
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         </div>
-                        <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Name</FormLabel>
-                                    <FormInput placeholder="Name" {...field} />
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
                         <div className={"w-full flex gap-2 justify-end"}>
                             <Button
                                 className={"w-max"}

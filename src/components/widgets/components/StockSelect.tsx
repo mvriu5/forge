@@ -31,7 +31,7 @@ const StockSelect = ({value, onValueChange}: StockSelectProps) => {
             <PopoverTrigger asChild>
                 <Button
                     data-state={open ? "open" : "closed"}
-                    className={cn("font-normal bg-secondary border-main/60 text-sm items-center gap-2 data-[state=open]:text-primary px-2")}
+                    className={cn("font-normal bg-tertiary border-main/60 text-sm items-center gap-2 data-[state=open]:text-primary data-[state=open]:bg-inverted/10 px-2")}
                 >
                     <ChartCandlestick size={18}/>
                     Stocks

@@ -42,16 +42,22 @@ function SignInCard() {
                 setLoading(true)
             },
             onError: (ctx) => {
+                console.log(ctx.error)
                 if (ctx.error.status === 403) {
                     addToast({
                         title: "Verify your email first!",
-                        icon: <CloudAlert size={24}/>
+                        icon: <CloudAlert size={24} className={"text-error"}/>
+                    })
+                } else if (ctx.error.status === 401) {
+                    addToast({
+                        title: "Wrong credentials",
+                        icon: <CloudAlert size={24} className={"text-error"}/>
                     })
                 } else {
                     addToast({
                         title: "An error occurred",
                         subtitle: ctx.error.message,
-                        icon: <CloudAlert size={24}/>
+                        icon: <CloudAlert size={24} className={"text-error"}/>
                     })
                 }
                 setLoading(false)

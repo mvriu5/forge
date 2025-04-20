@@ -3,13 +3,44 @@
 import * as React from "react"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import {Check, ChevronRightIcon} from "lucide-react"
-
-import type {CheckboxType, ItemType, LabelType, MenuItem, SubType} from "@/lib/menu-types"
 import type { ReactNode } from "react"
 import {KeyboardShortcut} from "@/components/ui/KeyboardShortcut"
 import {CONTAINER_STYLES, cn} from "@/lib/utils"
 import {Side} from "@floating-ui/utils"
 
+
+interface ItemType {
+    type: 'item'
+    label: string
+    shortcut?: string
+    icon?: ReactNode
+    onSelect?: () => void
+}
+
+interface SubType {
+    type: 'sub'
+    label: string
+    items: MenuItem[]
+    icon?: ReactNode
+}
+
+interface LabelType {
+    type: 'label'
+    label: string
+}
+
+interface CheckboxType {
+    type: 'checkbox'
+    label: string
+    checked: boolean
+    onCheckedChange?: (checked: boolean) => void
+}
+
+interface SeparatorType {
+    type: 'separator'
+}
+
+type MenuItem = ItemType | SubType | LabelType | CheckboxType | SeparatorType
 
 interface DropdownMenuItemProps {
     item: ItemType
@@ -41,6 +72,7 @@ interface DropdownMenuProps extends React.ComponentPropsWithoutRef<typeof Dropdo
     children: ReactNode
     side?: Side
     align?: "center" | "end" | "start" | undefined
+    className?: string
 }
 
 const DropdownMenuItem = ({ item }: DropdownMenuItemProps) => {
@@ -161,7 +193,7 @@ const DropdownMenuActions = ({ items, width }: DropdownMenuActionsProps) => {
 }
 DropdownMenuActions.displayName = "DropdownMenuActions"
 
-const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, asChild, children}: DropdownMenuProps) => {
+const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, asChild, children, className}: DropdownMenuProps) => {
     return (
         <DropdownMenuPrimitive.Root onOpenChange={onOpenChange}>
             <DropdownMenuPrimitive.Trigger asChild={asChild}>
@@ -178,7 +210,8 @@ const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, a
                         "max-h-[--radix-dropdown-menu-content-available-height]",
                         "min-w-[--radix-dropdown-menu-trigger-width]",
                         "bg-primary overflow-y-auto rounded-md border border-main p-1 shadow-md",
-                        CONTAINER_STYLES.animation
+                        CONTAINER_STYLES.animation,
+                        className
                     )}
                 >
                     <DropdownMenuActions items={items} />

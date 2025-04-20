@@ -29,8 +29,7 @@ function Navbar() {
     const headerItems: NavItem[] = [
         {title: "Home", href: ""},
         {title: "Widgets", href: ""},
-        {title: "Contribute", href: ""},
-        {title: "Download", href: ""},
+        {title: "Pricing", href: ""},
     ]
 
     useEffect(() => {

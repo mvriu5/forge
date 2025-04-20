@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React, {useState} from "react"
 import {WidgetProps, WidgetTemplate} from "./WidgetTemplate"
 import {
     AlertCircle,
@@ -9,6 +9,7 @@ import {
     Filter,
     FolderGit,
     GitGraphIcon,
+    Github,
     GitPullRequest,
     RefreshCw,
     TriangleAlert
@@ -31,6 +32,7 @@ import {useGithub} from "@/hooks/useGithub"
 const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch, githubIntegration} = useGithub()
     const {addToast} = useToast()
+    const [dropdownOpen, setDropdownOpen] = useState(false)
 
     const filterTooltip = tooltip<HTMLButtonElement>({
         message: "Filter your issues",
@@ -87,16 +89,16 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     }
 
     return (
-        <WidgetTemplate className="col-span-1" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <div className="h-full flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-4">
-                    <div className={"flex items-center gap-2"}>
-                        <GitGraphIcon size={18} className={"text-brand"}/>
+                    <div className={"flex items-center gap-1"}>
+                        <Github size={20}/>
                         <p className={"text-lg text-primary font-medium"}>Github</p>
                     </div>
                     <Badge
                         variant="brand"
-                        className="text-xs font-normal bg-brand/10 border-brand/40"
+                        className="text-xs bg-brand/10 border-brand/40 font-mono"
                         title={`${activeTab === "issues" ? filteredIssues.length : filteredPRs.length} open`}
                     />
                 </div>
@@ -108,8 +110,19 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     {activeTab === "issues" &&
-                        <DropdownMenu asChild items={dropdownFilterItems} align={"end"}>
-                            <Button className={"px-2"} {...filterTooltip}>
+                        <DropdownMenu
+                            asChild
+                            items={dropdownFilterItems}
+                            align={"end"}
+                            open={dropdownOpen}
+                            onOpenChange={setDropdownOpen}
+                        >
+                            <Button
+                                data-state={dropdownOpen ? "open" : "closed"}
+                                className={"px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
+                                disabled={allLabels.length === 0}
+                                {...filterTooltip}
+                            >
                                 <Filter className="h-4 w-4" />
                             </Button>
                         </DropdownMenu>

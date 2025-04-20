@@ -70,7 +70,7 @@ const EditorWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     }
 
     return (
-        <WidgetTemplate className={"col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate className={"col-span-1 md:col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <EditorRoot>
                 <ScrollArea className="relative h-full">
                     <p className={"absolute z-50 top-2 right-2 text-tertiary/50 text-end text-sm"}>{saved ? "Saved" : "Unsaved"}</p>

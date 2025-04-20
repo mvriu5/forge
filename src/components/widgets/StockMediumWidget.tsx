@@ -53,7 +53,7 @@ const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) =>
                                 handleSave({ timespan: value })
                             }}
                         >
-                            <SelectTrigger className={"w-[100px]"}>
+                            <SelectTrigger className={"w-[100px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
                                 <SelectValue placeholder="Timespan"/>
                             </SelectTrigger>
                             <SelectContent align={"end"} className={"border-main/40"}>

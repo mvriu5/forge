@@ -3,7 +3,7 @@
 import type React from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {Callout} from "@/components/ui/Callout"
-import {Blocks, Box, Captions, CloudAlert, Hourglass, TriangleAlert, Users} from "lucide-react"
+import {Blocks, Box, Captions, CloudAlert, Hourglass, RefreshCw, TriangleAlert, Users} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {SortOption, useLinear} from "@/hooks/useLinear"
 import {authClient} from "@/lib/auth-client"
@@ -13,10 +13,17 @@ import {tooltip} from "@/components/ui/TooltipProvider"
 import {hexToRgba} from "@/lib/utils"
 import {StatusBadge} from "@/components/widgets/components/StatusBadge"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
+import {LinearIcon} from "@/components/svg/LinearIcon"
+import {Skeleton} from "@/components/ui/Skeleton"
 
 const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {linearIntegration, data, isLoading, isFetching, isError, refetch, sortBy, setSortBy} = useLinear()
     const {addToast} = useToast()
+
+    const refreshTooltip = tooltip<HTMLButtonElement>({
+        message: "Refresh your issues & pull requests",
+        anchor: "bc",
+    })
 
     const handleIntegrate = async () => {
         await authClient.signIn.oauth2({providerId: "linear", callbackURL: "/dashboard"}, {
@@ -56,31 +63,52 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     }
 
     return (
-        <WidgetTemplate className="col-span-2 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <div className="h-full flex flex-col gap-2">
-
                 <div className="flex items-center gap-2 justify-between">
-                    <p className={"text-primary text-lg font-semibold"}>Linear Issues</p>
-                    <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                        <SelectTrigger className="w-[200px]">
-                            <div className="flex items-center">
-                                <span className="text-sm text-tertiary">Sort by:</span>
-                                <SelectValue placeholder="Sort" />
-                            </div>
-                            <SelectValue placeholder="Sort" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="priority">Priority</SelectItem>
-                            <SelectItem value="created">Creation Date</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
-                    <div className={"grid grid-cols-2 gap-4"}>
-                        {data?.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
+                    <div className={"flex items-center gap-1"}>
+                        <LinearIcon/>
+                        <p className={"text-primary text-lg font-semibold"}>Linear Issues</p>
                     </div>
-                </ScrollArea>
+                    <div className={"flex items-center gap-2"}>
+                        <Button
+                            className={"px-2 group"}
+                            onClick={() => refetch()}
+                            data-loading={isLoading ? "true" : "false"}
+                            {...refreshTooltip}
+                        >
+                            <RefreshCw
+                                className="h-4 w-4 group-data-[loading=true]:animate-spin" />
+                        </Button>
+                        <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                            <SelectTrigger className="w-[180px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
+                                <div className="flex items-center">
+                                    <span className="text-sm text-tertiary">Sort by:</span>
+                                    <SelectValue placeholder="Sort" />
+                                </div>
+                                <SelectValue placeholder="Sort" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="priority">Priority</SelectItem>
+                                <SelectItem value="created">Creation Date</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                {(isLoading || isFetching) ? (
+                    <div className={"h-full grid grid-cols-2 gap-4"}>
+                        <Skeleton className={"col-span-1 h-full"}/>
+                        <Skeleton className={"col-span-1 h-full"}/>
+                        <Skeleton className={"col-span-1 h-full"}/>
+                        <Skeleton className={"col-span-1 h-full"}/>
+                    </div>
+                ) : (
+                    <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
+                        <div className={"grid grid-cols-2 gap-4"}>
+                            {data?.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
+                        </div>
+                    </ScrollArea>
+                )}
             </div>
         </WidgetTemplate>
     )
@@ -98,7 +126,9 @@ const IssueCard = ({issue}: {issue: any}) => {
                 <StatusBadge statusId={issue.stateName}/>
                 <p className={"text-primary text-sm truncate"}>{issue.title}</p>
                 <div className={"flex items-center justify-center"} {...descriptionTooltip}>
-                    <Captions className={"text-tertiary"} size={18}/>
+                    {issue.description?.length > 0 &&
+                        <Captions className={"text-tertiary"} size={18}/>
+                    }
                 </div>
             </div>
             <p className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>

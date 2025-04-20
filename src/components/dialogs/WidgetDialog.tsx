@@ -75,7 +75,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                     {title}
                 </Button>
             </DialogTrigger>
-            <DialogContent className={"min-w-[800px] pl-8 pt-8"}>
+            <DialogContent className={"md:min-w-[800px] pl-8 pt-8"}>
                 <DialogHeader className={"flex flex-row justify-between items-center pr-4"}>
                     <DialogTitle>
                         <p className={"flex items-center gap-2"}>
@@ -111,7 +111,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                 </div>
 
                 <ScrollArea className="h-96 pr-4">
-                    <div className="grid grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {filteredWidgets.map((widget) => (
                             <div
                                 key={widget.widgetType}

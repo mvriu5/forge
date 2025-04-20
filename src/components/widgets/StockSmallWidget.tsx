@@ -71,7 +71,7 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                                 handleSave({ timespan: value })
                             }}
                         >
-                            <SelectTrigger className={"w-[100px]"}>
+                            <SelectTrigger className={"w-[100px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
                                 <SelectValue placeholder="Timespan"/>
                             </SelectTrigger>
                             <SelectContent align={"end"} className={"border-main/40"}>
@@ -90,7 +90,7 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                         <p className={"text-sm text-error"}>Error loading data</p>
                     </div>
                 }
-                <div className={cn("relative h-max bg-secondary rounded-md overflow-hidden", (!data?.chartData || isError) && "hidden")}>
+                <div className={cn("relative flex-1 bg-secondary rounded-md overflow-hidden", (!data?.chartData || isError) && "hidden")}>
                     <div
                         className={cn(
                             "absolute bottom-1 left-1 flex items-center gap-1 px-2 py-0.5 bg-white/2 rounded-md shadow-xl w-max h-max",
