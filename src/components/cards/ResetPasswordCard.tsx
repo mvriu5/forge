@@ -60,7 +60,7 @@ function ResetPasswordCard() {
     }
 
     return (
-        <div className={"w-80 h-max rounded-md border border-main/60 bg-primary p-8 flex flex-col gap-8 z-50"}>
+        <div className={"w-80 h-max rounded-md border border-main/60 bg-primary shadow-xl p-8 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
                 <div className={"flex gap-2 items-center"}>
                     <ForgeLogo/>

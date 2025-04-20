@@ -39,7 +39,7 @@ const DialogContent = React.forwardRef<React.ComponentRef<typeof DialogPrimitive
             <DialogPrimitive.Content
                 className={cn(
                     "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%]",
-                    "gap-4 bg-primary p-6 shadow-lg duration-200 sm:rounded-md border border-main/40",
+                    "gap-4 bg-primary p-6 shadow-xl duration-200 rounded-md border border-main/40",
                     CONTAINER_STYLES.animation,
                     className
                 )}
