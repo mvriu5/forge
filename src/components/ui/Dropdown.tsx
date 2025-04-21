@@ -228,5 +228,6 @@ export {
     DropdownMenuCheckboxItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-    DropdownMenuSubItem
+    DropdownMenuSubItem,
+    type MenuItem
 }

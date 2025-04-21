@@ -42,7 +42,6 @@ function SignInCard() {
                 setLoading(true)
             },
             onError: (ctx) => {
-                console.log(ctx.error)
                 if (ctx.error.status === 403) {
                     addToast({
                         title: "Verify your email first!",

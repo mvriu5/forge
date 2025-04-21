@@ -8,20 +8,18 @@ import {
     CloudAlert,
     Filter,
     FolderGit,
-    GitGraphIcon,
     Github,
     GitPullRequest,
     RefreshCw,
     TriangleAlert
 } from "lucide-react"
 import {formatDate} from "date-fns"
-import type {MenuItem} from "@/lib/menu-types"
 import {authClient} from "@/lib/auth-client"
 import {Callout} from "@/components/ui/Callout"
 import {Button} from "@/components/ui/Button"
 import {Badge} from "@/components/ui/Badge"
 import {Input} from "@/components/ui/Input"
-import {DropdownMenu} from "@/components/ui/Dropdown"
+import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/Tabs"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {ScrollArea} from "@/components/ui/ScrollArea"
