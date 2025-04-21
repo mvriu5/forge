@@ -70,18 +70,18 @@ const EditorWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     }
 
     return (
-        <WidgetTemplate className={"col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate className={"col-span-1 md:col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <EditorRoot>
-                <ScrollArea className="relative h-full">
+                <div className={"rounded-md h-full w-full border border-main/40 bg-secondary"}>
+                <ScrollArea className="h-full">
                     <p className={"absolute z-50 top-2 right-2 text-tertiary/50 text-end text-sm"}>{saved ? "Saved" : "Unsaved"}</p>
-
                     <EditorContent
                         extensions={extensions}
                         initialContent={widget?.config?.content}
                         immediatelyRender={false}
                         onBlur={(params) => handleSave(params.editor)}
                         onUpdate={() => setSaved(false)}
-                        className="p-2 rounded-md min-h-full w-full border border-main/40 bg-secondary"
+                        className="p-2 rounded-md h-full w-full bg-secondary"
                         editorProps={{
                             handleDOMEvents: {
                                 keydown: (_view, event) => handleCommandNavigation(event)
@@ -123,6 +123,7 @@ const EditorWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                         </EditorBubble>
                     </EditorContent>
                 </ScrollArea>
+                </div>
             </EditorRoot>
         </WidgetTemplate>
     )

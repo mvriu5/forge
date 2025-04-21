@@ -1,6 +1,6 @@
 "use client"
 
-import {LogOut} from "lucide-react";
+import {Bug, Hourglass, LogOut, MessageCircleQuestion} from "lucide-react";
 import React, {useEffect, useState} from "react"
 import {authClient} from "@/lib/auth-client"
 import {useRouter} from "next/navigation"
@@ -46,9 +46,9 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 <div
                     data-state={open ? "open" : "closed"}
                     className={cn(
-                        "h-8 border border-main/20 flex items-center gap-3 bg-secondary hover:bg-tertiary data-[state=open]:bg-tertiary",
-                        "rounded-md px-3 group-data-[state=disabled]:bg-secondary",
-                        "group-data-[state=disabled]:hover:bg-secondary"
+                        "h-8 md:border border-main/20 flex items-center gap-3 md:bg-secondary md:hover:bg-tertiary md:data-[state=open]:bg-tertiary",
+                        "rounded-md md:px-3 md:group-data-[state=disabled]:bg-secondary",
+                        "md:group-data-[state=disabled]:hover:bg-secondary"
                     )}
                 >
                     {loading ?
@@ -59,15 +59,27 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                         </Avatar>
                     }
                     {loading ?
-                        <Skeleton className={"h-4 w-12"}/> :
-                        <p>{session?.user?.name}</p>
+                        <Skeleton className={"hidden md:flex h-4 w-12"}/> :
+                        <p className={"hidden md:flex"}>{session?.user?.name}</p>
                     }
                 </div>
             </PopoverTrigger>
             <PopoverContent
-                className={"p-1 w-36 gap-1"}
+                className={"p-1 w-max md:w-36 gap-1"}
                 align={"end"}
             >
+                <p className={"md:hidden flex items-center gap-1.5 text-tertiary text-xs text-wrap font-mono px-2 py-1 rounded-md bg-tertiary"}>
+                    Logged in as:
+                    <span className={"inline break-words text-secondary font-sans"}>{session?.user?.name}</span>
+                </p>
+                <button
+                    type={"button"}
+                    onClick={() => window.open("https://github.com/mvriu5/forge/issues")}
+                    className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-secondary hover:text-primary"}
+                >
+                    <MessageCircleQuestion size={16} className={"text-tertiary"}/>
+                    <p>Help</p>
+                </button>
                 <SettingsDialog/>
                 <button
                     type={"button"}

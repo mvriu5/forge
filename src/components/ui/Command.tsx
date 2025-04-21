@@ -12,7 +12,7 @@ const Command = React.forwardRef<React.ComponentRef<typeof CommandPrimitive>, Re
     return (
         <CommandPrimitive
             className={cn(
-                "flex h-full w-full flex-col overflow-hidden rounded-md bg-primary text-primary border border-main",
+                "flex h-full w-full flex-col overflow-hidden rounded-md bg-primary text-primary border-1 border-main/40",
                 className
             )}
             ref={ref}
@@ -25,7 +25,7 @@ Command.displayName = CommandPrimitive.displayName
 const CommandDialog = ({ children, ...props }: DialogProps) => {
     return (
         <Dialog {...props}>
-            <DialogContent className="overflow-hidden p-0">
+            <DialogContent className="overflow-hidden p-0 border-0">
                 <Command className={cn(
                     "[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-secondary",
                     "[&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5",
@@ -42,7 +42,7 @@ const CommandDialog = ({ children, ...props }: DialogProps) => {
 
 const CommandInput = React.forwardRef<React.ComponentRef<typeof CommandPrimitive.Input>, React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>>(({ className, ...props }, ref) => {
     return (
-        <div className="flex items-center border-b border-main px-3" cmdk-input-wrapper="">
+        <div className="flex items-center border-b border-main/40 px-3" cmdk-input-wrapper="">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <CommandPrimitive.Input
                 className={cn(

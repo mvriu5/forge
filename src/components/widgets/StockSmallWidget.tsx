@@ -1,8 +1,8 @@
 "use client"
 
-import React, {useMemo} from "react"
+import React, {useMemo, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
-import {TrendingDown, TrendingUp} from "lucide-react"
+import {Check, ChevronDown, TrendingDown, TrendingUp} from "lucide-react"
 import {ChartConfig} from "@/components/ui/Chart"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import {Skeleton} from "@/components/ui/Skeleton"
@@ -10,13 +10,21 @@ import {cn} from "@/lib/utils"
 import {useStock} from "@/hooks/useStock"
 import {useWidgetStore} from "@/store/widgetStore"
 import {StockChart} from "@/components/widgets/components/StockChart"
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
+import {Button} from "@/components/ui/Button"
+import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/Command"
+import {ButtonSpinner} from "@/components/ButtonSpinner"
+import {ScrollArea} from "@/components/ui/ScrollArea"
 
 const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {refreshWidget} = useWidgetStore()
     const widget = useWidgetStore(state => state.getWidget("stockSmall"))
     if (!widget) return null
 
-    const {data, isLoading, isError, stock, setStock, timespan, setTimespan, yAxisDomain, assetOptions} = useStock(widget.config?.stock, widget.config?.timespan)
+    const [popoverOpen, setPopoverOpen] = useState(false)
+
+    const {data, isLoading, isError, stock, setStock, timespan, setTimespan, yAxisDomain, query, setQuery, assetList, assetListLoading, assetListError}
+    = useStock(widget.config?.stock, widget.config?.timespan)
 
     const chartData = useMemo(() => data?.chartData ?? [], [data?.chartData])
     const percent = useMemo(() => data?.priceChangePercent ?? 0, [data?.priceChangePercent])
@@ -37,27 +45,47 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
     return (
         <WidgetTemplate className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <div className={"flex flex-col gap-2 h-full"}>
-
                 <div className={"flex items-center justify-between gap-4"}>
                     <div className={"flex items-center gap-2"}>
-                        <Select
-                            value={stock}
-                            onValueChange={(value) => {
-                                setStock(value)
-                                handleSave({ stock: value })
-                            }}
-                        >
-                            <SelectTrigger className={"border-0 bg-0 px-0 gap-2 justify-normal text-primary text-lg font-semibold"}>
-                                <SelectValue placeholder="Stock" className={"text-lg font-semibold text-primary"}/>
-                            </SelectTrigger>
-                            <SelectContent align={"start"} className={"border-main/40"}>
-                                {assetOptions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                        {option.label} ({option.value})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Popover open={popoverOpen} onOpenChange={setPopoverOpen} >
+                            <PopoverTrigger asChild>
+                                <Button
+                                    role="combobox"
+                                    aria-expanded={popoverOpen}
+                                    className="group w-max gap-2 font-normal text-sm justify-between px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"
+                                >
+                                    {stock}
+                                    <ChevronDown size={12} className="text-secondary group-data-[state=open]:rotate-180 transition-all" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[200px] p-0 border-0" align={"start"}>
+                                <Command>
+                                    <CommandInput placeholder="Search stock..." value={query} onValueChange={setQuery} key="stock-search"/>
+                                    <CommandEmpty className={"flex items-center justify-center p-4"}>
+                                        {assetListLoading ? "No results found." : <ButtonSpinner/>}
+                                    </CommandEmpty>
+                                    <CommandList className={"scrollbar-hide"}>
+                                        <CommandGroup>
+                                            <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
+                                                {assetList?.map((item) => (
+                                                    <CommandItem
+                                                        key={`${item.value}-${item.label}`}
+                                                        onSelect={() => {
+                                                            setStock(item.value)
+                                                            handleSave({ stock: item.value })
+                                                            setPopoverOpen(false)
+                                                        }}
+                                                    >
+                                                        <Check className={`mr-2 h-4 w-4 ${stock === item.type ? "opacity-100" : "opacity-0"}`}/>
+                                                        {item.label}
+                                                    </CommandItem>
+                                                ))}
+                                            </ScrollArea>
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
                     </div>
                     <div className={"flex items-center gap-2"}>
                         {isLoading || Number.isNaN(data?.currentPrice ?? 0) || data?.currentPrice === undefined ?
@@ -71,7 +99,7 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                                 handleSave({ timespan: value })
                             }}
                         >
-                            <SelectTrigger className={"w-[100px]"}>
+                            <SelectTrigger className={"w-[100px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
                                 <SelectValue placeholder="Timespan"/>
                             </SelectTrigger>
                             <SelectContent align={"end"} className={"border-main/40"}>
@@ -90,7 +118,7 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                         <p className={"text-sm text-error"}>Error loading data</p>
                     </div>
                 }
-                <div className={cn("relative h-max bg-secondary rounded-md overflow-hidden", (!data?.chartData || isError) && "hidden")}>
+                <div className={cn("relative flex-1 bg-secondary rounded-md overflow-hidden", (!data?.chartData || isError) && "hidden")}>
                     <div
                         className={cn(
                             "absolute bottom-1 left-1 flex items-center gap-1 px-2 py-0.5 bg-white/2 rounded-md shadow-xl w-max h-max",

@@ -102,7 +102,7 @@ export const widgetRegistry: WidgetElement[] = [
         preview: {
             widgetType: "linear",
             height: 2,
-            width: 2,
+            width: 1,
             previewImage: '/linear_preview.png',
             title: 'Linear Tasks',
             description: 'See all your assigned linear tasks',

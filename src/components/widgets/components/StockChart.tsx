@@ -12,10 +12,8 @@ interface StockChartProps {
 }
 
 const StockChart = memo(function StockChart({data, yAxisDomain, priceChangePercent, gradientId, chartConfig}: StockChartProps) {
-    console.log(data)
-
     return (
-        <ChartContainer className="max-h-[108px] w-full" config={chartConfig}>
+        <ChartContainer className="h-full w-full" config={chartConfig}>
             <AreaChart data={data} margin={{ top: 5 }}>
                 <ChartTooltip
                     cursor={false}

@@ -45,13 +45,18 @@ function SignInCard() {
                 if (ctx.error.status === 403) {
                     addToast({
                         title: "Verify your email first!",
-                        icon: <CloudAlert size={24}/>
+                        icon: <CloudAlert size={24} className={"text-error"}/>
+                    })
+                } else if (ctx.error.status === 401) {
+                    addToast({
+                        title: "Wrong credentials",
+                        icon: <CloudAlert size={24} className={"text-error"}/>
                     })
                 } else {
                     addToast({
                         title: "An error occurred",
                         subtitle: ctx.error.message,
-                        icon: <CloudAlert size={24}/>
+                        icon: <CloudAlert size={24} className={"text-error"}/>
                     })
                 }
                 setLoading(false)
@@ -92,7 +97,7 @@ function SignInCard() {
     }
 
     return (
-        <div className={"w-80 h-max rounded-md border border-main/60 bg-primary p-8 flex flex-col gap-8 z-50"}>
+        <div className={"w-80 h-max rounded-md border border-main/60 bg-primary shadow-xl p-8 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
                 <div className={"flex gap-2 items-center"}>
                     <ForgeLogo/>

@@ -76,7 +76,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                     <p className={"text-primary text-lg font-semibold"}>Bookmarks</p>
                     <Popover open={open} onOpenChange={setOpen}>
                         <PopoverTrigger asChild>
-                            <Button className={"bg-secondary gap-1"}>
+                            <Button className={"bg-tertiary gap-1 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
                                 <Bookmark size={18}/>
                                 Add
                             </Button>

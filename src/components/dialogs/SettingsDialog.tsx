@@ -2,7 +2,7 @@
 
 import type React from "react"
 import {useRef, useState} from "react"
-import {Blocks, CloudAlert, Github, ImageIcon, Settings, Trash, UserRoundCheck} from "lucide-react"
+import {Blocks, Check, CloudAlert, Github, ImageIcon, Settings, Trash, UserRoundCheck, X} from "lucide-react"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {useSessionStore} from "@/store/sessionStore"
 import {z} from "zod"
@@ -14,77 +14,19 @@ import {cn} from "@/lib/utils"
 import {authClient} from "@/lib/auth-client"
 import type {PutBlobResult} from "@vercel/blob"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/Dialog"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup"
-import { Button } from "@/components/ui/Button"
-import { useToast } from "@/components/ui/ToastProvider"
-import { Form, FormLabel, FormField, FormItem, FormInput, FormMessage } from "@/components/ui/Form"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar"
+import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
+import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
+import {Button} from "@/components/ui/Button"
+import {useToast} from "@/components/ui/ToastProvider"
+import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {Input} from "@/components/ui/Input"
+import { LinearIcon } from "@/components/svg/LinearIcon"
 
 function SettingsDialog() {
-    const {addToast} = useToast()
     const {session} = useSessionStore()
-    const {addIntegration, removeIntegration, githubIntegration, googleIntegration} = useIntegrationStore()
     const [open, setOpen] = useState(false)
     const [tab, setTab] = useState("profile")
-
-    const integrationList = [
-        {
-            name: "github",
-            icon: Github,
-            active: !!githubIntegration,
-            onConnect: async () => {
-                const data = await authClient.signIn.social({provider: "github"}, {
-                    onRequest: (ctx) => {
-                    },
-                    onSuccess: (ctx) => {
-                        setOpen(false)
-                        addToast({
-                            title: "Successfully integrated Github",
-                            icon: <Blocks size={24}/>
-                        })
-                        if (session?.user) addIntegration(session.user.id)
-                    },
-                    onError: (ctx) => {
-                        addToast({
-                            title: "An error occurred",
-                            subtitle: ctx.error.message,
-                            icon: <CloudAlert size={24}/>
-                        })
-                    }
-                })
-            },
-            onDisconnect: () => removeIntegration("github")
-        },
-        {
-            name: "google",
-            icon: GoogleIcon,
-            active: !!googleIntegration,
-            onConnect: async () => {
-                const data = await authClient.signIn.social({provider: "google"}, {
-                    onRequest: (ctx) => {
-                    },
-                    onSuccess: (ctx) => {
-                        setOpen(false)
-                        addToast({
-                            title: "Successfully integrated Google",
-                            icon: <Blocks size={24}/>
-                        })
-                        if (session?.user) addIntegration(session.user.id)
-                    },
-                    onError: (ctx) => {
-                        addToast({
-                            title: "An error occurred",
-                            subtitle: ctx.error.message,
-                            icon: <CloudAlert size={24}/>
-                        })
-                    }
-                })
-            },
-            onDisconnect: () => removeIntegration("google")
-        }
-    ]
 
     return (
         <Dialog
@@ -120,13 +62,13 @@ function SettingsDialog() {
                             value={tab}
                             onValueChange={setTab}
                         >
-                            <ToggleGroupItem value="profile" className={"w-full text-left text-md px-2 h-8 data-[state=on]:bg-tertiary border border-transparent data-[state=on]:border-main/60"}>
+                            <ToggleGroupItem value="profile" className={"w-full text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
                                 Profile
                             </ToggleGroupItem>
-                            <ToggleGroupItem value="integrations" className={"w-full text-left text-md px-2 h-8 data-[state=on]:bg-tertiary border border-transparent data-[state=on]:border-main/60"}>
+                            <ToggleGroupItem value="integrations" className={"w-full text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
                                 Integrations
                             </ToggleGroupItem>
-                            <ToggleGroupItem value="settings" className={"w-full text-left text-md px-2 h-8 data-[state=on]:bg-tertiary border border-transparent data-[state=on]:border-main/60"}>
+                            <ToggleGroupItem value="settings" className={"w-full text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
                                 Settings
                             </ToggleGroupItem>
                         </ToggleGroup>
@@ -138,29 +80,10 @@ function SettingsDialog() {
                             <ProfileSection session={session} onClose={() => setOpen(false)}/>
                         }
                         {tab === "integrations" &&
-                            <div className={"grid grid-cols-2 gap-4"}>
-                                {integrationList.map((integration) => (
-                                    <div
-                                        data-state={integration.active ? "active" : "inactive"}
-                                        key={integration.name}
-                                        className={cn(
-                                            "group w-full h-32 flex flex-col gap-2 items-center justify-between rounded-md bg-secondary border-2 p-2 pt-4",
-                                            "data-[state=active]:bg-success/5 data-[state=inactive]:bg-error/5",
-                                            "data-[state=active]:border-success/20 data-[state=inactive]:border-error/20"
-                                        )}
-                                    >
-                                        <integration.icon className={"size-8"}/>
-                                        <div className={"flex flex-col gap-2 items-center"}>
-                                            <p className={"py-1 text-xs group-data-[state=active]:text-success group-data-[state=inactive]:text-error"}>
-                                                {integration.active ? "Active" : "Inactive"}
-                                            </p>
-                                            <Button variant={"ghost"} onClick={() => integration.active ? integration.onDisconnect() : integration.onConnect()}>
-                                                {integration.active ? "Disconnect" : "Connect"}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            <IntegrationSection session={session} setOpen={setOpen}/>
+                        }
+                        {tab === "settings" &&
+                            <p className={"text-tertiary text-center mt-4 text-sm"}>Currently no settings available</p>
                         }
                     </div>
                 </div>
@@ -170,12 +93,137 @@ function SettingsDialog() {
     )
 }
 
+interface IntegrationProps {
+    setOpen: (open: boolean) => void
+    session: any
+}
+
+const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
+    const {addIntegration, removeIntegration, githubIntegration, googleIntegration, linearIntegration} = useIntegrationStore()
+    const {addToast} = useToast()
+
+    const integrationList = [
+        {
+            name: "Github",
+            icon: Github,
+            active: !!githubIntegration,
+            onConnect: async () => {
+                const data = await authClient.signIn.social({provider: "github"}, {
+                    onRequest: (ctx) => {
+                    },
+                    onSuccess: (ctx) => {
+                        setOpen(false)
+                        addToast({
+                            title: "Successfully integrated Github",
+                            icon: <Blocks size={24}/>
+                        })
+                        if (session?.user) addIntegration(session.user.id)
+                    },
+                    onError: (ctx) => {
+                        addToast({
+                            title: "An error occurred",
+                            subtitle: ctx.error.message,
+                            icon: <CloudAlert size={24}/>
+                        })
+                    }
+                })
+            },
+            onDisconnect: () => removeIntegration("github")
+        },
+        {
+            name: "Google",
+            icon: GoogleIcon,
+            active: !!googleIntegration,
+            onConnect: async () => {
+                const data = await authClient.signIn.social({provider: "google"}, {
+                    onRequest: (ctx) => {
+                    },
+                    onSuccess: (ctx) => {
+                        setOpen(false)
+                        addToast({
+                            title: "Successfully integrated Google",
+                            icon: <Blocks size={24}/>
+                        })
+                        if (session?.user) addIntegration(session.user.id)
+                    },
+                    onError: (ctx) => {
+                        addToast({
+                            title: "An error occurred",
+                            subtitle: ctx.error.message,
+                            icon: <CloudAlert size={24}/>
+                        })
+                    }
+                })
+            },
+            onDisconnect: () => removeIntegration("google")
+        },
+        {
+            name: "Linear",
+            icon: LinearIcon,
+            active: !!linearIntegration,
+            onConnect: async () => {
+                await authClient.signIn.oauth2({providerId: "linear"}, {
+                    onRequest: (ctx) => {
+                    },
+                    onSuccess: (ctx) => {
+                        addToast({
+                            title: "Successfully integrated Linear",
+                            icon: <Blocks size={24}/>
+                        })
+                    },
+                    onError: (ctx) => {
+                        addToast({
+                            title: "An error occurred",
+                            subtitle: ctx.error.message,
+                            icon: <CloudAlert size={24}/>
+                        })
+                    }
+                })
+            },
+            onDisconnect: () => removeIntegration("linear")
+        }
+    ]
+
+    return (
+        <div className={"grid grid-cols-2 gap-4"}>
+            {integrationList.map((integration) => (
+                <div
+                    data-state={integration.active ? "active" : "inactive"}
+                    key={integration.name}
+                    className={cn(
+                        "relative group w-full h-20 flex flex-col gap-2 justify-between rounded-md",
+                        "bg-secondary border p-2",
+                        "data-[state=active]:border-success/20 data-[state=inactive]:border-error/20"
+                    )}
+                >
+                    <div className={"flex items-center gap-2"}>
+                        <integration.icon className={"size-4 fill-secondary"}/>
+                        <p>{integration.name}</p>
+                    </div>
+                    <div className={"flex flex-col gap-2"}>
+                        <Button
+                            variant={"ghost"}
+                            className={"text-xs text-tertiary font-normal hover:bg-0 hover:underline"}
+                            onClick={() => integration.active ? integration.onDisconnect() : integration.onConnect()}
+                        >
+                            {integration.active ? "Disconnect" : "Connect"}
+                        </Button>
+                    </div>
+                    <div className={"z-[60] absolute right-1 top-1 text-xs group-data-[state=active]:bg-success/10 group-data-[state=inactive]:bg-error/10 rounded-md p-0.5"}>
+                        <p>{integration.active ? <Check size={16} className={"text-success"}/> : <X size={16} className={"text-error"}/>}</p>
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
+}
+
 interface ProfileProps {
     session: any,
     onClose: () => void
 }
 
-const ProfileSection: React.FC<ProfileProps> = ({session, onClose}) => {
+const ProfileSection = ({session, onClose}: ProfileProps) => {
     const {updateUser} = useSessionStore()
     const {addToast} = useToast()
     const [uploading, setUploading] = useState(false)
@@ -289,50 +337,52 @@ const ProfileSection: React.FC<ProfileProps> = ({session, onClose}) => {
         <div className={"flex flex-col gap-4 h-full justify-between"}>
             <div className={"flex flex-col gap-4 h-full"}>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between space-y-4 h-full">
-                        <div className="flex items-center justify-center space-x-4">
-                            <Avatar className="h-20 w-20">
-                                <AvatarImage src={blob?.url || avatarUrl || undefined} />
-                                <AvatarFallback/>
-                            </Avatar>
-                            <div className="flex items-center justify-center space-x-4">
-                                <Input
-                                    ref={inputFileRef}
-                                    id="picture"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={() => setAvatarUrl(URL.createObjectURL(inputFileRef.current!.files![0]))}
-                                    className="hidden"
-                                />
-                                <FormLabel
-                                    htmlFor="picture"
-                                    className="flex items-center cursor-pointer rounded-md bg-secondary p-2 text-secondary hover:bg-tertiary"
-                                >
-                                    <ImageIcon className="mr-2 h-4 w-4" />
-                                    <span>Change Picture</span>
-                                </FormLabel>
-                                {(blob?.url || avatarUrl) &&
-                                    <Button
-                                        type={"button"}
-                                        className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error"}
-                                        onClick={handleDelete}
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between gap-4 h-full">
+                        <div className="flex flex-col justify-center gap-4">
+                            <div className={"flex flex-col md:flex-row items-center gap-4"}>
+                                <Avatar className="h-20 w-20">
+                                    <AvatarImage src={blob?.url || avatarUrl || undefined} />
+                                    <AvatarFallback/>
+                                </Avatar>
+                                <div className="flex items-center justify-center space-x-4">
+                                    <Input
+                                        ref={inputFileRef}
+                                        id="picture"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={() => setAvatarUrl(URL.createObjectURL(inputFileRef.current!.files![0]))}
+                                        className="hidden"
+                                    />
+                                    <FormLabel
+                                        htmlFor="picture"
+                                        className="flex items-center cursor-pointer rounded-md bg-secondary p-2 text-secondary hover:bg-tertiary"
                                     >
-                                        <Trash size={20}/>
-                                    </Button>
-                                }
+                                        <ImageIcon className="mr-2 h-4 w-4" />
+                                        <span>Change Picture</span>
+                                    </FormLabel>
+                                    {(blob?.url || avatarUrl) &&
+                                        <Button
+                                            type={"button"}
+                                            className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error"}
+                                            onClick={handleDelete}
+                                        >
+                                            <Trash size={20}/>
+                                        </Button>
+                                    }
+                                </div>
                             </div>
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Name</FormLabel>
+                                        <FormInput placeholder="Name" {...field} />
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         </div>
-                        <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Name</FormLabel>
-                                    <FormInput placeholder="Name" {...field} />
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
                         <div className={"w-full flex gap-2 justify-end"}>
                             <Button
                                 className={"w-max"}

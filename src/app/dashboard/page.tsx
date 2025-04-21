@@ -18,6 +18,7 @@ import { useShallow } from "zustand/react/shallow"
 import {useGrid} from "@/hooks/useGrid"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
+import { Callout } from "@/components/ui/Callout"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
@@ -110,9 +111,9 @@ export default function Dashboard() {
             <div className={"flex flex-col w-full h-screen"}>
                 <Header onEdit={handleEditModeEnter} editMode={editMode} widgetsEmpty={true}/>
                 <div className={"w-full h-full flex items-center justify-center"}>
-                    <div className={"flex flex-col gap-4 items-center justify-center p-12 border border-main border-dashed rounded-md shadow-xl"}>
+                    <div className={"flex flex-col gap-4 items-center justify-center p-4 md:p-12 border border-main border-dashed rounded-md shadow-xl"}>
                         <EmptyAddSVG/>
-                        <p className={"w-80 text-center text-sm"}>You dont have any widgets in your dashboard. Add a new widget, by visiting the widget store.</p>
+                        <p className={"w-56 md:w-80 text-center text-sm"}>You dont have any widgets in your dashboard. Add a new widget, by visiting the widget store.</p>
                         <WidgetDialog editMode={false} title={"Widget-Store"}/>
                     </div>
                 </div>
@@ -128,8 +129,13 @@ export default function Dashboard() {
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
             >
+                <div className={"flex h-screen xl:hidden items-center justify-center"}>
+                    <Callout variant={"info"} className={"border border-info/20 shadow-lg"}>
+                        The browser window is to small to render your widgets!
+                    </Callout>
+                </div>
                 <div
-                    className="relative w-full h-[calc(100vh-64px)] grid grid-cols-4 gap-8 p-8"
+                    className="relative w-full h-[calc(100vh-64px)] hidden xl:grid grid-cols-4 gap-8 p-8"
                     style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
                 >
                     {gridCells.map((cell) => (

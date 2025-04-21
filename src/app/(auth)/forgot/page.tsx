@@ -1,6 +1,6 @@
 "use client"
 
-import {DotPattern} from "@/components/DotPattern"
+import {DotPattern} from "@/components/svg/DotPattern"
 import {cn} from "@/lib/utils"
 import {ToastProvider} from "@/components/ui/ToastProvider"
 import {ForgotPasswordCard} from "@/components/cards/ForgotPasswordCard"

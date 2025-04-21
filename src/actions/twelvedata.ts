@@ -1,5 +1,10 @@
 "use server"
 
+export interface AssetOption {
+    value: string
+    label: string
+    type: "stock" | "crypto"
+}
 
 export interface ChartDataPoint {
     date: string
@@ -93,5 +98,36 @@ export const fetchStockData = async (symbol: string, days = 7): Promise<AssetDat
         }
     } catch (err: any) {
         return null
+    }
+}
+
+export async function searchSymbols(query: string, limit = 20): Promise<AssetOption[]> {
+    try {
+        const url = `https://api.twelvedata.com/symbol_search?apikey=${TWELVEDATA_API_KEY}&symbol=${query}&limit=${limit}`
+
+        const response = await fetch(url)
+        if (!response.ok) throw new Error(`HTTP-Fehler: ${response.status}`)
+
+        const json = await response.json()
+        if (json.status === "error") throw new Error(json.message || "API-Fehler")
+
+        const seenSymbols = new Set<string>()
+
+        return json.data
+            .map((s: any) => ({
+                value: s.symbol,
+                label: s.instrument_name,
+                type: s.instrument_type === "Common Stock" ? "stock" : "crypto"
+            }))
+            .filter((item: any) => {
+                if (!seenSymbols.has(item.value)) {
+                    seenSymbols.add(item.value)
+                    return true
+                }
+                return false
+            })
+    } catch (err) {
+        console.error("searchAssets Error:", err)
+        return []
     }
 }
