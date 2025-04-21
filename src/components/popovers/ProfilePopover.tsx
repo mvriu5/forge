@@ -1,6 +1,6 @@
 "use client"
 
-import {Hourglass, LogOut} from "lucide-react";
+import {Bug, Hourglass, LogOut, MessageCircleQuestion} from "lucide-react";
 import React, {useEffect, useState} from "react"
 import {authClient} from "@/lib/auth-client"
 import {useRouter} from "next/navigation"
@@ -72,6 +72,14 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                     Logged in as:
                     <span className={"inline break-words text-secondary font-sans"}>{session?.user?.name}</span>
                 </p>
+                <button
+                    type={"button"}
+                    onClick={() => window.open("https://github.com/mvriu5/forge/issues")}
+                    className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-secondary hover:text-primary"}
+                >
+                    <MessageCircleQuestion size={16} className={"text-tertiary"}/>
+                    <p>Help</p>
+                </button>
                 <SettingsDialog/>
                 <button
                     type={"button"}

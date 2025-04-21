@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useEffect, useMemo, useState} from "react"
+import React, {useMemo, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {Check, ChevronDown, TrendingDown, TrendingUp} from "lucide-react"
 import {ChartConfig} from "@/components/ui/Chart"
@@ -10,11 +10,11 @@ import {cn} from "@/lib/utils"
 import {useStock} from "@/hooks/useStock"
 import {useWidgetStore} from "@/store/widgetStore"
 import {StockChart} from "@/components/widgets/components/StockChart"
-import {Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover"
-import { Button } from "@/components/ui/Button"
-import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/Command"
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
+import {Button} from "@/components/ui/Button"
+import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/Command"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
-import { ScrollArea } from "../ui/ScrollArea"
+import {ScrollArea} from "@/components/ui/ScrollArea"
 
 const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {refreshWidget} = useWidgetStore()
@@ -22,15 +22,9 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
     if (!widget) return null
 
     const [popoverOpen, setPopoverOpen] = useState(false)
-    const [popoverKey, setPopoverKey] = useState(0)
 
     const {data, isLoading, isError, stock, setStock, timespan, setTimespan, yAxisDomain, query, setQuery, assetList, assetListLoading, assetListError}
     = useStock(widget.config?.stock, widget.config?.timespan)
-
-    useEffect(() => {
-        setPopoverKey(prevKey => prevKey + 1)
-    }, [assetList])
-
 
     const chartData = useMemo(() => data?.chartData ?? [], [data?.chartData])
     const percent = useMemo(() => data?.priceChangePercent ?? 0, [data?.priceChangePercent])
@@ -53,20 +47,20 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
             <div className={"flex flex-col gap-2 h-full"}>
                 <div className={"flex items-center justify-between gap-4"}>
                     <div className={"flex items-center gap-2"}>
-                        <Popover open={popoverOpen} onOpenChange={setPopoverOpen} key={popoverKey}>
+                        <Popover open={popoverOpen} onOpenChange={setPopoverOpen} >
                             <PopoverTrigger asChild>
                                 <Button
                                     role="combobox"
                                     aria-expanded={popoverOpen}
-                                    className="group w-[200px] justify-between px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"
+                                    className="group w-max gap-2 font-normal text-sm justify-between px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"
                                 >
                                     {stock}
                                     <ChevronDown size={12} className="text-secondary group-data-[state=open]:rotate-180 transition-all" />
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[200px] p-0">
+                            <PopoverContent className="w-[200px] p-0 border-0" align={"start"}>
                                 <Command>
-                                    <CommandInput placeholder="Search stock..." value={query} onValueChange={setQuery}/>
+                                    <CommandInput placeholder="Search stock..." value={query} onValueChange={setQuery} key="stock-search"/>
                                     <CommandEmpty className={"flex items-center justify-center p-4"}>
                                         {assetListLoading ? "No results found." : <ButtonSpinner/>}
                                     </CommandEmpty>

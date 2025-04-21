@@ -42,7 +42,7 @@ const CommandDialog = ({ children, ...props }: DialogProps) => {
 
 const CommandInput = React.forwardRef<React.ComponentRef<typeof CommandPrimitive.Input>, React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>>(({ className, ...props }, ref) => {
     return (
-        <div className="flex items-center border-b border-main px-3" cmdk-input-wrapper="">
+        <div className="flex items-center border-b border-main/40 px-3" cmdk-input-wrapper="">
             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <CommandPrimitive.Input
                 className={cn(

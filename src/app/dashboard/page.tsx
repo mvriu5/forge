@@ -18,6 +18,7 @@ import { useShallow } from "zustand/react/shallow"
 import {useGrid} from "@/hooks/useGrid"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
+import { Callout } from "@/components/ui/Callout"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
@@ -128,8 +129,13 @@ export default function Dashboard() {
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
             >
+                <div className={"flex h-screen xl:hidden items-center justify-center"}>
+                    <Callout variant={"info"} className={"border border-info/20 shadow-lg"}>
+                        The browser window is to small to render your widgets!
+                    </Callout>
+                </div>
                 <div
-                    className="relative w-full h-[calc(100vh-64px)] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 p-8"
+                    className="relative w-full h-[calc(100vh-64px)] hidden xl:grid grid-cols-4 gap-8 p-8"
                     style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
                 >
                     {gridCells.map((cell) => (

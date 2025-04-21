@@ -3,27 +3,31 @@
 import React, {useMemo, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
 import {useStock} from "@/hooks/useStock"
-import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
-import {Area, AreaChart, YAxis} from "recharts"
+import {ChartConfig} from "@/components/ui/Chart"
 import {cn} from "@/lib/utils"
-import {TrendingDown, TrendingUp, TriangleAlert} from "lucide-react"
+import {ChartCandlestick, CheckIcon, TrendingDown, TrendingUp, TriangleAlert} from "lucide-react"
 import {ScrollArea} from "@/components/ui/ScrollArea"
-import {StockSelect} from "@/components/widgets/components/StockSelect"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import {useWidgetStore} from "@/store/widgetStore"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {Callout} from "@/components/ui/Callout"
 import {StockChart} from "@/components/widgets/components/StockChart"
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
+import {Button} from "@/components/ui/Button"
+import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/Command"
+import {ButtonSpinner} from "@/components/ButtonSpinner"
+import {AssetOption} from "@/actions/twelvedata"
 
 const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {refreshWidget} = useWidgetStore()
     const widget = useWidgetStore(state => state.getWidget("stockMedium"))
     if (!widget) return null
 
-    const [selectedStocks, setSelectedStocks] = useState<string[]>(widget.config?.stocks ?? [])
+    const [selectedStocks, setSelectedStocks] = useState<AssetOption[]>(widget.config?.stocks ?? [])
     const [timespan, setTimespan] = useState<string>(widget.config?.timespan ?? "365")
+    const [open, setOpen] = useState(false)
 
-    const handleSave = async (updatedConfig: Partial<{ stocks: string[], timespan: string }>) => {
+    const handleSave = async (updatedConfig: Partial<{ stocks: AssetOption[], timespan: string }>) => {
         await refreshWidget({
             ...widget,
             config: {
@@ -33,19 +37,71 @@ const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) =>
         })
     }
 
+    const { query, setQuery, assetList, assetListLoading, assetListError } = useStock()
+
+    const stockList = useMemo(() => {
+        if (!assetList) return selectedStocks;
+
+        const combined = [...selectedStocks]
+
+        assetList.map(asset => {
+            const isDuplicate = combined.some(item => item.value === asset.value)
+            if (!isDuplicate) combined.push(asset)
+        })
+
+        return combined
+    }, [selectedStocks, assetList])
+
     return (
         <WidgetTemplate className={"col-span-1 row-span-2"} name={"stockMedium"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <div className={"h-full flex flex-col gap-2"}>
                 <div className={"flex items-center justify-between gap-2"}>
                     <p className={"text-lg text-primary font-semibold truncate"}>Stock Overview</p>
                     <div className={"flex items-center gap-2"}>
-                        <StockSelect
-                            value={selectedStocks}
-                            onValueChange={(value) => {
-                                setSelectedStocks(value)
-                                handleSave({ stocks: value })
-                            }}
-                        />
+                        <Popover open={open} onOpenChange={setOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    data-state={open ? "open" : "closed"}
+                                    className={cn("font-normal bg-tertiary border-main/60 text-sm items-center gap-2 data-[state=open]:text-primary data-[state=open]:bg-inverted/10 px-2")}
+                                >
+                                    <ChartCandlestick size={18}/>
+                                    Stocks
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className={"border-0 p-0 w-[160px]"} align={"start"}>
+                                <Command className={"border-main/60"}>
+                                    <CommandInput placeholder="Search stock..." value={query} onValueChange={setQuery} key="stock-search"/>
+                                    <CommandEmpty className={"flex items-center justify-center p-4"}>
+                                        {assetListLoading ? "No results found." : <ButtonSpinner/>}
+                                    </CommandEmpty>
+                                    <CommandList className={"scrollbar-hide"}>
+                                        <CommandGroup>
+                                            <ScrollArea className={"h-56"}>
+                                                {stockList?.map((item) => (
+                                                    <CommandItem
+                                                        key={item.value}
+                                                        value={item.label}
+                                                        onSelect={() => {
+                                                            const newSelectedStocks = selectedStocks.includes(item)
+                                                                ? selectedStocks.filter(s => s !== item)
+                                                                : [...selectedStocks, item]
+
+                                                            setSelectedStocks(newSelectedStocks)
+                                                            handleSave({ stocks: newSelectedStocks })
+                                                            setOpen(false)
+                                                        }}
+                                                        className="flex items-center justify-between"
+                                                    >
+                                                        <span>{item.label}</span>
+                                                        {selectedStocks.includes(item) && <CheckIcon size={16} className="mr-2" />}
+                                                    </CommandItem>
+                                                ))}
+                                            </ScrollArea>
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
                         <Select
                             value={timespan}
                             onValueChange={(value) => {
@@ -69,7 +125,7 @@ const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) =>
                 <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
                     <div className={"w-full flex flex-col gap-2 items-center"}>
                         {selectedStocks.map((stock) => (
-                            <Stock key={stock} selectedStock={stock} selectedTimespan={timespan} />
+                            <Stock key={stock.value} selectedStock={stock} selectedTimespan={timespan} />
                         ))}
                         {selectedStocks.length === 0 &&
                             <p className={"text-sm text-tertiary mt-4"}>No stock added yet.</p>
@@ -82,12 +138,12 @@ const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) =>
 }
 
 interface StockProps {
-    selectedStock: string
+    selectedStock: AssetOption
     selectedTimespan: string
 }
 
 const Stock = ({selectedStock, selectedTimespan}: StockProps) => {
-    const { data, isLoading, isError, stock, yAxisDomain } = useStock(selectedStock, selectedTimespan)
+    const { data, isLoading, isError, stock, yAxisDomain } = useStock(selectedStock.value, selectedTimespan)
 
     const chartData = useMemo(() => data?.chartData ?? [], [data?.chartData])
     const percent = useMemo(() => data?.priceChangePercent ?? 0, [data?.priceChangePercent])
