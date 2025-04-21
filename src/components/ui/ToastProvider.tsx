@@ -116,7 +116,7 @@ const ToastProvider: React.FC<ToasterProps> = ({ children, layout = "stack", sca
                 {Object.entries(groupedToasts).map(([position, positionToasts]) => (
                     <motion.div
                         key={position}
-                        className={`fixed z-50 flex flex-col ${positionClasses(position as Position)}`}
+                        className={`fixed z-[100] flex flex-col ${positionClasses(position as Position)}`}
                         initial="initial"
                         whileHover="hover"
                         whileTap="hover"

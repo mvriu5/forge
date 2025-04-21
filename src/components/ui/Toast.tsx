@@ -104,7 +104,7 @@ const Toast = ({id, title, subtitle, icon, scale = 1, position = "br", closeButt
                     exit="exit"
                     variants={variants}
                     transition={{duration: 0.5,}}
-                    className={cn("rounded-lg", positionClasses(position), classNames?.motionClassname)}
+                    className={cn("rounded-md", positionClasses(position), classNames?.motionClassname)}
                     style={{...(position === "tc" || position === "bc" ? { marginLeft: `-${(width * scale) / 2}px` } : {}),
                         transformOrigin: isTopPositioned ? "center top" : "center bottom"}}
                 >

@@ -6,6 +6,7 @@ import {ProfilePopover} from "@/components/popovers/ProfilePopover"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
 import { tooltip } from "@/components/ui/TooltipProvider"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
+import {ShareDialog} from "@/components/dialogs/ShareDialog"
 
 interface HeaderProps {
     onEdit: () => void
@@ -36,7 +37,10 @@ function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
                     </Button>
                 </div>
             </div>
-            <ProfilePopover editMode={editMode}/>
+            <div className={"flex items-center gap-2"}>
+                <ShareDialog editMode={editMode}/>
+                <ProfilePopover editMode={editMode}/>
+            </div>
         </div>
     )
 }
