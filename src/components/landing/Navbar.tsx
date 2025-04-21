@@ -94,7 +94,7 @@ function Navbar() {
                     <Button variant={"default"} className={"px-2 border-main/60"} onClick={() => router.push("/signin")}>
                         Login
                     </Button>
-                    <Button variant={"brand"} className={"px-2"} onClick={() => router.push("/signup")}>
+                    <Button variant={"brand"} className={"hidden md:flex px-2"} onClick={() => router.push("/signup")}>
                         Sign up
                     </Button>
                 </div>

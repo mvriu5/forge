@@ -1,8 +1,5 @@
-export interface AssetOption {
-    value: string
-    label: string
-    type: "stock" | "crypto"
-}
+import {AssetOption} from "@/actions/twelvedata"
+
 
 export function getPopularAssets(): AssetOption[] {
     const popularStocks: AssetOption[] = [
