@@ -7,6 +7,10 @@ import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
 import { tooltip } from "@/components/ui/TooltipProvider"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import {ShareDialog} from "@/components/dialogs/ShareDialog"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
+import React, { useState } from "react"
+import {useDashboardStore} from "@/store/dashboardStore"
+import {useSessionStore} from "@/store/sessionStore"
 
 interface HeaderProps {
     onEdit: () => void
@@ -15,6 +19,9 @@ interface HeaderProps {
 }
 
 function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
+    const {dashboards} = useDashboardStore()
+
+    const [selectedDashboard, setSelectedDashboard] = useState("")
 
     const layoutTooltip = tooltip<HTMLButtonElement>({
         message: "Change your dashboard layout",
@@ -35,6 +42,22 @@ function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
                     <Button className={"size-8 bg-secondary border-main/60 hidden xl:flex"} {...layoutTooltip} onClick={onEdit} disabled={editMode || widgetsEmpty}>
                         <LayoutTemplate size={16}/>
                     </Button>
+                    <Select
+                        value={selectedDashboard}
+                        onValueChange={(value) => {
+                            useDashboardStore.setState({ currentDashboard: dashboards?.find(d => d.name === value)})
+                            setSelectedDashboard(value)
+                        }}
+                    >
+                        <SelectTrigger className={"w-[200px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary hidden lg:flex"} disabled={editMode}>
+                            <SelectValue/>
+                        </SelectTrigger>
+                        <SelectContent align={"end"} className={"border-main/40"}>
+                            {dashboards?.map(dashboard => (
+                                <SelectItem value={dashboard.name}>{dashboard.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
             <div className={"flex items-center gap-2"}>

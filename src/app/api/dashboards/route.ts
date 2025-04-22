@@ -1,10 +1,10 @@
-import { createWidget, deleteWidget, getWidgetsFromUser, updateWidget } from "@/database"
 import {NextResponse} from "next/server"
+import {createDashboard, deleteDashboard, getDashboardsFromUser, updateDashboard} from "@/database"
 
 export async function POST(req: Request) {
     try {
         const body = await req.json()
-        const { userId, dashboardId, widgetType, height, width, positionX, positionY } = body
+        const { userId, name } = body
 
         if (!userId) {
             return NextResponse.json(
@@ -12,19 +12,14 @@ export async function POST(req: Request) {
                 { status: 400 })
         }
 
-        const newWidget = await createWidget({
+        const newDashboard = await createDashboard({
             userId,
-            dashboardId,
-            widgetType,
-            height,
-            width,
-            positionX,
-            positionY,
+            name,
             createdAt: new Date(),
             updatedAt: new Date()
         })
 
-        return NextResponse.json(newWidget, { status: 201 })
+        return NextResponse.json(newDashboard, { status: 201 })
     } catch (error) {
         return NextResponse.json(
             { error: "Internal Server Error" },
@@ -43,9 +38,9 @@ export async function GET(req: Request) {
                 { status: 400 })
         }
 
-        const widgets = await getWidgetsFromUser(userId)
+        const dashboards = await getDashboardsFromUser(userId)
 
-        return NextResponse.json(widgets, { status: 200 })
+        return NextResponse.json(dashboards, { status: 200 })
     } catch (error) {
         return NextResponse.json(
             { error: "Internal Server Error" },
@@ -56,31 +51,25 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
     try {
         const body = await req.json()
-        const { id, height, width, positionX, positionY, config } = body
+        const { id, name } = body
 
         if (!id) {
             return NextResponse.json(
-                { error: "Widget id is required" },
+                { error: "Dashboard id is required" },
                 { status: 400 })
         }
 
-        const updateData = {
-            height,
-            width,
-            positionX,
-            positionY,
-            config
-        }
+        const updateData = { name }
 
-        const updatedWidget = await updateWidget(id, updateData)
+        const updatedDashboard = await updateDashboard(id, updateData)
 
-        if (!updatedWidget) {
+        if (!updatedDashboard) {
             return NextResponse.json(
-                { error: "Widget not found or could not be updated" },
+                { error: "Dashboard not found or could not be updated" },
                 { status: 404 })
         }
 
-        return NextResponse.json(updatedWidget, { status: 200 })
+        return NextResponse.json(updatedDashboard, { status: 200 })
     } catch (error) {
         return NextResponse.json(
             { error: "Internal Server Error" },
@@ -95,19 +84,19 @@ export async function DELETE(req: Request) {
 
         if (!id) {
             return NextResponse.json(
-                { error: "Widget id is required" },
+                { error: "Dashboard id is required" },
                 { status: 400 })
         }
 
-        const deletedWidget = await deleteWidget(id)
+        const deletedDashboard = await deleteDashboard(id)
 
-        if (!deletedWidget) {
+        if (!deletedDashboard) {
             return NextResponse.json(
-                { error: "Widget not found or could not be deleted" },
+                { error: "Dashboard not found or could not be deleted" },
                 { status: 404 })
         }
 
-        return NextResponse.json(deletedWidget, { status: 200 })
+        return NextResponse.json(deletedDashboard, { status: 200 })
     } catch (error) {
         return NextResponse.json(
             { error: "Internal Server Error" },

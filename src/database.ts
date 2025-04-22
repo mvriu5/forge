@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import {account, widget} from "@/db/schema"
+import {account, dashboard, widget} from "@/db/schema"
 import {and, eq} from "drizzle-orm"
 
 export const db = drizzle(process.env.DATABASE_URI!)
@@ -7,6 +7,7 @@ export const db = drizzle(process.env.DATABASE_URI!)
 export type Widget = {
     id: string
     userId: string
+    dashboardId: string
     widgetType: string
     height: number
     width: number
@@ -50,6 +51,57 @@ export const getWidgetsFromUser = async (userId: string): Promise<WidgetSelect[]
         .from(widget)
         .where(eq(widget.userId, userId))
 }
+
+export const getWidgetsFromDashboard = async (dashboardId: string): Promise<WidgetSelect[]> => {
+    return db
+        .select()
+        .from(widget)
+        .where(eq(widget.dashboardId, dashboardId))
+}
+
+
+//Dashboards
+export type Dashboard = {
+    id: string
+    userId: string
+    name: string
+    createdAt: Date
+    updatedAt: Date
+}
+
+export type DashboardInsert = typeof dashboard.$inferInsert
+type DashboardSelect = typeof dashboard.$inferSelect
+
+export const createDashboard = async (data: DashboardInsert) => {
+    return db
+        .insert(dashboard)
+        .values(data)
+        .returning()
+}
+
+export const updateDashboard = async (id: string, data: Partial<DashboardInsert>) => {
+    const now = new Date()
+    return db
+        .update(dashboard)
+        .set({...data, updatedAt: now,})
+        .where(eq(dashboard.id, id))
+        .returning()
+}
+
+export const deleteDashboard = async (id: string) => {
+    return db
+        .delete(dashboard)
+        .where(eq(dashboard.id, id))
+        .returning()
+}
+
+export const getDashboardsFromUser = async (userId: string): Promise<DashboardSelect[]> => {
+    return db
+        .select()
+        .from(dashboard)
+        .where(eq(dashboard.userId, userId))
+}
+
 
 //Accounts
 export type Account = typeof account.$inferSelect

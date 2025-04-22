@@ -19,9 +19,11 @@ import {useGrid} from "@/hooks/useGrid"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import { Callout } from "@/components/ui/Callout"
+import {useDashboardStore} from "@/store/dashboardStore"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
+    const { dashboards, getAllDashboards } = useDashboardStore()
     const { widgets, getAllWidgets, removeWidget, saveWidgetsLayout } = useWidgetStore()
     const { fetchIntegrations } = useIntegrationStore()
     const { addToast } = useToast()
@@ -46,11 +48,16 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (session?.user) {
+            getAllDashboards(session.user.id).then(() => {
+                if (dashboards) useDashboardStore.setState({ currentDashboard: dashboards[0] })
+            })
             getAllWidgets(session.user.id)
             fetchIntegrations(session.user.id)
             setLoading(false)
+
         }
     }, [session, getAllWidgets, fetchIntegrations])
+
 
     const handleEditModeEnter = useCallback(() => {
         setEditMode(true)
