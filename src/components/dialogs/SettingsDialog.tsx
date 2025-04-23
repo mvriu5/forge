@@ -2,7 +2,19 @@
 
 import type React from "react"
 import {useRef, useState} from "react"
-import {Blocks, Check, CloudAlert, Github, ImageIcon, Settings, Trash, UserRoundCheck, X} from "lucide-react"
+import {
+    Blocks,
+    Check,
+    CloudAlert,
+    Github,
+    ImageIcon,
+    LayoutDashboard, Pencil,
+    Settings, Share2,
+    Trash,
+    User,
+    UserRoundCheck, Wrench,
+    X
+} from "lucide-react"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {useSessionStore} from "@/store/sessionStore"
 import {z} from "zod"
@@ -22,6 +34,10 @@ import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/co
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {Input} from "@/components/ui/Input"
 import { LinearIcon } from "@/components/svg/LinearIcon"
+import {useDashboardStore} from "@/store/dashboardStore"
+import {ScrollArea} from "@/components/ui/ScrollArea"
+import {format} from "date-fns"
+import {CopyButton} from "@/components/CopyButton"
 
 function SettingsDialog() {
     const {session} = useSessionStore()
@@ -62,13 +78,20 @@ function SettingsDialog() {
                             value={tab}
                             onValueChange={setTab}
                         >
-                            <ToggleGroupItem value="profile" className={"w-full text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                            <ToggleGroupItem value="profile" className={"w-full flex items-center gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                                <User size={14}/>
                                 Profile
                             </ToggleGroupItem>
-                            <ToggleGroupItem value="integrations" className={"w-full text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                            <ToggleGroupItem value="integrations" className={"w-full flex items-center gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                                <Blocks size={14}/>
                                 Integrations
                             </ToggleGroupItem>
-                            <ToggleGroupItem value="settings" className={"w-full text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                            <ToggleGroupItem value="dashboards" className={"w-full flex items-center gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                                <LayoutDashboard size={14}/>
+                                Dashboards
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="settings" className={"w-full flex items-center gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                                <Wrench size={14}/>
                                 Settings
                             </ToggleGroupItem>
                         </ToggleGroup>
@@ -81,6 +104,9 @@ function SettingsDialog() {
                         }
                         {tab === "integrations" &&
                             <IntegrationSection session={session} setOpen={setOpen}/>
+                        }
+                        {tab === "dashboards" &&
+                            <DashboardSection/>
                         }
                         {tab === "settings" &&
                             <p className={"text-tertiary text-center mt-4 text-sm"}>Currently no settings available</p>
@@ -191,19 +217,18 @@ const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
                     data-state={integration.active ? "active" : "inactive"}
                     key={integration.name}
                     className={cn(
-                        "relative group w-full h-20 flex flex-col gap-2 justify-between rounded-md",
-                        "bg-secondary border p-2",
+                        "relative group w-full h-20 flex flex-col items-center justify-center rounded-md bg-secondary border p-2",
                         "data-[state=active]:border-success/20 data-[state=inactive]:border-error/20"
                     )}
                 >
-                    <div className={"flex items-center gap-2"}>
+                    <div className={"flex items-center gap-2 bg-tertiary px-2 py-1 rounded-md"}>
                         <integration.icon className={"size-4 fill-secondary"}/>
                         <p>{integration.name}</p>
                     </div>
                     <div className={"flex flex-col gap-2"}>
                         <Button
                             variant={"ghost"}
-                            className={"text-xs text-tertiary font-normal hover:bg-0 hover:underline"}
+                            className={"text-xs text-tertiary font-normal hover:bg-0 hover:underline p-0 font-mono"}
                             onClick={() => integration.active ? integration.onDisconnect() : integration.onConnect()}
                         >
                             {integration.active ? "Disconnect" : "Connect"}
@@ -344,7 +369,7 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
                                     <AvatarImage src={blob?.url || avatarUrl || undefined} />
                                     <AvatarFallback/>
                                 </Avatar>
-                                <div className="flex items-center justify-center space-x-4">
+                                <div className="flex items-center justify-center">
                                     <Input
                                         ref={inputFileRef}
                                         id="picture"
@@ -355,7 +380,7 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
                                     />
                                     <FormLabel
                                         htmlFor="picture"
-                                        className="flex items-center cursor-pointer rounded-md bg-secondary p-2 text-secondary hover:bg-tertiary"
+                                        className="h-8 flex items-center cursor-pointer rounded-l-md bg-secondary px-2 text-secondary hover:text-primary hover:bg-tertiary border border-main/40 border-r-0"
                                     >
                                         <ImageIcon className="mr-2 h-4 w-4" />
                                         <span>Change Picture</span>
@@ -363,7 +388,7 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
                                     {(blob?.url || avatarUrl) &&
                                         <Button
                                             type={"button"}
-                                            className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error"}
+                                            className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error rounded-l-none"}
                                             onClick={handleDelete}
                                         >
                                             <Trash size={20}/>
@@ -404,6 +429,56 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
                 </Form>
             </div>
         </div>
+    )
+}
+
+
+const DashboardSection = () => {
+    const {dashboards} = useDashboardStore()
+
+    const handleUpdate = (dashboardId: string) => {
+
+    }
+
+    const handleDelete = (dashboardId: string) => {
+
+    }
+
+    const handleCreateLink = (dashboardId: string) => {
+
+    }
+
+    return (
+        <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
+            <div className={"flex flex-col gap-4"}>
+                {dashboards?.map(dashboard => (
+                    <div key={dashboard.id} className={"w-full flex items-center justify-between gap-2 bg-tertiary rounded-md py-2 px-4"}>
+                        <div className={"flex items-center gap-2"}>
+                            <p className={"text-primary"}>{dashboard.name}</p>
+                        </div>
+
+                        <div className={"flex items-center"}>
+                            <Button
+                                type={"button"}
+                                className={"px-1.5 rounded-r-none border-r-0"}
+                                onClick={() => handleCreateLink(dashboard.id)}
+                            >
+                                <Pencil size={16}/>
+                            </Button>
+                            <CopyButton copyText={""} className={"px-1.5 rounded-none border border-main/60 border-r-0 text-secondary"}/>
+                            <Button
+                                type={"button"}
+                                className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error rounded-l-none"}
+                                onClick={() => handleDelete(dashboard.id)}
+                            >
+                                <Trash size={16}/>
+                            </Button>
+                        </div>
+                    </div>
+
+                ))}
+            </div>
+        </ScrollArea>
     )
 }
 

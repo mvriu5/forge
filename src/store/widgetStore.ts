@@ -16,7 +16,7 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
     widgets: null,
 
     addWidget: async (userId: string, widget: WidgetInsert) => {
-        const { x, y } = findNextAvailablePosition(get().widgets, widget.width, widget.height)
+        const { x, y } = findNextAvailablePosition(get().widgets, widget.width, widget.height, widget.dashboardId)
         const widgetWithPosition = { ...widget, positionX: x, positionY: y, userId }
         try {
             const response = await fetch("/api/widgets", {
@@ -102,15 +102,16 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
     }
 }))
 
-const findNextAvailablePosition = (widgets: Widget[] | null, newWidgetWidth: number, newWidgetHeight: number): { x: number, y: number } => {
-    if (!widgets || widgets.length === 0) return { x: 0, y: 0 };
+const findNextAvailablePosition = (widgets: Widget[] | null, newWidgetWidth: number, newWidgetHeight: number, dashboardId: string): { x: number, y: number } => {
+    const relevant = widgets?.filter(w => w.dashboardId === dashboardId) ?? []
+    if (relevant.length === 0) return { x: 0, y: 0 }
 
-    const gridSize = 4; // 4x4 Grid
+    const gridSize = 4 // 4x4 Grid
     const occupiedCells: boolean[][] = Array(gridSize)
         .fill(false)
         .map(() => Array(gridSize).fill(false))
 
-    widgets.map(widget => {
+    relevant.map(widget => {
         for (let i = 0; i < widget.width; i++) {
             for (let j = 0; j < widget.height; j++) {
                 const x = widget.positionX + i

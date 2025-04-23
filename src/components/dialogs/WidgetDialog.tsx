@@ -40,7 +40,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
     })
 
     const handleSelect = (widgetPreview: WidgetPreview) => {
-        if (widgets?.find((w) => w.widgetType === widgetPreview?.widgetType)) return
+        if (widgets?.find((w) => w.widgetType === widgetPreview?.widgetType && w.dashboardId === currentDashboard?.id)) return
         if (selectedWidget) setSelectedWidget(null)
         else setSelectedWidget(widgetPreview)
     }
@@ -119,7 +119,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                         {filteredWidgets.map((widget) => (
                             <div
                                 key={widget.widgetType}
-                                data-used={widgets?.find((w) => w.widgetType === widget.widgetType) ? "true" : "false"}
+                                data-used={widgets?.find((w) => w.widgetType === widget.widgetType && w.dashboardId === currentDashboard?.id) ? "true" : "false"}
                                 data-selected={widget.widgetType === selectedWidget?.widgetType ? "true" : "false"}
                                 className={cn(
                                     "relative group col-span-1 flex flex-col p-2 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
@@ -130,7 +130,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                                 <div className={"flex justify-between items-center"}>
                                     <p className={"text-primary"}>{widget.title}</p>
                                     <div className={"px-2 rounded-md bg-white/5 border border-main/40 group-data-[used=true]:bg-success/10 group-data-[used=true]:text-success group-data-[used=true]:border-success/20"}>
-                                        {widgets?.find((w) => w.widgetType === widget.widgetType) ?
+                                        {widgets?.find((w) => w.widgetType === widget.widgetType && w.dashboardId === currentDashboard?.id) ?
                                             "In use" :
                                             `${widget.width}x${widget.height}`
                                         }

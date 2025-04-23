@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react"
 import { useWidgetStore } from "@/store/widgetStore"
 import { Widget } from "@/database"
+import {useDashboardStore} from "@/store/dashboardStore"
 
 export const useGrid = (activeWidget: Widget | null) => {
-    const [gridCells, setGridCells] = useState<{ x: number; y: number; isDroppable: boolean }[]>([])
+    const {currentDashboard} = useDashboardStore()
+
+    const [gridCells, setGridCells] = useState<{ x: number, y: number, isDroppable: boolean }[]>([])
 
     const getOccupiedCells = () => {
         const occupiedCells: Record<string, boolean> = {}
-        const widgets = useWidgetStore.getState().widgets
+        const widgets = useWidgetStore.getState().widgets?.filter((w) => w.dashboardId === currentDashboard?.id)
 
         widgets?.map((widget) => {
             if (activeWidget && widget.id === activeWidget.id) return
@@ -39,6 +42,8 @@ export const useGrid = (activeWidget: Widget | null) => {
     }
 
     useEffect(() => {
+        if (!currentDashboard) return
+
         const cells = []
         const occupiedCells = getOccupiedCells()
 

@@ -24,7 +24,7 @@ import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
-    const { dashboards, currentDashboard, getAllDashboards } = useDashboardStore()
+    const { currentDashboard, getAllDashboards } = useDashboardStore()
     const { widgets, getAllWidgets, removeWidget, saveWidgetsLayout } = useWidgetStore()
     const { fetchIntegrations } = useIntegrationStore()
     const { addToast } = useToast()
@@ -40,8 +40,6 @@ export default function Dashboard() {
     const { sensors, handleDragStart, handleDragEnd } = useDragAndDrop(editMode, setActiveWidget)
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
-
-    //logik für dashboard wechsel (cachedWidgets, editmode etc)
 
     const widgetIds = useWidgetStore(useShallow((s) => s.widgets?.filter((w) => w.dashboardId == currentDashboard?.id).map((w) => w.id)))
 
@@ -127,7 +125,7 @@ export default function Dashboard() {
         )
     }
 
-    if (widgets?.length === 0) {
+    if (widgets?.filter((w) => w.dashboardId == currentDashboard?.id).length === 0 && currentDashboard) {
         return (
             <div className={"flex flex-col w-full h-screen"}>
                 <Header onEdit={handleEditModeEnter} editMode={editMode} widgetsEmpty={true}/>
@@ -164,7 +162,7 @@ export default function Dashboard() {
                     className="relative w-full h-[calc(100vh-64px)] hidden xl:grid grid-cols-4 gap-8 p-8"
                     style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
                 >
-                    {gridCells.map((cell) => (
+                    {gridCells?.map((cell) => (
                         <GridCell key={`${cell.x},${cell.y}`} x={cell.x} y={cell.y} isDroppable={cell.isDroppable} />
                     ))}
 

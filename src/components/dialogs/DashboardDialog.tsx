@@ -17,9 +17,10 @@ interface DashboardDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     showOnClose: boolean
+    editMode?: boolean
 }
 
-function DashboardDialog({open, onOpenChange, showOnClose}: DashboardDialogProps) {
+function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardDialogProps) {
     const {dashboards, addDashboard} = useDashboardStore()
     const {session} = useSessionStore()
     const {addToast} = useToast()
@@ -37,6 +38,8 @@ function DashboardDialog({open, onOpenChange, showOnClose}: DashboardDialogProps
             name: "",
         },
     })
+
+    const { reset } = form
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!session || !session.user) return
@@ -56,20 +59,31 @@ function DashboardDialog({open, onOpenChange, showOnClose}: DashboardDialogProps
         onOpenChange(false)
     }
 
+    const handleOpenChange = () => {
+        onOpenChange(false)
+        if (!open) reset()
+    }
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog
+            open={open}
+            onOpenChange={() => {
+                onOpenChange(!open)
+                if (!open) reset()
+            }}
+        >
             <DialogTrigger asChild>
                 {showOnClose &&
-                    <Button className={"rounded-l-none border-l-0 px-2"}>
+                    <Button className={"rounded-l-none border-l-0 px-2"} disabled={editMode}>
                         <SquarePen size={16} />
                     </Button>
                 }
             </DialogTrigger>
             <DialogContent
-                className={"md:min-w-[300px] pl-8 pt-8"}
+                className={"md:min-w-[300px] p-4"}
                 onPointerDownOutside={(e) => !showOnClose && e.preventDefault()}
             >
-                <DialogHeader className={"flex flex-row justify-between items-center"}>
+                <DialogHeader className={"flex flex-row justify-between items-start"}>
                     <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
                         Create a new dashboard
                     </DialogTitle>
@@ -96,7 +110,11 @@ function DashboardDialog({open, onOpenChange, showOnClose}: DashboardDialogProps
                                 {showOnClose &&
                                     <Button
                                         className={"w-max"}
-                                        onClick={() => onOpenChange(false)}
+                                        type={"reset"}
+                                        onClick={() => {
+                                            onOpenChange(false)
+                                            reset()
+                                        }}
                                     >
                                         Cancel
                                     </Button>
@@ -108,7 +126,7 @@ function DashboardDialog({open, onOpenChange, showOnClose}: DashboardDialogProps
                                     disabled={form.formState.isSubmitting}
                                 >
                                     {(form.formState.isSubmitting) && <ButtonSpinner/>}
-                                    Save
+                                    Create
                                 </Button>
                             </div>
                         </form>

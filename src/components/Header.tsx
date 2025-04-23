@@ -1,17 +1,14 @@
 "use client"
 
 import {Button} from "@/components/ui/Button"
-import {Anvil, LayoutTemplate, SquarePen} from "lucide-react"
+import {LayoutTemplate} from "lucide-react"
 import {ProfilePopover} from "@/components/popovers/ProfilePopover"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
-import { tooltip } from "@/components/ui/TooltipProvider"
+import {tooltip} from "@/components/ui/TooltipProvider"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
-import {ShareDialog} from "@/components/dialogs/ShareDialog"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
-import React, { useState } from "react"
+import React, {useState} from "react"
 import {useDashboardStore} from "@/store/dashboardStore"
-import {useSessionStore} from "@/store/sessionStore"
-import {cn} from "@/lib/utils"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 
 interface HeaderProps {
@@ -53,10 +50,10 @@ function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
                             }}
                             disabled={!dashboards || dashboards.length === 0 || editMode}
                         >
-                            <SelectTrigger className={"w-[200px] bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary hidden lg:flex rounded-r-none"} disabled={editMode}>
-                                <div className={"flex items-center gap-2"}>
+                            <SelectTrigger className={"max-w-[280px] bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary hidden lg:flex rounded-r-none"} disabled={editMode}>
+                                <div className={"w-full flex items-center gap-2 overflow-hidden"}>
                                     <p className={"text-tertiary text-xs font-mono"}>Dashboard: </p>
-                                    <SelectValue/>
+                                    <SelectValue className={"truncate"}/>
                                 </div>
                             </SelectTrigger>
                             <SelectContent align={"end"} className={"border-main/40"}>
@@ -65,14 +62,11 @@ function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
                                 ))}
                             </SelectContent>
                         </Select>
-                        <DashboardDialog open={dialogOpen} onOpenChange={setDialogOpen} showOnClose={true}/>
+                        <DashboardDialog open={dialogOpen} onOpenChange={setDialogOpen} showOnClose={true} editMode={editMode}/>
                     </div>
                 </div>
             </div>
-            <div className={"flex items-center gap-2"}>
-                <ShareDialog editMode={editMode}/>
-                <ProfilePopover editMode={editMode}/>
-            </div>
+            <ProfilePopover editMode={editMode}/>
         </div>
     )
 }
