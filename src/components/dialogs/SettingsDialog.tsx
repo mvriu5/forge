@@ -234,7 +234,7 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
 
     const formSchema = z.object({
         name: z.string()
-            .min(3, {message: "Please enter more than 3 charcaters."})
+            .min(3, {message: "Please enter more than 3 characters."})
     })
 
     const form = useForm<z.infer<typeof formSchema>>({

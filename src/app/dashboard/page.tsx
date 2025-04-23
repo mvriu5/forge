@@ -20,10 +20,11 @@ import {useDragAndDrop} from "@/hooks/useDragAndDrop"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import { Callout } from "@/components/ui/Callout"
 import {useDashboardStore} from "@/store/dashboardStore"
+import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
-    const { dashboards, getAllDashboards } = useDashboardStore()
+    const { dashboards, currentDashboard, getAllDashboards } = useDashboardStore()
     const { widgets, getAllWidgets, removeWidget, saveWidgetsLayout } = useWidgetStore()
     const { fetchIntegrations } = useIntegrationStore()
     const { addToast } = useToast()
@@ -39,7 +40,9 @@ export default function Dashboard() {
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
-    const widgetIds = useWidgetStore(useShallow((s) => s.widgets?.map((w) => w.id)))
+    //logik für dashboard wechsel (cachedWidgets etc)
+
+    const widgetIds = useWidgetStore(useShallow((s) => s.widgets?.filter((w) => w.dashboardId == currentDashboard?.id).map((w) => w.id)))
 
     useEffect(() => {
         setLoading(true)
@@ -165,6 +168,9 @@ export default function Dashboard() {
                         Save
                     </Button>
                 </div>
+            }
+            {!currentDashboard && !loading &&
+                <DashboardDialog open={true} showOnClose={false}/>
             }
         </div>
     )

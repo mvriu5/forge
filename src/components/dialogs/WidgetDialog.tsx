@@ -14,9 +14,11 @@ import { tooltip } from "@/components/ui/TooltipProvider"
 import {ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup"
 import { ScrollArea } from "@/components/ui/ScrollArea"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
+import {useDashboardStore} from "@/store/dashboardStore"
 
 function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
     const {widgets, addWidget} = useWidgetStore()
+    const {currentDashboard} = useDashboardStore()
     const {session} = useSessionStore()
     const [selectedWidget, setSelectedWidget] = useState<WidgetPreview | null>(null)
     const [allWidgets] = useState<WidgetPreview[]>(getAllWidgetPreviews())
@@ -46,10 +48,12 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
     const handleAddWidget = async () => {
         if (!selectedWidget) return
         if (!session || !session.user) return
+        if (!currentDashboard) return
         setAddLoading(true)
 
         await addWidget(session.user.id, {
             userId: session.user.id,
+            dashboardId: currentDashboard.id,
             widgetType: selectedWidget.widgetType,
             height: selectedWidget.height,
             width: selectedWidget.width,

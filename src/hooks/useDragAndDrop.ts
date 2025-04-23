@@ -8,14 +8,14 @@ export const useDragAndDrop = (editMode: boolean, setActiveWidget: (widget: any)
     const sensors = useSensors(
         useSensor(MouseSensor, {
             activationConstraint: {
-                distance: 10,
-            },
+                distance: 10
+            }
         }),
         useSensor(TouchSensor, {
             activationConstraint: {
                 delay: 250,
-                tolerance: 5,
-            },
+                tolerance: 5
+            }
         })
     )
 

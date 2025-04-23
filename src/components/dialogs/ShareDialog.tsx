@@ -55,7 +55,7 @@ function ShareDialog({editMode}: {editMode: boolean}) {
                 </Button>
             </DialogTrigger>
             <DialogContent className={"md:min-w-[650px] pl-8 pt-8"}>
-                <DialogHeader className={"flex flex-row justify-between items-start pr-4"}>
+                <DialogHeader className={"flex flex-row justify-between items-start"}>
                     <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
                         Share
                         <p className={"text-secondary text-sm font-normal"}>Manage your dashboards & share it with your friends</p>
