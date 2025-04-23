@@ -52,13 +52,6 @@ export const getWidgetsFromUser = async (userId: string): Promise<WidgetSelect[]
         .where(eq(widget.userId, userId))
 }
 
-export const getWidgetsFromDashboard = async (dashboardId: string): Promise<WidgetSelect[]> => {
-    return db
-        .select()
-        .from(widget)
-        .where(eq(widget.dashboardId, dashboardId))
-}
-
 
 //Dashboards
 export type Dashboard = {

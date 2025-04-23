@@ -34,13 +34,14 @@ export default function Dashboard() {
     const [editMode, setEditMode] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
+    const [dialogOpen, setDialogOpen] = useState(false)
 
     const gridCells = useGrid(activeWidget)
     const { sensors, handleDragStart, handleDragEnd } = useDragAndDrop(editMode, setActiveWidget)
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
-    //logik für dashboard wechsel (cachedWidgets etc)
+    //logik für dashboard wechsel (cachedWidgets, editmode etc)
 
     const widgetIds = useWidgetStore(useShallow((s) => s.widgets?.filter((w) => w.dashboardId == currentDashboard?.id).map((w) => w.id)))
 
@@ -50,16 +51,21 @@ export default function Dashboard() {
     }, [fetchSession])
 
     useEffect(() => {
-        if (session?.user) {
-            getAllDashboards(session.user.id).then(() => {
-                if (dashboards) useDashboardStore.setState({ currentDashboard: dashboards[0] })
-            })
-            getAllWidgets(session.user.id)
-            fetchIntegrations(session.user.id)
-            setLoading(false)
+        if (!session?.user) return
+        setLoading(true)
 
-        }
-    }, [session, getAllWidgets, fetchIntegrations])
+        Promise.all([
+            getAllDashboards(session.user.id),
+            getAllWidgets(session.user.id),
+            fetchIntegrations(session.user.id)
+        ])
+        .then(() => {
+            const ds = useDashboardStore.getState().dashboards
+            if (!ds || ds.length === 0) setDialogOpen(true)
+        })
+        .catch()
+        .finally(() => setLoading(false))
+    }, [session?.user?.id, getAllDashboards, getAllWidgets, fetchIntegrations])
 
 
     const handleEditModeEnter = useCallback(() => {
@@ -112,6 +118,11 @@ export default function Dashboard() {
                         <ForgeLogo size={56}/>
                     </div>
                 </div>
+                <DashboardDialog
+                    open={dialogOpen}
+                    onOpenChange={setDialogOpen}
+                    showOnClose={false}
+                />
             </div>
         )
     }
@@ -127,6 +138,11 @@ export default function Dashboard() {
                         <WidgetDialog editMode={false} title={"Widget-Store"}/>
                     </div>
                 </div>
+                <DashboardDialog
+                    open={dialogOpen}
+                    onOpenChange={setDialogOpen}
+                    showOnClose={false}
+                />
             </div>
         )
     }
@@ -169,9 +185,11 @@ export default function Dashboard() {
                     </Button>
                 </div>
             }
-            {!currentDashboard && !loading &&
-                <DashboardDialog open={true} showOnClose={false}/>
-            }
+            <DashboardDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                showOnClose={false}
+            />
         </div>
     )
 }

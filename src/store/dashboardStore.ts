@@ -24,7 +24,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
                 body: JSON.stringify(dashboardWithUser)
             })
             const newDashboard = await response.json()
-            set({ dashboards: [...(get().dashboards || []), newDashboard[0]] })
+            set({ dashboards: [...(get().dashboards || []), newDashboard[0]], currentDashboard: newDashboard[0] })
         } catch (error) {
             set({ dashboards: get().dashboards })
         }
@@ -64,9 +64,9 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         try {
             const response = await fetch(`/api/dashboards?userId=${userId}`)
             const dashboards = await response.json()
-            set({ dashboards })
+            set({ dashboards, currentDashboard: dashboards && dashboards.length > 0 ? dashboards[0] : null })
         } catch (error) {
             set({ dashboards: get().dashboards })
         }
-    },
+    }
 }))

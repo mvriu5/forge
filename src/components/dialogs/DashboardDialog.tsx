@@ -1,11 +1,11 @@
 "use client"
 
-import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/Dialog"
-import React, { useState } from "react"
+import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
+import React, {useEffect, useState} from "react"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
-import {CloudAlert, LayoutDashboard, UserRoundCheck} from "lucide-react"
+import {LayoutDashboard, SquarePen} from "lucide-react"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Button} from "@/components/ui/Button"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
@@ -13,16 +13,21 @@ import {useToast} from "@/components/ui/ToastProvider"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {useSessionStore} from "@/store/sessionStore"
 
-function DashboardDialog({open, showOnClose}: {open: boolean, showOnClose: boolean}) {
+interface DashboardDialogProps {
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    showOnClose: boolean
+}
+
+function DashboardDialog({open, onOpenChange, showOnClose}: DashboardDialogProps) {
     const {dashboards, addDashboard} = useDashboardStore()
     const {session} = useSessionStore()
     const {addToast} = useToast()
 
-    const [dialogOpen, setDialogOpen] = useState(open)
-
     const formSchema = z.object({
         name: z.string()
             .min(3, {message: "Please enter more than 3 characters."})
+            .max(12, {message: "Please enter less than 12 characters."})
             .refine((name) => !dashboards?.some(d => d.name === name), { message: "A dashboard with this name already exists." })
     })
 
@@ -48,12 +53,22 @@ function DashboardDialog({open, showOnClose}: {open: boolean, showOnClose: boole
             icon: <LayoutDashboard size={24} className={"text-brand"}/>
         })
 
-        setDialogOpen(false)
+        onOpenChange(false)
     }
 
     return (
-        <Dialog open={dialogOpen}>
-            <DialogContent className={"md:min-w-[650px] pl-8 pt-8"}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogTrigger asChild>
+                {showOnClose &&
+                    <Button className={"rounded-l-none border-l-0 px-2"}>
+                        <SquarePen size={16} />
+                    </Button>
+                }
+            </DialogTrigger>
+            <DialogContent
+                className={"md:min-w-[300px] pl-8 pt-8"}
+                onPointerDownOutside={(e) => !showOnClose && e.preventDefault()}
+            >
                 <DialogHeader className={"flex flex-row justify-between items-center"}>
                     <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
                         Create a new dashboard
@@ -81,7 +96,7 @@ function DashboardDialog({open, showOnClose}: {open: boolean, showOnClose: boole
                                 {showOnClose &&
                                     <Button
                                         className={"w-max"}
-                                        onClick={() => setDialogOpen(false)}
+                                        onClick={() => onOpenChange(false)}
                                     >
                                         Cancel
                                     </Button>

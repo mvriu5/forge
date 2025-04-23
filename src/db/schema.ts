@@ -49,7 +49,7 @@ export const verification = pgTable("verification", {
 export const widget = pgTable("widget", {
     id: uuid('id').defaultRandom().primaryKey(),
     userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' }),
-    dashboardId: text('dashboard_id').notNull().references(()=> dashboard.id, { onDelete: 'cascade' }),
+    dashboardId: uuid('dashboard_id').notNull().references(()=> dashboard.id, { onDelete: 'cascade' }),
     widgetType: text('widget_type').notNull(),
     height: integer('height').notNull(),
     width: integer('width').notNull(),

@@ -1,7 +1,7 @@
 "use client"
 
 import {Button} from "@/components/ui/Button"
-import {Anvil, LayoutTemplate} from "lucide-react"
+import {Anvil, LayoutTemplate, SquarePen} from "lucide-react"
 import {ProfilePopover} from "@/components/popovers/ProfilePopover"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
 import { tooltip } from "@/components/ui/TooltipProvider"
@@ -11,6 +11,8 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import React, { useState } from "react"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {useSessionStore} from "@/store/sessionStore"
+import {cn} from "@/lib/utils"
+import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 
 interface HeaderProps {
     onEdit: () => void
@@ -19,9 +21,9 @@ interface HeaderProps {
 }
 
 function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
-    const {dashboards} = useDashboardStore()
+    const {dashboards, currentDashboard} = useDashboardStore()
 
-    const [selectedDashboard, setSelectedDashboard] = useState("")
+    const [dialogOpen, setDialogOpen] = useState(false)
 
     const layoutTooltip = tooltip<HTMLButtonElement>({
         message: "Change your dashboard layout",
@@ -42,22 +44,29 @@ function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
                     <Button className={"size-8 bg-secondary border-main/60 hidden xl:flex"} {...layoutTooltip} onClick={onEdit} disabled={editMode || widgetsEmpty}>
                         <LayoutTemplate size={16}/>
                     </Button>
-                    <Select
-                        value={selectedDashboard}
-                        onValueChange={(value) => {
-                            useDashboardStore.setState({ currentDashboard: dashboards?.find(d => d.name === value)})
-                            setSelectedDashboard(value)
-                        }}
-                    >
-                        <SelectTrigger className={"w-[200px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary hidden lg:flex"} disabled={editMode}>
-                            <SelectValue/>
-                        </SelectTrigger>
-                        <SelectContent align={"end"} className={"border-main/40"}>
-                            {dashboards?.map(dashboard => (
-                                <SelectItem value={dashboard.name}>{dashboard.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <div className={"flex"}>
+                        <Select
+                            value={currentDashboard?.name ?? ""}
+                            onValueChange={(value) => {
+                                const dashboard = dashboards?.find(d => d.name === value)
+                                if (dashboard) useDashboardStore.setState({ currentDashboard: dashboard })
+                            }}
+                            disabled={!dashboards || dashboards.length === 0 || editMode}
+                        >
+                            <SelectTrigger className={"w-[200px] bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary hidden lg:flex rounded-r-none"} disabled={editMode}>
+                                <div className={"flex items-center gap-2"}>
+                                    <p className={"text-tertiary text-xs font-mono"}>Dashboard: </p>
+                                    <SelectValue/>
+                                </div>
+                            </SelectTrigger>
+                            <SelectContent align={"end"} className={"border-main/40"}>
+                                {dashboards?.map(dashboard => (
+                                    <SelectItem key={dashboard.id} value={dashboard.name}>{dashboard.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <DashboardDialog open={dialogOpen} onOpenChange={setDialogOpen} showOnClose={true}/>
+                    </div>
                 </div>
             </div>
             <div className={"flex items-center gap-2"}>

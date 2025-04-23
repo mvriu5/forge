@@ -39,6 +39,7 @@ export async function GET(req: Request) {
         }
 
         const dashboards = await getDashboardsFromUser(userId)
+        console.log(dashboards)
 
         return NextResponse.json(dashboards, { status: 200 })
     } catch (error) {

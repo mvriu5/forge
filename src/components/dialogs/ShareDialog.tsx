@@ -65,7 +65,7 @@ function ShareDialog({editMode}: {editMode: boolean}) {
 
                 <div className={"flex flex-col gap-4"}>
                     {dashboards.map((db) => (
-                        <Callout variant={"default"} className={"flex items-center gap-2 px-4 border border-main/40"}>
+                        <Callout key={db.name} variant={"default"} className={"flex items-center gap-2 px-4 border border-main/40"}>
                             <p className={"font-semibold text-brand mr-2"}>{db.name}</p>
                             <p className={"text-tertiary"}>{db.url}</p>
                             <CopyButton copyText={db.url}/>
