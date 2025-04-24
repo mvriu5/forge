@@ -39,8 +39,6 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
         },
     })
 
-    const { reset } = form
-
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!session || !session.user) return
 
@@ -59,17 +57,12 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
         onOpenChange(false)
     }
 
-    const handleOpenChange = () => {
-        onOpenChange(false)
-        if (!open) reset()
-    }
-
     return (
         <Dialog
             open={open}
             onOpenChange={() => {
                 onOpenChange(!open)
-                if (!open) reset()
+                if (!open) form.reset()
             }}
         >
             <DialogTrigger asChild>
@@ -113,7 +106,7 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
                                         type={"reset"}
                                         onClick={() => {
                                             onOpenChange(false)
-                                            reset()
+                                            form.reset()
                                         }}
                                     >
                                         Cancel
