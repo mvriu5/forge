@@ -38,6 +38,7 @@ import {useDashboardStore} from "@/store/dashboardStore"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {format} from "date-fns"
 import {CopyButton} from "@/components/CopyButton"
+import { Dashboard } from "@/database"
 
 function SettingsDialog() {
     const {session} = useSessionStore()
@@ -76,7 +77,10 @@ function SettingsDialog() {
                             type="single"
                             className={"flex flex-col gap-2 border-0 bg-transparent px-0 justify-start items-start"}
                             value={tab}
-                            onValueChange={setTab}
+                            onValueChange={(value) => {
+                                if (value) setTab(value)
+
+                            }}
                         >
                             <ToggleGroupItem value="profile" className={"w-full flex items-center gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
                                 <User size={14}/>
@@ -435,171 +439,180 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
 
 const DashboardSection = () => {
     const {dashboards, refreshDashboard, removeDashboard} = useDashboardStore()
-    const {addToast} = useToast()
-
-    const formSchema = z.object({
-        name: z.string()
-            .min(3, {message: "Please enter more than 3 characters."})
-            .max(12, {message: "Please enter less than 12 characters."})
-            .refine((name) => !dashboards?.some(d => d.name === name), { message: "A dashboard with this name already exists." })
-    })
 
     return (
         <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
             <div className={"flex flex-col gap-4"}>
-                {dashboards?.map(dashboard => {
-                    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-                    const [editDialogOpen, setEditDialogOpen] = useState(false)
-                    const [deleteLoading, setDeleteLoading] = useState(false)
-
-                    const form = useForm<z.infer<typeof formSchema>>({
-                        resolver: zodResolver(formSchema),
-                        defaultValues: {
-                            name: dashboard.name,
-                        }
-                    })
-
-                    const handleUpdate = async (values: z.infer<typeof formSchema>) => {
-                        await refreshDashboard({...dashboard, name: values.name})
-                            .then(() => {
-                                addToast({
-                                    title: "Successfully updated your dashboard!",
-                                    icon: <LayoutDashboard size={24} className={"text-brand"}/>
-                                })
-                            })
-                            .finally(() => setEditDialogOpen(false))
-
-                        setEditDialogOpen(false)
-                    }
-
-                    const handleDelete = async () => {
-                        setDeleteLoading(true)
-
-                        await removeDashboard({...dashboard})
-                            .then(() => {
-                                setDeleteLoading(false)
-                                addToast({
-                                    title: "Successfully updated your dashboard!",
-                                    icon: <LayoutDashboard size={24} className={"text-brand"}/>
-                                })
-                            })
-                            .finally(() => setDeleteLoading(false))
-                    }
-
-                    return (
-                        <div key={dashboard.id} className={"w-full flex items-center justify-between gap-2 bg-tertiary rounded-md py-2 px-4"}>
-                            <div className={"flex items-center gap-2"}>
-                                <p className={"text-primary"}>{dashboard.name}</p>
-                            </div>
-                            <div className={"flex items-center"}>
-                                <Dialog
-                                    open={editDialogOpen}
-                                    onOpenChange={() => {
-                                        setEditDialogOpen(!editDialogOpen)
-                                        if (!editDialogOpen) form.reset()
-                                    }}
-                                >
-                                    <DialogTrigger asChild>
-                                        <Button
-                                            type={"button"}
-                                            className={"px-1.5 rounded-r-none border-r-0"}
-                                        >
-                                            <Pencil size={16}/>
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className={"md:min-w-[300px] p-4"}>
-                                        <DialogHeader className={"flex flex-row justify-between items-start"}>
-                                            <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
-                                                Are u sure you want to delete this dashboard?
-                                            </DialogTitle>
-                                            <DialogClose/>
-                                        </DialogHeader>
-                                        <div className={"flex flex-col gap-4"}>
-                                            <Form {...form}>
-                                                <form
-                                                    onSubmit={form.handleSubmit(handleUpdate)}
-                                                    className="flex flex-col justify-between gap-4 h-full"
-                                                >
-                                                    <div className="flex flex-col justify-center gap-4">
-                                                        <FormField
-                                                            control={form.control}
-                                                            name="name"
-                                                            render={({ field }) => (
-                                                                <FormItem>
-                                                                    <FormLabel>Name</FormLabel>
-                                                                    <FormInput placeholder="Name" {...field}/>
-                                                                    <FormMessage />
-                                                                </FormItem>
-                                                            )}
-                                                        />
-                                                    </div>
-                                                    <div className={"w-full flex gap-2 justify-end"}>
-                                                        <Button
-                                                            className={"w-max"}
-                                                            type={"reset"}
-                                                            onClick={() => {
-                                                                setEditDialogOpen(false)
-                                                                form.reset()
-                                                            }}
-                                                        >
-                                                            Cancel
-                                                        </Button>
-                                                        <Button
-                                                            variant={"brand"}
-                                                            className={"w-max"}
-                                                            type={"submit"}
-                                                            disabled={form.formState.isSubmitting || dashboard.name === form.getValues().name}
-                                                        >
-                                                            {(form.formState.isSubmitting) && <ButtonSpinner/>}
-                                                            Save
-                                                        </Button>
-                                                    </div>
-                                                </form>
-                                            </Form>
-                                        </div>
-                                    </DialogContent>
-                                </Dialog>
-                                <CopyButton copyText={dashboard.id} className={"px-1.5 rounded-none border border-main/60 border-r-0 text-secondary"}/>
-                                <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                                    <DialogTrigger asChild>
-                                        <Button
-                                            type={"button"}
-                                            className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error rounded-l-none"}
-                                        >
-                                            <Trash size={16}/>
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className={"md:min-w-[300px] p-4"}>
-                                        <DialogHeader className={"flex flex-row justify-between items-start"}>
-                                            <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
-                                                Are u sure you want to delete this dashboard?
-                                            </DialogTitle>
-                                            <DialogClose/>
-                                        </DialogHeader>
-                                        <div className={"w-full flex gap-2 justify-end"}>
-                                            <Button
-                                                className={"w-max"}
-                                                onClick={() => setDeleteDialogOpen(false)}
-                                            >
-                                                Cancel
-                                            </Button>
-                                            <Button
-                                                variant={"error"}
-                                                className={"w-max"}
-                                                onClick={handleDelete}
-                                            >
-                                                {deleteLoading && <ButtonSpinner/>}
-                                                Delete
-                                            </Button>
-                                        </div>
-                                    </DialogContent>
-                                </Dialog>
-                            </div>
-                        </div>
-                    )
-                })}
+                {dashboards?.map(dashboard => (
+                    <DashboardItem
+                        key={dashboard.id}
+                        dashboard={dashboard}
+                        dashboards={dashboards}
+                        refreshDashboard={refreshDashboard}
+                        removeDashboard={removeDashboard}
+                    />
+                ))}
             </div>
         </ScrollArea>
+    )
+}
+
+interface DashboardItemProps {
+    dashboard: Dashboard
+    dashboards: Dashboard[]
+    refreshDashboard: (d: Dashboard) => Promise<any>
+    removeDashboard: (d: Dashboard) => Promise<any>
+}
+
+const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard}: DashboardItemProps) => {
+    const {addToast} = useToast()
+    const [editDialogOpen, setEditDialogOpen] = useState(false)
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [deleteLoading, setDeleteLoading] = useState(false)
+
+    const formSchema = z.object({
+        name: z.string()
+            .min(3, { message: "Bitte mindestens 3 Zeichen." })
+            .max(12, { message: "Maximal 12 Zeichen." })
+            .refine(
+                (name) => !dashboards.some(d => d.name === name && d.id !== dashboard.id),
+                { message: "Ein Dashboard mit diesem Namen existiert bereits." })
+    })
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: { name: dashboard.name }
+    })
+
+    const handleUpdate = async (values: z.infer<typeof formSchema>) => {
+        await refreshDashboard({ ...dashboard, name: values.name })
+        addToast({
+            title: "Dashboard erfolgreich umbenannt!",
+            icon: <LayoutDashboard size={24} className="text-brand" />
+        })
+        setEditDialogOpen(false)
+    }
+
+    const handleDelete = async () => {
+        setDeleteLoading(true)
+        await removeDashboard(dashboard)
+        addToast({
+            title: "Dashboard erfolgreich gelöscht!",
+            icon: <LayoutDashboard size={24} className="text-brand" />
+        })
+        setDeleteLoading(false)
+        setDeleteDialogOpen(false)
+    }
+
+    return (
+        <div key={dashboard.id} className={"w-full flex items-center justify-between gap-2 bg-tertiary rounded-md py-2 px-4"}>
+            <div className={"flex items-center gap-2"}>
+                <p className={"text-primary"}>{dashboard.name}</p>
+            </div>
+            <div className={"flex items-center"}>
+                <Dialog
+                    open={editDialogOpen}
+                    onOpenChange={() => {
+                        setEditDialogOpen(!editDialogOpen)
+                        if (!editDialogOpen) form.reset()
+                    }}
+                >
+                    <DialogTrigger asChild>
+                        <Button
+                            type={"button"}
+                            className={"px-1.5 rounded-r-none border-r-0"}
+                        >
+                            <Pencil size={16}/>
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className={"md:min-w-[300px] p-4"}>
+                        <DialogHeader className={"flex flex-row justify-between items-start"}>
+                            <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
+                                Are u sure you want to delete this dashboard?
+                            </DialogTitle>
+                            <DialogClose/>
+                        </DialogHeader>
+                        <div className={"flex flex-col gap-4"}>
+                            <Form {...form}>
+                                <form
+                                    onSubmit={form.handleSubmit(handleUpdate)}
+                                    className="flex flex-col justify-between gap-4 h-full"
+                                >
+                                    <div className="flex flex-col justify-center gap-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="name"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Name</FormLabel>
+                                                    <FormInput placeholder="Name" {...field}/>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                    <div className={"w-full flex gap-2 justify-end"}>
+                                        <Button
+                                            className={"w-max"}
+                                            type={"reset"}
+                                            onClick={() => {
+                                                setEditDialogOpen(false)
+                                                form.reset()
+                                            }}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            variant={"brand"}
+                                            className={"w-max"}
+                                            type={"submit"}
+                                            disabled={form.formState.isSubmitting || dashboard.name === form.getValues().name}
+                                        >
+                                            {(form.formState.isSubmitting) && <ButtonSpinner/>}
+                                            Save
+                                        </Button>
+                                    </div>
+                                </form>
+                            </Form>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+                <CopyButton copyText={dashboard.id} className={"px-1.5 rounded-none border border-main/60 border-r-0 text-secondary"}/>
+                <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button
+                            type={"button"}
+                            className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error rounded-l-none"}
+                        >
+                            <Trash size={16}/>
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className={"md:min-w-[300px] p-4"}>
+                        <DialogHeader className={"flex flex-row justify-between items-start"}>
+                            <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
+                                Are u sure you want to delete this dashboard?
+                            </DialogTitle>
+                            <DialogClose/>
+                        </DialogHeader>
+                        <div className={"w-full flex gap-2 justify-end"}>
+                            <Button
+                                className={"w-max"}
+                                onClick={() => setDeleteDialogOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant={"error"}
+                                className={"w-max"}
+                                onClick={handleDelete}
+                            >
+                                {deleteLoading && <ButtonSpinner/>}
+                                Delete
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        </div>
     )
 }
 
