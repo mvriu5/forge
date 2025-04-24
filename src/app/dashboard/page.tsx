@@ -112,9 +112,7 @@ export default function Dashboard() {
             <div className={"flex flex-col w-screen h-screen"}>
                 <Header onEdit={handleEditModeEnter} editMode={editMode}/>
                 <div className={"h-full w-full flex items-center justify-center"}>
-                    <div className={"animate-spin"}>
-                        <ForgeLogo size={56}/>
-                    </div>
+                    <ButtonSpinner/>
                 </div>
                 <DashboardDialog
                     open={dialogOpen}

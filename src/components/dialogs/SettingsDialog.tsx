@@ -434,7 +434,8 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
 
 
 const DashboardSection = () => {
-    const {dashboards} = useDashboardStore()
+    const {dashboards, refreshDashboard, removeDashboard} = useDashboardStore()
+    const {addToast} = useToast()
 
     const formSchema = z.object({
         name: z.string()
@@ -458,12 +459,31 @@ const DashboardSection = () => {
                         }
                     })
 
-                    const handleUpdate = (dashboardId: string) => {
+                    const handleUpdate = async (values: z.infer<typeof formSchema>) => {
+                        await refreshDashboard({...dashboard, name: values.name})
+                            .then(() => {
+                                addToast({
+                                    title: "Successfully updated your dashboard!",
+                                    icon: <LayoutDashboard size={24} className={"text-brand"}/>
+                                })
+                            })
+                            .finally(() => setEditDialogOpen(false))
 
+                        setEditDialogOpen(false)
                     }
 
-                    const handleDelete = (dashboardId: string) => {
-                        setDeleteDialogOpen(false)
+                    const handleDelete = async () => {
+                        setDeleteLoading(true)
+
+                        await removeDashboard({...dashboard})
+                            .then(() => {
+                                setDeleteLoading(false)
+                                addToast({
+                                    title: "Successfully updated your dashboard!",
+                                    icon: <LayoutDashboard size={24} className={"text-brand"}/>
+                                })
+                            })
+                            .finally(() => setDeleteLoading(false))
                     }
 
                     return (
@@ -497,7 +517,7 @@ const DashboardSection = () => {
                                         <div className={"flex flex-col gap-4"}>
                                             <Form {...form}>
                                                 <form
-                                                    onSubmit={form.handleSubmit(() => handleUpdate(dashboard.id))}
+                                                    onSubmit={form.handleSubmit(handleUpdate)}
                                                     className="flex flex-col justify-between gap-4 h-full"
                                                 >
                                                     <div className="flex flex-col justify-center gap-4">
@@ -566,7 +586,7 @@ const DashboardSection = () => {
                                             <Button
                                                 variant={"error"}
                                                 className={"w-max"}
-                                                onClick={() => handleDelete(dashboard.id)}
+                                                onClick={handleDelete}
                                             >
                                                 {deleteLoading && <ButtonSpinner/>}
                                                 Delete

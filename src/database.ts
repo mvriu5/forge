@@ -45,6 +45,12 @@ export const deleteWidget = async (id: string) => {
         .returning()
 }
 
+export const deleteWidgetsFromDashboard = async (dashboardId: string) => {
+    return db
+        .delete(widget)
+        .where(eq(widget.dashboardId, dashboardId))
+}
+
 export const getWidgetsFromUser = async (userId: string): Promise<WidgetSelect[]> => {
     return db
         .select()

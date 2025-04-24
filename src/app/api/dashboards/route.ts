@@ -1,5 +1,11 @@
 import {NextResponse} from "next/server"
-import {createDashboard, deleteDashboard, getDashboardsFromUser, updateDashboard} from "@/database"
+import {
+    createDashboard,
+    deleteDashboard,
+    deleteWidgetsFromDashboard,
+    getDashboardsFromUser,
+    updateDashboard
+} from "@/database"
 
 export async function POST(req: Request) {
     try {
@@ -39,7 +45,6 @@ export async function GET(req: Request) {
         }
 
         const dashboards = await getDashboardsFromUser(userId)
-        console.log(dashboards)
 
         return NextResponse.json(dashboards, { status: 200 })
     } catch (error) {
@@ -90,6 +95,7 @@ export async function DELETE(req: Request) {
         }
 
         const deletedDashboard = await deleteDashboard(id)
+        await deleteWidgetsFromDashboard(id)
 
         if (!deletedDashboard) {
             return NextResponse.json(
