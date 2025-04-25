@@ -17,7 +17,6 @@ import {useToast} from "@/components/ui/ToastProvider"
 import { useShallow } from "zustand/react/shallow"
 import {useGrid} from "@/hooks/useGrid"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
-import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import { Callout } from "@/components/ui/Callout"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
@@ -41,7 +40,7 @@ export default function Dashboard() {
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
-    const widgetIds = useWidgetStore(useShallow((s) => s.widgets?.filter((w) => w.dashboardId == currentDashboard?.id).map((w) => w.id)))
+    const widgetIds = useWidgetStore(useShallow((s) => s.widgets?.filter((w) => w.dashboardId === currentDashboard?.id).map((w) => w.id)))
 
     useEffect(() => {
         setLoading(true)
@@ -110,7 +109,7 @@ export default function Dashboard() {
     if (loading) {
         return (
             <div className={"flex flex-col w-screen h-screen"}>
-                <Header onEdit={handleEditModeEnter} editMode={editMode}/>
+                <Header onEdit={handleEditModeEnter} editMode={editMode} isLoading={true}/>
                 <div className={"h-full w-full flex items-center justify-center"}>
                     <ButtonSpinner/>
                 </div>
@@ -123,7 +122,7 @@ export default function Dashboard() {
         )
     }
 
-    if (widgets?.filter((w) => w.dashboardId == currentDashboard?.id).length === 0 && currentDashboard) {
+    if (widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0 && currentDashboard) {
         return (
             <div className={"flex flex-col w-full h-screen"}>
                 <Header onEdit={handleEditModeEnter} editMode={editMode} widgetsEmpty={true}/>

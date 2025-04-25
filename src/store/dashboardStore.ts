@@ -40,7 +40,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
             const updatedDashboard = await response.json()
             set({
                 dashboards: get().dashboards!.map((w) => w.id === updatedDashboard[0].id ? updatedDashboard[0] : w),
-                currentDashboard: get().dashboards!.find((w) => w.id === dashboard.id)
+                currentDashboard: get().dashboards && get().currentDashboard?.id === dashboard.id ? updatedDashboard[0] : get().currentDashboard
             })
         } catch (error) {
             set({ dashboards: get().dashboards })
@@ -51,9 +51,11 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
         try {
             await fetch(`/api/dashboards?id=${dashboard.id}`, { method: "DELETE" })
 
+            const updatedList = get().dashboards?.filter(w => w.id !== dashboard.id)
+
             set({
-                dashboards: get().dashboards!.filter((w) => w.id !== dashboard.id),
-                currentDashboard: get().dashboards && get().currentDashboard?.id === dashboard.id ? get().dashboards![0] : get().currentDashboard,
+                dashboards: updatedList,
+                currentDashboard: updatedList && get().currentDashboard?.id === dashboard.id ? updatedList[0] : get().currentDashboard,
             })
         } catch (error) {
             set({ dashboards: get().dashboards })

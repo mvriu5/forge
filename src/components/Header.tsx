@@ -10,14 +10,16 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import React, {useState} from "react"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
+import { Skeleton } from "./ui/Skeleton"
 
 interface HeaderProps {
     onEdit: () => void
     editMode: boolean
     widgetsEmpty?: boolean
+    isLoading?: boolean
 }
 
-function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
+function Header({onEdit, editMode, widgetsEmpty = false, isLoading = false}: HeaderProps) {
     const {dashboards, currentDashboard} = useDashboardStore()
 
     const [dialogOpen, setDialogOpen] = useState(false)
@@ -53,7 +55,10 @@ function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
                             <SelectTrigger className={"max-w-[280px] bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary hidden lg:flex rounded-r-none"} disabled={editMode}>
                                 <div className={"w-full flex items-center gap-2 overflow-hidden"}>
                                     <p className={"text-tertiary text-xs font-mono"}>Dashboard: </p>
-                                    <SelectValue className={"truncate"}/>
+                                    {isLoading ?
+                                        <Skeleton className={"w-10 h-4"}/> :
+                                        <SelectValue className={"truncate"}/>
+                                    }
                                 </div>
                             </SelectTrigger>
                             <SelectContent align={"end"} className={"border-main/40"}>
