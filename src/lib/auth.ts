@@ -2,7 +2,7 @@ import {betterAuth} from "better-auth"
 import {drizzleAdapter} from "better-auth/adapters/drizzle"
 import {db} from "@/database"
 import {schema} from "@/db/schema"
-import { Resend } from 'resend'
+import {Resend} from 'resend'
 import {VerificationEmail} from "@/components/emails/VerificationEmail"
 import {ReactNode} from "react"
 import {ResetPasswordEmail} from "@/components/emails/ResetPasswordEmail"

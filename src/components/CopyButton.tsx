@@ -9,9 +9,10 @@ import {cn} from "@/lib/utils"
 
 interface CopyButtonProps extends HTMLAttributes<HTMLDivElement> {
     copyText: string
+    tooltip: any
 }
 
-const CopyButton: React.FC<CopyButtonProps> = ({ copyText, className, ...props }) => {
+const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, className, ...props }) => {
     const [isChecked, setIsChecked] = useState(false)
     const {addToast} = useToast()
 
@@ -22,6 +23,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ copyText, className, ...props }
 
     return (
         <Button
+            {...tooltip}
             variant={"ghost"}
             className={cn("px-2 text-tertiary", className)}
             onClick={() => {

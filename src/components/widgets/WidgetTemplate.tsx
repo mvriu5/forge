@@ -1,12 +1,12 @@
-import React, {ReactNode} from "react"
 import type {HTMLAttributes} from "react"
+import React from "react"
 import {cn} from "@/lib/utils"
 import {useDraggable} from "@dnd-kit/core"
 import {CSS} from "@dnd-kit/utilities"
 import {useWidgetStore} from "@/store/widgetStore"
 import {Trash} from "lucide-react"
 import {Button} from "@/components/ui/Button"
-import { tooltip } from "@/components/ui/TooltipProvider"
+import {tooltip} from "@/components/ui/TooltipProvider"
 
 interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode

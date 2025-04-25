@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import {account, dashboard, widget} from "@/db/schema"
+import {account, dashboard, user, widget} from "@/db/schema"
 import {and, eq} from "drizzle-orm"
 
 export const db = drizzle(process.env.DATABASE_URI!)
@@ -58,6 +58,13 @@ export const getWidgetsFromUser = async (userId: string): Promise<WidgetSelect[]
         .where(eq(widget.userId, userId))
 }
 
+export const getWidgetsFromDashboard = async (dashboardId: string): Promise<WidgetSelect[]> => {
+    return db
+        .select()
+        .from(widget)
+        .where(eq(widget.dashboardId, dashboardId))
+}
+
 
 //Dashboards
 export type Dashboard = {
@@ -101,6 +108,14 @@ export const getDashboardsFromUser = async (userId: string): Promise<DashboardSe
         .where(eq(dashboard.userId, userId))
 }
 
+export const getDashboardFromId = async (id: string): Promise<DashboardSelect[]> => {
+    return db
+        .select()
+        .from(dashboard)
+        .where(eq(dashboard.id, id))
+
+}
+
 
 //Accounts
 export type Account = typeof account.$inferSelect
@@ -123,4 +138,14 @@ export const getLinearAccount = async (userId: string): Promise<Account[]> => {
             eq(account.userId, userId),
             eq(account.providerId, "linear")
         ))
+}
+
+//Users
+export type User = typeof user.$inferSelect
+
+export const getUserFromId = async (id: string): Promise<User[]> => {
+    return db
+        .select()
+        .from(user)
+        .where(eq(user.id, id))
 }

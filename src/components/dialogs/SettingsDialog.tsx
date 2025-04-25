@@ -39,6 +39,7 @@ import {ScrollArea} from "@/components/ui/ScrollArea"
 import {format} from "date-fns"
 import {CopyButton} from "@/components/CopyButton"
 import { Dashboard } from "@/database"
+import {tooltip} from "@/components/ui/TooltipProvider"
 
 function SettingsDialog() {
     const {session} = useSessionStore()
@@ -470,6 +471,26 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [deleteLoading, setDeleteLoading] = useState(false)
 
+    const editTooltip = tooltip<HTMLButtonElement>({
+        message: "Edit this dashboard",
+        anchor: "bc",
+        delay: 800
+    })
+
+    const copyTooltip = tooltip<HTMLButtonElement>({
+        message: "Copy your dashboard link & share with your friends",
+        anchor: "bc",
+        delay: 800
+    })
+
+
+    const deleteTooltip = tooltip<HTMLButtonElement>({
+        message: "Delete this dashboard",
+        anchor: "bc",
+        delay: 800
+    })
+
+
     const formSchema = z.object({
         name: z.string()
             .min(3, { message: "Bitte mindestens 3 Zeichen." })
@@ -520,6 +541,7 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                         <Button
                             type={"button"}
                             className={"px-1.5 rounded-r-none border-r-0"}
+                            {...editTooltip}
                         >
                             <Pencil size={16}/>
                         </Button>
@@ -576,12 +598,17 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                         </div>
                     </DialogContent>
                 </Dialog>
-                <CopyButton copyText={dashboard.id} className={"px-1.5 rounded-none border border-main/60 border-r-0 text-secondary"}/>
+                <CopyButton
+                    tooltip={copyTooltip}
+                    copyText={`https://tryforge.io/view/${dashboard.id}`}
+                    className={"px-1.5 rounded-none border border-main/60 border-r-0 text-secondary"}
+                />
                 <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                     <DialogTrigger asChild>
                         <Button
                             type={"button"}
                             className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error rounded-l-none"}
+                            {...deleteTooltip}
                         >
                             <Trash size={16}/>
                         </Button>

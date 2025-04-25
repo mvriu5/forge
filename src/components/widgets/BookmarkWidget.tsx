@@ -118,7 +118,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                         </PopoverContent>
                     </Popover>
                 </div>
-                <div className={"w-full h-px border-b border-main/40"}></div>
+                <div className={"w-full h-px border-b border-main/40"}/>
                 <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
                     {bookmarks.map((bookmark) => (
                         <BookmarkItem key={bookmark.title} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.title)}/>

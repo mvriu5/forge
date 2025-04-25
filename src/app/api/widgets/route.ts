@@ -1,4 +1,4 @@
-import { createWidget, deleteWidget, getWidgetsFromUser, updateWidget } from "@/database"
+import {createWidget, deleteWidget, getWidgetsFromDashboard, getWidgetsFromUser, updateWidget} from "@/database"
 import {NextResponse} from "next/server"
 
 export async function POST(req: Request) {
@@ -36,16 +36,23 @@ export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url)
         const userId = searchParams.get('userId')
+        const dashboardId = searchParams.get('dashboardId')
 
-        if (!userId) {
+        if (!userId && !dashboardId) {
             return NextResponse.json(
-                { error: "userId is required as a query parameter" },
+                { error: "userId or dashboardId is required as a query parameter" },
                 { status: 400 })
         }
 
-        const widgets = await getWidgetsFromUser(userId)
+        if (dashboardId) {
+            const widgets = await getWidgetsFromDashboard(dashboardId)
+            return NextResponse.json(widgets, { status: 200 })
+        }
 
-        return NextResponse.json(widgets, { status: 200 })
+        if (userId) {
+            const widgets = await getWidgetsFromUser(userId)
+            return NextResponse.json(widgets, { status: 200 })
+        }
     } catch (error) {
         return NextResponse.json(
             { error: "Internal Server Error" },

@@ -2,8 +2,8 @@ import {NextResponse} from "next/server"
 import {
     createDashboard,
     deleteDashboard,
-    deleteWidgetsFromDashboard,
-    getDashboardsFromUser,
+    deleteWidgetsFromDashboard, getDashboardFromId,
+    getDashboardsFromUser, getWidgetsFromDashboard, getWidgetsFromUser,
     updateDashboard
 } from "@/database"
 
@@ -37,16 +37,23 @@ export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url)
         const userId = searchParams.get('userId')
+        const id = searchParams.get('id')
 
-        if (!userId) {
+        if (!userId && !id) {
             return NextResponse.json(
-                { error: "userId is required as a query parameter" },
+                { error: "userId or id is required as a query parameter" },
                 { status: 400 })
         }
 
-        const dashboards = await getDashboardsFromUser(userId)
+        if (id) {
+            const dashboards = await getDashboardFromId(id)
+            return NextResponse.json(dashboards, { status: 200 })
+        }
 
-        return NextResponse.json(dashboards, { status: 200 })
+        if (userId) {
+            const dashboards = await getDashboardsFromUser(userId)
+            return NextResponse.json(dashboards, { status: 200 })
+        }
     } catch (error) {
         return NextResponse.json(
             { error: "Internal Server Error" },

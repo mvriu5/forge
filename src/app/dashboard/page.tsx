@@ -40,7 +40,8 @@ export default function Dashboard() {
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
-    const widgetIds = useWidgetStore(useShallow((s) => s.widgets?.filter((w) => w.dashboardId === currentDashboard?.id).map((w) => w.id)))
+    const widgetIds = useWidgetStore(useShallow((s) =>
+        s.widgets?.filter((w) => w.dashboardId === currentDashboard?.id).map((w) => w.id)))
 
     useEffect(() => {
         setLoading(true)
