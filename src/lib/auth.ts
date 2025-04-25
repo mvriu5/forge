@@ -22,6 +22,7 @@ export const auth = betterAuth({
         }
     },
     emailVerification: {
+        autoSignInAfterVerification: true,
         sendVerificationEmail: async ({ user, url }) => {
             await resend.emails.send({
                 from: "hello@tryforge.io",
