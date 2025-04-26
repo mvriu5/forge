@@ -12,6 +12,8 @@ import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {useToast} from "@/components/ui/ToastProvider"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {useSessionStore} from "@/store/sessionStore"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup"
+import {cn} from "@/lib/utils"
 
 interface DashboardDialogProps {
     open: boolean
@@ -29,14 +31,17 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
         name: z.string()
             .min(3, {message: "Please enter more than 3 characters."})
             .max(12, {message: "Please enter less than 12 characters."})
-            .refine((name) => !dashboards?.some(d => d.name === name), { message: "A dashboard with this name already exists." })
+            .refine((name) => !dashboards?.some(d => d.name === name), { message: "A dashboard with this name already exists." }),
+        visibility: z.enum(["public", "private"], {required_error: "Please select visibility"})
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
+            visibility: "private",
         },
+
     })
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -45,6 +50,7 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
         await addDashboard(session.user.id, {
             userId: session.user.id,
             name: values.name,
+            isPublic: values.visibility === "public",
             createdAt: new Date(Date.now()),
             updatedAt: new Date(Date.now())
         })
@@ -98,6 +104,36 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
                                         </FormItem>
                                     )}
                                 />
+                                <FormField
+                                    control={form.control}
+                                    name="visibility"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <RadioGroup
+                                                {...field}
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                                className="grid-cols-2"
+                                            >
+                                                <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md", field.value === "public" ? "border-brand" : "border-main")}>
+                                                    <RadioGroupItem value="public" id="vis-public" />
+                                                    <label htmlFor="vis-public" className="font-medium w-full">
+                                                        Public
+                                                    </label>
+                                                </div>
+
+                                                <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md", field.value === "private" ? "border-brand" : "border-main")}>
+                                                    <RadioGroupItem value="private" id="vis-private" />
+                                                    <label htmlFor="vis-private" className="font-medium w-full">
+                                                        Private
+                                                    </label>
+                                                </div>
+                                            </RadioGroup>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
                             </div>
                             <div className={"w-full flex gap-2 justify-end"}>
                                 {showOnClose &&

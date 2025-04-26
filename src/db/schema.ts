@@ -64,6 +64,7 @@ export const dashboard = pgTable("dashboard", {
     id: uuid('id').defaultRandom().primaryKey(),
     userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
+    isPublic: boolean('is_public').notNull().default(false),
     createdAt: timestamp('created_at').notNull(),
     updatedAt: timestamp('updated_at').notNull()
 })

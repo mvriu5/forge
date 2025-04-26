@@ -40,6 +40,7 @@ import {format} from "date-fns"
 import {CopyButton} from "@/components/CopyButton"
 import { Dashboard } from "@/database"
 import {tooltip} from "@/components/ui/TooltipProvider"
+import {RadioGroup, RadioGroupItem} from "@/components/ui/RadioGroup"
 
 function SettingsDialog() {
     const {session} = useSessionStore()
@@ -495,13 +496,15 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
         name: z.string()
             .min(3, { message: "Bitte mindestens 3 Zeichen." })
             .max(12, { message: "Maximal 12 Zeichen." })
-            .refine(
-                (name) => !dashboards.some(d => d.name === name && d.id !== dashboard.id),
-                { message: "Ein Dashboard mit diesem Namen existiert bereits." })
+            .refine((name) => !dashboards.some(d => d.name === name && d.id !== dashboard.id), { message: "Ein Dashboard mit diesem Namen existiert bereits." }),
+        visibility: z.enum(["public", "private"], {required_error: "Please select visibility"})
     })
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: { name: dashboard.name }
+        defaultValues: {
+            name: dashboard.name,
+            visibility: dashboard.isPublic ? "public" : "private"
+        }
     })
 
     const handleUpdate = async (values: z.infer<typeof formSchema>) => {
@@ -571,6 +574,35 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                                                 </FormItem>
                                             )}
                                         />
+                                        <FormField
+                                            control={form.control}
+                                            name="visibility"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <RadioGroup
+                                                        {...field}
+                                                        onValueChange={field.onChange}
+                                                        value={field.value}
+                                                        className="grid-cols-2"
+                                                    >
+                                                        <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md", field.value === "public" ? "border-brand" : "border-main")}>
+                                                            <RadioGroupItem value="public" id="vis-public" />
+                                                            <label htmlFor="vis-public" className="font-medium w-full">
+                                                                Public
+                                                            </label>
+                                                        </div>
+
+                                                        <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md", field.value === "private" ? "border-brand" : "border-main")}>
+                                                            <RadioGroupItem value="private" id="vis-private" />
+                                                            <label htmlFor="vis-private" className="font-medium w-full">
+                                                                Private
+                                                            </label>
+                                                        </div>
+                                                    </RadioGroup>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                     </div>
                                     <div className={"w-full flex gap-2 justify-end"}>
                                         <Button
@@ -587,7 +619,7 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                                             variant={"brand"}
                                             className={"w-max"}
                                             type={"submit"}
-                                            disabled={form.formState.isSubmitting || dashboard.name === form.getValues().name}
+                                            disabled={form.formState.isSubmitting || (dashboard.name === form.getValues().name && dashboard.isPublic === (form.getValues("visibility") === "public"))}
                                         >
                                             {(form.formState.isSubmitting) && <ButtonSpinner/>}
                                             Save

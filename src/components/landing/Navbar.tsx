@@ -22,15 +22,9 @@ function Navbar() {
                     <Link href={"/"}>
                         <p className={"text-lg text-secondary font-semibold hover:text-brand"}>Home</p>
                     </Link>
-                    <Link href={"/widgets"}>
-                        <p className={"text-lg text-secondary font-semibold hover:text-brand"}>Widgets</p>
-                    </Link>
-                    <Link href={"/pricing"}>
-                        <p className={"text-lg text-secondary font-semibold hover:text-brand"}>Pricing</p>
-                    </Link>
-                    <Link href={"/integrations"}>
-                        <p className={"text-lg text-secondary font-semibold hover:text-brand"}>Integrations</p>
-                    </Link>
+                    <p className={"text-lg text-tertiary/60 font-semibold cursor-default"}>Widgets</p>
+                    <p className={"text-lg text-tertiary/60 font-semibold cursor-default"}>Pricing</p>
+                    <p className={"text-lg text-tertiary/60 font-semibold cursor-default"}>Integrations</p>
                     <p className={"text-lg text-tertiary/60 font-semibold cursor-default"}>Docs</p>
                 </div>
                 <div className={"flex flex-col gap-1"}>

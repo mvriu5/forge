@@ -71,6 +71,7 @@ export type Dashboard = {
     id: string
     userId: string
     name: string
+    isPublic: boolean
     createdAt: Date
     updatedAt: Date
 }
