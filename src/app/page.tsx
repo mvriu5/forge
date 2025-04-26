@@ -7,11 +7,11 @@ import {Navbar} from "@/components/landing/Navbar"
 
 export default function Page() {
     return (
-        <div className={"flex gap-16 bg-secondary w-full h-full"}>
+        <div className={"flex gap-16 bg-primary w-full h-full"}>
             <div className={"flex flex-col gap-4"}>
                 <Navbar/>
             </div>
-            <div className={"flex flex-col gap-32 pl-48 bg-secondary w-full h-full"}>
+            <div className={"flex flex-col gap-32 pl-48 bg-primary w-full h-full"}>
                 <Hero/>
                 <WidgetSection/>
                 <FeatureSection/>

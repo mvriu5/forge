@@ -10,7 +10,7 @@ import {authClient} from "@/lib/auth-client"
 import {useToast} from "@/components/ui/ToastProvider"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {tooltip} from "@/components/ui/TooltipProvider"
-import {hexToRgba} from "@/lib/utils"
+import {cn, hexToRgba} from "@/lib/utils"
 import {StatusBadge} from "@/components/widgets/components/StatusBadge"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import {LinearIcon} from "@/components/svg/LinearIcon"
@@ -82,11 +82,10 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                         </Button>
                         <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
                             <SelectTrigger className="w-[180px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
-                                <div className="flex items-center">
+                                <div className="flex items-center gap-2">
                                     <span className="text-sm text-tertiary">Sort by:</span>
                                     <SelectValue placeholder="Sort" />
                                 </div>
-                                <SelectValue placeholder="Sort" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="priority">Priority</SelectItem>
@@ -114,14 +113,14 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     )
 }
 
-const IssueCard = ({issue}: {issue: any}) => {
+const IssueCard = ({issue, className}: {issue: any, className?: string}) => {
 
     const descriptionTooltip = tooltip<HTMLDivElement>({
         message: issue.description
     })
 
     return (
-        <div className={"flex flex-col gap-2 bg-secondary rounded-md p-2 border border-main/20 shadow-md"}>
+        <div className={cn("flex flex-col gap-2 bg-secondary rounded-md p-2 border border-main/20 shadow-md", className)}>
             <div className="flex items-center gap-2">
                 <StatusBadge statusId={issue.stateName}/>
                 <p className={"text-primary text-sm truncate"}>{issue.title}</p>
@@ -166,4 +165,4 @@ const IssueCard = ({issue}: {issue: any}) => {
     )
 }
 
-export {LinearWidget}
+export {IssueCard, LinearWidget}

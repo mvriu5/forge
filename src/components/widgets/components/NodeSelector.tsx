@@ -24,7 +24,7 @@ export type SelectorItem = {
     isActive: (editor: ReturnType<typeof useEditor>["editor"]) => boolean
 }
 
-const items: SelectorItem[] = [
+export const SelectorItems: SelectorItem[] = [
     {
         name: "Text",
         icon: TextIcon,
@@ -93,7 +93,7 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
     const { editor } = useEditor()
     if (!editor) return null
 
-    const activeItem = items.filter((item) => item.isActive(editor)).pop() ?? {name: "Multiple"}
+    const activeItem = SelectorItems.filter((item) => item.isActive(editor)).pop() ?? {name: "Multiple"}
 
     return (
         <Popover modal={true} open={open} onOpenChange={onOpenChange}>
@@ -106,7 +106,7 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
                 </Button>
             </PopoverTrigger>
             <PopoverContent sideOffset={5} align='start' className={cn('flex flex-col gap-1 w-48 p-1')}>
-                {items.map((item) => (
+                {SelectorItems.map((item) => (
                     <EditorBubbleItem
                         key={item.name}
                         onSelect={(editor) => {
