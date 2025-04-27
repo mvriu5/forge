@@ -46,8 +46,8 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 <div
                     data-state={open ? "open" : "closed"}
                     className={cn(
-                        "h-8 md:border border-main/20 flex items-center gap-3 md:bg-secondary md:hover:bg-tertiary md:data-[state=open]:bg-tertiary",
-                        "rounded-md md:px-3 md:group-data-[state=disabled]:bg-secondary",
+                        "h-8 md:border border-main/20 flex items-center gap-2 md:bg-secondary md:hover:bg-tertiary md:data-[state=open]:bg-tertiary",
+                        "rounded-md md:px-2 md:group-data-[state=disabled]:bg-secondary",
                         "md:group-data-[state=disabled]:hover:bg-secondary"
                     )}
                 >
@@ -68,7 +68,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 className={"p-1 w-max md:w-36 gap-1"}
                 align={"end"}
             >
-                <p className={"md:hidden flex items-center gap-1.5 text-tertiary text-xs text-wrap font-mono px-2 py-1 rounded-md bg-tertiary"}>
+                <p className={"md:hidden flex items-center gap-1.5 mb-1 text-tertiary text-xs text-wrap font-mono px-2 py-1 rounded-md bg-tertiary"}>
                     Logged in as:
                     <span className={"inline break-words text-secondary font-sans"}>{session?.user?.name}</span>
                 </p>

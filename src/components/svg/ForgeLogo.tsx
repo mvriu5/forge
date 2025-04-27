@@ -1,11 +1,12 @@
 
 interface ForgeLogoProps {
     size?: number
+    className?: string
 }
 
-const ForgeLogo = ({size = 30}: ForgeLogoProps) => {
+const ForgeLogo = ({className, size = 30}: ForgeLogoProps) => {
     return (
-        <svg width={size} height={size} viewBox="0 0 1026 598" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width={size} height={size} viewBox="0 0 1026 598" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
             <title>forge</title>
             <rect x="0.682007" y="0.252441" width="1024.34" height="100" fill="url(#paint0_linear_2_41)"/>
             <path d="M836.647 497.384C753.424 342.331 753.551 255.324 836.647 100.252H936.647C851.11 255.339 849.556 342.296 936.647 497.384H836.647Z" fill="url(#paint1_linear_2_41)"/>

@@ -1,19 +1,28 @@
 "use client"
 
 import {Button} from "@/components/ui/Button"
-import {Anvil, LayoutTemplate} from "lucide-react"
+import {LayoutTemplate} from "lucide-react"
 import {ProfilePopover} from "@/components/popovers/ProfilePopover"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
-import { tooltip } from "@/components/ui/TooltipProvider"
+import {tooltip} from "@/components/ui/TooltipProvider"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
+import React, {useState} from "react"
+import {useDashboardStore} from "@/store/dashboardStore"
+import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
+import { Skeleton } from "./ui/Skeleton"
 
 interface HeaderProps {
     onEdit: () => void
     editMode: boolean
     widgetsEmpty?: boolean
+    isLoading?: boolean
 }
 
-function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
+function Header({onEdit, editMode, widgetsEmpty = false, isLoading = false}: HeaderProps) {
+    const {dashboards, currentDashboard} = useDashboardStore()
+
+    const [dialogOpen, setDialogOpen] = useState(false)
 
     const layoutTooltip = tooltip<HTMLButtonElement>({
         message: "Change your dashboard layout",
@@ -34,6 +43,32 @@ function Header({onEdit, editMode, widgetsEmpty = false}: HeaderProps) {
                     <Button className={"size-8 bg-secondary border-main/60 hidden xl:flex"} {...layoutTooltip} onClick={onEdit} disabled={editMode || widgetsEmpty}>
                         <LayoutTemplate size={16}/>
                     </Button>
+                    <div className={"flex"}>
+                        <Select
+                            value={currentDashboard?.name ?? ""}
+                            onValueChange={(value) => {
+                                const dashboard = dashboards?.find(d => d.name === value)
+                                if (dashboard) useDashboardStore.setState({ currentDashboard: dashboard })
+                            }}
+                            disabled={!dashboards || dashboards.length === 0 || editMode}
+                        >
+                            <SelectTrigger className={"max-w-[280px] bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary hidden lg:flex rounded-r-none"} disabled={editMode}>
+                                <div className={"w-full flex items-center gap-2 overflow-hidden"}>
+                                    <p className={"text-tertiary text-xs font-mono"}>Dashboard: </p>
+                                    {isLoading ?
+                                        <Skeleton className={"w-10 h-4"}/> :
+                                        <SelectValue className={"truncate"}/>
+                                    }
+                                </div>
+                            </SelectTrigger>
+                            <SelectContent align={"end"} className={"border-main/40"}>
+                                {dashboards?.map(dashboard => (
+                                    <SelectItem key={dashboard.id} value={dashboard.name}>{dashboard.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <DashboardDialog open={dialogOpen} onOpenChange={setDialogOpen} showOnClose={true} editMode={editMode}/>
+                    </div>
                 </div>
             </div>
             <ProfilePopover editMode={editMode}/>

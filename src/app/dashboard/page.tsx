@@ -17,11 +17,13 @@ import {useToast} from "@/components/ui/ToastProvider"
 import { useShallow } from "zustand/react/shallow"
 import {useGrid} from "@/hooks/useGrid"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
-import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import { Callout } from "@/components/ui/Callout"
+import {useDashboardStore} from "@/store/dashboardStore"
+import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
+    const { currentDashboard, getAllDashboards } = useDashboardStore()
     const { widgets, getAllWidgets, removeWidget, saveWidgetsLayout } = useWidgetStore()
     const { fetchIntegrations } = useIntegrationStore()
     const { addToast } = useToast()
@@ -31,13 +33,15 @@ export default function Dashboard() {
     const [editMode, setEditMode] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
     const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
+    const [dialogOpen, setDialogOpen] = useState(false)
 
     const gridCells = useGrid(activeWidget)
     const { sensors, handleDragStart, handleDragEnd } = useDragAndDrop(editMode, setActiveWidget)
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
-    const widgetIds = useWidgetStore(useShallow((s) => s.widgets?.map((w) => w.id)))
+    const widgetIds = useWidgetStore(useShallow((s) =>
+        s.widgets?.filter((w) => w.dashboardId === currentDashboard?.id).map((w) => w.id)))
 
     useEffect(() => {
         setLoading(true)
@@ -45,12 +49,22 @@ export default function Dashboard() {
     }, [fetchSession])
 
     useEffect(() => {
-        if (session?.user) {
-            getAllWidgets(session.user.id)
+        if (!session?.user) return
+        setLoading(true)
+
+        Promise.all([
+            getAllDashboards(session.user.id),
+            getAllWidgets(session.user.id),
             fetchIntegrations(session.user.id)
-            setLoading(false)
-        }
-    }, [session, getAllWidgets, fetchIntegrations])
+        ])
+        .then(() => {
+            const ds = useDashboardStore.getState().dashboards
+            if (!ds || ds.length === 0) setDialogOpen(true)
+        })
+        .catch()
+        .finally(() => setLoading(false))
+    }, [session?.user?.id, getAllDashboards, getAllWidgets, fetchIntegrations])
+
 
     const handleEditModeEnter = useCallback(() => {
         setEditMode(true)
@@ -96,17 +110,20 @@ export default function Dashboard() {
     if (loading) {
         return (
             <div className={"flex flex-col w-screen h-screen"}>
-                <Header onEdit={handleEditModeEnter} editMode={editMode}/>
+                <Header onEdit={handleEditModeEnter} editMode={editMode} isLoading={true}/>
                 <div className={"h-full w-full flex items-center justify-center"}>
-                    <div className={"animate-spin"}>
-                        <ForgeLogo size={56}/>
-                    </div>
+                    <ButtonSpinner/>
                 </div>
+                <DashboardDialog
+                    open={dialogOpen}
+                    onOpenChange={setDialogOpen}
+                    showOnClose={false}
+                />
             </div>
         )
     }
 
-    if (widgets?.length === 0) {
+    if (widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0 && currentDashboard) {
         return (
             <div className={"flex flex-col w-full h-screen"}>
                 <Header onEdit={handleEditModeEnter} editMode={editMode} widgetsEmpty={true}/>
@@ -117,6 +134,11 @@ export default function Dashboard() {
                         <WidgetDialog editMode={false} title={"Widget-Store"}/>
                     </div>
                 </div>
+                <DashboardDialog
+                    open={dialogOpen}
+                    onOpenChange={setDialogOpen}
+                    showOnClose={false}
+                />
             </div>
         )
     }
@@ -138,7 +160,7 @@ export default function Dashboard() {
                     className="relative w-full h-[calc(100vh-64px)] hidden xl:grid grid-cols-4 gap-8 p-8"
                     style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
                 >
-                    {gridCells.map((cell) => (
+                    {gridCells?.map((cell) => (
                         <GridCell key={`${cell.x},${cell.y}`} x={cell.x} y={cell.y} isDroppable={cell.isDroppable} />
                     ))}
 
@@ -159,6 +181,11 @@ export default function Dashboard() {
                     </Button>
                 </div>
             }
+            <DashboardDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                showOnClose={false}
+            />
         </div>
     )
 }

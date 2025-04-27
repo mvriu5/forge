@@ -144,6 +144,7 @@ interface StockProps {
 
 const Stock = ({selectedStock, selectedTimespan}: StockProps) => {
     const { data, isLoading, isError, stock, yAxisDomain } = useStock(selectedStock.value, selectedTimespan)
+    console.log(data)
 
     const chartData = useMemo(() => data?.chartData ?? [], [data?.chartData])
     const percent = useMemo(() => data?.priceChangePercent ?? 0, [data?.priceChangePercent])
@@ -152,26 +153,9 @@ const Stock = ({selectedStock, selectedTimespan}: StockProps) => {
     const chartConfig = useMemo<ChartConfig>(() => ({ price: { label: "Price" } }), [])
 
     return (
-        <div className="relative w-full flex items-center gap-2 bg-secondary rounded-md py-2 shadow-md border border-main/20">
-            <div className={"flex flex-col items-center gap-2 px-2"}>
-                <div className={"w-full flex flex-col items-center gap-2 p-1 bg-linear-to-b from-primary/20 via-primary/50 to-brand/5 rounded-md"}>
-                    <p className={"text-primary font-semibold"}>{stock}</p>
-                    {isLoading ?
-                        <Skeleton className={"w-16 h-6"}/> :
-                        <p className={"text-secondary"}>{`$${Number(data?.currentPrice?.toFixed(2))}`}</p>
-                    }
-                </div>
-
-                <div
-                    className={cn(
-                        "flex items-center gap-1 px-2 py-0.5 bg-gradient-to-b from-white/2 rounded-md shadow-xl w-max h-max",
-                        data?.priceChangePercent! >= 0 ? "text-success to-success/10" : "text-error to-error/10"
-                    )}
-                >
-                    {data?.priceChangePercent! >= 0 ? <TrendingUp size={20}/> : <TrendingDown size={20}/>}
-                    {`${Number(data?.priceChangePercent.toFixed(2))}%`}
-                </div>
-
+        <div className="relative h-16 w-full flex items-center gap-2 bg-secondary rounded-md px-2 shadow-md border border-main/20 overflow-hidden">
+            <div className={"w-1/4 overflow-hidden"}>
+                <p className={"w-full text-primary font-semibold break-words"}>{stock}</p>
             </div>
             {isError &&
                 <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
@@ -179,7 +163,28 @@ const Stock = ({selectedStock, selectedTimespan}: StockProps) => {
                     An error occurred while loading chart data. Try again later.
                 </Callout>
             }
-            <StockChart data={chartData} yAxisDomain={yDomain} priceChangePercent={percent} gradientId={gradientId} chartConfig={chartConfig}/>
+            <div className="w-1/2">
+                <StockChart
+                    data={chartData}
+                    yAxisDomain={yDomain}
+                    priceChangePercent={percent}
+                    gradientId={gradientId}
+                    chartConfig={chartConfig}
+                />
+            </div>
+
+            <div className={"w-1/4 flex flex-col items-center gap-2"}>
+                <p className={"text-secondary text-sm"}>{`$${Number(data?.currentPrice?.toFixed(2))}`}</p>
+                <div
+                    className={cn(
+                        "text-sm flex items-center gap-1 px-1 bg-gradient-to-b from-white/2 rounded-md shadow-xl w-max h-max",
+                        data?.priceChangePercent! >= 0 ? "text-success to-success/10" : "text-error to-error/10"
+                    )}
+                >
+                    {data?.priceChangePercent! >= 0 ? <TrendingUp size={16}/> : <TrendingDown size={16}/>}
+                    {`${Number(data?.priceChangePercent.toFixed(1))}%`}
+                </div>
+            </div>
         </div>
     )
 }

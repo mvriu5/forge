@@ -2,7 +2,19 @@
 
 import type React from "react"
 import {useRef, useState} from "react"
-import {Blocks, Check, CloudAlert, Github, ImageIcon, Settings, Trash, UserRoundCheck, X} from "lucide-react"
+import {
+    Blocks,
+    Check,
+    CloudAlert, Eye, EyeOff,
+    Github,
+    ImageIcon,
+    LayoutDashboard, Pencil,
+    Settings, Share2,
+    Trash,
+    User,
+    UserRoundCheck, Wrench,
+    X
+} from "lucide-react"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {useSessionStore} from "@/store/sessionStore"
 import {z} from "zod"
@@ -14,7 +26,7 @@ import {cn} from "@/lib/utils"
 import {authClient} from "@/lib/auth-client"
 import type {PutBlobResult} from "@vercel/blob"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
+import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
 import {Button} from "@/components/ui/Button"
 import {useToast} from "@/components/ui/ToastProvider"
@@ -22,6 +34,13 @@ import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/co
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {Input} from "@/components/ui/Input"
 import { LinearIcon } from "@/components/svg/LinearIcon"
+import {useDashboardStore} from "@/store/dashboardStore"
+import {ScrollArea} from "@/components/ui/ScrollArea"
+import {format} from "date-fns"
+import {CopyButton} from "@/components/CopyButton"
+import { Dashboard } from "@/database"
+import {tooltip} from "@/components/ui/TooltipProvider"
+import {RadioGroup, RadioGroupItem} from "@/components/ui/RadioGroup"
 
 function SettingsDialog() {
     const {session} = useSessionStore()
@@ -60,15 +79,25 @@ function SettingsDialog() {
                             type="single"
                             className={"flex flex-col gap-2 border-0 bg-transparent px-0 justify-start items-start"}
                             value={tab}
-                            onValueChange={setTab}
+                            onValueChange={(value) => {
+                                if (value) setTab(value)
+
+                            }}
                         >
-                            <ToggleGroupItem value="profile" className={"w-full text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                            <ToggleGroupItem value="profile" className={"w-full flex items-center gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                                <User size={14}/>
                                 Profile
                             </ToggleGroupItem>
-                            <ToggleGroupItem value="integrations" className={"w-full text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                            <ToggleGroupItem value="integrations" className={"w-full flex items-center gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                                <Blocks size={14}/>
                                 Integrations
                             </ToggleGroupItem>
-                            <ToggleGroupItem value="settings" className={"w-full text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                            <ToggleGroupItem value="dashboards" className={"w-full flex items-center gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                                <LayoutDashboard size={14}/>
+                                Dashboards
+                            </ToggleGroupItem>
+                            <ToggleGroupItem value="settings" className={"w-full flex items-center gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                                <Wrench size={14}/>
                                 Settings
                             </ToggleGroupItem>
                         </ToggleGroup>
@@ -81,6 +110,9 @@ function SettingsDialog() {
                         }
                         {tab === "integrations" &&
                             <IntegrationSection session={session} setOpen={setOpen}/>
+                        }
+                        {tab === "dashboards" &&
+                            <DashboardSection/>
                         }
                         {tab === "settings" &&
                             <p className={"text-tertiary text-center mt-4 text-sm"}>Currently no settings available</p>
@@ -191,19 +223,18 @@ const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
                     data-state={integration.active ? "active" : "inactive"}
                     key={integration.name}
                     className={cn(
-                        "relative group w-full h-20 flex flex-col gap-2 justify-between rounded-md",
-                        "bg-secondary border p-2",
+                        "relative group w-full h-20 flex flex-col items-center justify-center rounded-md bg-secondary border p-2",
                         "data-[state=active]:border-success/20 data-[state=inactive]:border-error/20"
                     )}
                 >
-                    <div className={"flex items-center gap-2"}>
+                    <div className={"flex items-center gap-2 bg-tertiary px-2 py-1 rounded-md"}>
                         <integration.icon className={"size-4 fill-secondary"}/>
                         <p>{integration.name}</p>
                     </div>
                     <div className={"flex flex-col gap-2"}>
                         <Button
                             variant={"ghost"}
-                            className={"text-xs text-tertiary font-normal hover:bg-0 hover:underline"}
+                            className={"text-xs text-tertiary font-normal hover:bg-0 hover:underline p-0 font-mono"}
                             onClick={() => integration.active ? integration.onDisconnect() : integration.onConnect()}
                         >
                             {integration.active ? "Disconnect" : "Connect"}
@@ -234,7 +265,7 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
 
     const formSchema = z.object({
         name: z.string()
-            .min(3, {message: "Please enter more than 3 charcaters."})
+            .min(3, {message: "Please enter more than 3 characters."})
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -344,7 +375,7 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
                                     <AvatarImage src={blob?.url || avatarUrl || undefined} />
                                     <AvatarFallback/>
                                 </Avatar>
-                                <div className="flex items-center justify-center space-x-4">
+                                <div className="flex items-center justify-center">
                                     <Input
                                         ref={inputFileRef}
                                         id="picture"
@@ -355,7 +386,7 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
                                     />
                                     <FormLabel
                                         htmlFor="picture"
-                                        className="flex items-center cursor-pointer rounded-md bg-secondary p-2 text-secondary hover:bg-tertiary"
+                                        className="h-8 flex items-center cursor-pointer rounded-l-md bg-secondary px-2 text-secondary hover:text-primary hover:bg-tertiary border border-main/40 border-r-0"
                                     >
                                         <ImageIcon className="mr-2 h-4 w-4" />
                                         <span>Change Picture</span>
@@ -363,7 +394,7 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
                                     {(blob?.url || avatarUrl) &&
                                         <Button
                                             type={"button"}
-                                            className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error"}
+                                            className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error rounded-l-none"}
                                             onClick={handleDelete}
                                         >
                                             <Trash size={20}/>
@@ -402,6 +433,246 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
                         </div>
                     </form>
                 </Form>
+            </div>
+        </div>
+    )
+}
+
+
+const DashboardSection = () => {
+    const {dashboards, refreshDashboard, removeDashboard} = useDashboardStore()
+
+    return (
+        <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
+            <div className={"flex flex-col gap-4"}>
+                {dashboards?.map(dashboard => (
+                    <DashboardItem
+                        key={dashboard.id}
+                        dashboard={dashboard}
+                        dashboards={dashboards}
+                        refreshDashboard={refreshDashboard}
+                        removeDashboard={removeDashboard}
+                    />
+                ))}
+            </div>
+        </ScrollArea>
+    )
+}
+
+interface DashboardItemProps {
+    dashboard: Dashboard
+    dashboards: Dashboard[]
+    refreshDashboard: (d: Dashboard) => Promise<any>
+    removeDashboard: (d: Dashboard) => Promise<any>
+}
+
+const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard}: DashboardItemProps) => {
+    const {addToast} = useToast()
+    const [editDialogOpen, setEditDialogOpen] = useState(false)
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [deleteLoading, setDeleteLoading] = useState(false)
+
+    const editTooltip = tooltip<HTMLButtonElement>({
+        message: "Edit this dashboard",
+        anchor: "bc",
+        delay: 800
+    })
+
+    const copyTooltip = tooltip<HTMLButtonElement>({
+        message: "Copy your dashboard link & share with your friends",
+        anchor: "bc",
+        delay: 800
+    })
+
+
+    const deleteTooltip = tooltip<HTMLButtonElement>({
+        message: "Delete this dashboard",
+        anchor: "bc",
+        delay: 800
+    })
+
+
+    const formSchema = z.object({
+        name: z.string()
+            .min(3, { message: "Bitte mindestens 3 Zeichen." })
+            .max(12, { message: "Maximal 12 Zeichen." })
+            .refine((name) => !dashboards.some(d => d.name === name && d.id !== dashboard.id), { message: "Ein Dashboard mit diesem Namen existiert bereits." }),
+        visibility: z.enum(["public", "private"], {required_error: "Please select visibility"})
+    })
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            name: dashboard.name,
+            visibility: dashboard.isPublic ? "public" : "private"
+        }
+    })
+
+    const handleUpdate = async (values: z.infer<typeof formSchema>) => {
+        await refreshDashboard({ ...dashboard, name: values.name, isPublic: values.visibility === "public" })
+        addToast({
+            title: "Successfully updated dashboard!",
+            icon: <LayoutDashboard size={24} className="text-brand" />
+        })
+        setEditDialogOpen(false)
+    }
+
+    const handleDelete = async () => {
+        setDeleteLoading(true)
+        await removeDashboard(dashboard)
+        addToast({
+            title: "Successfully deleted dashboard",
+            icon: <LayoutDashboard size={24} className="text-brand" />
+        })
+        setDeleteLoading(false)
+        setDeleteDialogOpen(false)
+    }
+
+    return (
+        <div key={dashboard.id} className={"w-full flex items-center justify-between gap-2 bg-tertiary rounded-md py-2 px-4"}>
+            <div className={"flex items-center gap-2"}>
+                <div className={"p-1 bg-info/10 rounded-md border border-info/20 text-info"}>
+                    {dashboard.isPublic ? <Eye size={16}/> : <EyeOff size={16}/>}
+                </div>
+                <p className={"text-primary"}>{dashboard.name}</p>
+            </div>
+            <div className={"flex items-center"}>
+                <Dialog
+                    open={editDialogOpen}
+                    onOpenChange={() => {
+                        setEditDialogOpen(!editDialogOpen)
+                        if (!editDialogOpen) form.reset()
+                    }}
+                >
+                    <DialogTrigger asChild>
+                        <Button
+                            type={"button"}
+                            className={"px-1.5 rounded-r-none border-r-0"}
+                            {...editTooltip}
+                        >
+                            <Pencil size={16}/>
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className={"md:min-w-[300px] p-4"}>
+                        <DialogHeader className={"flex flex-row justify-between items-start"}>
+                            <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
+                                Are u sure you want to delete this dashboard?
+                            </DialogTitle>
+                            <DialogClose/>
+                        </DialogHeader>
+                        <div className={"flex flex-col gap-4"}>
+                            <Form {...form}>
+                                <form
+                                    onSubmit={form.handleSubmit(handleUpdate)}
+                                    className="flex flex-col justify-between gap-4 h-full"
+                                >
+                                    <div className="flex flex-col justify-center gap-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="name"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Name</FormLabel>
+                                                    <FormInput placeholder="Name" {...field}/>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control}
+                                            name="visibility"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <RadioGroup
+                                                        {...field}
+                                                        onValueChange={field.onChange}
+                                                        value={field.value}
+                                                        className="grid-cols-2"
+                                                    >
+                                                        <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md", field.value === "public" ? "border-brand" : "border-main")}>
+                                                            <RadioGroupItem value="public" id="vis-public" />
+                                                            <label htmlFor="vis-public" className="font-medium w-full">
+                                                                Public
+                                                            </label>
+                                                        </div>
+
+                                                        <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md", field.value === "private" ? "border-brand" : "border-main")}>
+                                                            <RadioGroupItem value="private" id="vis-private" />
+                                                            <label htmlFor="vis-private" className="font-medium w-full">
+                                                                Private
+                                                            </label>
+                                                        </div>
+                                                    </RadioGroup>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                    <div className={"w-full flex gap-2 justify-end"}>
+                                        <Button
+                                            className={"w-max"}
+                                            type={"reset"}
+                                            onClick={() => {
+                                                setEditDialogOpen(false)
+                                                form.reset()
+                                            }}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            variant={"brand"}
+                                            className={"w-max"}
+                                            type={"submit"}
+                                            disabled={form.formState.isSubmitting || (dashboard.name === form.getValues().name && dashboard.isPublic === (form.getValues("visibility") === "public"))}
+                                        >
+                                            {(form.formState.isSubmitting) && <ButtonSpinner/>}
+                                            Save
+                                        </Button>
+                                    </div>
+                                </form>
+                            </Form>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+                <CopyButton
+                    tooltip={copyTooltip}
+                    copyText={`https://tryforge.io/view/${dashboard.id}`}
+                    className={"px-1.5 rounded-none border border-main/60 border-r-0 text-secondary"}
+                />
+                <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button
+                            type={"button"}
+                            className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error rounded-l-none"}
+                            {...deleteTooltip}
+                        >
+                            <Trash size={16}/>
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className={"md:min-w-[300px] p-4"}>
+                        <DialogHeader className={"flex flex-row justify-between items-start"}>
+                            <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
+                                Are u sure you want to delete this dashboard?
+                            </DialogTitle>
+                            <DialogClose/>
+                        </DialogHeader>
+                        <div className={"w-full flex gap-2 justify-end"}>
+                            <Button
+                                className={"w-max"}
+                                onClick={() => setDeleteDialogOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant={"error"}
+                                className={"w-max"}
+                                onClick={handleDelete}
+                            >
+                                {deleteLoading && <ButtonSpinner/>}
+                                Delete
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     )

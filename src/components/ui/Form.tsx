@@ -78,7 +78,7 @@ const FormLabel = React.forwardRef<React.ComponentRef<typeof LabelPrimitive.Root
     return (
         // biome-ignore lint/a11y/noLabelWithoutControl: <explanation>
         <label
-            className={cn("text-sm", className)}
+            className={cn("text-sm text-tertiary", className)}
             htmlFor={formItemId}
             ref={ref}
             {...props}

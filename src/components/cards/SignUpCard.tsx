@@ -9,7 +9,7 @@ import {zodResolver} from "@hookform/resolvers/zod"
 import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
-import {CloudAlert, Github} from "lucide-react"
+import {CloudAlert, Github, Inbox} from "lucide-react"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {GoogleIcon} from "@/components/svg/GoogleIcon"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
@@ -45,7 +45,12 @@ function SignUpCard() {
                 setLoading(true)
             },
             onSuccess: (ctx) => {
-                router.push("/signin")
+                addToast({
+                    title: "We sent you an email!",
+                    subtitle: "Verify your email to continue.",
+                    icon: <Inbox size={24} className={"text-success"}/>,
+                    duration: 1000 * 60 * 5 // 5 minutes
+                })
             },
             onError: (ctx) => {
                 setLoading(false)

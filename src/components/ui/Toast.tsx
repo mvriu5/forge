@@ -104,7 +104,7 @@ const Toast = ({id, title, subtitle, icon, scale = 1, position = "br", closeButt
                     exit="exit"
                     variants={variants}
                     transition={{duration: 0.5,}}
-                    className={cn("rounded-lg", positionClasses(position), classNames?.motionClassname)}
+                    className={cn("rounded-md", positionClasses(position), classNames?.motionClassname)}
                     style={{...(position === "tc" || position === "bc" ? { marginLeft: `-${(width * scale) / 2}px` } : {}),
                         transformOrigin: isTopPositioned ? "center top" : "center bottom"}}
                 >
@@ -123,8 +123,13 @@ const Toast = ({id, title, subtitle, icon, scale = 1, position = "br", closeButt
                                     {icon}
                                 </div>
                             }
-                            <div className={cn("flex flex-col max-w-60", icon && "ml-4", actionButton)}>
-                                <span className={cn("text-sm font-medium text-nowrap truncate text-secondary", classNames?.titleClassname)}>
+                            <div className={cn("flex flex-col max-w-72", icon && "ml-4", actionButton)}>
+                                <span
+                                    className={cn(
+                                        "text-sm font-medium text-secondary",
+                                        subtitle ? "text-nowrap truncate" : "text-wrap", classNames?.titleClassname
+                                    )}
+                                >
                                     {title}
                                 </span>
                                 {subtitle && subtitle.trim() !== "" && (

@@ -1,10 +1,12 @@
-const LinearIcon = () => {
+import {cn} from "@/lib/utils"
+
+const LinearIcon = ({className}: {className?: string}) => {
     return (
         <svg width="24px"
              height="24px"
              viewBox="0 0 24 24"
              xmlns="http://www.w3.org/2000/svg"
-             className={"fill-secondary"}
+             className={cn("fill-secondary", className)}
         >
             <title>Linear</title>
             <path d="M3.03509 12.9431C3.24245 14.9227 4.10472 16.8468 5.62188 18.364C7.13904 19.8811 9.0631 20.7434 11.0428 20.9508L3.03509 12.9431Z"/>

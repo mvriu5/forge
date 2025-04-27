@@ -49,12 +49,22 @@ export const verification = pgTable("verification", {
 export const widget = pgTable("widget", {
     id: uuid('id').defaultRandom().primaryKey(),
     userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' }),
+    dashboardId: uuid('dashboard_id').notNull().references(()=> dashboard.id, { onDelete: 'cascade' }),
     widgetType: text('widget_type').notNull(),
     height: integer('height').notNull(),
     width: integer('width').notNull(),
     config: jsonb('config'),
     positionX: integer('position_x').notNull(),
     positionY: integer('position_y').notNull(),
+    createdAt: timestamp('created_at').notNull(),
+    updatedAt: timestamp('updated_at').notNull()
+})
+
+export const dashboard = pgTable("dashboard", {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    isPublic: boolean('is_public').notNull().default(false),
     createdAt: timestamp('created_at').notNull(),
     updatedAt: timestamp('updated_at').notNull()
 })
