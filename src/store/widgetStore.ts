@@ -13,7 +13,7 @@ interface WidgetStore {
 }
 
 export const useWidgetStore = create<WidgetStore>((set, get) => ({
-    widgets: null,
+    widgets: [] as Widget[],
 
     addWidget: async (userId: string, widget: WidgetInsert) => {
         const { x, y } = findNextAvailablePosition(get().widgets, widget.width, widget.height, widget.dashboardId)

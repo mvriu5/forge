@@ -508,9 +508,9 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
     })
 
     const handleUpdate = async (values: z.infer<typeof formSchema>) => {
-        await refreshDashboard({ ...dashboard, name: values.name })
+        await refreshDashboard({ ...dashboard, name: values.name, isPublic: values.visibility === "public" })
         addToast({
-            title: "Dashboard erfolgreich umbenannt!",
+            title: "Successfully updated dashboard!",
             icon: <LayoutDashboard size={24} className="text-brand" />
         })
         setEditDialogOpen(false)
@@ -520,7 +520,7 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
         setDeleteLoading(true)
         await removeDashboard(dashboard)
         addToast({
-            title: "Dashboard erfolgreich gelöscht!",
+            title: "Successfully deleted dashboard",
             icon: <LayoutDashboard size={24} className="text-brand" />
         })
         setDeleteLoading(false)
@@ -530,12 +530,12 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
     return (
         <div key={dashboard.id} className={"w-full flex items-center justify-between gap-2 bg-tertiary rounded-md py-2 px-4"}>
             <div className={"flex items-center gap-2"}>
+                <div className={"p-1 bg-info/10 rounded-md border border-info/20 text-info"}>
+                    {dashboard.isPublic ? <Eye size={16}/> : <EyeOff size={16}/>}
+                </div>
                 <p className={"text-primary"}>{dashboard.name}</p>
             </div>
             <div className={"flex items-center"}>
-                <div className={"px-2"}>
-                    {dashboard.isPublic ? <Eye size={16}/> : <EyeOff size={16}/>}
-                </div>
                 <Dialog
                     open={editDialogOpen}
                     onOpenChange={() => {

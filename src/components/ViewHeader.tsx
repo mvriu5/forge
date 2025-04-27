@@ -2,8 +2,8 @@
 
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import {ProfilePopover} from "@/components/popovers/ProfilePopover"
-import React from "react"
-import {Undo2, Workflow} from "lucide-react"
+import React, { useState } from "react"
+import {CloudAlert, Undo2, Workflow} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {Dashboard, User, Widget} from "@/database"
 import {useQuery} from "@tanstack/react-query"
@@ -14,12 +14,15 @@ import {tooltip} from "@/components/ui/TooltipProvider"
 import {useWidgetStore} from "@/store/widgetStore"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {useSessionStore} from "@/store/sessionStore"
+import {useToast} from "@/components/ui/ToastProvider"
 
 function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widget[] | null}) {
     const {addWidget} = useWidgetStore()
     const {addDashboard} = useDashboardStore()
     const {session} = useSessionStore()
+    const {addToast} = useToast()
     const router = useRouter()
+    const [copyDashboardLoading, setCopyDashboardLoading] = useState(false)
 
     const {data: dashboard, isLoading: dbLoading, isFetching: dbFetching, isError: dbError} = useQuery<Dashboard, Error>({
         queryKey: ["dashboard", dashboardId],
@@ -44,6 +47,18 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
         enabled: !!dashboard?.userId
     })
 
+    const {data: userDashboards} = useQuery<Dashboard[], Error>({
+        queryKey: ["userDashboards", user?.id],
+        queryFn: async () => {
+            if (!user?.id) throw new Error("No id provided")
+            const res = await fetch(`/api/dashboards?userId=${user?.id}`)
+            if (!res.ok) throw new Error(`Fetch error: ${res.status}`)
+            const data = await res.json()
+            return data as Dashboard[]
+        },
+        enabled: !!user?.id
+    })
+
     const copyDashboardTooltip = tooltip<HTMLButtonElement>({
         message: "Add this dashboard to your list",
         anchor: "bc",
@@ -52,7 +67,19 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
 
     const handleDashboardCopy = async () => {
         try {
-            if (!session?.user?.id || !dashboard || !widgets) return
+            if (!session?.user?.id || !dashboard || !widgets || !userDashboards) return
+
+            const hasDashboardWithName = userDashboards.some((db) => db.name === dashboard.name)
+            if (hasDashboardWithName){
+                addToast({
+                    title: "Error copying dashboard!",
+                    subtitle: "You already have an dashboard with the same name.",
+                    icon: <Workflow size={24} className={"text-error"}/>
+                })
+                return
+            }
+
+            setCopyDashboardLoading(true)
 
             const newDashboard: Dashboard = await addDashboard(session.user.id, {
                 userId: session.user.id,
@@ -79,7 +106,13 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
             await Promise.all(widgetPromises)
             router.push("/dashboard")
         } catch (error) {
-            console.error("Copy failed", error)
+            addToast({
+                title: "An error occurred!",
+                subtitle: "Try again later.",
+                icon: <CloudAlert size={24} className={"text-error"}/>
+            })
+        } finally {
+            setCopyDashboardLoading(false)
         }
     }
 
