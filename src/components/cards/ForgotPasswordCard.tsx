@@ -12,6 +12,7 @@ import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/
 import { useToast } from "@/components/ui/ToastProvider";
 import {Button} from "@/components/ui/Button"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
+import Link from "next/link";
 
 function ForgotPasswordCard() {
     const {addToast} = useToast()
@@ -58,7 +59,9 @@ function ForgotPasswordCard() {
         <div className={"w-80 h-max rounded-md border border-main/60 bg-primary shadow-xl p-8 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
                 <div className={"flex gap-2 items-center"}>
-                    <ForgeLogo/>
+                    <Link href={"/"} className={"cursor-default"}>
+                        <ForgeLogo/>
+                    </Link>
                     <p className={"text-lg text-primary font-bold"}>Forgot password</p>
                 </div>
                 <p className={"text-sm text-secondary"}>Submit your email to continue.</p>
