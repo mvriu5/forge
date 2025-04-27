@@ -3,15 +3,22 @@
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import {ProfilePopover} from "@/components/popovers/ProfilePopover"
 import React from "react"
-import {Undo2} from "lucide-react"
+import {Undo2, Workflow} from "lucide-react"
 import {Button} from "@/components/ui/Button"
-import {Dashboard, User} from "@/database"
+import {Dashboard, User, Widget} from "@/database"
 import {useQuery} from "@tanstack/react-query"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {useRouter} from "next/navigation"
+import {tooltip} from "@/components/ui/TooltipProvider"
+import {useWidgetStore} from "@/store/widgetStore"
+import {useDashboardStore} from "@/store/dashboardStore"
+import {useSessionStore} from "@/store/sessionStore"
 
-function ViewHeader({dashboardId}: {dashboardId: string}) {
+function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widget[] | null}) {
+    const {addWidget} = useWidgetStore()
+    const {addDashboard} = useDashboardStore()
+    const {session} = useSessionStore()
     const router = useRouter()
 
     const {data: dashboard, isLoading: dbLoading, isFetching: dbFetching, isError: dbError} = useQuery<Dashboard, Error>({
@@ -37,6 +44,45 @@ function ViewHeader({dashboardId}: {dashboardId: string}) {
         enabled: !!dashboard?.userId
     })
 
+    const copyDashboardTooltip = tooltip<HTMLButtonElement>({
+        message: "Add this dashboard to your list",
+        anchor: "bc",
+        offset: 12
+    })
+
+    const handleDashboardCopy = async () => {
+        try {
+            if (!session?.user?.id || !dashboard || !widgets) return
+
+            const newDashboard: Dashboard = await addDashboard(session.user.id, {
+                userId: session.user.id,
+                name: dashboard.name,
+                isPublic: true,
+                createdAt: new Date(Date.now()),
+                updatedAt: new Date(Date.now())
+            })
+
+            const widgetPromises = widgets.map(widget =>
+                addWidget(session.user.id, {
+                    userId: session.user.id,
+                    dashboardId: newDashboard.id,
+                    widgetType: widget.widgetType,
+                    height: widget.height,
+                    width: widget.width,
+                    positionX: widget.positionX,
+                    positionY: widget.positionY,
+                    createdAt: new Date(Date.now()),
+                    updatedAt: new Date(Date.now())
+                })
+            )
+
+            await Promise.all(widgetPromises)
+            router.push("/dashboard")
+        } catch (error) {
+            console.error("Copy failed", error)
+        }
+    }
+
     return (
         <div className={"w-full top-0 left-0 h-14 px-8 flex justify-between items-center bg-primary border-b border-main/40"}>
             <div className={"flex items-center gap-4"}>
@@ -45,7 +91,7 @@ function ViewHeader({dashboardId}: {dashboardId: string}) {
                     <span className={"text-xl text-primary font-mono font-semibold"}>forge</span>
                 </div>
                 <div className={"h-6 w-px border-r-2 border-main"}/>
-                <div className={"hidden md:flex items-center gap-2 text-sm"}>
+                <div className={"hidden md:flex items-center gap-2 text-sm cursor-default"}>
                     <p className={"text-xs font-mono text-tertiary"}>Dashboard:</p>
                     {dbLoading ?
                         <Skeleton className={"w-12 h-4"}/> :
@@ -75,6 +121,15 @@ function ViewHeader({dashboardId}: {dashboardId: string}) {
                 >
                     <Undo2 size={16}/>
                     <p className={"group-hover:text-primary"}>Go back</p>
+                </Button>
+                <Button
+                    className={"px-1.5"}
+                    variant={"brand"}
+                    onClick={handleDashboardCopy}
+                    disabled={!dashboard || !dashboard.isPublic || userLoading || dbLoading}
+                    {...copyDashboardTooltip}
+                >
+                    <Workflow size={20}/>
                 </Button>
                 <ProfilePopover editMode={false}/>
             </div>

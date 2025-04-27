@@ -5,7 +5,7 @@ import {useRef, useState} from "react"
 import {
     Blocks,
     Check,
-    CloudAlert,
+    CloudAlert, Eye, EyeOff,
     Github,
     ImageIcon,
     LayoutDashboard, Pencil,
@@ -533,6 +533,9 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                 <p className={"text-primary"}>{dashboard.name}</p>
             </div>
             <div className={"flex items-center"}>
+                <div className={"px-2"}>
+                    {dashboard.isPublic ? <Eye size={16}/> : <EyeOff size={16}/>}
+                </div>
                 <Dialog
                     open={editDialogOpen}
                     onOpenChange={() => {

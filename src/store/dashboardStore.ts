@@ -4,7 +4,7 @@ import {create} from "zustand/react"
 interface DashboardStore {
     dashboards: Dashboard[] | null
     currentDashboard: Dashboard | null
-    addDashboard: (userId: string, dashboard: DashboardInsert) => Promise<void>
+    addDashboard: (userId: string, dashboard: DashboardInsert) => Promise<Dashboard>
     refreshDashboard: (dashboard: Dashboard) => Promise<void>
     removeDashboard: (dashboard: Dashboard) => Promise<void>
     getAllDashboards: (userId: string) => Promise<void>
@@ -25,6 +25,7 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
             })
             const newDashboard = await response.json()
             set({ dashboards: [...(get().dashboards || []), newDashboard[0]], currentDashboard: newDashboard[0] })
+            return newDashboard
         } catch (error) {
             set({ dashboards: get().dashboards })
         }
