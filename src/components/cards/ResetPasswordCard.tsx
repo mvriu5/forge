@@ -12,6 +12,7 @@ import {useState} from "react";
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {CloudAlert} from "lucide-react"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
+import Link from "next/link"
 
 function ResetPasswordCard() {
     const router = useRouter()
@@ -63,7 +64,9 @@ function ResetPasswordCard() {
         <div className={"w-80 h-max rounded-md border border-main/60 bg-primary shadow-xl p-8 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
                 <div className={"flex gap-2 items-center"}>
-                    <ForgeLogo/>
+                    <Link href={"/"} className={"cursor-default"}>
+                        <ForgeLogo/>
+                    </Link>
                     <p className={"text-lg text-primary font-bold"}>Reset password</p>
                 </div>
                 <p className={"text-sm text-secondary"}>Type your new password to continue.</p>

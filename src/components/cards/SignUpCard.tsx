@@ -13,6 +13,7 @@ import {CloudAlert, Github, Inbox} from "lucide-react"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {GoogleIcon} from "@/components/svg/GoogleIcon"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
+import Link from "next/link"
 
 function SignUpCard() {
     const router = useRouter()
@@ -99,7 +100,9 @@ function SignUpCard() {
         <div className={"w-80 h-max rounded-md border border-main/60 bg-primary shadow-xl p-8 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
                 <div className={"flex gap-2 items-center"}>
-                    <ForgeLogo/>
+                    <Link href={"/"} className={"cursor-default"}>
+                        <ForgeLogo/>
+                    </Link>
                     <p className={"text-lg text-primary font-bold"}>Sign Up</p>
                 </div>
                 <p className={"text-sm text-secondary"}>Create an account to continue.</p>
