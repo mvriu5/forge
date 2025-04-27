@@ -15,7 +15,7 @@ import {IssueCard} from "@/components/widgets/LinearWidget"
 
 function WidgetSection() {
     return (
-        <div className={"flex flex-col gap-4 px-8"}>
+        <div className={"flex flex-col gap-4 md:px-8"}>
             <p className="flex items-center gap-1.5 font-semibold text-3xl text-brand">
                 Discover a variety of widgets
             </p>
@@ -23,7 +23,7 @@ function WidgetSection() {
             <p className="text-xl text-tertiary font-normal">
                 Explore all widgets and build your dashboard with an unique style.
             </p>
-            <div className={"grid grid-cols-1 md:grid-cols-2 auto-rows-[minmax(120px,120px)] gap-8 pt-8"}>
+            <div className={"grid grid-cols-1 2xl:grid-cols-2 auto-rows-[minmax(120px,120px)] gap-8 pt-8"}>
                 <BentoChart/>
                 <BentoLinear/>
                 <BentoBookmark/>
@@ -112,9 +112,9 @@ const BentoChart = () => {
     }, [])
 
     return (
-        <div className="col-span-1 row-span-1 flex items-center gap-4 bg-secondary rounded-md px-4 shadow-xl border border-main/20 overflow-hidden cursor-default pointer-events-none">
-            <p className={"w-max text-primary font-semibold text-2xl"}>GOOGL</p>
-            <div className={"w-full -my-6"}>
+        <div className="col-span-1 row-span-1 flex items-center gap-2 lg:gap-4 bg-secondary rounded-md px-2 lg:px-4 shadow-xl border border-main/20 overflow-hidden cursor-default pointer-events-none">
+            <p className={"w-max text-primary font-semibold text-sm lg:text-xl"}>GOOGL</p>
+            <div className={"w-full h-full"}>
             <ChartContainer className="h-full w-full" config={chartConfig}>
                 <AreaChart data={data} margin={{ top: 5 }}>
                     <ChartTooltip
@@ -150,9 +150,9 @@ const BentoChart = () => {
                 </AreaChart>
             </ChartContainer>
             </div>
-            <div className={" flex flex-col items-center gap-2"}>
-                <p className={"text-secondary text-xl"}>$159,28</p>
-                <div className={cn("text-xl flex items-center gap-1 px-2 py-1 bg-gradient-to-b from-white/2 rounded-md shadow-xl w-max h-max text-error to-error/10")}>
+            <div className={"flex flex-col items-center gap-2"}>
+                <p className={"text-secondary text-sm lg:text-xl"}>$159,28</p>
+                <div className={cn("text-sm lg:text-xl flex items-center gap-1 px-2 py-1 bg-gradient-to-b from-white/2 rounded-md shadow-xl w-max h-max text-error to-error/10")}>
                     <TrendingDown size={16}/>
                     16,9%
                 </div>
@@ -164,11 +164,14 @@ const BentoChart = () => {
 const BentoMarkdown = () => {
     return (
         <div
-            className={"relative col-span-2 row-span-2 flex flex-col gap-4 rounded-md border border-main/20 shadow-xl p-8 overflow-hidden cursor-default pointer-events-none bg-secondary"}>
+            className={"relative col-span-1 2xl:col-span-2 row-span-2 flex flex-col gap-4 rounded-md border border-main/20 shadow-xl p-8 overflow-hidden cursor-default pointer-events-none bg-secondary text-sm"}>
 
-            <div className={"flex items-center gap-2"}>
+            <div className={"w-max flex flex-col 2xl:flex-row 2xl:items-center gap-2"}>
                 <h1>My Epic Hiking Adventure Through the</h1>
-                <h1 className={"bg-brand text-primary"}>Majestic Rocky Mountain Wilderness</h1>
+                <div className={"relative bg-brand"}>
+                    <h1 className={"text-primary"}>Majestic Rocky Mountain Wilderness</h1>
+                    <EditorBubbleWindow/>
+                </div>
             </div>
             <hr className={"border-b border-main/60"}/>
             <h2>Highlights</h2>
@@ -182,7 +185,6 @@ const BentoMarkdown = () => {
                 <li><strong>New personal record</strong>: 30 km in 2 days</li>
             </ul>
             <hr className={"border-b border-main/60"}/>
-            <EditorBubbleWindow/>
 
         </div>
 
@@ -191,7 +193,7 @@ const BentoMarkdown = () => {
 
 const EditorBubbleWindow = () => {
     return (
-        <div className={"z-20 absolute top-6 right-80 flex flex-col gap-1 h-80 w-48 p-1 bg-primary border border-main/60 shadow-lg rounded-md"}>
+        <div className={"z-20 absolute -top-2 -right-2 translate-x-full flex flex-col gap-1 h-80 w-48 p-1 bg-primary border border-main/60 shadow-lg rounded-md"}>
             {SelectorItems.map((item) => (
                 <div
                     key={item.name}
@@ -201,7 +203,7 @@ const EditorBubbleWindow = () => {
                         <div className='rounded-sm border border-main/60 p-1 group-hover:text-brand'>
                             <item.icon className='h-3 w-3 group-data-[state=active]:text-brand'/>
                         </div>
-                        <span className={"group-data-[state=active]:text-primary"}>{item.name}</span>
+                        <span className={"text-secondary group-data-[state=active]:text-primary group-data-[state=active]:font-semibold"}>{item.name}</span>
                     </div>
                 </div>
             ))}
@@ -301,14 +303,11 @@ const BentoLinear = () => {
             <div className="flex items-center gap-2 justify-between">
                 <div className={"flex items-center gap-1"}>
                     <LinearIcon/>
-                    <p className={"text-primary text-lg font-semibold"}>Linear Issues</p>
+                    <p className={"text-primary text-sm md:text-lg font-semibold"}>Linear Issues</p>
                 </div>
                 <div className={"flex items-center gap-2"}>
-                    <Button className={"px-2 group bg"}>
-                        <RefreshCw className="h-4 w-4" />
-                    </Button>
                     <Select value={"priority"}>
-                        <SelectTrigger className="w-[180px] bg-secondary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
+                        <SelectTrigger className="w-max bg-secondary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-tertiary">Sort by:</span>
                                 <SelectValue placeholder="Sort" />

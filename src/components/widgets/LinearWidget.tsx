@@ -124,27 +124,27 @@ const IssueCard = ({issue, className}: {issue: any, className?: string}) => {
             <div className="flex items-center gap-2">
                 <StatusBadge statusId={issue.stateName}/>
                 <p className={"text-primary text-sm truncate"}>{issue.title}</p>
-                <div className={"flex items-center justify-center"} {...descriptionTooltip}>
+                <div className={"hidden lg:flex items-center justify-center"} {...descriptionTooltip}>
                     {issue.description?.length > 0 &&
                         <Captions className={"text-tertiary"} size={18}/>
                     }
                 </div>
             </div>
-            <p className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>
+            <span className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>
                 <Hourglass size={14}/>
-                Priority:
+                <p className={"hidden lg:flex"}>Priority:</p>
                 <span className={"inline break-words text-secondary"}>{issue.priorityName ?? "No priority"}</span>
-            </p>
-            <p className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>
+            </span>
+            <span className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>
                 <Users size={14}/>
-                Team:
+                <p className={"hidden lg:flex"}>Team:</p>
                 <span className={"inline break-words text-secondary"}>{issue.team ?? "No team"}</span>
-            </p>
-            <p className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>
+            </span>
+            <span className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>
                 <Box size={14}/>
-                Project:
+                <p className={"hidden lg:flex"}>Project:</p>
                 <span className={"inline break-words text-secondary"}>{issue.project ?? "No project"}</span>
-            </p>
+            </span>
             <div className={"flex items-center gap-2"}>
                 {issue.labels.map((label: any) =>
                     <div

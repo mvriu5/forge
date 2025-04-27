@@ -15,6 +15,7 @@ import {useWidgetStore} from "@/store/widgetStore"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {useSessionStore} from "@/store/sessionStore"
 import {useToast} from "@/components/ui/ToastProvider"
+import {ButtonSpinner} from "@/components/ButtonSpinner"
 
 function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widget[] | null}) {
     const {addWidget} = useWidgetStore()
@@ -162,7 +163,7 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
                     disabled={!dashboard || !dashboard.isPublic || userLoading || dbLoading}
                     {...copyDashboardTooltip}
                 >
-                    <Workflow size={20}/>
+                    {copyDashboardLoading ? <ButtonSpinner/> : <Workflow size={20}/>}
                 </Button>
                 <ProfilePopover editMode={false}/>
             </div>

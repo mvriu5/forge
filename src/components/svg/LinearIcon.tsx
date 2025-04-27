@@ -1,6 +1,6 @@
 import {cn} from "@/lib/utils"
 
-const LinearIcon = ({className}: {className: string}) => {
+const LinearIcon = ({className}: {className?: string}) => {
     return (
         <svg width="24px"
              height="24px"
