@@ -73,7 +73,7 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
         >
             <DialogTrigger asChild>
                 {showOnClose &&
-                    <Button className={"rounded-l-none border-l-0 px-2"} disabled={editMode}>
+                    <Button className={"hidden lg:flex rounded-l-none border-l-0 px-2"} disabled={editMode}>
                         <SquarePen size={16} />
                     </Button>
                 }

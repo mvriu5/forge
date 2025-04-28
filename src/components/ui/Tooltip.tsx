@@ -2,6 +2,8 @@
 
 import {type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState} from "react"
 import {KeyboardShortcut} from "@/components/ui/KeyboardShortcut"
+import {cn} from "@/lib/utils"
+import {useHoverSupported} from "@/hooks/useHoverSupported"
 
 interface TooltipProps {
     id?: number
@@ -17,8 +19,11 @@ interface TooltipProps {
 }
 
 const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset = 8, shortcut, trigger, lastTooltipTimestamp, customTooltip }: TooltipProps & { lastTooltipTimestamp: number | null }) => {
+    const canHover = useHoverSupported()
+
     const [isVisible, setIsVisible] = useState(false)
     const [position, setPosition] = useState({ x: 0, y: 0 })
+
     const timeout = useRef<number | null>(null)
     const tooltipRef = useRef<HTMLDivElement>(null)
 
@@ -129,13 +134,14 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
         }
     }, [calculatePosition, delay, lastTooltipTimestamp])
 
-    if (!isVisible) return null
-    if (!message && !customTooltip) return null
+    if (!canHover) return
+    if (!isVisible) return
+    if (!message && !customTooltip) return
 
     if (customTooltip) {
         return (
             <div
-                className={"absolute z-50 shadow-md"}
+                className={cn("absolute z-50 shadow-md")}
                 style={{
                     top: position.y,
                     left: position.x,
@@ -151,7 +157,7 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
 
     return (
         <div
-            className={"absolute z-50 w-max flex gap-4 items-center px-2 py-1 rounded-md shadow-md text-xs bg-black dark:bg-white border border-main"}
+            className={cn("absolute z-50 w-max gap-4 items-center px-2 py-1 rounded-md shadow-md text-xs bg-black dark:bg-white border border-main")}
             style={{
                 top: position.y,
                 left: position.x,

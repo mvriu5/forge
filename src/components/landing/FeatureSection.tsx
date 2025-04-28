@@ -33,7 +33,7 @@ const BentoShare = () => {
                 <p className={"text-xl text-primary font-semibold"}>Share with your friends!</p>
             </div>
 
-            <div className={"z-30 w-full h-20 flex items-center justify-between gap-2 px-2 bg-primary rounded-xl border border-main/20 shadow-[0_20px_20px_rgba(0,0,0,0.5)] -mb-12"}>
+            <div className={"z-[12] w-full h-20 flex items-center justify-between gap-2 px-2 bg-primary rounded-xl border border-main/20 shadow-[0_20px_20px_rgba(0,0,0,0.5)] -mb-12"}>
                 <div className={"flex items-center gap-2"}>
                     <div className={"size-8 rounded-full bg-gradient-to-br from-purple-300 to-blue-800"}/>
                     <p className={"text-sm text-primary font-semibold"}>Max</p>
@@ -42,7 +42,7 @@ const BentoShare = () => {
                 </div>
                 <X className={"min-w-5 min-h-5 text-tertiary/60"}/>
             </div>
-            <div className={"z-20 scale-90 w-full h-20 flex items-center justify-between gap-2 px-2 bg-primary rounded-xl border border-main/20 shadow-[0_20px_20px_rgba(0,0,0,0.5)] -mb-16"}>
+            <div className={"z-[11] scale-90 w-full h-20 flex items-center justify-between gap-2 px-2 bg-primary rounded-xl border border-main/20 shadow-[0_20px_20px_rgba(0,0,0,0.5)] -mb-16"}>
                 <div className={"flex items-center gap-2"}>
                     <div className={"size-8 rounded-full bg-gradient-to-br from-brand to-emerald-400"}/>
                     <p className={"text-sm text-primary font-semibold"}>Joann</p>
