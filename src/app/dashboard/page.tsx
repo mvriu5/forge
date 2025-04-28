@@ -20,6 +20,7 @@ import {useDragAndDrop} from "@/hooks/useDragAndDrop"
 import { Callout } from "@/components/ui/Callout"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
+import {useHotkeys} from "react-hotkeys-hook"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
@@ -37,6 +38,12 @@ export default function Dashboard() {
 
     const gridCells = useGrid(activeWidget)
     const { sensors, handleDragStart, handleDragEnd } = useDragAndDrop(editMode, setActiveWidget)
+
+    useHotkeys("mod+e", (event) => {
+        event.preventDefault()
+        if (widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0) return
+        if (!editMode) setEditMode(true)
+    }, [editMode, widgets, currentDashboard])
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 

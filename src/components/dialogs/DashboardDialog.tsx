@@ -14,6 +14,7 @@ import {useDashboardStore} from "@/store/dashboardStore"
 import {useSessionStore} from "@/store/sessionStore"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup"
 import {cn} from "@/lib/utils"
+import {tooltip} from "@/components/ui/TooltipProvider"
 
 interface DashboardDialogProps {
     open: boolean
@@ -42,6 +43,12 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
             visibility: "private",
         },
 
+    })
+
+    const dashboardTooltip = tooltip<HTMLButtonElement>({
+        message: "Create a new dashboard",
+        anchor: "bc",
+        offset: 12
     })
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -73,7 +80,7 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
         >
             <DialogTrigger asChild>
                 {showOnClose &&
-                    <Button className={"hidden lg:flex rounded-l-none border-l-0 px-2"} disabled={editMode}>
+                    <Button className={"hidden lg:flex rounded-l-none border-l-0 px-2"} disabled={!dashboards || dashboards.length === 0 || editMode} {...dashboardTooltip}>
                         <SquarePen size={16} />
                     </Button>
                 }

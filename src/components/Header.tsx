@@ -26,6 +26,7 @@ function Header({onEdit, editMode, widgetsEmpty = false, isLoading = false}: Hea
 
     const layoutTooltip = tooltip<HTMLButtonElement>({
         message: "Change your dashboard layout",
+        shortcut: "E",
         anchor: "bc",
         offset: 12
     })

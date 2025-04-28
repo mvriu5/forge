@@ -157,7 +157,7 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
 
     return (
         <div
-            className={cn("absolute z-50 w-max gap-4 items-center px-2 py-1 rounded-md shadow-md text-xs bg-black dark:bg-white border border-main")}
+            className={cn("absolute z-50 w-max flex gap-4 items-center px-2 py-1 rounded-md shadow-md text-xs bg-black dark:bg-white border border-main")}
             style={{
                 top: position.y,
                 left: position.x,
@@ -174,7 +174,7 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
                 <KeyboardShortcut
                     key={shortcut}
                     keyString={shortcut}
-                    className={"bg-inverted text-inverted"}/>
+                    className={"bg-inverted dark:text-black/50"}/>
             }
         </div>
     )

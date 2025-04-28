@@ -15,6 +15,7 @@ import {ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup"
 import { ScrollArea } from "@/components/ui/ScrollArea"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {useDashboardStore} from "@/store/dashboardStore"
+import {useHotkeys} from "react-hotkeys-hook"
 
 function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
     const {widgets, addWidget} = useWidgetStore()
@@ -27,8 +28,15 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
     const [dialogOpen, setDialogOpen] = useState(false)
     const [addLoading, setAddLoading] = useState<boolean>(false)
 
+    useHotkeys("mod+s", (event) => {
+        event.preventDefault()
+        if (!title) return
+        if (!dialogOpen) setDialogOpen(true)
+    }, [dialogOpen])
+
     const widgetTooltip = tooltip<HTMLButtonElement>({
         message: "Add a new widget",
+        shortcut: "S",
         anchor: "bc",
         offset: 12
     })
