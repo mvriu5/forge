@@ -8,6 +8,7 @@ import {WeatherWidget} from "@/components/widgets/WeatherWidget"
 import {StockMediumWidget} from "@/components/widgets/StockMediumWidget"
 import {BookmarkWidget} from "@/components/widgets/BookmarkWidget"
 import {LinearWidget} from "@/components/widgets/LinearWidget"
+import {PhantomWidget} from "@/components/widgets/PhantomWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -58,7 +59,7 @@ export const widgetRegistry: WidgetElement[] = [
             previewImage: '/stocksmall_preview.png',
             title: 'Stock',
             description: 'Track your stock data',
-            tags: ["stock"]
+            tags: ["fincance"]
         },
         component: StockSmallWidget,
     },
@@ -70,7 +71,7 @@ export const widgetRegistry: WidgetElement[] = [
             previewImage: '/stockmedium_preview.png',
             title: 'Stock Overview',
             description: 'Track your stock data',
-            tags: ["stock"]
+            tags: ["fincance"]
         },
         component: StockMediumWidget,
     },
@@ -109,6 +110,18 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["productivity"]
         },
         component: LinearWidget
+    },
+    {
+        preview: {
+            widgetType: "phantom",
+            height: 1,
+            width: 1,
+            previewImage: '/phantom_preview.png',
+            title: 'Phantom Wallet',
+            description: 'See your phantom wallet balance',
+            tags: ["finance"]
+        },
+        component: PhantomWidget
     }
 
 ]
