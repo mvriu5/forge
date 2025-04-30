@@ -21,6 +21,7 @@ interface PhantomProvider {
 const usePhantom = () => {
     const [provider, setProvider] = useState<PhantomProvider | null>(null)
     const [wallet, setWallet] = useState<Wallet | null>(null)
+    const [connecting, setConnecting] = useState(false)
 
     useEffect(() => {
         if (typeof window === "undefined") return
@@ -42,11 +43,19 @@ const usePhantom = () => {
     }, [])
 
     const connect = useCallback(async () => {
-        if (!provider) return
-        const { publicKey } = await provider.connect()
-        const addr = publicKey.toBase58()
-        setWallet({ address: addr, balance: { value: 0 } })
-    }, [provider])
+        if (!provider || connecting) return
+        setConnecting(true)
+
+        try {
+            if (provider.isConnected) await provider.disconnect()
+            const { publicKey } = await provider.connect()
+            const addr = publicKey.toBase58()
+            setWallet({ address: addr, balance: { value: 0 } })
+        } catch (error: any) {
+        } finally {
+            setConnecting(false)
+        }
+    }, [provider, connecting])
 
     const disconnect = useCallback(async () => {
         if (!provider) return

@@ -11,6 +11,8 @@ import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {useWidgetStore} from "@/store/widgetStore"
+import { WidgetHeader } from "./WidgetHeader"
+import {WidgetContent} from "@/components/widgets/WidgetContent"
 
 interface BookmarkItem {
     title: string
@@ -71,60 +73,57 @@ const BookmarkWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
 
     return (
         <WidgetTemplate className={"col-span-1 row-span-2"} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <div className={"h-full flex flex-col gap-2"}>
-                <div className={"flex items-center justify-between gap-2"}>
-                    <p className={"text-primary text-lg font-semibold"}>Bookmarks</p>
-                    <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger asChild>
-                            <Button className={"bg-tertiary gap-1 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
-                                <Bookmark size={18}/>
-                                Add
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className={"w-56"} align={"end"}>
-                            <Form {...form}>
-                                <form onSubmit={form.handleSubmit(handleAdd)} className="space-y-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="title"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Title</FormLabel>
-                                                <FormInput placeholder="Title" {...field} />
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="link"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>URL</FormLabel>
-                                                <FormInput placeholder="URL" {...field} />
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <Button
-                                        type="submit"
-                                        className={"bg-brand hover:bg-brand/90 text-primary w-full"}
-                                    >
-                                        Add link
-                                    </Button>
+            <WidgetHeader title={"Bookmark"}>
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <Button className={"bg-tertiary gap-1 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
+                            <Bookmark size={18}/>
+                            Add
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className={"w-56"} align={"end"}>
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(handleAdd)} className="space-y-4">
+                                <FormField
+                                    control={form.control}
+                                    name="title"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Title</FormLabel>
+                                            <FormInput placeholder="Title" {...field} />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="link"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>URL</FormLabel>
+                                            <FormInput placeholder="URL" {...field} />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <Button
+                                    type="submit"
+                                    className={"bg-brand hover:bg-brand/90 text-primary w-full"}
+                                >
+                                    Add link
+                                </Button>
 
-                                </form>
-                            </Form>
-                        </PopoverContent>
-                    </Popover>
-                </div>
-                <div className={"w-full h-px border-b border-main/40"}/>
-                <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
-                    {bookmarks.map((bookmark) => (
-                        <BookmarkItem key={bookmark.title} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.title)}/>
-                    ))}
-                </ScrollArea>
-            </div>
+                            </form>
+                        </Form>
+                    </PopoverContent>
+                </Popover>
+            </WidgetHeader>
+            <div className={"w-full h-px border-b border-main/40"}/>
+            <WidgetContent scroll>
+                {bookmarks.map((bookmark) => (
+                    <BookmarkItem key={bookmark.title} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.title)}/>
+                ))}
+            </WidgetContent>
         </WidgetTemplate>
     )
 }

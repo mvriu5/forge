@@ -15,6 +15,8 @@ import {StatusBadge} from "@/components/widgets/components/StatusBadge"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import {LinearIcon} from "@/components/svg/LinearIcon"
 import {Skeleton} from "@/components/ui/Skeleton"
+import {WidgetHeader} from "@/components/widgets/WidgetHeader"
+import {WidgetContent} from "@/components/widgets/WidgetContent"
 
 const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {linearIntegration, data, isLoading, isFetching, isError, refetch, sortBy, setSortBy} = useLinear()
@@ -64,36 +66,30 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
 
     return (
         <WidgetTemplate className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <div className="h-full flex flex-col gap-2">
-                <div className="flex items-center gap-2 justify-between">
-                    <div className={"flex items-center gap-1"}>
-                        <LinearIcon/>
-                        <p className={"text-primary text-lg font-semibold"}>Linear Issues</p>
-                    </div>
-                    <div className={"flex items-center gap-2"}>
-                        <Button
-                            className={"px-2 group"}
-                            onClick={() => refetch()}
-                            data-loading={isLoading ? "true" : "false"}
-                            {...refreshTooltip}
-                        >
-                            <RefreshCw
-                                className="h-4 w-4 group-data-[loading=true]:animate-spin" />
-                        </Button>
-                        <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                            <SelectTrigger className="w-[180px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-tertiary">Sort by:</span>
-                                    <SelectValue placeholder="Sort" />
-                                </div>
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="priority">Priority</SelectItem>
-                                <SelectItem value="created">Creation Date</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
+            <WidgetHeader title={"Linear Issues"} icon={<LinearIcon/>} className={"gap-1"}>
+                <Button
+                    className={"px-2 group"}
+                    onClick={() => refetch()}
+                    data-loading={isLoading ? "true" : "false"}
+                    {...refreshTooltip}
+                >
+                    <RefreshCw
+                        className="h-4 w-4 group-data-[loading=true]:animate-spin" />
+                </Button>
+                <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                    <SelectTrigger className="w-[180px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-tertiary">Sort by:</span>
+                            <SelectValue placeholder="Sort" />
+                        </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="priority">Priority</SelectItem>
+                        <SelectItem value="created">Creation Date</SelectItem>
+                    </SelectContent>
+                </Select>
+            </WidgetHeader>
+            <WidgetContent scroll>
                 {(isLoading || isFetching) ? (
                     <div className={"h-full grid grid-cols-2 gap-4"}>
                         <Skeleton className={"col-span-1 h-full"}/>
@@ -102,13 +98,11 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                         <Skeleton className={"col-span-1 h-full"}/>
                     </div>
                 ) : (
-                    <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
-                        <div className={"grid grid-cols-2 gap-4"}>
-                            {data?.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
-                        </div>
-                    </ScrollArea>
+                    <div className={"grid grid-cols-2 gap-4"}>
+                        {data?.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
+                    </div>
                 )}
-            </div>
+            </WidgetContent>
         </WidgetTemplate>
     )
 }

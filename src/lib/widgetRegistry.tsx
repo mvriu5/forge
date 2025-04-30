@@ -59,7 +59,7 @@ export const widgetRegistry: WidgetElement[] = [
             previewImage: '/stocksmall_preview.png',
             title: 'Stock',
             description: 'Track your stock data',
-            tags: ["fincance"]
+            tags: ["finance"]
         },
         component: StockSmallWidget,
     },
@@ -71,7 +71,7 @@ export const widgetRegistry: WidgetElement[] = [
             previewImage: '/stockmedium_preview.png',
             title: 'Stock Overview',
             description: 'Track your stock data',
-            tags: ["fincance"]
+            tags: ["finance"]
         },
         component: StockMediumWidget,
     },

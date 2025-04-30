@@ -2,17 +2,18 @@
 
 import {AnimatePresence, motion} from "framer-motion"
 import {Check, Clipboard, Share2} from "lucide-react"
-import React, {HTMLAttributes, useEffect, useState} from "react"
+import React, {HTMLAttributes, ReactNode, useEffect, useState} from "react"
 import {Button} from "@/components/ui/Button"
 import {useToast} from "@/components/ui/ToastProvider"
 import {cn} from "@/lib/utils"
 
 interface CopyButtonProps extends HTMLAttributes<HTMLDivElement> {
     copyText: string
-    tooltip: any
+    copyIcon?: ReactNode
+    tooltip?: any
 }
 
-const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, className, ...props }) => {
+const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, copyIcon, className, ...props }) => {
     const [isChecked, setIsChecked] = useState(false)
     const {addToast} = useToast()
 
@@ -56,7 +57,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, className, .
                         exit={{ opacity: 0, scale: 0.4, y: '100%' }}
                         transition={{ duration: 0.2 }}
                     >
-                        <Share2 size={16} />
+                        {copyIcon ? copyIcon : <Share2 size={16} /> }
                     </motion.div>
                 )}
             </AnimatePresence>
