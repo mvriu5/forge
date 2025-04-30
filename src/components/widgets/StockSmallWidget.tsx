@@ -15,6 +15,8 @@ import {Button} from "@/components/ui/Button"
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/Command"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {ScrollArea} from "@/components/ui/ScrollArea"
+import {WidgetHeader} from "@/components/widgets/WidgetHeader"
+import {WidgetContent} from "@/components/widgets/WidgetContent"
 
 const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {refreshWidget} = useWidgetStore()
@@ -44,10 +46,9 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
 
     return (
         <WidgetTemplate className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <div className={"flex flex-col gap-2 h-full"}>
-                <div className={"flex items-center justify-between gap-4"}>
-                    <div className={"flex items-center gap-2"}>
-                        <Popover open={popoverOpen} onOpenChange={setPopoverOpen} >
+            <WidgetHeader>
+                <div className={"w-full flex items-center justify-between gap-4"}>
+                    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                             <PopoverTrigger asChild>
                                 <Button
                                     role="combobox"
@@ -86,7 +87,6 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                                 </Command>
                             </PopoverContent>
                         </Popover>
-                    </div>
                     <div className={"flex items-center gap-2"}>
                         {isLoading || Number.isNaN(data?.currentPrice ?? 0) || data?.currentPrice === undefined ?
                             <Skeleton className="h-6 w-12"/> :
@@ -112,25 +112,27 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                         </Select>
                     </div>
                 </div>
-
-                {!data?.chartData ||isError &&
+            </WidgetHeader>
+            <WidgetContent>
+                {!data?.chartData ||isError ? (
                     <div className={"flex items-center justify-center h-full w-full"}>
                         <p className={"text-sm text-error"}>Error loading data</p>
                     </div>
-                }
-                <div className={cn("relative flex-1 bg-secondary rounded-md overflow-hidden", (!data?.chartData || isError) && "hidden")}>
-                    <div
-                        className={cn(
-                            "absolute bottom-1 left-1 flex items-center gap-1 px-2 py-0.5 bg-white/2 rounded-md shadow-xl w-max h-max",
-                            data?.priceChangePercent! >= 0 ? "text-success" : "text-error"
-                        )}
-                    >
-                        {data?.priceChangePercent! >= 0 ? <TrendingUp size={20}/> : <TrendingDown size={20}/>}
-                        {`${Number(data?.priceChangePercent.toFixed(2))}%`}
+                ) : (
+                    <div className={cn("relative flex bg-secondary rounded-md overflow-hidden", (!data?.chartData || isError) && "hidden")}>
+                        <div
+                            className={cn(
+                                "absolute bottom-1 left-1 flex items-center gap-1 px-2 py-0.5 bg-white/2 rounded-md shadow-xl w-max h-max",
+                                data?.priceChangePercent! >= 0 ? "text-success" : "text-error"
+                            )}
+                        >
+                            {data?.priceChangePercent! >= 0 ? <TrendingUp size={20}/> : <TrendingDown size={20}/>}
+                            {`${Number(data?.priceChangePercent.toFixed(2))}%`}
+                        </div>
+                        <StockChart data={chartData} yAxisDomain={yDomain} priceChangePercent={percent} gradientId={gradientId} chartConfig={chartConfig}/>
                     </div>
-                    <StockChart data={chartData} yAxisDomain={yDomain} priceChangePercent={percent} gradientId={gradientId} chartConfig={chartConfig}/>
-                </div>
-            </div>
+                )}
+            </WidgetContent>
         </WidgetTemplate>
     )
 }

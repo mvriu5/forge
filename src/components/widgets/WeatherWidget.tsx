@@ -85,7 +85,6 @@ const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     
     return (
         <WidgetTemplate className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-
             <div className={"h-full flex flex-col justify-between gap-4"}>
                 <div className={"h-full flex items-center gap-2 rounded-md bg-info/5 border border-info/20 px-2 py-1"}>
                     <div className={"text-primary"}>

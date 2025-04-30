@@ -17,6 +17,8 @@ import {Button} from "@/components/ui/Button"
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/Command"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {AssetOption} from "@/actions/twelvedata"
+import {WidgetHeader} from "@/components/widgets/WidgetHeader"
+import {WidgetContent} from "@/components/widgets/WidgetContent"
 
 const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {refreshWidget} = useWidgetStore()
@@ -54,85 +56,80 @@ const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) =>
 
     return (
         <WidgetTemplate className={"col-span-1 row-span-2"} name={"stockMedium"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <div className={"h-full flex flex-col gap-2"}>
-                <div className={"flex items-center justify-between gap-2"}>
-                    <p className={"text-lg text-primary font-semibold truncate"}>Stock Overview</p>
-                    <div className={"flex items-center gap-2"}>
-                        <Popover open={open} onOpenChange={setOpen}>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    data-state={open ? "open" : "closed"}
-                                    className={cn("font-normal bg-tertiary border-main/60 text-sm items-center gap-2 data-[state=open]:text-primary data-[state=open]:bg-inverted/10 px-2")}
-                                >
-                                    <ChartCandlestick size={18}/>
-                                    Stocks
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className={"border-0 p-0 w-[160px]"} align={"start"}>
-                                <Command className={"border-main/60"}>
-                                    <CommandInput placeholder="Search stock..." value={query} onValueChange={setQuery} key="stock-search"/>
-                                    <CommandEmpty className={"flex items-center justify-center p-4"}>
-                                        {assetListLoading ? "No results found." : <ButtonSpinner/>}
-                                    </CommandEmpty>
-                                    <CommandList className={"scrollbar-hide"}>
-                                        <CommandGroup>
-                                            <ScrollArea className={"h-56"}>
-                                                {stockList?.map((item) => (
-                                                    <CommandItem
-                                                        key={item.value}
-                                                        value={item.label}
-                                                        onSelect={() => {
-                                                            const newSelectedStocks = selectedStocks.includes(item)
-                                                                ? selectedStocks.filter(s => s !== item)
-                                                                : [...selectedStocks, item]
-
-                                                            setSelectedStocks(newSelectedStocks)
-                                                            handleSave({ stocks: newSelectedStocks })
-                                                            setOpen(false)
-                                                        }}
-                                                        className="flex items-center justify-between"
-                                                    >
-                                                        <span>{item.label}</span>
-                                                        {selectedStocks.includes(item) && <CheckIcon size={16} className="mr-2" />}
-                                                    </CommandItem>
-                                                ))}
-                                            </ScrollArea>
-                                        </CommandGroup>
-                                    </CommandList>
-                                </Command>
-                            </PopoverContent>
-                        </Popover>
-                        <Select
-                            value={timespan}
-                            onValueChange={(value) => {
-                                setTimespan(value)
-                                handleSave({ timespan: value })
-                            }}
+            <WidgetHeader title={"Stock Overview"}>
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            data-state={open ? "open" : "closed"}
+                            className={cn("font-normal bg-tertiary border-main/60 text-sm items-center gap-2 data-[state=open]:text-primary data-[state=open]:bg-inverted/10 px-2")}
                         >
-                            <SelectTrigger className={"w-[100px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
-                                <SelectValue placeholder="Timespan"/>
-                            </SelectTrigger>
-                            <SelectContent align={"end"} className={"border-main/40"}>
-                                <SelectItem value="1">24 hours</SelectItem>
-                                <SelectItem value="7">7 days</SelectItem>
-                                <SelectItem value="30">30 days</SelectItem>
-                                <SelectItem value="90">90 days</SelectItem>
-                                <SelectItem value="365">1 year</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                            <ChartCandlestick size={18}/>
+                            Stocks
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className={"border-0 p-0 w-[160px]"} align={"start"}>
+                        <Command className={"border-main/60"}>
+                            <CommandInput placeholder="Search stock..." value={query} onValueChange={setQuery} key="stock-search"/>
+                            <CommandEmpty className={"flex items-center justify-center p-4"}>
+                                {assetListLoading ? "No results found." : <ButtonSpinner/>}
+                            </CommandEmpty>
+                            <CommandList className={"scrollbar-hide"}>
+                                <CommandGroup>
+                                    <ScrollArea className={"h-56"}>
+                                        {stockList?.map((item) => (
+                                            <CommandItem
+                                                key={item.value}
+                                                value={item.label}
+                                                onSelect={() => {
+                                                    const newSelectedStocks = selectedStocks.includes(item)
+                                                        ? selectedStocks.filter(s => s !== item)
+                                                        : [...selectedStocks, item]
+
+                                                    setSelectedStocks(newSelectedStocks)
+                                                    handleSave({ stocks: newSelectedStocks })
+                                                    setOpen(false)
+                                                }}
+                                                className="flex items-center justify-between"
+                                            >
+                                                <span>{item.label}</span>
+                                                {selectedStocks.includes(item) && <CheckIcon size={16} className="mr-2" />}
+                                            </CommandItem>
+                                        ))}
+                                    </ScrollArea>
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
+                <Select
+                    value={timespan}
+                    onValueChange={(value) => {
+                        setTimespan(value)
+                        handleSave({ timespan: value })
+                    }}
+                >
+                    <SelectTrigger className={"w-[100px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
+                        <SelectValue placeholder="Timespan"/>
+                    </SelectTrigger>
+                    <SelectContent align={"end"} className={"border-main/40"}>
+                        <SelectItem value="1">24 hours</SelectItem>
+                        <SelectItem value="7">7 days</SelectItem>
+                        <SelectItem value="30">30 days</SelectItem>
+                        <SelectItem value="90">90 days</SelectItem>
+                        <SelectItem value="365">1 year</SelectItem>
+                    </SelectContent>
+                </Select>
+            </WidgetHeader>
+            <WidgetContent scroll>
+                <div className={"w-full flex flex-col gap-2 items-center"}>
+                    {selectedStocks.map((stock) => (
+                        <Stock key={stock.value} selectedStock={stock} selectedTimespan={timespan} />
+                    ))}
+                    {selectedStocks.length === 0 &&
+                        <p className={"text-sm text-tertiary mt-4"}>No stock added yet.</p>
+                    }
                 </div>
-                <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
-                    <div className={"w-full flex flex-col gap-2 items-center"}>
-                        {selectedStocks.map((stock) => (
-                            <Stock key={stock.value} selectedStock={stock} selectedTimespan={timespan} />
-                        ))}
-                        {selectedStocks.length === 0 &&
-                            <p className={"text-sm text-tertiary mt-4"}>No stock added yet.</p>
-                        }
-                    </div>
-                </ScrollArea>
-            </div>
+            </WidgetContent>
         </WidgetTemplate>
     )
 }
@@ -144,7 +141,6 @@ interface StockProps {
 
 const Stock = ({selectedStock, selectedTimespan}: StockProps) => {
     const { data, isLoading, isError, stock, yAxisDomain } = useStock(selectedStock.value, selectedTimespan)
-    console.log(data)
 
     const chartData = useMemo(() => data?.chartData ?? [], [data?.chartData])
     const percent = useMemo(() => data?.priceChangePercent ?? 0, [data?.priceChangePercent])

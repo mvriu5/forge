@@ -26,6 +26,8 @@ import {ScrollArea} from "@/components/ui/ScrollArea"
 import {useToast} from "@/components/ui/ToastProvider"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {useGithub} from "@/hooks/useGithub"
+import {WidgetHeader} from "@/components/widgets/WidgetHeader"
+import {WidgetContent} from "@/components/widgets/WidgetContent"
 
 const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
     const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch, githubIntegration} = useGithub()
@@ -88,65 +90,61 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
 
     return (
         <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <div className="h-full flex flex-col gap-2">
-                <div className="flex items-center justify-between gap-4">
-                    <div className={"flex items-center gap-1"}>
-                        <Github size={20}/>
-                        <p className={"text-lg text-primary font-medium"}>Github</p>
-                    </div>
-                    <Badge
-                        variant="brand"
-                        className="text-xs bg-brand/10 border-brand/40 font-mono"
-                        title={`${activeTab === "issues" ? filteredIssues.length : filteredPRs.length} open`}
-                    />
-                </div>
-                <div className="flex items-center gap-2">
-                    <Input
-                        placeholder="Search..."
-                        className="bg-tertiary"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    {activeTab === "issues" &&
-                        <DropdownMenu
-                            asChild
-                            items={dropdownFilterItems}
-                            align={"end"}
-                            open={dropdownOpen}
-                            onOpenChange={setDropdownOpen}
-                        >
-                            <Button
-                                data-state={dropdownOpen ? "open" : "closed"}
-                                className={"px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
-                                disabled={allLabels.length === 0}
-                                {...filterTooltip}
-                            >
-                                <Filter className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenu>
-                    }
-                    <Button
-                        className={"px-2 group"}
-                        onClick={() => refetch()}
-                        data-loading={isLoading ? "true" : "false"}
-                        {...refreshTooltip}
+            <WidgetHeader title={"Github"} icon={<Github size={20} className={"text-primary"}/>}>
+                <Badge
+                    variant="brand"
+                    className="text-xs bg-brand/10 border-brand/40 font-mono"
+                    title={`${activeTab === "issues" ? filteredIssues.length : filteredPRs.length} open`}
+                />
+            </WidgetHeader>
+            <div className="flex items-center gap-2">
+                <Input
+                    placeholder="Search..."
+                    className="bg-tertiary"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {activeTab === "issues" &&
+                    <DropdownMenu
+                        asChild
+                        items={dropdownFilterItems}
+                        align={"end"}
+                        open={dropdownOpen}
+                        onOpenChange={setDropdownOpen}
                     >
-                        <RefreshCw
-                            className="h-4 w-4 group-data-[loading=true]:animate-spin" />
-                    </Button>
-                </div>
-                <Tabs defaultValue="issues" onValueChange={setActiveTab}>
-                    <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
-                        <TabsTrigger value="issues">
-                            <AlertCircle className="h-4 w-4 mr-2" />
-                            Issues
-                        </TabsTrigger>
-                        <TabsTrigger value="pull-requests">
-                            <GitPullRequest className="h-4 w-4 mr-2" />
-                            Pull Requests
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
+                        <Button
+                            data-state={dropdownOpen ? "open" : "closed"}
+                            className={"px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
+                            disabled={allLabels.length === 0}
+                            {...filterTooltip}
+                        >
+                            <Filter className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenu>
+                }
+                <Button
+                    className={"px-2 group"}
+                    onClick={() => refetch()}
+                    data-loading={isLoading ? "true" : "false"}
+                    {...refreshTooltip}
+                >
+                    <RefreshCw
+                        className="h-4 w-4 group-data-[loading=true]:animate-spin" />
+                </Button>
+            </div>
+            <Tabs defaultValue="issues" onValueChange={setActiveTab}>
+                <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
+                    <TabsTrigger value="issues">
+                        <AlertCircle className="h-4 w-4 mr-2" />
+                        Issues
+                    </TabsTrigger>
+                    <TabsTrigger value="pull-requests">
+                        <GitPullRequest className="h-4 w-4 mr-2" />
+                        Pull Requests
+                    </TabsTrigger>
+                </TabsList>
+            </Tabs>
+            <WidgetContent scroll>
                 {(isLoading || isFetching) ? (
                     <div className="h-full grid grid-cols-1 gap-4 pt-2">
                         <Skeleton className={"h-full w-full px-2"} />
@@ -154,8 +152,8 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                         <Skeleton className={"h-full w-full px-2"} />
                         <Skeleton className={"h-full w-full px-2"} />
                     </div>
-                    ) : (
-                    <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
+                ) : (
+                    <div className={"flex flex-col gap-2"}>
                         {activeTab === "issues" && filteredIssues.map((issue) => (
                             <IssueCard issue={issue} key={issue.id}/>
                         ))}
@@ -172,9 +170,9 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                                 No results found
                             </div>
                         }
-                    </ScrollArea>
+                    </div>
                 )}
-            </div>
+            </WidgetContent>
         </WidgetTemplate>
     )
 }
@@ -185,7 +183,7 @@ const IssueCard = ({issue}: { issue: any }) => {
         <a href={issue.html_url}>
             <div
                 key={issue.id}
-                className="flex items-start gap-2 p-2 pr-4 mb-2 rounded-md hover:bg-secondary cursor-pointer"
+                className="flex items-start gap-2 p-2 pr-4 rounded-md hover:bg-secondary cursor-pointer"
             >
                 <AlertCircle className="h-5 w-5 text-info mt-0.5" />
                 <div className="flex-1 space-y-1">

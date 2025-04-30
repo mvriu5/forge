@@ -1,0 +1,60 @@
+"use client"
+
+import React from "react"
+import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
+import {usePhantom} from "@/hooks/usePhantom"
+import {Button} from "@/components/ui/Button"
+import {WidgetHeader} from "@/components/widgets/WidgetHeader"
+import {PhantomIcon} from "@/components/svg/PhantomIcon"
+import {CopyButton} from "@/components/CopyButton"
+import {Copy, TriangleAlert} from "lucide-react"
+import {WidgetContent} from "@/components/widgets/WidgetContent"
+import {Callout} from "@/components/ui/Callout"
+import { Skeleton } from "../ui/Skeleton"
+
+const PhantomWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
+    const {provider, wallet, connect, disconnect, isLoading, isFetching, isError, refetch} = usePhantom()
+
+    return (
+        <WidgetTemplate className={"flex flex-col gap-4 col-span-1 row-span-1 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetHeader title={"Phantom"} icon={ <PhantomIcon className={"text-primary size-6"}/> } className={"z-[1]"}>
+                <Button onClick={() => wallet ? disconnect() : connect()}>
+                    {wallet ? "Disconnect" : "Connect"}
+                </Button>
+            </WidgetHeader>
+
+            <WidgetContent>
+                {!wallet ? (
+                    <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
+                        <TriangleAlert size={18}/>
+                        No phantom Wallet connected
+                    </Callout>
+                ) : (
+                    <div className={"flex flex-col z-[1]"}>
+                        <div className={"flex flex-row items-center gap-2"}>
+                            <p className={"text-nowrap"}>Wallet address:</p>
+                            {isLoading ? (
+                                <Skeleton className={"w-32 h-6"}/>
+                            ) : (
+                                <p className={"text-xs text-tertiary truncate"}>{wallet?.address}</p>
+                            )}
+                            <CopyButton copyText={wallet?.address ?? ""} className={"bg-0 hover:bg-0 p-0 m-1"} copyIcon={<Copy size={16}/>}/>
+                        </div>
+                        <div className={"flex flex-row items-center gap-2"}>
+                            <p className={"text-nowrap"}>Current Balance:</p>
+                            {isLoading ? (
+                                <Skeleton className={"w-20 h-6"}/>
+                            ) : (
+                                <p className={"text-lg text-semibold text-primary"}>{`$${wallet?.balance.value.toFixed(2)}`}</p>
+
+                            )}
+                        </div>
+                    </div>
+                )}
+            </WidgetContent>
+
+        </WidgetTemplate>
+    )
+}
+
+export {PhantomWidget}
