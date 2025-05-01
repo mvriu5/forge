@@ -19,7 +19,41 @@ interface BookmarkItem {
     link: string
 }
 
-const BookmarkWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
+const BookmarkWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+    if (isPlaceholder) {
+        const data = [
+            {
+                title: "Amazon Wishlist",
+                link: "https://amazon.com/"
+            },
+            {
+                title: "Youtube - Watch later",
+                link: "https://www.youtube.com/"
+            },
+            {
+                title: "Github repo",
+                link: "https://github.com/"
+            }
+        ]
+
+        return (
+            <WidgetTemplate className={"col-span-1 row-span-2"} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+                <WidgetHeader title={"Bookmark"}>
+                    <Button className={"bg-tertiary gap-1 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
+                        <Bookmark size={18}/>
+                        Add
+                    </Button>
+                </WidgetHeader>
+                <div className={"w-full h-px border-b border-main/40"}/>
+                <WidgetContent scroll>
+                    {data.map((bookmark) => (
+                        <BookmarkItem key={bookmark.title} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.title)}/>
+                    ))}
+                </WidgetContent>
+            </WidgetTemplate>
+        )
+    }
+
     const {refreshWidget} = useWidgetStore()
     const widget = useWidgetStore(state => state.getWidget("bookmark"))
     if (!widget) return null

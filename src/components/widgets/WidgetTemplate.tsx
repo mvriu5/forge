@@ -13,9 +13,10 @@ interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
     name: string
     editMode: boolean
     onWidgetDelete: (id: string) => void
+    isPlaceholder?: boolean
 }
 
-const WidgetTemplate: React.FC<WidgetProps> = ({className, children, name, editMode, onWidgetDelete}) => {
+const WidgetTemplate: React.FC<WidgetProps> = ({className, children, name, editMode, onWidgetDelete, isPlaceholder = false}) => {
     const {getWidget} = useWidgetStore()
     const widget = getWidget(name)
 
@@ -78,6 +79,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({className, children, name, editM
         <div
             className={cn(
                 "max-h-full flex flex-col gap-2 rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden",
+                isPlaceholder && "pointer-events-none",
                 className
             )}
             style={style}

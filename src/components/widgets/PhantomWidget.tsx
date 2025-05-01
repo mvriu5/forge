@@ -12,7 +12,33 @@ import {WidgetContent} from "@/components/widgets/WidgetContent"
 import {Callout} from "@/components/ui/Callout"
 import { Skeleton } from "../ui/Skeleton"
 
-const PhantomWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
+const PhantomWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+    if (isPlaceholder) {
+        return (
+            <WidgetTemplate className={"flex flex-col gap-4 col-span-1 row-span-1 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+                <WidgetHeader title={"Phantom"} icon={ <PhantomIcon className={"text-primary size-6"}/> } className={"z-[1]"}>
+                    <Button onClick={() => wallet ? disconnect() : connect()}>
+                        Disconnect
+                    </Button>
+                </WidgetHeader>
+
+                <WidgetContent>
+                    <div className={"flex flex-col z-[1]"}>
+                        <div className={"flex flex-row items-center gap-2"}>
+                            <p className={"text-nowrap"}>Wallet address:</p>
+                            <p className={"text-xs text-tertiary truncate"}>GsX82Dc357Ca9aSSaN8ccKwh7Hwgwz1mL1pV27fjm6PebxWWSf</p>
+                            <CopyButton copyText={""} className={"bg-0 hover:bg-0 p-0 m-1"} copyIcon={<Copy size={16}/>}/>
+                        </div>
+                        <div className={"flex flex-row items-center gap-2"}>
+                            <p className={"text-nowrap"}>Current Balance:</p>
+                            <p className={"text-lg text-semibold text-primary"}>$100.27</p>
+                        </div>
+                    </div>
+                </WidgetContent>
+            </WidgetTemplate>
+        )
+    }
+
     const {provider, wallet, connect, disconnect, isLoading, isFetching, isError, refetch} = usePhantom()
 
     return (
@@ -34,7 +60,7 @@ const PhantomWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                         <div className={"flex flex-row items-center gap-2"}>
                             <p className={"text-nowrap"}>Wallet address:</p>
                             {isLoading ? (
-                                <Skeleton className={"w-32 h-6"}/>
+                                <Skeleton className={"w-56 h-6"}/>
                             ) : (
                                 <p className={"text-xs text-tertiary truncate"}>{wallet?.address}</p>
                             )}
@@ -52,7 +78,6 @@ const PhantomWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
                     </div>
                 )}
             </WidgetContent>
-
         </WidgetTemplate>
     )
 }

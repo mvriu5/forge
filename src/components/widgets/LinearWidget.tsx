@@ -18,7 +18,98 @@ import {Skeleton} from "@/components/ui/Skeleton"
 import {WidgetHeader} from "@/components/widgets/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/WidgetContent"
 
-const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
+const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+    if (isPlaceholder) {
+        const issues = [
+            {
+                id: "27f60088-dd2e-4b8f-9e79-7db941ae1327",
+                title: "Deprecated Feature Cleanup",
+                description: "Remove outdated legacy code and unused assets to streamline the codebase.",
+                stateName: "Canceled",
+                labels: [{ name: "Maintenance", color: "#ffd966" }],
+                priority: 1,
+                priorityName: "Low",
+                url: "https://linear.app/noque/issue/MA-216/deprecated-feature-cleanup",
+                project: "Maintenance",
+                team: "Backend Team",
+                createdAt: "Sat Apr 19 2025 19:50:40 GMT+0200 (CEST)",
+                updatedAt: "Sun Apr 20 2025 21:48:20 GMT+0200 (CEST)"
+            },
+            {
+                id: "41747d7e-47b8-42d8-9648-0fa0b04c9efa",
+                title: "Enable Emoji Support in Chat",
+                description: "Allow users to select and insert emojis in chat messages.",
+                stateName: "In Progress",
+                labels: [{ name: "User Interface", color: "#a4c2f4" }],
+                priority: 2,
+                priorityName: "Medium",
+                url: "https://linear.app/noque/issue/MA-214/enable-emoji-support-in-chat",
+                project: "Messaging UI",
+                team: "Front-End Team",
+                createdAt: "Sat Oct 05 2024 14:15:24 GMT+0200 (CEST)",
+                updatedAt: "Sat Oct 05 2024 14:15:24 GMT+0200 (CEST)"
+            },
+            {
+                id: "341bb5fa-4fae-4d41-bb24-35e6cc5b31e6",
+                title: "Responsive Toolbar Component",
+                description: "Develop a toolbar that adapts to desktop and mobile layouts.",
+                stateName: "Done",
+                labels: [{ name: "Component", color: "#bec2c8" }],
+                priority: 3,
+                priorityName: "High",
+                url: "https://linear.app/noque/issue/MA-206/responsive-toolbar-component",
+                project: "UI Components",
+                team: "Front-End Team",
+                createdAt: "Thu Sep 05 2024 20:33:20 GMT+0200 (CEST)",
+                updatedAt: "Sat Apr 19 2025 19:50:30 GMT+0200 (CEST)"
+            },
+            {
+                id: "dc144749-a13f-46e8-bc66-267fde577ba2",
+                title: "Responsive Scheduler Widget",
+                description: "Design and implement a scheduler widget optimized for all screen sizes.",
+                stateName: "Backlog",
+                labels: [{ name: "UX", color: "#e2aaff" }],
+                priority: 2,
+                priorityName: "Medium",
+                url: "https://linear.app/noque/issue/MA-202/responsive-scheduler-widget",
+                project: "Dashboard Widgets",
+                team: "UX Team",
+                createdAt: "Thu Sep 05 2024 20:27:52 GMT+0200 (CEST)",
+                updatedAt: "Sat Apr 19 2025 19:50:24 GMT+0200 (CEST)"
+            }
+        ]
+
+        return (
+            <WidgetTemplate className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+                <WidgetHeader title={"Linear Issues"} icon={<LinearIcon/>} className={"gap-1"}>
+                    <Button
+                        className={"px-2 group"}
+                        onClick={() => refetch()}
+                    >
+                        <RefreshCw className="h-4 w-4" />
+                    </Button>
+                    <Select>
+                        <SelectTrigger className="w-[180px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-tertiary">Sort by:</span>
+                                <SelectValue placeholder="Sort" />
+                            </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="priority">Priority</SelectItem>
+                            <SelectItem value="created">Creation Date</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </WidgetHeader>
+                <WidgetContent scroll>
+                    <div className={"grid grid-cols-2 gap-4"}>
+                        {issues?.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
+                    </div>
+                </WidgetContent>
+            </WidgetTemplate>
+        )
+    }
+
     const {linearIntegration, data, isLoading, isFetching, isError, refetch, sortBy, setSortBy} = useLinear()
     const {addToast} = useToast()
 
@@ -46,7 +137,6 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
             }
         })
     }
-
 
     if (!linearIntegration?.accessToken && !isLoading) {
         return (

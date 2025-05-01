@@ -27,7 +27,9 @@ export default function SharedDashboard() {
             const res = await fetch(`/api/dashboards?id=${slug}`)
             if (!res.ok) throw new Error(`Fetch error: ${res.status}`)
             const data = await res.json() as Dashboard[]
-            return data[0]
+            const dash = data[0]
+            if (!dash) throw new Error("Dashboard not found")
+            return dash
         }
     })
 
@@ -57,7 +59,7 @@ export default function SharedDashboard() {
         )
     }
 
-    if (!dashboard?.isPublic) {
+    if (dashError || !dashboard || !dashboard.isPublic) {
         return (
             <div className="flex flex-col w-screen h-screen">
                 <ViewHeader dashboardId={slug as string} />
@@ -86,7 +88,7 @@ export default function SharedDashboard() {
                 {data?.map((widget: Widget) => {
                     const Component = getWidgetComponent(widget.widgetType)
                     if (!Component) return null
-                    return <Component key={widget.id} id={widget.id} editMode={false} onWidgetDelete={() => {}} />
+                    return <Component key={widget.id} id={widget.id} editMode={false} onWidgetDelete={() => {}} isPlaceholder={true}/>
                 })}
             </div>
         </div>

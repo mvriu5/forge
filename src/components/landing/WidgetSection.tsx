@@ -154,7 +154,7 @@ const BentoChart = () => {
                 <p className={"text-secondary text-sm lg:text-xl"}>$159,28</p>
                 <div className={cn("text-sm lg:text-xl flex items-center gap-1 px-2 py-1 bg-gradient-to-b from-white/2 rounded-md shadow-xl w-max h-max text-error to-error/10")}>
                     <TrendingDown size={16}/>
-                    16,9%
+                    -16,9%
                 </div>
             </div>
         </div>

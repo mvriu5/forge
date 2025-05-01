@@ -18,7 +18,7 @@ import {ScrollArea} from "@/components/ui/ScrollArea"
 import {WidgetHeader} from "@/components/widgets/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/WidgetContent"
 
-const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
+const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
     const {refreshWidget} = useWidgetStore()
     const widget = useWidgetStore(state => state.getWidget("stockSmall"))
     if (!widget) return null
@@ -42,6 +42,53 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                ...updatedConfig
             }
         })
+    }
+
+    if (isPlaceholder) {
+        return (
+            <WidgetTemplate className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+                <WidgetHeader>
+                    <div className={"w-full flex items-center justify-between gap-4"}>
+                        <Button
+                            role="combobox"
+                            aria-expanded={popoverOpen}
+                            className="group w-max gap-2 font-normal text-sm justify-between px-2 data-[state=open]:bg-inverted/10 text-primary"
+                        >
+                            {stock}
+                            <ChevronDown size={12} className="text-secondary group-data-[state=open]:rotate-180 transition-all" />
+                        </Button>
+                        <div className={"flex items-center gap-2"}>
+                            <div className={"text-primary text-md text-semibold"}>{`$${Number(data?.currentPrice?.toFixed(2))}`}</div>
+                            <Select value={timespan}>
+                                <SelectTrigger className={"w-[100px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
+                                    <SelectValue placeholder="Timespan"/>
+                                </SelectTrigger>
+                                <SelectContent align={"end"} className={"border-main/40"}>
+                                    <SelectItem value="1">24 hours</SelectItem>
+                                    <SelectItem value="7">7 days</SelectItem>
+                                    <SelectItem value="30">30 days</SelectItem>
+                                    <SelectItem value="90">90 days</SelectItem>
+                                    <SelectItem value="365">1 year</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                </WidgetHeader>
+                <WidgetContent>
+                    <div className={cn("relative flex bg-secondary rounded-md overflow-hidden")}>
+                        <div
+                            className={cn(
+                                "absolute bottom-1 left-1 flex items-center gap-1 px-2 py-0.5 bg-white/2 rounded-md shadow-xl w-max h-max text-error"
+                            )}
+                        >
+                            <TrendingDown size={20}/>
+                            -16.9%
+                        </div>
+                        <StockChart data={chartData} yAxisDomain={yDomain} priceChangePercent={percent} gradientId={gradientId} chartConfig={chartConfig}/>
+                    </div>
+                </WidgetContent>
+            </WidgetTemplate>
+        )
     }
 
     return (

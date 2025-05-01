@@ -22,14 +22,83 @@ import {Input} from "@/components/ui/Input"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/Tabs"
 import {Skeleton} from "@/components/ui/Skeleton"
-import {ScrollArea} from "@/components/ui/ScrollArea"
 import {useToast} from "@/components/ui/ToastProvider"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {useGithub} from "@/hooks/useGithub"
 import {WidgetHeader} from "@/components/widgets/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/WidgetContent"
 
-const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
+const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+    if (isPlaceholder) {
+        const data = [
+            {
+                id: 1,
+                html_url: "",
+                repository_url: "/Forge",
+                title: "Fix Backend Tasks",
+                created_at: new Date(),
+                labels: []
+            },
+            {
+                id: 2,
+                html_url: "",
+                repository_url: "/Forge",
+                title: "Frontend UI rework",
+                created_at: new Date(),
+                labels: []
+            }
+        ]
+
+        return (
+            <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+                <WidgetHeader title={"Github"} icon={<Github size={20} className={"text-primary"}/>}>
+                    <Badge
+                        variant="brand"
+                        className="text-xs bg-brand/10 border-brand/40 font-mono"
+                        title={"2 open"}
+                    />
+                </WidgetHeader>
+                <div className="flex items-center gap-2">
+                    <Input
+                        placeholder="Search..."
+                        className="bg-tertiary"
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <Button
+                        className={"px-2"}
+                    >
+                        <Filter className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        className={"px-2 group"}
+                        onClick={() => refetch()}
+                    >
+                        <RefreshCw className="h-4 w-4" />
+                    </Button>
+                </div>
+                <Tabs defaultValue="issues">
+                    <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
+                        <TabsTrigger value="issues">
+                            <AlertCircle className="h-4 w-4 mr-2" />
+                            Issues
+                        </TabsTrigger>
+                        <TabsTrigger value="pull-requests">
+                            <GitPullRequest className="h-4 w-4 mr-2" />
+                            Pull Requests
+                        </TabsTrigger>
+                    </TabsList>
+                </Tabs>
+                <WidgetContent scroll>
+                    <div className={"flex flex-col gap-2"}>
+                        {data.map((issue) => (
+                            <IssueCard issue={issue} key={issue.id}/>
+                        ))}
+                    </div>
+                </WidgetContent>
+            </WidgetTemplate>
+        )
+    }
+
     const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch, githubIntegration} = useGithub()
     const {addToast} = useToast()
     const [dropdownOpen, setDropdownOpen] = useState(false)

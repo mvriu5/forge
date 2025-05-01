@@ -22,7 +22,15 @@ import GlobalDragHandle from "tiptap-extension-global-drag-handle"
 import AutoJoiner from "tiptap-extension-auto-joiner"
 import {useWidgetStore} from "@/store/widgetStore"
 
-const EditorWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => {
+const EditorWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+    if (isPlaceholder) {
+        return (
+            <WidgetTemplate className={"col-span-1 md:col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+                <div className={"rounded-md h-full w-full border border-main/40 bg-secondary"}/>
+            </WidgetTemplate>
+        )
+    }
+
     const {refreshWidget} = useWidgetStore()
     const [openNode, setOpenNode] = useState(false)
     const [saved, setSaved] = useState(true)

@@ -16,6 +16,8 @@ import {useDashboardStore} from "@/store/dashboardStore"
 import {useSessionStore} from "@/store/sessionStore"
 import {useToast} from "@/components/ui/ToastProvider"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
+import {cn} from "@/lib/utils"
+import Link from "next/link"
 
 function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widget[] | null}) {
     const {addWidget} = useWidgetStore()
@@ -32,7 +34,9 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
             const res = await fetch(`/api/dashboards?id=${dashboardId}`)
             if (!res.ok) throw new Error(`Fetch error: ${res.status}`)
             const data = await res.json()
-            return data[0] as Dashboard
+            const dash = data[0]
+            if (!dash) throw new Error("Dashboard not found")
+            return dash
         }
     })
 
@@ -121,11 +125,13 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
         <div className={"w-full top-0 left-0 h-14 px-8 flex justify-between items-center bg-primary border-b border-main/40"}>
             <div className={"flex items-center gap-4"}>
                 <div className={"flex items-center gap-4"}>
-                    <ForgeLogo/>
+                    <Link href={"/?allowLanding=true"} className={"cursor-default"}>
+                        <ForgeLogo/>
+                    </Link>
                     <span className={"text-xl text-primary font-mono font-semibold"}>forge</span>
                 </div>
                 <div className={"h-6 w-px border-r-2 border-main"}/>
-                <div className={"hidden md:flex items-center gap-2 text-sm cursor-default"}>
+                <div className={cn("hidden md:flex items-center gap-2 text-sm cursor-default", (dbError || !dashboard || !dashboard.isPublic) && "md:hidden")}>
                     <p className={"text-xs font-mono text-tertiary"}>Dashboard:</p>
                     {dbLoading ?
                         <Skeleton className={"w-12 h-4"}/> :

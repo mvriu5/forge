@@ -6,19 +6,28 @@ const passwordRoutes = ["/reset", "/forgot"]
 const landingRoutes = ["/", "/sitemap.xml"]
 
 export async function middleware(request: NextRequest) {
-    const pathName = request.nextUrl.pathname
-    const isAuthRoute = authRoutes.includes(pathName)
-    const isPasswordRoute = passwordRoutes.includes(pathName)
-    const isLanding = landingRoutes.includes(pathName)
-
+    const { pathname, searchParams } = request.nextUrl
     const session = getSessionCookie(request)
 
+    const isAuthRoute     = authRoutes.includes(pathname)
+    const isPasswordRoute = passwordRoutes.includes(pathname)
+    const isLanding       = landingRoutes.includes(pathname)
+    const allowLanding    = searchParams.get("allowLanding") === "true"
+
+    if (session && isLanding && !allowLanding) {
+        const url = request.nextUrl.clone()
+        url.pathname = "/dashboard"
+        return NextResponse.redirect(url)
+    }
+
     if (!session) {
-        if (isAuthRoute || isPasswordRoute || isLanding) return NextResponse.next()
+        if (isAuthRoute || isPasswordRoute || isLanding) {
+            return NextResponse.next()
+        }
         return NextResponse.redirect(new URL("/signin", request.url))
     }
 
-    if (isAuthRoute || isPasswordRoute || isLanding) {
+    if (session && (isAuthRoute || isPasswordRoute)) {
         return NextResponse.redirect(new URL("/dashboard", request.url))
     }
 

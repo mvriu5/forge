@@ -11,6 +11,7 @@ import React, {useState} from "react"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 import { Skeleton } from "./ui/Skeleton"
+import Link from "next/link"
 
 interface HeaderProps {
     onEdit: () => void
@@ -35,7 +36,9 @@ function Header({onEdit, editMode, widgetsEmpty = false, isLoading = false}: Hea
         <div className={"w-full top-0 left-0 h-14 px-8 flex justify-between items-center bg-primary border-b border-main/40"}>
             <div className={"flex items-center gap-4"}>
                 <div className={"flex items-center gap-4"}>
-                    <ForgeLogo/>
+                    <Link href={"/?allowLanding=true"} className={"cursor-default"}>
+                        <ForgeLogo/>
+                    </Link>
                     <span className={"text-xl text-primary font-mono font-semibold"}>forge</span>
                 </div>
                 <div className={"h-6 w-px border-r-2 border-main"}/>
