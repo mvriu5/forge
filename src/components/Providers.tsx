@@ -4,6 +4,7 @@ import {ReactNode} from "react"
 import {ToastProvider} from "@/components/ui/ToastProvider"
 import {TooltipProvider} from "@/components/ui/TooltipProvider"
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
+import {DevTool} from "@/components/DevTool"
 
 const queryClient = new QueryClient({
     defaultOptions: {

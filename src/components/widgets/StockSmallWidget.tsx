@@ -53,7 +53,7 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                                 <Button
                                     role="combobox"
                                     aria-expanded={popoverOpen}
-                                    className="group w-max gap-2 font-normal text-sm justify-between px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"
+                                    className="group w-max gap-2 font-normal text-sm justify-between px-2 data-[state=open]:bg-inverted/10 text-primary"
                                 >
                                     {stock}
                                     <ChevronDown size={12} className="text-secondary group-data-[state=open]:rotate-180 transition-all" />
@@ -114,7 +114,7 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete}) => 
                 </div>
             </WidgetHeader>
             <WidgetContent>
-                {!data?.chartData ||isError ? (
+                {!isLoading && (!data?.chartData || isError) ? (
                     <div className={"flex items-center justify-center h-full w-full"}>
                         <p className={"text-sm text-error"}>Error loading data</p>
                     </div>

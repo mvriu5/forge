@@ -1,7 +1,7 @@
 import React, {memo} from "react"
 import {Area, AreaChart, XAxis, YAxis} from "recharts"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
-import { ChartDataPoint } from "@/actions/twelvedata"
+import {ChartDataPoint} from "@/actions/twelvedata"
 
 interface StockChartProps {
     data: ChartDataPoint[]
@@ -19,6 +19,9 @@ const StockChart = memo(function StockChart({data, yAxisDomain, priceChangePerce
                     cursor={false}
                     labelFormatter={(date: string) => date}
                     content={<ChartTooltipContent />}
+                    allowEscapeViewBox={{ x: true, y: true }}
+                    wrapperStyle={{ overflow: 'visible', zIndex: 999 }}
+                    contentStyle={{ overflow: 'visible' }}
                 />
                 <XAxis dataKey="date" hide />
                 <YAxis domain={yAxisDomain} hide />

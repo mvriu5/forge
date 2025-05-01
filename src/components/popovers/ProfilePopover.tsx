@@ -83,7 +83,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 <SettingsDialog/>
                 <button
                     type={"button"}
-                    className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-error/10 text-error"}
+                    className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-error/5 text-error/90 hover:text-error"}
                     onClick={onSignout}
                 >
                     {signOutLoading ? <ButtonSpinner className={"text-error"}/> : <LogOut size={16} className={"text-error/65"}/>}

@@ -80,7 +80,7 @@ const SelectContent = React.forwardRef<React.ComponentRef<typeof SelectPrimitive
         <SelectPrimitive.Content
             className={cn(
                 "relative max-h-96 min-w-[8rem] overflow-hidden rounded-md border border-main",
-                "bg-primary text-secondary shadow-md z-50",
+                "bg-primary text-secondary shadow-[10px_10px_20px_rgba(0,0,0,0.5)] z-50",
                 "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
                 "data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
                 "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2",

@@ -4,7 +4,7 @@ import type React from "react"
 import {useRef, useState} from "react"
 import {
     Blocks,
-    Check,
+    Check, CircleUserRound, CircleUserRoundIcon,
     CloudAlert, Eye, EyeOff,
     Github,
     ImageIcon,
@@ -13,7 +13,8 @@ import {
     Trash,
     User,
     UserRoundCheck, Wrench,
-    X
+    X,
+    XIcon
 } from "lucide-react"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {useSessionStore} from "@/store/sessionStore"
@@ -50,12 +51,9 @@ function SettingsDialog() {
     return (
         <Dialog
             open={open}
-            onOpenChange={() => {
-                setOpen(!open)
-                setTab("profile")
-            }}
+            onOpenChange={() => setOpen(!open)}
         >
-            <DialogTrigger asChild>
+            <DialogTrigger asChild onClick={() => setTab("profile")}>
                 <button
                     type={"button"}
                     className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-secondary hover:text-primary"}
@@ -264,32 +262,31 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
     const inputFileRef = useRef<HTMLInputElement>(null)
 
     const formSchema = z.object({
-        name: z.string()
-            .min(3, {message: "Please enter more than 3 characters."})
+        name: z.string().min(3, {message: "Please enter more than 3 characters."})
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: session?.user?.name,
-        },
+        }
     })
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
             const file = inputFileRef.current?.files ? inputFileRef.current.files[0] : null
 
-            let imageUrl = session?.user?.image || null;
+            let imageUrl = session?.user?.image || null
 
             if (file) {
-                const uploadedBlob = await handleUpload();
-                imageUrl = uploadedBlob?.url || imageUrl;
+                const uploadedBlob = await handleUpload()
+                imageUrl = uploadedBlob?.url || imageUrl
             }
 
             await authClient.updateUser({
                 image: imageUrl,
                 name: values.name,
-            });
+            })
 
             updateUser({ image: imageUrl, name: values.name })
 
@@ -369,44 +366,62 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
             <div className={"flex flex-col gap-4 h-full"}>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between gap-4 h-full">
-                        <div className="flex flex-col justify-center gap-4">
-                            <div className={"flex flex-col md:flex-row items-center gap-4"}>
-                                <Avatar className="h-20 w-20">
-                                    <AvatarImage src={blob?.url || avatarUrl || undefined} />
-                                    <AvatarFallback/>
-                                </Avatar>
-                                <div className="flex items-center justify-center">
-                                    <Input
-                                        ref={inputFileRef}
-                                        id="picture"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={() => setAvatarUrl(URL.createObjectURL(inputFileRef.current!.files![0]))}
-                                        className="hidden"
-                                    />
-                                    <FormLabel
-                                        htmlFor="picture"
-                                        className="h-8 flex items-center cursor-pointer rounded-l-md bg-secondary px-2 text-secondary hover:text-primary hover:bg-tertiary border border-main/40 border-r-0"
-                                    >
-                                        <ImageIcon className="mr-2 h-4 w-4" />
-                                        <span>Change Picture</span>
-                                    </FormLabel>
-                                    {(blob?.url || avatarUrl) &&
-                                        <Button
-                                            type={"button"}
-                                            className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error rounded-l-none"}
-                                            onClick={handleDelete}
+                        <div className="w-full flex items-center gap-4">
+                            <div className="relative w-min inline-flex">
+                                <Button
+                                    type={"button"}
+                                    className="relative size-16 p-0 overflow-hidden shadow-none rounded-full"
+                                    onClick={() => inputFileRef.current?.click()}
+                                    aria-label={avatarUrl ? "Change image" : "Upload image"}
+                                >
+                                    {avatarUrl ? (
+                                        <Avatar className={"size-16"}>
+                                            <AvatarImage
+                                                src={blob?.url || avatarUrl || undefined}
+                                                alt="Avatar Preview"
+                                                className="object-cover"
+                                            />
+                                            <AvatarFallback/>
+                                        </Avatar>
+                                    ) : (
+                                        <div
+                                            aria-hidden="true"
+                                            className="flex h-full w-full items-center justify-center"
                                         >
-                                            <Trash size={20}/>
-                                        </Button>
-                                    }
-                                </div>
+                                            <CircleUserRound className="size-6 opacity-60" />
+                                        </div>
+                                    )}
+                                </Button>
+
+                                {avatarUrl && (
+                                    <Button
+                                        className="absolute -top-1 -right-1 p-0 size-6 rounded-full bg-gray-300 text-black/80 hover:bg-white hover:text-black border-0"
+                                        onClick={handleDelete}
+                                        aria-label="Remove image"
+                                        type={"button"}
+                                    >
+                                        <X className="h-3.5 w-3.5" strokeWidth={2.5}/>
+                                    </Button>
+                                )}
+
+                                <Input
+                                    id="picture"
+                                    type="file"
+                                    accept="image/*"
+                                    ref={inputFileRef}
+                                    onChange={() => setAvatarUrl(URL.createObjectURL(inputFileRef.current!.files![0]))}
+                                    className="hidden"
+                                />
+                                <FormLabel
+                                    htmlFor="picture"
+                                    className="hidden"
+                                />
                             </div>
                             <FormField
                                 control={form.control}
                                 name="name"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className={"w-full"}>
                                         <FormLabel>Name</FormLabel>
                                         <FormInput placeholder="Name" {...field} />
                                         <FormMessage />
@@ -588,14 +603,14 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                                                         value={field.value}
                                                         className="grid-cols-2"
                                                     >
-                                                        <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md", field.value === "public" ? "border-brand" : "border-main")}>
+                                                        <div className={cn("col-span-1 flex items-center gap-2 p-2 border border-main rounded-md", field.value === "public" && "ring ring-brand/40")}>
                                                             <RadioGroupItem value="public" id="vis-public" />
                                                             <label htmlFor="vis-public" className="font-medium w-full">
                                                                 Public
                                                             </label>
                                                         </div>
 
-                                                        <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md", field.value === "private" ? "border-brand" : "border-main")}>
+                                                        <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md border border-main", field.value === "private" && "ring ring-brand/40")}>
                                                             <RadioGroupItem value="private" id="vis-private" />
                                                             <label htmlFor="vis-private" className="font-medium w-full">
                                                                 Private

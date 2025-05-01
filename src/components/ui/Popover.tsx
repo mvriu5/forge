@@ -18,7 +18,7 @@ const PopoverContent = React.forwardRef<React.ComponentRef<typeof PopoverPrimiti
                 sideOffset={sideOffset}
                 className={cn(
                     "z-50 w-72 rounded-md bg-primary p-4 text-secondary border border-main/40",
-                    "shadow-md outline-none data-[side=bottom]:slide-in-from-top-2",
+                    "shadow-[10px_10px_20px_rgba(0,0,0,0.5)] outline-none data-[side=bottom]:slide-in-from-top-2",
                     CONTAINER_STYLES.animation,
                     className
                 )}
