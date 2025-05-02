@@ -4,35 +4,33 @@ const TITLE = "Forge"
 const DESCRIPTION = ""
 
 export const siteConfig: Metadata = {
-    title: "forge",
-    description: "A new way of building dashboards",
-    icons: {
-        icon: "/icon.png",
-    },
-    applicationName: "forge",
+    title: "Forge - Building dashboards made easy",
+    description: "Create your own custom dashboards with a variety of widgets. Just drag and drop your widget and you are good to go!",
+    icons: { icon: "/icon.png" },
+    applicationName: "Forge",
     creator: "mvriu5",
     openGraph: {
         title: TITLE,
         description: DESCRIPTION,
         images: [
             {
-                url: `${process.env.NEXT_PUBLIC_APP_URL}/api/og/home`,
-                width: 1200,
-                height: 630,
+                url: "/example_layout.png",
+                width: 1904,
+                height: 925,
                 alt: TITLE,
-            },
-        ],
+            }
+        ]
     },
     twitter: {
-        site: "@",
-        creator: "@",
+        site: "@tryforgeio",
+        creator: "@tryforgeio",
         card: "summary_large_image",
+        title: TITLE,
+        description: DESCRIPTION,
+        images: ["/example_layout.png"]
     },
     category: "",
-    alternates: {
-        canonical: process.env.NEXT_PUBLIC_APP_URL,
-    },
-    keywords: [
-    ],
-    //metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL!)
+    alternates: { canonical: "./" },
+    keywords: ["Dashboard", "Widgets", "Next.js", "Forge", "SEO"],
+    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL!),
 }

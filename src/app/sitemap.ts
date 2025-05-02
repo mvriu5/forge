@@ -12,21 +12,15 @@ type SitemapEntry = {
     priority?: number
 }
 
-export default async function sitemap(): Promise<SitemapEntry[]> {
-    const baseUrl = "tryforge.io"
+export default async function Sitemap(): Promise<SitemapEntry[]> {
+    const baseUrl = "https://tryforge.io"
 
     const staticPages: SitemapEntry[] = [
         {
             url: baseUrl,
             lastModified: new Date().toISOString(),
-            changeFrequency: "monthly",
-            priority: 1,
-        },
-        {
-            url: `${baseUrl}`,
-            lastModified: new Date().toISOString(),
             changeFrequency: "weekly",
-            priority: 0.8,
+            priority: 1.0
         }
     ]
 

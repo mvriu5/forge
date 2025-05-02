@@ -306,18 +306,26 @@ const Stock = ({selectedStock, selectedTimespan, isPlaceholder = false}: StockPr
                 />
             </div>
 
-            <div className={"w-1/4 flex flex-col items-center gap-2"}>
-                <p className={"text-secondary text-sm"}>{`$${Number(data?.currentPrice?.toFixed(2))}`}</p>
-                <div
-                    className={cn(
-                        "text-sm flex items-center gap-1 px-1 bg-gradient-to-b from-white/2 rounded-md shadow-xl w-max h-max",
-                        data?.priceChangePercent! >= 0 ? "text-success to-success/10" : "text-error to-error/10"
-                    )}
-                >
-                    {data?.priceChangePercent! >= 0 ? <TrendingUp size={16}/> : <TrendingDown size={16}/>}
-                    {`${Number(data?.priceChangePercent.toFixed(1))}%`}
+            {isLoading ? (
+                <div className={"w-1/4 flex flex-col items-center gap-2"}>
+                    <Skeleton className={"w-16 h-4"}/>
+                    <Skeleton className={"w-16 h-4"}/>
                 </div>
-            </div>
+            ) : (
+                <div className={"w-1/4 flex flex-col items-center gap-2"}>
+                    <p className={"text-secondary text-sm"}>{`$${Number(data?.currentPrice?.toFixed(2))}`}</p>
+                    <div
+                        className={cn(
+                            "text-sm flex items-center gap-1 px-1 bg-gradient-to-b from-white/2 rounded-md shadow-xl w-max h-max",
+                            data?.priceChangePercent! >= 0 ? "text-success to-success/10" : "text-error to-error/10"
+                        )}
+                    >
+                        {data?.priceChangePercent! >= 0 ? <TrendingUp size={16}/> : <TrendingDown size={16}/>}
+                        {`${Number(data?.priceChangePercent.toFixed(1))}%`}
+                    </div>
+                </div>
+            )}
+
         </div>
     )
 }

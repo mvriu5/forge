@@ -69,6 +69,7 @@ export const useWeather = () => {
         return result
     })()
 
+
     return {
         location,
         currentWeather,
