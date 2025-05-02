@@ -13,6 +13,7 @@ import {zodResolver} from "@hookform/resolvers/zod"
 import {useWidgetStore} from "@/store/widgetStore"
 import { WidgetHeader } from "./WidgetHeader"
 import {WidgetContent} from "@/components/widgets/WidgetContent"
+import {useDashboardStore} from "@/store/dashboardStore"
 
 interface BookmarkItem {
     title: string
@@ -54,8 +55,11 @@ const BookmarkWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
         )
     }
 
-    const {refreshWidget} = useWidgetStore()
-    const widget = useWidgetStore(state => state.getWidget("bookmark"))
+    const {getWidget, refreshWidget} = useWidgetStore()
+    const {currentDashboard} = useDashboardStore()
+    if (!currentDashboard) return
+
+    const widget = getWidget(currentDashboard.id, "bookmark")
     if (!widget) return null
 
     const [bookmarks, setBookmarks] = useState<BookmarkItem[]>(widget.config?.bookmarks ?? [])

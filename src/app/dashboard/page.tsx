@@ -21,6 +21,7 @@ import { Callout } from "@/components/ui/Callout"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 import {useHotkeys} from "react-hotkeys-hook"
+import {SpinnerCircular, SpinnerDotted} from "spinners-react"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
@@ -119,7 +120,7 @@ export default function Dashboard() {
             <div className={"flex flex-col w-screen h-screen"}>
                 <Header onEdit={handleEditModeEnter} editMode={editMode} isLoading={true}/>
                 <div className={"h-full w-full flex items-center justify-center"}>
-                    <ButtonSpinner/>
+                    <SpinnerDotted size={56} thickness={160} speed={100} color="rgba(237, 102, 49, 1)" />
                 </div>
                 <DashboardDialog
                     open={dialogOpen}

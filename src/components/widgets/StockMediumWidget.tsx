@@ -19,6 +19,7 @@ import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {AssetOption, ChartDataPoint} from "@/actions/twelvedata"
 import {WidgetHeader} from "@/components/widgets/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/WidgetContent"
+import {useDashboardStore} from "@/store/dashboardStore"
 
 const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -51,9 +52,12 @@ const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isP
         )
     }
 
-    const {refreshWidget} = useWidgetStore()
-    const widget = useWidgetStore(state => state.getWidget("stockMedium"))
-    if (!widget) return null
+    const {getWidget, refreshWidget} = useWidgetStore()
+    const {currentDashboard} = useDashboardStore()
+    if (!currentDashboard) return
+
+    const widget = getWidget(currentDashboard.id, "stockMedium")
+    if (!widget) return
 
     const [selectedStocks, setSelectedStocks] = useState<AssetOption[]>(widget.config?.stocks ?? [])
     const [timespan, setTimespan] = useState<string>(widget.config?.timespan ?? "365")

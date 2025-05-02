@@ -18,6 +18,7 @@ import {ScrollArea} from "@/components/ui/ScrollArea"
 import {WidgetHeader} from "@/components/widgets/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/WidgetContent"
 import {ChartDataPoint} from "@/actions/twelvedata"
+import {useDashboardStore} from "@/store/dashboardStore"
 
 const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
     const chartConfig = useMemo<ChartConfig>(() => ({ price: { label: "Price" } }), [])
@@ -139,9 +140,12 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPl
         )
     }
 
-    const {refreshWidget} = useWidgetStore()
-    const widget = useWidgetStore(state => state.getWidget("stockSmall"))
-    if (!widget) return null
+    const {getWidget, refreshWidget} = useWidgetStore()
+    const {currentDashboard} = useDashboardStore()
+    if (!currentDashboard) return
+
+    const widget = getWidget(currentDashboard.id, "stockSmall")
+    if (!widget) return
 
     const [popoverOpen, setPopoverOpen] = useState(false)
 

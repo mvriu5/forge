@@ -7,6 +7,7 @@ import {useWidgetStore} from "@/store/widgetStore"
 import {Trash} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {tooltip} from "@/components/ui/TooltipProvider"
+import {useDashboardStore} from "@/store/dashboardStore"
 
 interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode
@@ -18,7 +19,11 @@ interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
 
 const WidgetTemplate: React.FC<WidgetProps> = ({className, children, name, editMode, onWidgetDelete, isPlaceholder = false}) => {
     const {getWidget} = useWidgetStore()
-    const widget = getWidget(name)
+    const {currentDashboard} = useDashboardStore()
+
+    if (!currentDashboard) return
+
+    const widget = getWidget(currentDashboard.id, name)
 
     if (!widget) return
 

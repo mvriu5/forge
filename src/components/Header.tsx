@@ -41,7 +41,7 @@ function Header({onEdit, editMode, widgetsEmpty = false, isLoading = false}: Hea
                     </Link>
                     <span className={"text-xl text-primary font-mono font-semibold"}>forge</span>
                 </div>
-                <div className={"h-6 w-px border-r-2 border-main"}/>
+                <div className={"h-6 w-px border-r-2 border-main/40"}/>
                 <div className={"flex gap-2"}>
                     <WidgetDialog editMode={editMode}/>
                     <Button className={"size-8 bg-secondary border-main/60 hidden xl:flex"} {...layoutTooltip} onClick={onEdit} disabled={editMode || widgetsEmpty}>

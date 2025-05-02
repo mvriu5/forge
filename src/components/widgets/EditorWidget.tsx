@@ -21,6 +21,7 @@ import {TextButtons} from "@/components/widgets/components/TextButtons"
 import GlobalDragHandle from "tiptap-extension-global-drag-handle"
 import AutoJoiner from "tiptap-extension-auto-joiner"
 import {useWidgetStore} from "@/store/widgetStore"
+import { useDashboardStore } from "@/store/dashboardStore"
 
 const EditorWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -31,12 +32,15 @@ const EditorWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
         )
     }
 
-    const {refreshWidget} = useWidgetStore()
+    const {getWidget, refreshWidget} = useWidgetStore()
+    const {currentDashboard} = useDashboardStore()
+    if (!currentDashboard) return
+
+    const widget = getWidget(currentDashboard.id, "editor")
+    if (!widget) return
+
     const [openNode, setOpenNode] = useState(false)
     const [saved, setSaved] = useState(true)
-
-    const widget = useWidgetStore(state => state.getWidget("editor"))
-    if (!widget) return null
 
     const extensions = [
         GlobalDragHandle.configure({

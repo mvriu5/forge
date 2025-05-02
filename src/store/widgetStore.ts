@@ -6,7 +6,7 @@ interface WidgetStore {
     addWidget: (userId: string, widget: WidgetInsert) => Promise<void>
     refreshWidget: (widget: Widget) => Promise<void>
     removeWidget: (widget: Widget) => Promise<void>
-    getWidget: (widgetName: string) => Widget | undefined
+    getWidget: (dashboardId: string,widgetName: string) => Widget | undefined
     getAllWidgets: (userId: string) => Promise<void>
     updateWidgetPosition: (id: string, x: number, y: number) => void
     saveWidgetsLayout: () => Promise<void>
@@ -16,8 +16,11 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
     widgets: [] as Widget[],
 
     addWidget: async (userId: string, widget: WidgetInsert) => {
-        const { x, y } = findNextAvailablePosition(get().widgets, widget.width, widget.height, widget.dashboardId)
-        const widgetWithPosition = { ...widget, positionX: x, positionY: y, userId }
+        const pos = findNextAvailablePosition(get().widgets, widget.width, widget.height, widget.dashboardId)
+
+        if (!pos) throw new Error(`Not enough space in your dashboard!`)
+
+        const widgetWithPosition = { ...widget, positionX: pos.x, positionY: pos.y, userId }
         try {
             const response = await fetch("/api/widgets", {
                 method: "POST",
@@ -28,6 +31,7 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
             set({ widgets: [...(get().widgets || []), newWidget[0]] })
         } catch (error) {
             set({ widgets: get().widgets })
+            throw error
         }
     },
 
@@ -61,8 +65,8 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
         }
     },
 
-    getWidget: (widgetName: string) => {
-        return get().widgets?.find((widget) => widget.widgetType === widgetName)
+    getWidget: (dashboardId: string, widgetName: string) => {
+        return get().widgets?.find((widget) => widget.widgetType === widgetName && widget.dashboardId === dashboardId)
     },
 
     getAllWidgets: async (userId: string) => {
@@ -102,11 +106,11 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
     }
 }))
 
-const findNextAvailablePosition = (widgets: Widget[] | null, newWidgetWidth: number, newWidgetHeight: number, dashboardId: string): { x: number, y: number } => {
+const findNextAvailablePosition = (widgets: Widget[] | null, newWidgetWidth: number, newWidgetHeight: number, dashboardId: string): { x: number, y: number } | null => {
     const relevant = widgets?.filter(w => w.dashboardId === dashboardId) ?? []
     if (relevant.length === 0) return { x: 0, y: 0 }
 
-    const gridSize = 4 // 4x4 Grid
+    const gridSize = 4
     const occupiedCells: boolean[][] = Array(gridSize)
         .fill(false)
         .map(() => Array(gridSize).fill(false))
@@ -147,5 +151,5 @@ const findNextAvailablePosition = (widgets: Widget[] | null, newWidgetWidth: num
         }
     }
 
-    return { x: 0, y: 0 }
+    return null
 }

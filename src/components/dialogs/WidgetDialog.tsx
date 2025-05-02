@@ -3,7 +3,7 @@
 import {Button} from "@/components/ui/Button"
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter} from "@/components/ui/Dialog"
 import {Input} from "@/components/ui/Input"
-import {Grid2x2Plus, PanelsTopLeft} from "lucide-react"
+import {CloudAlert, Grid2x2Plus, PanelsTopLeft} from "lucide-react"
 import React, { useState } from "react"
 import {cn} from "@/lib/utils"
 import Image from "next/image"
@@ -16,11 +16,13 @@ import { ScrollArea } from "@/components/ui/ScrollArea"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {useHotkeys} from "react-hotkeys-hook"
+import {useToast} from "@/components/ui/ToastProvider"
 
 function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
     const {widgets, addWidget} = useWidgetStore()
     const {currentDashboard} = useDashboardStore()
     const {session} = useSessionStore()
+    const {addToast} = useToast()
     const [selectedWidget, setSelectedWidget] = useState<WidgetPreview | null>(null)
     const [allWidgets] = useState<WidgetPreview[]>(getAllWidgetPreviews())
     const [query, setQuery] = useState<string>("")
@@ -54,26 +56,35 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
     }
 
     const handleAddWidget = async () => {
-        if (!selectedWidget) return
-        if (!session || !session.user) return
-        if (!currentDashboard) return
+        if (!selectedWidget || !session?.user || !currentDashboard) return
         setAddLoading(true)
 
-        await addWidget(session.user.id, {
-            userId: session.user.id,
-            dashboardId: currentDashboard.id,
-            widgetType: selectedWidget.widgetType,
-            height: selectedWidget.height,
-            width: selectedWidget.width,
-            positionX: 0,
-            positionY: 0,
-            createdAt: new Date(Date.now()),
-            updatedAt: new Date(Date.now())
-        }).then(() => {
+        try {
+            await addWidget(session.user.id, {
+                userId: session.user.id,
+                dashboardId: currentDashboard.id,
+                widgetType: selectedWidget.widgetType,
+                height: selectedWidget.height,
+                width: selectedWidget.width,
+                positionX: 0,
+                positionY: 0,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            })
+        } catch (err) {
+            addToast({
+                title: "Error adding widget",
+                subtitle:
+                    err instanceof Error
+                        ? err.message
+                        : "Unknown error",
+                icon: <CloudAlert size={24} className={"text-error"}/>
+            })
+        } finally {
             setDialogOpen(false)
             setSelectedWidget(null)
             setAddLoading(false)
-        })
+        }
     }
 
     return (

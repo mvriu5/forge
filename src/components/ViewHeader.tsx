@@ -130,7 +130,7 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
                     </Link>
                     <span className={"text-xl text-primary font-mono font-semibold"}>forge</span>
                 </div>
-                <div className={"h-6 w-px border-r-2 border-main"}/>
+                <div className={"h-6 w-px border-r-2 border-main/40"}/>
                 <div className={cn("hidden md:flex items-center gap-2 text-sm cursor-default", (dbError || !dashboard || !dashboard.isPublic) && "md:hidden")}>
                     <p className={"text-xs font-mono text-tertiary"}>Dashboard:</p>
                     {dbLoading ?
