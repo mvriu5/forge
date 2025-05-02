@@ -14,7 +14,7 @@ export const siteConfig: Metadata = {
         description: DESCRIPTION,
         images: [
             {
-                url: "/example_layout.png",
+                url: `${process.env.NEXT_PUBLIC_APP_URL}/example_layout.png`,
                 width: 1904,
                 height: 925,
                 alt: TITLE,
@@ -27,7 +27,7 @@ export const siteConfig: Metadata = {
         card: "summary_large_image",
         title: TITLE,
         description: DESCRIPTION,
-        images: ["/example_layout.png"]
+        images: [`${process.env.NEXT_PUBLIC_APP_URL}/example_layout.png`]
     },
     category: "",
     alternates: { canonical: "./" },
