@@ -52,7 +52,7 @@ export const auth = betterAuth({
             clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
         },
         google: {
-            scope: ["https://www.googleapis.com/auth/calendar.events.readonly"],
+            scope: ["https://www.googleapis.com/auth/calendar"],
             clientId: process.env.GOOGLE_CLIENT_ID as string,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
         },

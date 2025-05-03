@@ -121,6 +121,16 @@ export const getDashboardFromId = async (id: string): Promise<DashboardSelect[]>
 //Accounts
 export type Account = typeof account.$inferSelect
 
+export const getGoogleAccount = async (userId: string): Promise<Account[]> => {
+    return db
+        .select()
+        .from(account)
+        .where(and(
+            eq(account.userId, userId),
+            eq(account.providerId, "google")
+        ))
+}
+
 export const getGithubAccount = async (userId: string): Promise<Account[]> => {
     return db
         .select()

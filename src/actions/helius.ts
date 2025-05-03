@@ -1,3 +1,5 @@
+"use server"
+
 type Balance = { value: number }
 
 async function fetchHeliusBalance(account: string): Promise<Balance> {

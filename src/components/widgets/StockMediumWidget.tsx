@@ -30,10 +30,9 @@ const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isP
                         className={cn("font-normal bg-tertiary border-main/60 text-sm items-center gap-2 px-2")}
                     >
                         <ChartCandlestick size={18}/>
-                        Stocks
                     </Button>
                     <Select>
-                        <SelectTrigger className={"w-[100px] bg-tertiary"}>
+                        <SelectTrigger className={"w-max bg-tertiary"}>
                             <SelectValue placeholder="Timespan"/>
                         </SelectTrigger>
                         <SelectContent align={"end"} className={"border-main/40"}>
@@ -98,7 +97,6 @@ const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isP
                             className={cn("font-normal bg-tertiary border-main/60 text-sm items-center gap-2 data-[state=open]:text-primary data-[state=open]:bg-inverted/10 px-2")}
                         >
                             <ChartCandlestick size={18}/>
-                            Stocks
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className={"border-0 p-0 w-[160px]"} align={"start"}>
@@ -142,7 +140,7 @@ const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isP
                         handleSave({ timespan: value })
                     }}
                 >
-                    <SelectTrigger className={"w-[100px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
+                    <SelectTrigger className={"w-max bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
                         <SelectValue placeholder="Timespan"/>
                     </SelectTrigger>
                     <SelectContent align={"end"} className={"border-main/40"}>

@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server"
-import {Account, getGithubAccount, getLinearAccount} from "@/database"
+import {Account, getGithubAccount, getGoogleAccount, getLinearAccount} from "@/database"
 
 export async function GET(req: Request) {
     try {
@@ -12,7 +12,9 @@ export async function GET(req: Request) {
                 { status: 400 }
             )
         }
+
         const accounts: Account[] = []
+        accounts.push((await getGoogleAccount(userId))[0])
         accounts.push((await getGithubAccount(userId))[0])
         accounts.push((await getLinearAccount(userId))[0])
 

@@ -46,7 +46,7 @@ const BentoShare = () => {
                 <div className={"flex items-center gap-2"}>
                     <div className={"size-8 rounded-full bg-gradient-to-br from-brand to-emerald-400"}/>
                     <p className={"text-sm text-primary font-semibold"}>Joann</p>
-                    <p className={"flex text-sm text-tertiary"}>is viewing:</p>
+                    <p className={"flex text-sm text-tertiary text-nowrap"}>is viewing:</p>
                     <p className={"px-2 py-1 rounded-md bg-info/10 border border-info/20 text-xs text-info font-mono text-nowrap truncate"}>Finance analysis</p>
                 </div>
                 <X className={"text-tertiary/60"} size={20}/>
@@ -55,7 +55,7 @@ const BentoShare = () => {
                 <div className={"flex items-center gap-2"}>
                     <div className={"size-8 rounded-full bg-gradient-to-br from-red-500 to-brand"}/>
                     <p className={"text-sm text-primary font-semibold"}>Raphael</p>
-                    <p className={"flex text-sm text-tertiary"}>is viewing:</p>
+                    <p className={"flex text-sm text-tertiary text-nowrap"}>is viewing:</p>
                     <p className={"px-2 py-1 rounded-md bg-info/10 border border-info/20 text-xs text-info font-mono text-nowrap truncate"}>HR Team 1</p>
                 </div>
                 <X className={"text-tertiary/60"} size={20}/>
