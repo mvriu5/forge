@@ -1,12 +1,12 @@
 import {useIntegrationStore} from "@/store/integrationStore"
 import {useQuery} from "@tanstack/react-query"
 import {fetchCalendarEvents, fetchCalendarList} from "@/actions/google"
-import {compareAsc, parseISO} from "date-fns"
+import {useEffect} from "react"
 
 export const useGoogleCalendar = () => {
     const {googleIntegration} = useIntegrationStore()
 
-    const {data: calendars} = useQuery({
+    const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError} = useQuery({
         queryKey: ["googleCalendarList", googleIntegration?.accessToken],
         queryFn: async () => await fetchCalendarList(googleIntegration?.accessToken!),
         enabled: Boolean(googleIntegration?.accessToken),
@@ -14,62 +14,34 @@ export const useGoogleCalendar = () => {
         refetchInterval: 5 * 60 * 1000 // 5 minutes
     })
 
-    const {data: events, isLoading, isFetching, isError, refetch} = useQuery({
+    const {data: events, isLoading: eventsLoading, isFetching: eventsFetching, isError: eventsError, refetch} = useQuery({
         queryKey: ["googleCalendarEvents", googleIntegration?.accessToken],
         queryFn: async () => {
             if (!calendars || calendars.length === 0) return []
 
-            const calendarPromises = calendars.map((calendar: { id: string; summary: any }) =>
-                fetchCalendarEvents(googleIntegration?.accessToken!, calendar.id)
-                    .then(events => {
-                        const eventsArray = Array.isArray(events) ? events : [];
-                        return eventsArray.map((event: any) => ({
-                            ...event,
-                            calendarId: calendar.id,
-                            calendarName: calendar.summary
-                        }))
-                    })
-                    .catch(error => {
-                        console.error(`Error fetching events for calendar ${calendar.id}:`, error)
-                        return []
-                    })
-            )
-
-            return await Promise.all(calendarPromises).then((arrayOfEventsArrays) => {
-                return arrayOfEventsArrays.flat().sort((a, b) => {
-                    const getStartDate = (event: any) => {
-                        if (!event.start) return null;
-                        return event.start.dateTime
-                            ? parseISO(event.start.dateTime)
-                            : event.start.date
-                                ? parseISO(event.start.date)
-                                : typeof event.start === 'string'
-                                    ? parseISO(event.start)
-                                    : null;
-                    }
-
-                    const dateA = getStartDate(a);
-                    const dateB = getStartDate(b);
-
-                    if (dateA && dateB) return compareAsc(dateA, dateB)
-                    if (dateA) return -1
-                    if (dateB) return 1
-                    return 0
-                })
-            })
+            const calendarPromises = calendars.map((calendar: any) => fetchCalendarEvents(googleIntegration?.accessToken!, calendar.id))
+            const results = await Promise.all(calendarPromises)
+            return results.flat()
         },
         enabled: Boolean(googleIntegration?.accessToken) && Boolean(calendars?.length),
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchInterval: 5 * 60 * 1000 // 5 minutes
     })
 
+    const getColor = (eventId: string) => {
+        const event = events?.find(e => e.id === eventId)
+        const calendar = calendars?.find((c: any) => c.id === event.creator.email)
+        return calendar.backgroundColor ?? null
+    }
+
     return {
         calendars,
         events,
-        isLoading,
-        isFetching,
-        isError,
+        isLoading: calendarLoading || eventsLoading,
+        isFetching: calendarFetching || eventsFetching,
+        isError: calendarError || eventsError,
         refetch,
-        googleIntegration
+        googleIntegration,
+        getColor,
     }
 }

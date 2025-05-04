@@ -12,10 +12,16 @@ export async function fetchCalendarList(accessToken: string) {
 }
 
 export async function fetchCalendarEvents(accessToken: string, calendarId: string) {
+    const params = new URLSearchParams({
+        timeMin: new Date().toISOString(),
+        maxResults: "500"
+    })
+
     const res = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`, {
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`, {
         headers: { Authorization: `Bearer ${accessToken}` }}
     )
+
     if (!res.ok) return []
 
     const data = await res.json()

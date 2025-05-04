@@ -12,7 +12,14 @@ import {Blocks, CloudAlert, RefreshCw, TriangleAlert} from "lucide-react"
 import {Callout} from "@/components/ui/Callout"
 import {Button} from "@/components/ui/Button"
 import {useToast} from "@/components/ui/ToastProvider"
-import {isFuture, parseISO} from "date-fns"
+import {format, isFuture, parseISO} from "date-fns"
+
+interface CalendarEvent {
+    id: string
+    summary: string
+    start: { dateTime: string }
+    end: { dateTime: string }
+}
 
 const MeetingsWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -21,7 +28,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
         )
     }
 
-    const { calendars, events, isLoading, isFetching, isError, refetch, googleIntegration} = useGoogleCalendar()
+    const { calendars, events, isLoading, isFetching, isError, refetch, googleIntegration, getColor} = useGoogleCalendar()
     const {addToast} = useToast()
 
     useEffect(() => {
@@ -71,7 +78,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
 
     return (
         <WidgetTemplate className={"flex flex-col gap-4 col-span-1 row-span-1 overflow-hidden"} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Meetings"} icon={ <GoogleIcon className={"text-primary size-6"}/>}>
+            <WidgetHeader title={"Meetings"} icon={ <GoogleIcon className={"fill-primary size-5"}/>}>
                 <Button
                     className={"px-2 group"}
                     onClick={() => refetch()}
@@ -83,9 +90,30 @@ const MeetingsWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
             </WidgetHeader>
 
             <WidgetContent scroll>
-                {events?.filter(e => isFuture(new Date(e.start.dateTime))).map(e => <p key={e.id}>{e.summary}</p>)}
+                <div className={"w-full flex flex-col gap-2 items-center"}>
+                    {events?.filter(e => e.start.dateTime && e.end.dateTime).map(event => (
+                        <EventCard key={event?.id} event={event} color={getColor(event.id)}/>
+                    ))}
+                </div>
             </WidgetContent>
         </WidgetTemplate>
+    )
+}
+
+interface EventProps {
+    event: CalendarEvent
+    color: string | null
+}
+
+const EventCard: React.FC<EventProps> = ({ event, color }) => {
+    return (
+        <div
+            className={"p-2 w-full flex flex-col gap-2 bg-primary rounded-md text-white"}
+            style={{backgroundColor: color ?? "white", borderColor: color ?? "white"}}
+        >
+            <p>{event.summary}</p>
+            <p>{`${format(event.start.dateTime, "HH:mm")} - ${format(event.end.dateTime, "HH:mm")}`}</p>
+        </div>
     )
 }
 
