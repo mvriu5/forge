@@ -55,6 +55,8 @@ export const auth = betterAuth({
             scope: ["https://www.googleapis.com/auth/calendar"],
             clientId: process.env.GOOGLE_CLIENT_ID as string,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+            accessType: "offline",
+            prompt: "consent"
         },
     },
     session: {
@@ -63,6 +65,10 @@ export const auth = betterAuth({
         cookieCache: {
             enabled: true,
             maxAge: 5 * 60 // 5 minutes
+        },
+        refreshToken: {
+            enabled: true,
+            maxAge: 30 * 24 * 60 * 60 // 30 days
         }
     },
     plugins: [

@@ -31,7 +31,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
         )
     }
 
-    const { calendars, events, isLoading, isFetching, isError, refetch, googleIntegration, getColor} = useGoogleCalendar()
+    const { calendars, events, isLoading, isFetching, isError, refetch, googleIntegration, getColor, selectedCalendars, setSelectedCalendars} = useGoogleCalendar()
     const {addToast} = useToast()
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -50,17 +50,11 @@ const MeetingsWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
         anchor: "bc"
     })
 
-    const dropdownFilterItems: MenuItem[] = Array.from(new Set(calendars.map((cal: any) => ({
-        type: "checkbox",
-        icon: <div className={"size-3 rounded-sm"} style={{backgroundColor: cal.backgroundColor ?? "white"}}/>,
-        key: cal.id,
-        label: cal.summary.substring(0, 40),
-        //checked: selectedLabels.includes(label),
-        //onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]))
-    }))))
-
     const handleIntegrate = async () => {
-        const data = await authClient.signIn.social({provider: "google", callbackURL: "/dashboard"}, {
+        const data = await authClient.signIn.social({
+            provider: "google",
+            callbackURL: "/dashboard",
+        }, {
             onRequest: (ctx) => {
             },
             onSuccess: (ctx) => {
@@ -100,8 +94,17 @@ const MeetingsWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
         return new Date(a.start.dateTime).getTime() - new Date(b.start.dateTime).getTime()
     })
 
+    const dropdownFilterItems: MenuItem[] = Array.from(new Set(calendars?.map((cal: any) => ({
+        type: "checkbox",
+        icon: <div className={"size-3 rounded-sm"} style={{backgroundColor: cal.backgroundColor ?? "white"}}/>,
+        key: cal.id,
+        label: cal.summary.substring(0, 40),
+        checked: selectedCalendars.includes(cal.id),
+        onCheckedChange: () => setSelectedCalendars((prev) => (prev.includes(cal.id) ? prev.filter((l) => l !== cal.id) : [...prev, cal.id]))
+    }))))
+
     const renderEvents = () => {
-        if (!sortedEvents.length) {
+        if (!sortedEvents || !sortedEvents.length) {
             return <p className="text-center text-tertiary py-4">No upcoming meetings</p>
         }
 
@@ -149,7 +152,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
                     <Button
                         data-state={dropdownOpen ? "open" : "closed"}
                         className={"px-2 group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
-                        disabled={calendars.length === 0 || isLoading || isFetching}
+                        disabled={!calendars || calendars?.length === 0 || isLoading || isFetching}
                         {...filterTooltip}
                     >
                         <Filter className="size-4" />
