@@ -142,15 +142,10 @@ export const widgetRegistry: WidgetElement[] = [
 
 export const getWidgetComponent = (name: string) => {
     const WidgetComponent = widgetRegistry.find((widget) => widget.preview.widgetType === name)?.component
-
     if (!WidgetComponent) return null
-
     return (props: any) => <WidgetComponent {...props} name={name} />
 }
 
-export const getWidgetPreview = (name: string) => {
-    return widgetRegistry.find((widget) => widget.preview.widgetType === name)?.preview
-}
 
 export const getAllWidgetPreviews = () => {
     return widgetRegistry.map((widget) => widget.preview)

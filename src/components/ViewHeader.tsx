@@ -5,8 +5,8 @@ import {ProfilePopover} from "@/components/popovers/ProfilePopover"
 import React, { useState } from "react"
 import {CloudAlert, Undo2, Workflow} from "lucide-react"
 import {Button} from "@/components/ui/Button"
-import {Dashboard, User, Widget} from "@/database"
-import {useQuery} from "@tanstack/react-query"
+import {Dashboard, DashboardInsert, User, Widget, WidgetInsert} from "@/database"
+import {useMutation, useQuery} from "@tanstack/react-query"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {useRouter} from "next/navigation"
@@ -53,15 +53,40 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
     })
 
     const {data: userDashboards} = useQuery<Dashboard[], Error>({
-        queryKey: ["userDashboards", user?.id],
+        queryKey: ["userDashboards", session?.user?.id],
         queryFn: async () => {
-            if (!user?.id) throw new Error("No id provided")
-            const res = await fetch(`/api/dashboards?userId=${user?.id}`)
+            if (!session?.user?.id) throw new Error("No id provided")
+            const res = await fetch(`/api/dashboards?userId=${session?.user?.id}`)
             if (!res.ok) throw new Error(`Fetch error: ${res.status}`)
             const data = await res.json()
             return data as Dashboard[]
         },
-        enabled: !!user?.id
+        enabled: !!session?.user?.id
+    })
+
+    const createDashboard = useMutation({
+        mutationFn: async (newDashboard: DashboardInsert) => {
+            const res = await fetch("/api/dashboards", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newDashboard)
+            })
+            if (!res.ok) throw new Error("Error creating dashboard")
+            const data = await res.json()
+            return data[0] as Dashboard
+        },
+    })
+
+    const createWidget = useMutation({
+        mutationFn: async (newWidget: WidgetInsert) => {
+            const res = await fetch("/api/widgets", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newWidget)
+            })
+            if (!res.ok) throw new Error("Error creating widgets")
+            return (await res.json()) as Widget
+        }
     })
 
     const copyDashboardTooltip = tooltip<HTMLButtonElement>({
@@ -86,7 +111,7 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
 
             setCopyDashboardLoading(true)
 
-            const newDashboard: Dashboard = await addDashboard(session.user.id, {
+            const newDashboard = await createDashboard.mutateAsync({
                 userId: session.user.id,
                 name: dashboard.name,
                 isPublic: true,
@@ -94,21 +119,22 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
                 updatedAt: new Date(Date.now())
             })
 
-            const widgetPromises = widgets.map(widget =>
-                addWidget(session.user.id, {
-                    userId: session.user.id,
-                    dashboardId: newDashboard.id,
-                    widgetType: widget.widgetType,
-                    height: widget.height,
-                    width: widget.width,
-                    positionX: widget.positionX,
-                    positionY: widget.positionY,
-                    createdAt: new Date(Date.now()),
-                    updatedAt: new Date(Date.now())
-                })
+            await Promise.all(
+                widgets.map((w) =>
+                    createWidget.mutateAsync({
+                        userId: session.user.id,
+                        dashboardId: newDashboard.id,
+                        widgetType: w.widgetType,
+                        height: w.height,
+                        width: w.width,
+                        positionX: w.positionX,
+                        positionY: w.positionY,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    })
+                )
             )
 
-            await Promise.all(widgetPromises)
             router.push("/dashboard")
         } catch (error) {
             addToast({

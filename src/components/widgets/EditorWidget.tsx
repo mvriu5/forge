@@ -23,10 +23,10 @@ import AutoJoiner from "tiptap-extension-auto-joiner"
 import {useWidgetStore} from "@/store/widgetStore"
 import { useDashboardStore } from "@/store/dashboardStore"
 
-const EditorWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
         return (
-            <WidgetTemplate className={"col-span-1 md:col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} className={"col-span-1 md:col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <div className={"rounded-md h-full w-full border border-main/40 bg-secondary"}/>
             </WidgetTemplate>
         )
@@ -82,7 +82,7 @@ const EditorWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
     }
 
     return (
-        <WidgetTemplate className={"col-span-1 md:col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} className={"col-span-1 md:col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <EditorRoot>
                 <div className={"rounded-md h-full w-full border border-main/40 bg-secondary"}>
                 <ScrollArea className="h-full">

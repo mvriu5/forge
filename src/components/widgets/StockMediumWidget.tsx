@@ -21,10 +21,10 @@ import {WidgetHeader} from "@/components/widgets/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/WidgetContent"
 import {useDashboardStore} from "@/store/dashboardStore"
 
-const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+const StockMediumWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
         return (
-            <WidgetTemplate className={"col-span-1 row-span-2"} name={"stockMedium"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} className={"col-span-1 row-span-2"} name={"stockMedium"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Stock Overview"}>
                     <Button
                         className={cn("font-normal bg-tertiary border-main/60 text-sm items-center gap-2 px-2")}
@@ -88,7 +88,7 @@ const StockMediumWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isP
     }, [selectedStocks, assetList])
 
     return (
-        <WidgetTemplate className={"col-span-1 row-span-2"} name={"stockMedium"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} className={"col-span-1 row-span-2"} name={"stockMedium"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Stock Overview"}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>

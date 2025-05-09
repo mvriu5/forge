@@ -20,7 +20,7 @@ interface BookmarkItem {
     link: string
 }
 
-const BookmarkWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
         const data = [
             {
@@ -38,7 +38,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
         ]
 
         return (
-            <WidgetTemplate className={"col-span-1 row-span-2"} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} className={"col-span-1 row-span-2"} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Bookmark"}>
                     <Button className={"bg-tertiary gap-1 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
                         <Bookmark size={18}/>
@@ -110,7 +110,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
     }
 
     return (
-        <WidgetTemplate className={"col-span-1 row-span-2"} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} className={"col-span-1 row-span-2"} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Bookmark"}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>

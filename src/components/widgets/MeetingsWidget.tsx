@@ -24,10 +24,45 @@ interface CalendarEvent {
     location: string
 }
 
-const MeetingsWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
+        const event1: CalendarEvent = {
+            id: "evt-001",
+            summary: "Team-Meeting",
+            start: { dateTime: "2025-05-20T09:00:00+02:00" },
+            end: { dateTime: "2025-05-20T10:00:00+02:00" },
+            location: "Office"
+        }
+
+        const event2: CalendarEvent = {
+            id: "evt-002",
+            summary: "Customer Discussion",
+            start: { dateTime: "2025-05-21T14:30:00+02:00" },
+            end: { dateTime: "2025-05-21T15:30:00+02:00" },
+            location: "Zoom-Meeting"
+        }
+
         return (
-            <></>
+            <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+                <WidgetHeader title={"Meetings"} icon={ <GoogleIcon className={"fill-primary size-5"}/>}>
+                    <Button className={"px-2 group"}>
+                        <Filter className="size-4" />
+                    </Button>
+                    <Button className={"px-2 group"}>
+                        <RefreshCw className="size-4" />
+                    </Button>
+                </WidgetHeader>
+
+                <WidgetContent scroll>
+                    <div className={"w-full flex flex-col gap-2 items-center"}>
+                        <p className="w-full text-tertiary text-xs mt-3 mb-1">
+                            {`Today, ${format(new Date(), "EEEE, d MMMM")}`}
+                        </p>
+                        <EventCard event={event1} color={"#ed6631"}/>
+                        <EventCard event={event2} color={"#398e3d"}/>
+                    </div>
+                </WidgetContent>
+            </WidgetTemplate>
         )
     }
 
@@ -37,11 +72,6 @@ const MeetingsWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
 
     const refreshTooltip = tooltip<HTMLButtonElement>({
         message: "Refresh your issues & pull requests",
-        anchor: "bc"
-    })
-
-    const addEventTooltip = tooltip<HTMLButtonElement>({
-        message: "Create a new event",
         anchor: "bc"
     })
 
@@ -75,7 +105,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
 
     if (!googleIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <div className="h-full flex flex-col gap-2 items-center justify-center">
                     <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
                         <TriangleAlert size={32}/>
@@ -133,15 +163,8 @@ const MeetingsWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlac
 
 
     return (
-        <WidgetTemplate className={"col-span-1 row-span-1"} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Meetings"} icon={ <GoogleIcon className={"fill-primary size-5"}/>}>
-                <Button
-                    className={"px-2 group"}
-                    disabled={isLoading || isFetching}
-                    {...addEventTooltip}
-                >
-                    <CalendarPlus className="size-4" />
-                </Button>
                 <DropdownMenu
                     asChild
                     items={dropdownFilterItems}

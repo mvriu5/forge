@@ -28,7 +28,7 @@ import {useGithub} from "@/hooks/useGithub"
 import {WidgetHeader} from "@/components/widgets/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/WidgetContent"
 
-const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
         const data = [
             {
@@ -50,7 +50,7 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
         ]
 
         return (
-            <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Github"} icon={<Github size={20} className={"text-primary"}/>}>
                     <Badge
                         variant="brand"
@@ -144,7 +144,7 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
 
     if (!githubIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <div className="h-full flex flex-col gap-2 items-center justify-center">
                     <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
                         <TriangleAlert size={32}/>
@@ -159,7 +159,7 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
     }
 
     return (
-        <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Github"} icon={<Github size={20} className={"text-primary"}/>}>
                 <Badge
                     variant="brand"

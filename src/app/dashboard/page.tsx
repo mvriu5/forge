@@ -42,14 +42,14 @@ export default function Dashboard() {
 
     useHotkeys("mod+e", (event) => {
         event.preventDefault()
-        if (widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0) return
+        if (widgets?.filter((w) => w && w?.dashboardId === currentDashboard?.id).length === 0) return
         if (!editMode) setEditMode(true)
     }, [editMode, widgets, currentDashboard])
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
     const widgetIds = useWidgetStore(useShallow((s) =>
-        s.widgets?.filter((w) => w.dashboardId === currentDashboard?.id).map((w) => w.id)))
+        s.widgets?.filter((w) => w && w?.dashboardId === currentDashboard?.id).map((w) => w.id)))
 
     useEffect(() => {
         setLoading(true)

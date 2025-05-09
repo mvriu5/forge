@@ -12,10 +12,10 @@ import {WidgetContent} from "@/components/widgets/WidgetContent"
 import {Callout} from "@/components/ui/Callout"
 import { Skeleton } from "../ui/Skeleton"
 
-const PhantomWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
         return (
-            <WidgetTemplate className={"flex flex-col gap-4 col-span-1 row-span-1 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} className={"flex flex-col gap-4 col-span-1 row-span-1 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Phantom"} icon={ <PhantomIcon className={"text-primary size-6"}/> } className={"z-[1]"}>
                     <Button onClick={() => wallet ? disconnect() : connect()}>
                         Disconnect
@@ -42,7 +42,7 @@ const PhantomWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlace
     const {provider, wallet, connect, disconnect, isLoading, isFetching, isError, refetch} = usePhantom()
 
     return (
-        <WidgetTemplate className={"flex flex-col gap-4 col-span-1 row-span-1 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} className={"flex flex-col gap-4 col-span-1 row-span-1 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Phantom"} icon={ <PhantomIcon className={"text-primary size-6"}/> } className={"z-[1]"}>
                 <Button onClick={() => wallet ? disconnect() : connect()}>
                     {wallet ? "Disconnect" : "Connect"}

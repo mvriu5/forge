@@ -18,7 +18,7 @@ import {Skeleton} from "@/components/ui/Skeleton"
 import {WidgetHeader} from "@/components/widgets/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/WidgetContent"
 
-const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
         const issues = [
             {
@@ -80,7 +80,7 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
         ]
 
         return (
-            <WidgetTemplate className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Linear"} icon={<LinearIcon/>} className={"gap-1"}>
                     <Button
                         className={"px-2 group"}
@@ -140,7 +140,7 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
 
     if (!linearIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <div className="h-full flex flex-col gap-2 items-center justify-center">
                     <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
                         <TriangleAlert size={32}/>
@@ -155,7 +155,7 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
     }
 
     return (
-        <WidgetTemplate className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Linear"} icon={<LinearIcon/>} className={"gap-1"}>
                 <Button
                     className={"px-2 group"}

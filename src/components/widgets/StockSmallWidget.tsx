@@ -20,7 +20,7 @@ import {WidgetContent} from "@/components/widgets/WidgetContent"
 import {ChartDataPoint} from "@/actions/twelvedata"
 import {useDashboardStore} from "@/store/dashboardStore"
 
-const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+const StockSmallWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     const chartConfig = useMemo<ChartConfig>(() => ({ price: { label: "Price" } }), [])
 
     if (isPlaceholder) {
@@ -99,7 +99,7 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPl
         }, [])
 
         return (
-            <WidgetTemplate className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader>
                     <div className={"w-full flex items-center justify-between gap-4"}>
                         <Button className="group w-max gap-2 font-normal text-sm justify-between px-2 text-primary">
@@ -168,7 +168,7 @@ const StockSmallWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPl
     }
 
     return (
-        <WidgetTemplate className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} className="col-span-1 row-span-1" name={"stockSmall"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader>
                 <div className={"w-full flex items-center justify-between gap-4"}>
                     <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>

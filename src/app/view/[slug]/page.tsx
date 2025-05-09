@@ -11,6 +11,7 @@ import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {ShieldCheck} from "lucide-react"
 import {useSessionStore} from "@/store/sessionStore"
 import {useWidgetStore} from "@/store/widgetStore"
+import {useDashboardStore} from "@/store/dashboardStore"
 
 export default function SharedDashboard() {
     const { slug } = useParams()
@@ -30,7 +31,9 @@ export default function SharedDashboard() {
             const dash = data[0]
             if (!dash) throw new Error("Dashboard not found")
             return dash
-        }
+        },
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        refetchInterval: 5 * 60 * 1000 // 5 minutes
     })
 
     const {data, isLoading, isFetching, isError} = useQuery<Widget[], Error>({
@@ -88,7 +91,7 @@ export default function SharedDashboard() {
                 {data?.map((widget: Widget) => {
                     const Component = getWidgetComponent(widget.widgetType)
                     if (!Component) return null
-                    return <Component key={widget.id} id={widget.id} editMode={false} onWidgetDelete={() => {}} isPlaceholder={true}/>
+                    return <Component key={widget.id} id={widget.id} editMode={false} isPlaceholder={true}/>
                 })}
             </div>
         </div>
