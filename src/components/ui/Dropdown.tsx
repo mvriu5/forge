@@ -91,7 +91,6 @@ const DropdownMenuItem = ({ item }: DropdownMenuItemProps) => {
         </DropdownMenuPrimitive.Item>
     )
 }
-DropdownMenuItem.displayName = "DropdownMenuItem"
 
 const DropdownMenuLabel = ({item}: DropdownMenuLabelProps) => {
     return (
@@ -102,7 +101,6 @@ const DropdownMenuLabel = ({item}: DropdownMenuLabelProps) => {
         </DropdownMenuPrimitive.Label>
     )
 }
-DropdownMenuLabel.displayName = "DropdownMenuLabel"
 
 const DropdownMenuCheckboxItem = ({item, ...props}: DropdownMenuCheckboxProps) => {
     return (
@@ -123,7 +121,6 @@ const DropdownMenuCheckboxItem = ({item, ...props}: DropdownMenuCheckboxProps) =
         </DropdownMenuPrimitive.CheckboxItem>
     )
 }
-DropdownMenuCheckboxItem.displayName = "DropdownMenuCheckboxItem"
 
 const DropdownMenuSeparator = () => {
     return (
@@ -132,7 +129,6 @@ const DropdownMenuSeparator = () => {
         />
     )
 }
-DropdownMenuSeparator.displayName = "DropdownMenuSeparator"
 
 const DropdownMenuSubItem = ({item, width, children}: DropdownMenuSubItemProps) => {
     return (
@@ -167,7 +163,6 @@ const DropdownMenuSubItem = ({item, width, children}: DropdownMenuSubItemProps) 
         </DropdownMenuPrimitive.Sub>
     )
 }
-DropdownMenuSubItem.displayName = "DropdownMenuSubItem"
 
 const DropdownMenuActions = ({ items, width }: DropdownMenuActionsProps) => {
     return items.map((item, i) => {
@@ -193,7 +188,6 @@ const DropdownMenuActions = ({ items, width }: DropdownMenuActionsProps) => {
         return <DropdownMenuItem key={i} item={item} />
     })
 }
-DropdownMenuActions.displayName = "DropdownMenuActions"
 
 const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, asChild, children, className}: DropdownMenuProps) => {
     return (
@@ -222,7 +216,6 @@ const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, a
         </DropdownMenuPrimitive.Root>
     )
 }
-DropdownMenu.displayName = "DropdownMenu"
 
 export {
     DropdownMenu,

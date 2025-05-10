@@ -3,14 +3,14 @@
 import * as React from "react"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 import { cn, CONTAINER_STYLES } from "@/lib/utils"
+import {ComponentPropsWithRef} from "react"
 
 const Popover = PopoverPrimitive.Root
 
 const PopoverTrigger = PopoverPrimitive.Trigger
 
-interface PopoverContentProps extends React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> {}
 
-const PopoverContent = React.forwardRef<React.ComponentRef<typeof PopoverPrimitive.Content>, PopoverContentProps>(({ className, align = "center", sideOffset = 4, ...props }, ref) => {
+const PopoverContent = ({ className, align = "center", sideOffset = 4, ...props }: ComponentPropsWithRef<typeof PopoverPrimitive.Content>) => {
     return (
         <PopoverPrimitive.Portal>
             <PopoverPrimitive.Content
@@ -22,13 +22,11 @@ const PopoverContent = React.forwardRef<React.ComponentRef<typeof PopoverPrimiti
                     CONTAINER_STYLES.animation,
                     className
                 )}
-                ref={ref}
                 {...props}
             />
         </PopoverPrimitive.Portal>
     )
-})
-PopoverContent.displayName = PopoverPrimitive.Content.displayName
+}
 
 export {
     Popover,

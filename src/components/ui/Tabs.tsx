@@ -3,28 +3,23 @@
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 import { cn } from "@/lib/utils"
+import {ComponentPropsWithRef} from "react"
 
 const Tabs = TabsPrimitive.Root
 
-interface TabsListProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.List> {}
-interface TabsTriggerProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> {}
-interface TabsContentProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content> {}
-
-const TabsList = React.forwardRef<React.ComponentRef<typeof TabsPrimitive.List>, TabsListProps>(({ className, ...props }, ref) => {
+const TabsList = ({ className, ...props }: ComponentPropsWithRef<typeof TabsPrimitive.List>) => {
     return (
         <TabsPrimitive.List
             className={cn(
                 "inline-flex h-10 items-center justify-center rounded-t-md bg-tertiary p-1 text-secondary",
                 className
             )}
-            ref={ref}
             {...props}
         />
     )
-})
-TabsList.displayName = TabsPrimitive.List.displayName
+}
 
-const TabsTrigger = React.forwardRef<React.ComponentRef<typeof TabsPrimitive.Trigger>, TabsTriggerProps>(({ className, ...props }, ref) => {
+const TabsTrigger = ({ className, ...props }: ComponentPropsWithRef<typeof TabsPrimitive.Trigger>) => {
     return (
         <TabsPrimitive.Trigger
             className={cn(
@@ -33,26 +28,22 @@ const TabsTrigger = React.forwardRef<React.ComponentRef<typeof TabsPrimitive.Tri
                 "disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary data-[state=active]:shadow",
                 className
             )}
-            ref={ref}
             {...props}
         />
     )
-})
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
+}
 
-const TabsContent = React.forwardRef<React.ComponentRef<typeof TabsPrimitive.Content>, TabsContentProps>(({ className, ...props }, ref) => {
+const TabsContent = ({ className, ...props }: ComponentPropsWithRef<typeof TabsPrimitive.Content>) => {
     return (
         <TabsPrimitive.Content
             className={cn(
                 "ring-offset-background focus-visible:outline-none",
                 className
             )}
-            ref={ref}
             {...props}
         />
     )
-})
-TabsContent.displayName = TabsPrimitive.Content.displayName
+}
 
 export {
     Tabs,

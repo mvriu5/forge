@@ -59,7 +59,7 @@ interface ChartLegendContentProps extends React.ComponentProps<"div">, Pick<Rech
     nameKey?: string
 }
 
-const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(({ id, className, children, config, ...props }, ref) => {
+const ChartContainer = ({ id, className, children, config, ...props }: ChartContainerProps) => {
     const uniqueId = useId()
     const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`
 
@@ -80,7 +80,6 @@ const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(({ 
                     "[&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
                     className
                 )}
-                ref={ref}
                 {...props}
             >
                 <ChartStyle id={chartId} config={config} />
@@ -90,8 +89,7 @@ const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(({ 
             </div>
         </ChartContext.Provider>
     )
-})
-ChartContainer.displayName = "Chart"
+}
 
 const ChartStyle = ({ id, config }: ChartStyleProps) => {
     const colorConfig = Object.entries(config).filter(([, config]) => config.theme || config.color)
@@ -114,7 +112,7 @@ const ChartStyle = ({ id, config }: ChartStyleProps) => {
     )
 }
 
-const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltipContentProps>(({color, className, active, payload, indicator = "dot", hideLabel = false, hideIndicator = false, label, labelFormatter, labelClassName, formatter, nameKey, labelKey}, ref) => {
+const ChartTooltipContent = ({color, className, active, payload, indicator = "dot", hideLabel = false, hideIndicator = false, label, labelFormatter, labelClassName, formatter, nameKey, labelKey}: ChartTooltipContentProps) => {
     const { config } = useChart()
 
     const tooltipLabel = useMemo(() => {
@@ -151,7 +149,6 @@ const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltipContent
                 "bg-inverted px-2.5 py-1.5 text-white/90 dark:text-black/90 text-xs shadow-lg",
                 className
             )}
-            ref={ref}
         >
             {!nestLabel ? tooltipLabel : null}
             <div className="grid gap-1.5">
@@ -215,10 +212,9 @@ const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltipContent
             </div>
         </div>
     )
-})
-ChartTooltipContent.displayName = "ChartTooltip"
+}
 
-const ChartLegendContent = React.forwardRef<HTMLDivElement, ChartLegendContentProps>(({ className, hideIcon = false, payload, verticalAlign = "bottom", nameKey }, ref) => {
+const ChartLegendContent = ({ className, hideIcon = false, payload, verticalAlign = "bottom", nameKey }: ChartLegendContentProps) => {
     const { config } = useChart()
 
     if (!payload?.length) return null
@@ -230,7 +226,6 @@ const ChartLegendContent = React.forwardRef<HTMLDivElement, ChartLegendContentPr
                 verticalAlign === "top" ? "pb-3" : "pt-3",
                 className
             )}
-            ref={ref}
         >
             {payload.map((item) => {
                 const key = `${nameKey || item.dataKey || "value"}`
@@ -255,8 +250,7 @@ const ChartLegendContent = React.forwardRef<HTMLDivElement, ChartLegendContentPr
             })}
         </div>
     )
-})
-ChartLegendContent.displayName = "ChartLegend"
+}
 
 function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key: string) {
     if (typeof payload !== "object" || payload === null) return undefined

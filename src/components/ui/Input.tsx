@@ -1,7 +1,7 @@
-import React from "react"
+import React, {ComponentPropsWithRef} from "react"
 import {cn} from "@/lib/utils"
 
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(({ className, type, ...props }, ref) => {
+const Input = ({ className, type, ...props }: ComponentPropsWithRef<"input">) => {
     return (
         <input
             type={type}
@@ -11,11 +11,9 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
                 "focus-visible:ring focus-visible:ring-info disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus:ring-brand/40",
                 className
             )}
-            ref={ref}
             {...props}
         />
     )
-})
-Input.displayName = "Input"
+}
 
 export { Input }

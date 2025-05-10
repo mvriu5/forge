@@ -16,4 +16,4 @@ function KeyboardShortcut({keyString, className}: KeyboardShortcutProps) {
     )
 }
 
-export  { KeyboardShortcut }
+export { KeyboardShortcut }
