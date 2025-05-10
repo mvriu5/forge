@@ -23,13 +23,12 @@ const calloutVariants = cva(
 
 interface CalloutProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof calloutVariants> {}
 
-const Callout: React.FC<CalloutProps> = ({ variant, children, className, ...props}) => {
+const Callout = ({ variant, children, className, ...props}: CalloutProps) => {
     return (
         <div className={cn(calloutVariants({ variant }), className)} {...props}>
             {children}
         </div>
     )
 }
-Callout.displayName = "Callout"
 
 export { Callout }

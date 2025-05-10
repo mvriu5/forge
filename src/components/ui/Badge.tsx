@@ -41,6 +41,5 @@ const Badge: React.FC<BadgeProps> = ({title, icon, variant, border, children, cl
         </div>
     )
 }
-Badge.displayName = "Badge"
 
 export { Badge }

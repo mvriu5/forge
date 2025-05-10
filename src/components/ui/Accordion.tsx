@@ -5,22 +5,15 @@ import * as AccordionPrimitive from "@radix-ui/react-accordion"
 import { ChevronDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import type {ReactNode} from "react"
+import type {ComponentPropsWithRef, ReactNode} from "react"
 
 const Accordion = AccordionPrimitive.Root
 
-interface AccordionItemProps extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> {
-    children: ReactNode
-    title: string
-}
-interface AccordionContentProps extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content> {}
-
-const AccordionItem = React.forwardRef<React.ComponentRef<typeof AccordionPrimitive.Item>, AccordionItemProps>(({ title, children, className, ...props }, ref) => {
+const AccordionItem = ({ title, children, className, ...props }: ComponentPropsWithRef<typeof AccordionPrimitive.Item & {title: string}>) => {
     return (
         <>
             <AccordionPrimitive.Item
                 className={cn("", className)}
-                ref={ref}
                 {...props}
             >
                 <AccordionPrimitive.Header
@@ -41,17 +34,15 @@ const AccordionItem = React.forwardRef<React.ComponentRef<typeof AccordionPrimit
             </AccordionPrimitive.Item>
         </>
     )
-})
-AccordionItem.displayName = AccordionPrimitive.Item.displayName
+}
 
-const AccordionContent = React.forwardRef<React.ComponentRef<typeof AccordionPrimitive.Content>, AccordionContentProps>(({ className, children, ...props }, ref) => {
+const AccordionContent = ({ className, children, ...props }: ComponentPropsWithRef<typeof AccordionPrimitive.Content>) => {
     return (
         <AccordionPrimitive.Content
             className={cn(
                 "overflow-hidden text-sm data-[state=open]:bg-tertiary px-2 rounded-b-md",
                 "transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
             )}
-            ref={ref}
             {...props}
         >
             <div className={cn("pb-4 pt-0", className)}>
@@ -59,8 +50,7 @@ const AccordionContent = React.forwardRef<React.ComponentRef<typeof AccordionPri
             </div>
         </AccordionPrimitive.Content>
     )
-})
-AccordionContent.displayName = AccordionPrimitive.Content.displayName
+}
 
 export {
     Accordion,
