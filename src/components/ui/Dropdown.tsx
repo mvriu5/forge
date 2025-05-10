@@ -31,6 +31,7 @@ interface LabelType {
 
 interface CheckboxType {
     type: 'checkbox'
+    icon?: ReactNode
     label: string
     checked: boolean
     onCheckedChange?: (checked: boolean) => void
@@ -81,7 +82,7 @@ const DropdownMenuItem = ({ item }: DropdownMenuItemProps) => {
             onSelect={item.onSelect}
             className={cn(
                 "text-sm border-0 hover:bg-secondary outline-0 px-2 py-1 rounded-md cursor-pointer",
-                "flex space-x-2 items-center hover:text-primary"
+                "flex items-center gap-2 hover:text-primary"
             )}
         >
             {item.icon}
@@ -109,15 +110,16 @@ const DropdownMenuCheckboxItem = ({item, ...props}: DropdownMenuCheckboxProps) =
             checked={item.checked}
             onCheckedChange={item.onCheckedChange}
             className={cn(
-                "flex flex-row items-center text-sm border-0 hover:bg-secondary outline-0 px-2 py-1",
+                "flex items-center gap-2 text-sm border-0 hover:bg-secondary outline-0 px-2 py-1",
                 "rounded-md cursor-pointer hover:text-primary"
             )}
             {...props}
         >
+            {item.icon}
+            {item.label}
             <DropdownMenuPrimitive.ItemIndicator>
                 <Check className="mr-1" size={14}/>
             </DropdownMenuPrimitive.ItemIndicator>
-            {item.label}
         </DropdownMenuPrimitive.CheckboxItem>
     )
 }
@@ -209,7 +211,7 @@ const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, a
                         "focus:outline-none z-50",
                         "max-h-[--radix-dropdown-menu-content-available-height]",
                         "min-w-[--radix-dropdown-menu-trigger-width]",
-                        "bg-primary overflow-y-auto rounded-md border border-main p-1 shadow-[10px_10px_20px_rgba(0,0,0,0.5)]",
+                        "bg-primary overflow-y-auto rounded-md border border-main/60 p-1 shadow-[10px_10px_20px_rgba(0,0,0,0.5)]",
                         CONTAINER_STYLES.animation,
                         className
                     )}

@@ -21,6 +21,18 @@ export default async function Sitemap(): Promise<SitemapEntry[]> {
             lastModified: new Date().toISOString(),
             changeFrequency: "weekly",
             priority: 1.0
+        },
+        {
+            url: `${baseUrl}/privacy`,
+            lastModified: new Date().toISOString(),
+            changeFrequency: "weekly",
+            priority: 0.2
+        },
+        {
+            url: `${baseUrl}/terms`,
+            lastModified: new Date().toISOString(),
+            changeFrequency: "weekly",
+            priority: 0.2
         }
     ]
 

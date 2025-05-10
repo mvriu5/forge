@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useState} from "react"
+import React, {ReactNode, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "./WidgetTemplate"
 import {
     AlertCircle,
@@ -28,7 +28,7 @@ import {useGithub} from "@/hooks/useGithub"
 import {WidgetHeader} from "@/components/widgets/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/WidgetContent"
 
-const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
         const data = [
             {
@@ -50,7 +50,7 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
         ]
 
         return (
-            <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Github"} icon={<Github size={20} className={"text-primary"}/>}>
                     <Badge
                         variant="brand"
@@ -115,6 +115,7 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
 
     const dropdownFilterItems: MenuItem[] = Array.from(new Set(allLabels.map((label) => ({
         type: "checkbox",
+        icon: <div className={"size-3 rounded-sm"} style={{backgroundColor: `#${label.color}`}}/>,
         key: label.id,
         label: label.name,
         checked: selectedLabels.includes(label),
@@ -143,7 +144,7 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
 
     if (!githubIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <div className="h-full flex flex-col gap-2 items-center justify-center">
                     <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
                         <TriangleAlert size={32}/>
@@ -158,7 +159,7 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
     }
 
     return (
-        <WidgetTemplate className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Github"} icon={<Github size={20} className={"text-primary"}/>}>
                 <Badge
                     variant="brand"
@@ -184,7 +185,7 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
                         <Button
                             data-state={dropdownOpen ? "open" : "closed"}
                             className={"px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
-                            disabled={allLabels.length === 0}
+                            disabled={allLabels.length === 0 || isLoading || isFetching}
                             {...filterTooltip}
                         >
                             <Filter className="h-4 w-4" />
@@ -194,7 +195,7 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
                 <Button
                     className={"px-2 group"}
                     onClick={() => refetch()}
-                    data-loading={isLoading ? "true" : "false"}
+                    data-loading={(isLoading || isFetching) ? "true" : "false"}
                     {...refreshTooltip}
                 >
                     <RefreshCw
@@ -215,11 +216,10 @@ const GithubWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
             </Tabs>
             <WidgetContent scroll>
                 {(isLoading || isFetching) ? (
-                    <div className="h-full grid grid-cols-1 gap-4 pt-2">
-                        <Skeleton className={"h-full w-full px-2"} />
-                        <Skeleton className={"h-full w-full px-2"} />
-                        <Skeleton className={"h-full w-full px-2"} />
-                        <Skeleton className={"h-full w-full px-2"} />
+                    <div className="h-full flex flex-col gap-4 pt-2">
+                        <Skeleton className={"h-16 w-full px-2"} />
+                        <Skeleton className={"h-16 w-full px-2"} />
+                        <Skeleton className={"h-16 w-full px-2"} />
                     </div>
                 ) : (
                     <div className={"flex flex-col gap-2"}>

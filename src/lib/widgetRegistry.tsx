@@ -9,6 +9,7 @@ import {StockMediumWidget} from "@/components/widgets/StockMediumWidget"
 import {BookmarkWidget} from "@/components/widgets/BookmarkWidget"
 import {LinearWidget} from "@/components/widgets/LinearWidget"
 import {PhantomWidget} from "@/components/widgets/PhantomWidget"
+import {MeetingsWidget} from "@/components/widgets/MeetingsWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -122,6 +123,18 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["finance"]
         },
         component: PhantomWidget
+    },
+    {
+        preview: {
+            widgetType: "meetings",
+            height: 2,
+            width: 1,
+            previewImage: '/meetings_preview.png',
+            title: 'Upcoming Meetings',
+            description: 'Overview of your next meetings',
+            tags: ["productivity"]
+        },
+        component: MeetingsWidget
     }
 
 ]
@@ -129,15 +142,10 @@ export const widgetRegistry: WidgetElement[] = [
 
 export const getWidgetComponent = (name: string) => {
     const WidgetComponent = widgetRegistry.find((widget) => widget.preview.widgetType === name)?.component
-
     if (!WidgetComponent) return null
-
     return (props: any) => <WidgetComponent {...props} name={name} />
 }
 
-export const getWidgetPreview = (name: string) => {
-    return widgetRegistry.find((widget) => widget.preview.widgetType === name)?.preview
-}
 
 export const getAllWidgetPreviews = () => {
     return widgetRegistry.map((widget) => widget.preview)

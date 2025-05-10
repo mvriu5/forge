@@ -8,6 +8,7 @@ interface Integration {
     userId: string
     provider: string
     accessToken: string | null
+    accessTokenExpiration: Date | null
     createdAt: Date
 }
 
@@ -40,6 +41,7 @@ export const useIntegrationStore = create<IntegrationStore>((set, get) => ({
                 userId: account.userId,
                 provider: account.providerId,
                 accessToken: account.accessToken,
+                accessTokenExpiration: account.accessTokenExpiresAt,
                 createdAt: account.createdAt
             }))
 

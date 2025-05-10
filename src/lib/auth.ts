@@ -52,17 +52,23 @@ export const auth = betterAuth({
             clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
         },
         google: {
-            scope: ["https://www.googleapis.com/auth/calendar.events.readonly"],
+            scope: ["https://www.googleapis.com/auth/calendar"],
             clientId: process.env.GOOGLE_CLIENT_ID as string,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+            accessType: "offline",
+            prompt: "consent"
         },
     },
     session: {
         expiresIn: 60 * 60 * 24 * 7, // 7 days
-        updateAge: 60 * 60 * 24, // 1 day
+        updateAge: 60 * 30, // 1 day
         cookieCache: {
             enabled: true,
             maxAge: 5 * 60 // 5 minutes
+        },
+        refreshToken: {
+            enabled: true,
+            maxAge: 30 * 24 * 60 * 60 // 30 days
         }
     },
     plugins: [

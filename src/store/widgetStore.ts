@@ -6,7 +6,7 @@ interface WidgetStore {
     addWidget: (userId: string, widget: WidgetInsert) => Promise<void>
     refreshWidget: (widget: Widget) => Promise<void>
     removeWidget: (widget: Widget) => Promise<void>
-    getWidget: (dashboardId: string,widgetName: string) => Widget | undefined
+    getWidget: (dashboardId: string, widgetName: string) => Widget | undefined
     getAllWidgets: (userId: string) => Promise<void>
     updateWidgetPosition: (id: string, x: number, y: number) => void
     saveWidgetsLayout: () => Promise<void>
@@ -17,7 +17,6 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
 
     addWidget: async (userId: string, widget: WidgetInsert) => {
         const pos = findNextAvailablePosition(get().widgets, widget.width, widget.height, widget.dashboardId)
-
         if (!pos) throw new Error(`Not enough space in your dashboard!`)
 
         const widgetWithPosition = { ...widget, positionX: pos.x, positionY: pos.y, userId }

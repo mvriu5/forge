@@ -20,7 +20,7 @@ import {Callout} from "@/components/ui/Callout"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {useWeather} from "@/hooks/useWeather"
 
-const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     const getWeatherIcon = (code: number, size = 24) => {
         switch (code) {
             case 0: return <Sun size={size}/>
@@ -49,7 +49,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlace
         ]
 
         return (
-            <WidgetTemplate className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <div className={"h-min flex flex-col justify-between gap-2"}>
                     <div className={"h-full flex items-center gap-2 rounded-md bg-info/5 border border-info/20 px-2 py-1"}>
                         <div className={"text-primary"}>
@@ -78,6 +78,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlace
     if (isLoading) {
         return (
             <WidgetTemplate
+                id={id}
                 className={"col-span-1 row-span-1 h-full flex flex-col justify-between gap-4"}
                 name={"weather"}
                 editMode={editMode}
@@ -97,7 +98,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlace
 
     if (isError) {
         return (
-            <WidgetTemplate className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
                     <TriangleAlert size={32}/>
                     An error occurred, while getting the weather data. Try again later.
@@ -108,7 +109,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlace
 
     if (geolocationError) {
         return (
-            <WidgetTemplate className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
                     <TriangleAlert size={32}/>
                     Please enable your geolocation info.
@@ -118,7 +119,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlace
     }
     
     return (
-        <WidgetTemplate className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <div className={"h-full flex flex-col justify-between gap-2"}>
                 <div className={"h-min flex items-center gap-2 rounded-md bg-info/5 border border-info/20 px-2 py-1"}>
                     <div className={"text-primary"}>

@@ -18,7 +18,7 @@ import {Skeleton} from "@/components/ui/Skeleton"
 import {WidgetHeader} from "@/components/widgets/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/WidgetContent"
 
-const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceholder}) => {
+const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
         const issues = [
             {
@@ -80,8 +80,8 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
         ]
 
         return (
-            <WidgetTemplate className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Linear Issues"} icon={<LinearIcon/>} className={"gap-1"}>
+            <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+                <WidgetHeader title={"Linear"} icon={<LinearIcon/>} className={"gap-1"}>
                     <Button
                         className={"px-2 group"}
                         onClick={() => refetch()}
@@ -89,9 +89,9 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
                         <RefreshCw className="h-4 w-4" />
                     </Button>
                     <Select>
-                        <SelectTrigger className="w-[180px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
+                        <SelectTrigger className="w-min bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-tertiary">Sort by:</span>
+                                <span className="text-sm text-tertiary text-nowrap">Sort by:</span>
                                 <SelectValue placeholder="Sort" />
                             </div>
                         </SelectTrigger>
@@ -140,7 +140,7 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
 
     if (!linearIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <div className="h-full flex flex-col gap-2 items-center justify-center">
                     <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
                         <TriangleAlert size={32}/>
@@ -155,8 +155,8 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
     }
 
     return (
-        <WidgetTemplate className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Linear Issues"} icon={<LinearIcon/>} className={"gap-1"}>
+        <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetHeader title={"Linear"} icon={<LinearIcon/>} className={"gap-1"}>
                 <Button
                     className={"px-2 group"}
                     onClick={() => refetch()}
@@ -167,9 +167,9 @@ const LinearWidget: React.FC<WidgetProps> = ({editMode, onWidgetDelete, isPlaceh
                         className="h-4 w-4 group-data-[loading=true]:animate-spin" />
                 </Button>
                 <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                    <SelectTrigger className="w-[180px] bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
+                    <SelectTrigger className="w-min bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
                         <div className="flex items-center gap-2">
-                            <span className="text-sm text-tertiary">Sort by:</span>
+                            <span className="text-sm text-tertiary text-nowrap">Sort by:</span>
                             <SelectValue placeholder="Sort" />
                         </div>
                     </SelectTrigger>
@@ -217,17 +217,17 @@ const IssueCard = ({issue, className}: {issue: any, className?: string}) => {
             <span className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>
                 <Hourglass size={14}/>
                 <p className={"hidden lg:flex"}>Priority:</p>
-                <span className={"inline break-words text-secondary"}>{issue.priorityName ?? "No priority"}</span>
+                <span className={"inline break-words text-secondary text-nowrap text-truncate"}>{issue.priorityName ?? "No priority"}</span>
             </span>
             <span className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>
                 <Users size={14}/>
                 <p className={"hidden lg:flex"}>Team:</p>
-                <span className={"inline break-words text-secondary"}>{issue.team ?? "No team"}</span>
+                <span className={"inline break-words text-secondary text-nowrap text-truncate"}>{issue.team ?? "No team"}</span>
             </span>
             <span className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>
                 <Box size={14}/>
                 <p className={"hidden lg:flex"}>Project:</p>
-                <span className={"inline break-words text-secondary"}>{issue.project ?? "No project"}</span>
+                <span className={"inline break-words text-secondary text-nowrap text-truncate"}>{issue.project ?? "No project"}</span>
             </span>
             <div className={"flex items-center gap-2"}>
                 {issue.labels.map((label: any) =>

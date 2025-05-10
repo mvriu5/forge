@@ -10,20 +10,23 @@ import {tooltip} from "@/components/ui/TooltipProvider"
 import {useDashboardStore} from "@/store/dashboardStore"
 
 interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
+    id?: string
     children: React.ReactNode
     name: string
     editMode: boolean
-    onWidgetDelete: (id: string) => void
+    onWidgetDelete?: (id: string) => void
     isPlaceholder?: boolean
 }
 
-const WidgetTemplate: React.FC<WidgetProps> = ({className, children, name, editMode, onWidgetDelete, isPlaceholder = false}) => {
+const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, editMode, onWidgetDelete, isPlaceholder = false}) => {
     const {getWidget} = useWidgetStore()
     const {currentDashboard} = useDashboardStore()
 
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, name)
+    const widget = id
+        ? useWidgetStore(state => state.widgets?.find(w => w.id === id))
+        : currentDashboard
+            ? getWidget(currentDashboard.id, name)
+            : null
 
     if (!widget) return
 
@@ -67,7 +70,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({className, children, name, editM
                         if (deleteTooltip.onMouseLeave) {
                             deleteTooltip?.onMouseLeave()
                         }
-                        onWidgetDelete(widget?.id)
+                        onWidgetDelete?.(widget?.id)
                     }}
                     {...deleteTooltip}
                 >
