@@ -66,7 +66,7 @@ export const ResetPasswordEmail: React.FC<Readonly<ResetPasswordEmailProps>> = (
 
                         <Text className="text-[14px] leading-[20px] text-gray-500 mb-[32px]">
                             Thanks,<br />
-                            The Team
+                            The Forge team
                         </Text>
 
                         <Section className="border-t border-main/40 pt-[24px]">

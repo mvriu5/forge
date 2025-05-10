@@ -15,6 +15,7 @@ import {useToast} from "@/components/ui/ToastProvider"
 import {format, isSameDay} from "date-fns"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
+import {useSessionStore} from "@/store/sessionStore"
 
 interface CalendarEvent {
     id: string
@@ -221,9 +222,9 @@ const EventCard: React.FC<EventProps> = ({ event, color }) => {
         }
 
         if (color.startsWith('#')) {
-            const r = parseInt(color.slice(1, 3), 16)
-            const g = parseInt(color.slice(3, 5), 16)
-            const b = parseInt(color.slice(5, 7), 16)
+            const r = Number.parseInt(color.slice(1, 3), 16)
+            const g = Number.parseInt(color.slice(3, 5), 16)
+            const b = Number.parseInt(color.slice(5, 7), 16)
             return `rgba(${r}, ${g}, ${b}, ${opacity})`
         }
 

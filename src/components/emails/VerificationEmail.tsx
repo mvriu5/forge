@@ -70,10 +70,6 @@ export const VerificationEmail: React.FC<Readonly<VerificationEmailProps>> = ({u
                         </Text>
 
                         <Text className="text-[12px] text-gray-400 m-0">
-                            123 Example Street, City, Country
-                        </Text>
-
-                        <Text className="text-[12px] text-gray-400 m-0">
                             &copy; {currentYear} Forge. All rights reserved.
                         </Text>
                     </Container>
