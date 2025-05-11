@@ -114,7 +114,7 @@ function SettingsDialog() {
                             <DashboardSection/>
                         }
                         {tab === "settings" &&
-                            <SettingsSection session={session} onClose={() => setOpen(false)}/>
+                            <SettingsSection onClose={() => setOpen(false)}/>
                         }
                     </div>
                 </div>
@@ -695,11 +695,10 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
 
 
 interface SettingsProps {
-    session: any
     onClose: () => void
 }
 
-const SettingsSection = ({session, onClose}: SettingsProps) => {
+const SettingsSection = ({onClose}: SettingsProps) => {
     const {settings, updateSettings} = useSettingsStore()
 
     const formSchema = z.object({
