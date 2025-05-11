@@ -22,12 +22,14 @@ import {useDashboardStore} from "@/store/dashboardStore"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 import {useHotkeys} from "react-hotkeys-hook"
 import {SpinnerCircular, SpinnerDotted} from "spinners-react"
+import {useSettingsStore} from "@/store/settingsStore"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
     const { currentDashboard, getAllDashboards } = useDashboardStore()
     const { widgets, getAllWidgets, removeWidget, saveWidgetsLayout } = useWidgetStore()
     const { fetchIntegrations } = useIntegrationStore()
+    const { fetchSettings } = useSettingsStore()
     const { addToast } = useToast()
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
@@ -63,7 +65,8 @@ export default function Dashboard() {
         Promise.all([
             getAllDashboards(session.user.id),
             getAllWidgets(session.user.id),
-            fetchIntegrations(session.user.id)
+            fetchIntegrations(session.user.id),
+            fetchSettings(session.user.id)
         ])
         .then(() => {
             const ds = useDashboardStore.getState().dashboards

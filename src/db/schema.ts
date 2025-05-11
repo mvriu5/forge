@@ -69,4 +69,12 @@ export const dashboard = pgTable("dashboard", {
     updatedAt: timestamp('updated_at').notNull()
 })
 
-export const schema = { user, session, account, verification, widget }
+export const settings = pgTable("settings", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' }),
+    config: jsonb('config'),
+    createdAt: timestamp('created_at').notNull(),
+    updatedAt: timestamp('updated_at').notNull()
+})
+
+export const schema = { user, session, account, verification, widget, dashboard, settings }
