@@ -700,6 +700,7 @@ interface SettingsProps {
 
 const SettingsSection = ({onClose}: SettingsProps) => {
     const {settings, updateSettings} = useSettingsStore()
+    const {addToast} = useToast()
 
     const formSchema = z.object({
         hourFormat: z.enum(["12", "24"])
@@ -718,63 +719,70 @@ const SettingsSection = ({onClose}: SettingsProps) => {
         }
 
         await updateSettings(newConfig)
+
+        addToast({
+            title: "Successfully updated your settings!",
+            icon: <Settings size={24} className={"text-brand"}/>
+        })
+
+        onClose()
     }
 
     return (
-        <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between gap-4 h-full">
-                    <div className="w-full flex items-center gap-4">
-                        <FormField
-                            control={form.control}
-                            name="hourFormat"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <RadioGroup
-                                        {...field}
-                                        onValueChange={field.onChange}
-                                        value={field.value}
-                                        className="grid-cols-2"
-                                    >
-                                        <div className={cn("col-span-1 flex items-center gap-2 p-2 border border-main rounded-md", field.value === "12" && "ring ring-brand/40")}>
-                                            <RadioGroupItem value="12" id="12h-format" />
-                                            <label htmlFor="12h-format" className="font-medium w-full">
-                                                12h
-                                            </label>
-                                        </div>
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between gap-4 h-full">
+                <div className="w-full flex items-center gap-4">
+                    <FormField
+                        control={form.control}
+                        name="hourFormat"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Hourformat</FormLabel>
+                                <RadioGroup
+                                    {...field}
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                    className="grid-cols-2"
+                                >
+                                    <div className={cn("col-span-1 flex items-center gap-2 p-2 border border-main rounded-md", field.value === "12" && "ring ring-brand/40")}>
+                                        <RadioGroupItem value="12" id="12h-format" />
+                                        <label htmlFor="12h-format" className="font-medium w-full">
+                                            12h
+                                        </label>
+                                    </div>
 
-                                        <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md border border-main", field.value === "24" && "ring ring-brand/40")}>
-                                            <RadioGroupItem value="24" id="24h-format" />
-                                            <label htmlFor="24h-format" className="font-medium w-full">
-                                                24h
-                                            </label>
-                                        </div>
-                                    </RadioGroup>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                    <div className={"w-full flex gap-2 justify-end"}>
-                        <Button
-                            className={"w-max"}
-                            onClick={onClose}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            variant={"brand"}
-                            className={"w-max"}
-                            type={"submit"}
-                            disabled={form.formState.isSubmitting}
-                        >
-                            {(form.formState.isSubmitting) && <ButtonSpinner/>}
-                            Save
-                        </Button>
-                    </div>
-                </form>
-            </Form>
-        </ScrollArea>
+                                    <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md border border-main", field.value === "24" && "ring ring-brand/40")}>
+                                        <RadioGroupItem value="24" id="24h-format" />
+                                        <label htmlFor="24h-format" className="font-medium w-full">
+                                            24h
+                                        </label>
+                                    </div>
+                                </RadioGroup>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <div className={"w-full flex gap-2 justify-end"}>
+                    <Button
+                        type={"button"}
+                        className={"w-max"}
+                        onClick={onClose}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant={"brand"}
+                        className={"w-max"}
+                        type={"submit"}
+                        disabled={form.formState.isSubmitting}
+                    >
+                        {(form.formState.isSubmitting) && <ButtonSpinner/>}
+                        Save
+                    </Button>
+                </div>
+            </form>
+        </Form>
     )
 }
 

@@ -19,6 +19,7 @@ import {formatDate} from "date-fns"
 import {Callout} from "@/components/ui/Callout"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {useWeather} from "@/hooks/useWeather"
+import {useSettingsStore} from "@/store/settingsStore"
 
 const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     const getWeatherIcon = (code: number, size = 24) => {
@@ -74,6 +75,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
     }
 
     const {currentWeather, nextWeather, location, isLoading, isError, geolocationError} = useWeather()
+    const {settings} = useSettingsStore()
 
     if (isLoading) {
         return (
@@ -138,7 +140,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
                     <div className={"h-full w-full flex items-center justify-between px-4"}>
                         {nextWeather?.map((weather: any) =>
                             <div className={"flex flex-col items-center gap-1"} key={weather.time}>
-                                <p className={"text-xs text-tertiary"}>{formatDate(weather.time, "hh aa")}</p>
+                                <p className={"text-xs text-tertiary"}>{formatDate(weather.time, settings?.config.hourFormat === "24" ?  "HH:00" : "h a")}</p>
                                 {getWeatherIcon(weather.weathercode)}
                                 <p className={"text-primary"}>{`${Number(weather.temperature.toFixed(0))}°C`}</p>
                             </div>
