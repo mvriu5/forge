@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres'
-import {account, dashboard, user, widget} from "@/db/schema"
+import {account, dashboard, settings, user, widget} from "@/db/schema"
 import {and, eq} from "drizzle-orm"
 
 export const db = drizzle(process.env.DATABASE_URI!)
@@ -115,6 +115,42 @@ export const getDashboardFromId = async (id: string): Promise<DashboardSelect[]>
         .from(dashboard)
         .where(eq(dashboard.id, id))
 
+}
+
+
+//Settings
+export type Settings = {
+    id: string
+    userId: string
+    config: Record<string, any>
+    createdAt: Date
+    updatedAt: Date
+}
+
+export type SettingsInsert = typeof settings.$inferInsert
+type SettingsSelect = typeof settings.$inferSelect
+
+export const createSettings = async (data: SettingsInsert) => {
+    return db
+        .insert(settings)
+        .values(data)
+        .returning()
+}
+
+export const updateSettings = async (id: string, data: Partial<SettingsInsert>) => {
+    const now = new Date()
+    return db
+        .update(settings)
+        .set({...data, updatedAt: now,})
+        .where(eq(settings.id, id))
+        .returning()
+}
+
+export const getSettingsFromUser = async (userId: string): Promise<SettingsSelect[]> => {
+    return db
+        .select()
+        .from(settings)
+        .where(eq(settings.userId, userId))
 }
 
 

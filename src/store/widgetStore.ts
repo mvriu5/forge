@@ -17,7 +17,7 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
 
     addWidget: async (userId: string, widget: WidgetInsert) => {
         const pos = findNextAvailablePosition(get().widgets, widget.width, widget.height, widget.dashboardId)
-        if (!pos) throw new Error(`Not enough space in your dashboard!`)
+        if (!pos) throw new Error("Not enough space in your dashboard!")
 
         const widgetWithPosition = { ...widget, positionX: pos.x, positionY: pos.y, userId }
         try {

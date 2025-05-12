@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React, {useEffect} from "react"
 import {useRef, useState} from "react"
 import {
     Blocks,
@@ -42,6 +42,7 @@ import {CopyButton} from "@/components/CopyButton"
 import { Dashboard } from "@/database"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {RadioGroup, RadioGroupItem} from "@/components/ui/RadioGroup"
+import {useSettingsStore} from "@/store/settingsStore"
 
 function SettingsDialog() {
     const {session} = useSessionStore()
@@ -113,7 +114,7 @@ function SettingsDialog() {
                             <DashboardSection/>
                         }
                         {tab === "settings" &&
-                            <p className={"text-tertiary text-center mt-4 text-sm"}>Currently no settings available</p>
+                            <SettingsSection onClose={() => setOpen(false)}/>
                         }
                     </div>
                 </div>
@@ -453,7 +454,6 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
     )
 }
 
-
 const DashboardSection = () => {
     const {dashboards, refreshDashboard, removeDashboard} = useDashboardStore()
 
@@ -690,6 +690,99 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                 </Dialog>
             </div>
         </div>
+    )
+}
+
+
+interface SettingsProps {
+    onClose: () => void
+}
+
+const SettingsSection = ({onClose}: SettingsProps) => {
+    const {settings, updateSettings} = useSettingsStore()
+    const {addToast} = useToast()
+
+    const formSchema = z.object({
+        hourFormat: z.enum(["12", "24"])
+    })
+
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            hourFormat: settings?.config?.hourFormat ?? "24"
+        }
+    })
+
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        const newConfig = {
+            hourFormat: values.hourFormat
+        }
+
+        await updateSettings(newConfig)
+
+        addToast({
+            title: "Successfully updated your settings!",
+            icon: <Settings size={24} className={"text-brand"}/>
+        })
+
+        onClose()
+    }
+
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between gap-4 h-full">
+                <div className="w-full flex items-center gap-4">
+                    <FormField
+                        control={form.control}
+                        name="hourFormat"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Hourformat</FormLabel>
+                                <RadioGroup
+                                    {...field}
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                    className="grid-cols-2"
+                                >
+                                    <div className={cn("col-span-1 flex items-center gap-2 p-2 border border-main rounded-md", field.value === "12" && "ring ring-brand/40")}>
+                                        <RadioGroupItem value="12" id="12h-format" />
+                                        <label htmlFor="12h-format" className="font-medium w-full">
+                                            12h
+                                        </label>
+                                    </div>
+
+                                    <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md border border-main", field.value === "24" && "ring ring-brand/40")}>
+                                        <RadioGroupItem value="24" id="24h-format" />
+                                        <label htmlFor="24h-format" className="font-medium w-full">
+                                            24h
+                                        </label>
+                                    </div>
+                                </RadioGroup>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <div className={"w-full flex gap-2 justify-end"}>
+                    <Button
+                        type={"button"}
+                        className={"w-max"}
+                        onClick={onClose}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant={"brand"}
+                        className={"w-max"}
+                        type={"submit"}
+                        disabled={form.formState.isSubmitting}
+                    >
+                        {(form.formState.isSubmitting) && <ButtonSpinner/>}
+                        Save
+                    </Button>
+                </div>
+            </form>
+        </Form>
     )
 }
 

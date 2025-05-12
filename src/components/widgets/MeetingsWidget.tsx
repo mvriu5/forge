@@ -16,6 +16,7 @@ import {format, isSameDay} from "date-fns"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
 import {useSessionStore} from "@/store/sessionStore"
+import {useSettingsStore} from "@/store/settingsStore"
 
 interface CalendarEvent {
     id: string
@@ -59,8 +60,8 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                         <p className="w-full text-tertiary text-xs mt-3 mb-1">
                             {`Today, ${format(new Date(), "EEEE, d MMMM")}`}
                         </p>
-                        <EventCard event={event1} color={"#ed6631"}/>
-                        <EventCard event={event2} color={"#398e3d"}/>
+                        <EventCard event={event1} color={"#ed6631"} hourFormat={"24"}/>
+                        <EventCard event={event2} color={"#398e3d"} hourFormat={"24"}/>
                     </div>
                 </WidgetContent>
             </WidgetTemplate>
@@ -68,6 +69,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     }
 
     const { calendars, events, isLoading, isFetching, isError, refetch, googleIntegration, getColor, selectedCalendars, setSelectedCalendars} = useGoogleCalendar()
+    const {settings} = useSettingsStore()
     const {addToast} = useToast()
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -153,12 +155,12 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                         <p className="w-full text-tertiary text-xs mt-3 mb-1">
                             {format(eventDate, "EEEE, d MMMM")}
                         </p>
-                        <EventCard event={event} color={getColor(event.id)}/>
+                        <EventCard event={event} color={getColor(event.id)} hourFormat={settings?.config.hourFormat ?? "24"}/>
                     </React.Fragment>
                 )
             }
 
-            return <EventCard key={event.id} event={event} color={getColor(event.id)}/>
+            return <EventCard key={event.id} event={event} color={getColor(event.id)} hourFormat={settings?.config.hourFormat ?? "24"}/>
         })
     }
 
@@ -213,9 +215,10 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
 interface EventProps {
     event: CalendarEvent
     color: string | null
+    hourFormat: string
 }
 
-const EventCard: React.FC<EventProps> = ({ event, color }) => {
+const EventCard: React.FC<EventProps> = ({ event, color, hourFormat }) => {
     const convertToRGBA = (color: string, opacity: number): string => {
         if (color.startsWith('rgba')) {
             return color
@@ -251,7 +254,7 @@ const EventCard: React.FC<EventProps> = ({ event, color }) => {
 
             <div className="relative z-10 text-white">
                 <p className="font-medium">{event.summary}</p>
-                <p className={"text-secondary"}>{`${format(event.start.dateTime, "HH:mm")} - ${format(event.end.dateTime, "HH:mm")}`}</p>
+                <p className={"text-secondary"}>{`${format(event.start.dateTime, hourFormat === "24" ? "HH:mm" : "h:mm a")} - ${format(event.end.dateTime, hourFormat === "24" ? "HH:mm" : "h:mm a")}`}</p>
                 <p className={"text-tertiary"}>{event.location}</p>
             </div>
         </div>
