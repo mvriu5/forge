@@ -45,6 +45,14 @@
   --border-info: 214 92% 56%; /* (war #2982f6 */
   --border-brand: 17 84% 56%; /* (war #248721 */
 
+  /* Ring colors */
+  --ring-main: 0 0% 21%; /* Primary ring color for dark mode (war #363636 */
+  --ring-success: 123 43% 39%; /* (war #388e3c */
+  --ring-warning: 30 100% 48%; /* (war #f57c00 */
+  --ring-error: 0 65% 51%; /* (war #d32f2f */
+  --ringr-info: 214 92% 56%; /* (war #2982f6 */
+  --ring-brand: 17 84% 56%; /* (war #248721 */
+
   /* Outline colors */
   --outline-success: 123 43% 39%; /* (war #388e3c */
   --outline-warning: 30 100% 48%; /* (war #f57c00 */
@@ -95,6 +103,15 @@
   --border-error: 0 65% 51%; /* (war #d32f2f */
   --border-info: 214 92% 56%; /* (war #2982f6 */
   --border-brand: 17 84% 56%; /* (war #248721 */
+
+  /* Ring colors */
+  --ring-main: 0 0% 21%; /* Primary ring color for dark mode (war #363636 */
+  --ring-success: 123 43% 39%; /* (war #388e3c */
+  --ring-warning: 30 100% 48%; /* (war #f57c00 */
+  --ring-error: 0 65% 51%; /* (war #d32f2f */
+  --ringr-info: 214 92% 56%; /* (war #2982f6 */
+  --ring-brand: 17 84% 56%; /* (war #248721 */
+
 
   /* Outline colors */
   --outline-success: 123 43% 39%; /* (war #388e3c */

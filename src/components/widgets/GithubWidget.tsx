@@ -1,7 +1,7 @@
 "use client"
 
 import React, {ReactNode, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "./WidgetTemplate"
+import {WidgetProps, WidgetTemplate} from "./base/WidgetTemplate"
 import {
     AlertCircle,
     Blocks,
@@ -25,8 +25,9 @@ import {Skeleton} from "@/components/ui/Skeleton"
 import {useToast} from "@/components/ui/ToastProvider"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {useGithub} from "@/hooks/useGithub"
-import {WidgetHeader} from "@/components/widgets/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/WidgetContent"
+import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
+import {WidgetContent} from "@/components/widgets/base/WidgetContent"
+import {WidgetError} from "@/components/widgets/base/WidgetError"
 
 const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -145,15 +146,11 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     if (!githubIntegration?.accessToken && !isLoading) {
         return (
             <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <div className="h-full flex flex-col gap-2 items-center justify-center">
-                    <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
-                        <TriangleAlert size={32}/>
-                        If you want to use this widget, you need to integrate your Github account first!
-                    </Callout>
-                    <Button variant="default" className={"w-max"} onClick={handleIntegrate}>
-                        Integrate
-                    </Button>
-                </div>
+                <WidgetError
+                    message={"If you want to use this widget, you need to integrate your Github account first!"}
+                    actionLabel={"Integrate"}
+                    onAction={handleIntegrate}
+                />
             </WidgetTemplate>
         )
     }

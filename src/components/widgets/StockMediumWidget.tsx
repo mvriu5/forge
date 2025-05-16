@@ -1,7 +1,7 @@
 "use client"
 
 import React, {useMemo, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
+import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {useStock} from "@/hooks/useStock"
 import {ChartConfig} from "@/components/ui/Chart"
 import {cn} from "@/lib/utils"
@@ -17,9 +17,10 @@ import {Button} from "@/components/ui/Button"
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/Command"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {AssetOption, ChartDataPoint} from "@/actions/twelvedata"
-import {WidgetHeader} from "@/components/widgets/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/WidgetContent"
+import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
+import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {useDashboardStore} from "@/store/dashboardStore"
+import { WidgetEmpty } from "./base/WidgetEmpty"
 
 const StockMediumWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -152,16 +153,17 @@ const StockMediumWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete,
                     </SelectContent>
                 </Select>
             </WidgetHeader>
-            <WidgetContent scroll>
-                <div className={"w-full flex flex-col gap-2 items-center"}>
-                    {selectedStocks.map((stock) => (
-                        <Stock key={stock.value} selectedStock={stock} selectedTimespan={timespan} />
-                    ))}
-                    {selectedStocks.length === 0 &&
-                        <p className={"text-sm text-tertiary mt-4"}>No stock added yet.</p>
-                    }
-                </div>
-            </WidgetContent>
+            {selectedStocks.length > 0 ? (
+                <WidgetContent scroll>
+                    <div className={"w-full flex flex-col gap-2 items-center"}>
+                        {selectedStocks.map((stock) => (
+                            <Stock key={stock.value} selectedStock={stock} selectedTimespan={timespan} />
+                        ))}
+                    </div>
+                </WidgetContent>
+            ) : (
+                <WidgetEmpty message={"No stocks added."}/>
+            )}
         </WidgetTemplate>
     )
 }

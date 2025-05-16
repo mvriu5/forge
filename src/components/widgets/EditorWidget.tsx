@@ -13,7 +13,7 @@ import {
     EditorInstance
 } from "novel"
 import {defaultExtensions} from "@/lib/extensions"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
+import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {slashCommand, suggestionItems} from "@/components/widgets/components/SlashCommand"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {NodeSelector } from "./components/NodeSelector"

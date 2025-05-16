@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
+import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {
     Cloud,
     CloudDrizzle,
@@ -20,6 +20,7 @@ import {Callout} from "@/components/ui/Callout"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {useWeather} from "@/hooks/useWeather"
 import {useSettingsStore} from "@/store/settingsStore"
+import {WidgetError} from "@/components/widgets/base/WidgetError"
 
 const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     const getWeatherIcon = (code: number, size = 24) => {
@@ -101,10 +102,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
     if (isError) {
         return (
             <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
-                    <TriangleAlert size={32}/>
-                    An error occurred, while getting the weather data. Try again later.
-                </Callout>
+                <WidgetError message={"An error occurred, while getting the weather data. Try again later."}/>
             </WidgetTemplate>
         )
     }
@@ -112,10 +110,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
     if (geolocationError) {
         return (
             <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
-                    <TriangleAlert size={32}/>
-                    Please enable your geolocation info.
-                </Callout>
+                <WidgetError message={"Please enable your geolocation info."}/>
             </WidgetTemplate>
         )
     }

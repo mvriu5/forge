@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
+import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {Callout} from "@/components/ui/Callout"
 import {Blocks, Box, Captions, CloudAlert, Hourglass, RefreshCw, TriangleAlert, Users} from "lucide-react"
 import {Button} from "@/components/ui/Button"
@@ -15,8 +15,9 @@ import {StatusBadge} from "@/components/widgets/components/StatusBadge"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import {LinearIcon} from "@/components/svg/LinearIcon"
 import {Skeleton} from "@/components/ui/Skeleton"
-import {WidgetHeader} from "@/components/widgets/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/WidgetContent"
+import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
+import {WidgetContent} from "@/components/widgets/base/WidgetContent"
+import {WidgetError} from "@/components/widgets/base/WidgetError"
 
 const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -141,15 +142,11 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     if (!linearIntegration?.accessToken && !isLoading) {
         return (
             <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <div className="h-full flex flex-col gap-2 items-center justify-center">
-                    <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
-                        <TriangleAlert size={32}/>
-                        If you want to use this widget, you need to integrate your Linear account first!
-                    </Callout>
-                    <Button variant="default" className={"w-max"} onClick={handleIntegrate}>
-                        Integrate
-                    </Button>
-                </div>
+                <WidgetError
+                    message={"If you want to use this widget, you need to integrate your Linear account first!"}
+                    actionLabel={"Integrate"}
+                    onAction={handleIntegrate}
+                />
             </WidgetTemplate>
         )
     }
@@ -160,7 +157,7 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                 <Button
                     className={"px-2 group"}
                     onClick={() => refetch()}
-                    data-loading={isLoading ? "true" : "false"}
+                    data-loading={(isLoading || isFetching) ? "true" : "false"}
                     {...refreshTooltip}
                 >
                     <RefreshCw
@@ -182,10 +179,10 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
             <WidgetContent scroll>
                 {(isLoading || isFetching) ? (
                     <div className={"h-full grid grid-cols-2 gap-4"}>
-                        <Skeleton className={"col-span-1 h-full"}/>
-                        <Skeleton className={"col-span-1 h-full"}/>
-                        <Skeleton className={"col-span-1 h-full"}/>
-                        <Skeleton className={"col-span-1 h-full"}/>
+                        <Skeleton className={"col-span-1 h-38"}/>
+                        <Skeleton className={"col-span-1 h-38"}/>
+                        <Skeleton className={"col-span-1 h-38"}/>
+                        <Skeleton className={"col-span-1 h-38"}/>
                     </div>
                 ) : (
                     <div className={"grid grid-cols-2 gap-4"}>

@@ -122,14 +122,14 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
                                                 value={field.value}
                                                 className="grid-cols-2"
                                             >
-                                                <div className={cn("col-span-1 flex items-center gap-2 p-2 border border-main rounded-md", field.value === "public" && "ring ring-brand/40")}>
+                                                <div className={cn("col-span-1 flex items-center gap-2 p-2 shadow-md border border-main/60 rounded-md", field.value === "public" && "border-brand")}>
                                                     <RadioGroupItem value="public" id="vis-public" />
                                                     <label htmlFor="vis-public" className="font-medium w-full">
                                                         Public
                                                     </label>
                                                 </div>
 
-                                                <div className={cn("col-span-1 flex items-center gap-2 p-2 border rounded-md border border-main", field.value === "private" && "ring ring-brand/40")}>
+                                                <div className={cn("col-span-1 flex items-center gap-2 p-2 shadow-md border rounded-md border border-main/60", field.value === "private" && "border-brand")}>
                                                     <RadioGroupItem value="private" id="vis-private" />
                                                     <label htmlFor="vis-private" className="font-medium w-full">
                                                         Private

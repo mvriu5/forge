@@ -98,7 +98,7 @@ function SignInCard() {
     }
 
     return (
-        <div className={"w-80 h-max rounded-md border border-main/60 bg-primary shadow-xl p-8 flex flex-col gap-8 z-50"}>
+        <div className={"w-80 h-max rounded-md border border-main/40 bg-linear-to-br from-primary from-30% to-tertiary shadow-[0_10px_10px_rgba(0,0,0,0.2)] p-8 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
                 <div className={"flex gap-2 items-center"}>
                     <Link href={"/"} className={"cursor-default"}>
@@ -110,55 +110,71 @@ function SignInCard() {
             </div>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>E-Mail</FormLabel>
-                                <FormInput placeholder="E-Mail" {...field} />
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Password</FormLabel>
-                                <FormInput placeholder="Password" type={"password"} {...field} />
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <Button
-                        type="submit"
-                        className={"bg-brand hover:bg-brand/90 text-primary w-full"}
-                    >
-                        {loading && <ButtonSpinner/>}
-                        Sign in
-                    </Button>
-                    <div className="flex gap-4">
-                        <Button
-                            type={"button"}
-                            className={"w-full"}
-                            variant={"default"}
-                            onClick={onGithubSignin}
-                        >
-                            <Github size={18}/>
-                        </Button>
-                        <Button
-                            type={"button"}
-                            className={"group w-full"}
-                            variant={"default"}
-                            onClick={onGoogleSignin}
-                        >
-                            <GoogleIcon className={"group-hover:fill-primary"}/>
-                        </Button>
+                <form onSubmit={form.handleSubmit(onSubmit)} className={"w-full flex flex-col items-end"}>
+                    <div className={"w-full flex flex-col gap-4"}>
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>E-Mail</FormLabel>
+                                    <FormInput placeholder="E-Mail" {...field} />
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Password</FormLabel>
+                                    <FormInput placeholder="Password" type={"password"} {...field} />
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                     </div>
-                    <div className={"flex items-center gap-2"}>
+
+                    <Button
+                        type={"button"}
+                        variant="ghost"
+                        onClick={() => router.replace("/forgot")}
+                        className={"bg-transparent hover:bg-transparent hover:text-secondary font-mono text-tertiary font-normal w-max hover:underline text-xs px-0"}
+                    >
+                        Forgot Password
+                    </Button>
+                    <div className={"w-full flex flex-col gap-2 mt-4"}>
+                        <Button
+                            type="submit"
+                            variant={"brand"}
+                            className={"w-full"}
+                            disabled={loading}
+                        >
+                            {loading && <ButtonSpinner/>}
+                            Sign in
+                        </Button>
+                        <div className={"w-full flex gap-2"}>
+                            <Button
+                                type={"button"}
+                                className={"w-full"}
+                                variant={"default"}
+                                onClick={onGithubSignin}
+                            >
+                                <Github size={18}/>
+                            </Button>
+                            <Button
+                                type={"button"}
+                                className={"group w-full"}
+                                variant={"default"}
+                                onClick={onGoogleSignin}
+                            >
+                                <GoogleIcon className={"group-hover:fill-primary"}/>
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className={"w-full flex items-center gap-2 -mb-8 mt-8 bg-tertiary border border-main/20 shadow-md rounded-t-lg px-2"}>
                         <p className={"text-tertiary text-sm"}>Don't have an account yet?</p>
                         <Button
                             type={"button"}
@@ -169,14 +185,6 @@ function SignInCard() {
                             Sign Up
                         </Button>
                     </div>
-                    <Button
-                        type={"button"}
-                        variant="ghost"
-                        onClick={() => router.replace("/forgot")}
-                        className={"bg-transparent hover:bg-transparent hover:text-secondary font-mono text-tertiary font-normal w-max hover:underline text-xs px-0"}
-                    >
-                        Forgot Password
-                    </Button>
                 </form>
             </Form>
         </div>

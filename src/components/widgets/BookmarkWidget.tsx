@@ -1,5 +1,5 @@
 import React, {useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
+import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {getLogoFromLink} from "@/components/svg/BookmarkIcons"
 import {Button} from "@/components//ui/Button"
@@ -11,9 +11,10 @@ import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {useWidgetStore} from "@/store/widgetStore"
-import { WidgetHeader } from "./WidgetHeader"
-import {WidgetContent} from "@/components/widgets/WidgetContent"
+import { WidgetHeader } from "./base/WidgetHeader"
+import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {useDashboardStore} from "@/store/dashboardStore"
+import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 
 interface BookmarkItem {
     title: string
@@ -121,7 +122,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                     </PopoverTrigger>
                     <PopoverContent className={"w-56"} align={"end"}>
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(handleAdd)} className="space-y-4">
+                            <form onSubmit={form.handleSubmit(handleAdd)} className="space-y-2">
                                 <FormField
                                     control={form.control}
                                     name="title"
@@ -146,7 +147,8 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                                 />
                                 <Button
                                     type="submit"
-                                    className={"bg-brand hover:bg-brand/90 text-primary w-full"}
+                                    variant={"brand"}
+                                    className={"w-full mt-2"}
                                 >
                                     Add link
                                 </Button>
@@ -157,11 +159,15 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                 </Popover>
             </WidgetHeader>
             <div className={"w-full h-px border-b border-main/40"}/>
-            <WidgetContent scroll>
-                {bookmarks.map((bookmark) => (
-                    <BookmarkItem key={bookmark.title} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.title)}/>
-                ))}
-            </WidgetContent>
+            {bookmarks.length > 0 ? (
+                <WidgetContent scroll>
+                    {bookmarks.map((bookmark) => (
+                        <BookmarkItem key={bookmark.title} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.title)}/>
+                    ))}
+                </WidgetContent>
+            ) : (
+                <WidgetEmpty message={" No bookmarks yet."}/>
+            )}
         </WidgetTemplate>
     )
 }

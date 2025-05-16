@@ -7,7 +7,7 @@ import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
 import {ButtonSpinner} from "@/components/ButtonSpinner"
-import {CloudAlert, Mailbox} from "lucide-react"
+import {ArrowLeft, CloudAlert, Mailbox} from "lucide-react"
 import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form";
 import { useToast } from "@/components/ui/ToastProvider";
 import {Button} from "@/components/ui/Button"
@@ -56,8 +56,17 @@ function ForgotPasswordCard() {
     }
 
     return (
-        <div className={"w-80 h-max rounded-md border border-main/60 bg-primary shadow-xl p-8 flex flex-col gap-8 z-50"}>
+        <div className={"w-80 h-max rounded-md border border-main/30 bg-linear-to-br from-primary from-30% to-tertiary shadow-[0_10px_10px_rgba(0,0,0,0.2)] p-8 pt-4 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
+                <Button
+                    type={"button"}
+                    variant="ghost"
+                    onClick={() => router.replace("/signin")}
+                    className={"bg-transparent text-tertiary hover:bg-transparent hover:text-secondary font-mono font-normal w-max text-sm px-0 gap-2"}
+                >
+                    <ArrowLeft size={16} />
+                    Go back
+                </Button>
                 <div className={"flex gap-2 items-center"}>
                     <Link href={"/"} className={"cursor-default"}>
                         <ForgeLogo/>
@@ -82,18 +91,12 @@ function ForgotPasswordCard() {
                     />
                     <Button
                         type="submit"
-                        className={"bg-brand hover:bg-brand/90 text-primary w-full"}
+                        variant={"brand"}
+                        className={"w-full"}
+                        disabled={loading}
                     >
                         {loading && <ButtonSpinner/>}
                         Send email
-                    </Button>
-                    <Button
-                        type={"button"}
-                        variant="ghost"
-                        onClick={() => router.replace("/signin")}
-                        className={"w-full"}
-                    >
-                        Go back
                     </Button>
                 </form>
             </Form>

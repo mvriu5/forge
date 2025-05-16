@@ -141,8 +141,10 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                                 data-used={widgets?.find((w) => w.widgetType === widget.widgetType && w.dashboardId === currentDashboard?.id) ? "true" : "false"}
                                 data-selected={widget.widgetType === selectedWidget?.widgetType ? "true" : "false"}
                                 className={cn(
-                                    "relative group cursor-default col-span-1 flex flex-col p-2 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
-                                    "data-[selected=true]:border-brand/60 data-[used=true]:border-success/20 data-[selected=true]:bg-tertiary"
+                                    "relative group cursor-default col-span-1 flex flex-col p-2 m-1 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
+                                    "data-[selected=true]:border-brand/20 data-[used=true]:border-success/20",
+                                    "data-[used=true]:ring-4 data-[used=true]:ring-success/5",
+                                    "data-[selected=true]:ring-4 data-[selected=true]:ring-brand/5"
                                 )}
                                 onClick={() => handleSelect(widget)}
                             >

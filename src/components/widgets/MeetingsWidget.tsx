@@ -1,9 +1,9 @@
 "use client"
 
 import React, {useEffect, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
-import {WidgetHeader} from "@/components/widgets/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/WidgetContent"
+import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
+import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {GoogleIcon} from "@/components/svg/GoogleIcon"
 import {useGoogleCalendar} from "@/hooks/useGoogleCalendar"
 import {tooltip} from "@/components/ui/TooltipProvider"
@@ -17,6 +17,8 @@ import {Skeleton} from "@/components/ui/Skeleton"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
 import {useSessionStore} from "@/store/sessionStore"
 import {useSettingsStore} from "@/store/settingsStore"
+import {WidgetError} from "@/components/widgets/base/WidgetError"
+import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 
 interface CalendarEvent {
     id: string
@@ -109,15 +111,11 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     if (!googleIntegration?.accessToken && !isLoading) {
         return (
             <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <div className="h-full flex flex-col gap-2 items-center justify-center">
-                    <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
-                        <TriangleAlert size={32}/>
-                        If you want to use this widget, you need to integrate your Google account first!
-                    </Callout>
-                    <Button variant="default" className={"w-max"} onClick={handleIntegrate}>
-                        Integrate
-                    </Button>
-                </div>
+                <WidgetError
+                    message={"If you want to use this widget, you need to integrate your Google account first!"}
+                    actionLabel={"Integrate"}
+                    onAction={handleIntegrate}
+                />
             </WidgetTemplate>
         )
     }
@@ -137,9 +135,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     }))))
 
     const renderEvents = () => {
-        if (!sortedEvents || !sortedEvents.length) {
-            return <p className="text-center text-tertiary py-4">No upcoming meetings</p>
-        }
+        if (!sortedEvents || !sortedEvents.length) return <WidgetEmpty message={"No upcoming meetings"}/>
 
         let currentDate: Date | null = null
 

@@ -10,7 +10,6 @@ export default {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/stories/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/lunalabs-ui/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   darkMode: "class",
   theme: {
@@ -62,6 +61,14 @@ export default {
         error: withOpacity('--border-error'),
         info: withOpacity('--border-info'),
         brand: withOpacity('--border-brand'),
+      },
+      ringColor: {
+        main: withOpacity('--ring-main'),
+        success: withOpacity('--ring-success'),
+        warning: withOpacity('--ring-warning'),
+        error: withOpacity('--ring-error'),
+        info: withOpacity('--ring-info'),
+        brand: withOpacity('--ring-brand'),
       },
       outlineColor: {
         success: withOpacity('--outline-success'),

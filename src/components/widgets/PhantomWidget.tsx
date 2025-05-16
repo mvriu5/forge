@@ -1,16 +1,17 @@
 "use client"
 
 import React from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/WidgetTemplate"
+import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {usePhantom} from "@/hooks/usePhantom"
 import {Button} from "@/components/ui/Button"
-import {WidgetHeader} from "@/components/widgets/WidgetHeader"
+import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {PhantomIcon} from "@/components/svg/PhantomIcon"
 import {CopyButton} from "@/components/CopyButton"
 import {Copy, TriangleAlert} from "lucide-react"
-import {WidgetContent} from "@/components/widgets/WidgetContent"
+import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Callout} from "@/components/ui/Callout"
 import { Skeleton } from "../ui/Skeleton"
+import {WidgetError} from "@/components/widgets/base/WidgetError"
 
 const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -48,15 +49,13 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
                     {wallet ? "Disconnect" : "Connect"}
                 </Button>
             </WidgetHeader>
-
-            <WidgetContent>
-                {!wallet ? (
-                    <Callout variant="error" className={"flex items-center gap-2 border border-error/40"}>
-                        <TriangleAlert size={18}/>
-                        No phantom Wallet connected
-                    </Callout>
-                ) : (
-                    <div className={"flex flex-col z-[1]"}>
+            {!wallet ? (
+                <WidgetError
+                    message={"If you want to use this widget, you need to integrate your Phantom wallet first!"}
+                />
+            ) : (
+                <WidgetContent>
+                    <div className={"flex flex-col"}>
                         <div className={"flex flex-row items-center gap-2"}>
                             <p className={"text-nowrap"}>Wallet address:</p>
                             {isLoading ? (
@@ -72,12 +71,12 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
                                 <Skeleton className={"w-20 h-6"}/>
                             ) : (
                                 <p className={"text-lg text-semibold text-primary"}>{`$${wallet?.balance.value.toFixed(2)}`}</p>
-
                             )}
                         </div>
                     </div>
-                )}
-            </WidgetContent>
+                </WidgetContent>
+            )}
+
         </WidgetTemplate>
     )
 }
