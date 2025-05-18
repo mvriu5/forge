@@ -4,7 +4,7 @@ import {ReactNode} from "react"
 import {ToastProvider} from "@/components/ui/ToastProvider"
 import {TooltipProvider} from "@/components/ui/TooltipProvider"
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
-import {DevTool} from "@/components/DevTool"
+import {ThemeProvider} from "@/components/ThemeProvider"
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -18,11 +18,17 @@ const queryClient = new QueryClient({
 function Providers({children}: {children: ReactNode}) {
     return (
         <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
-                <ToastProvider>
-                    {children}
-                </ToastProvider>
-            </TooltipProvider>
+            <ThemeProvider
+                attribute="class"
+                defaultTheme="dark"
+                disableTransitionOnChange
+            >
+                <TooltipProvider>
+                    <ToastProvider>
+                        {children}
+                    </ToastProvider>
+                </TooltipProvider>
+            </ThemeProvider>
         </QueryClientProvider>
     )
 }

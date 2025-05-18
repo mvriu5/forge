@@ -58,7 +58,7 @@ function SettingsDialog() {
             <DialogTrigger asChild onClick={() => setTab("profile")}>
                 <button
                     type={"button"}
-                    className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-secondary hover:text-primary"}
+                    className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-secondary hover:text-primary ring-0 outline-0"}
                 >
                     <Settings size={16} className={"text-tertiary"}/>
                     <p>Settings</p>
@@ -234,7 +234,7 @@ const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
                     <div className={"flex flex-col gap-2"}>
                         <Button
                             variant={"ghost"}
-                            className={"text-xs text-tertiary font-normal hover:bg-0 hover:underline p-0 font-mono"}
+                            className={"text-xs text-tertiary font-normal hover:bg-0 hover:underline p-0 font-mono shadow-none"}
                             onClick={() => integration.active ? integration.onDisconnect() : integration.onConnect()}
                         >
                             {integration.active ? "Disconnect" : "Connect"}

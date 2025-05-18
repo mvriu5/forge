@@ -15,8 +15,8 @@ export const metadata: Metadata = siteConfig
 
 export default function RootLayout({children}: Readonly<{ children: ReactNode }>) {
     return (
-        <html lang="en">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}>
+        <html lang="en" suppressHydrationWarning>
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 <Analytics />
                 <SpeedInsights />
                 <Providers>

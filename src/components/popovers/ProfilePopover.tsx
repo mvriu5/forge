@@ -1,6 +1,6 @@
 "use client"
 
-import {Bug, Hourglass, LogOut, MessageCircleQuestion} from "lucide-react";
+import {Bug, Hourglass, LogOut, MessageCircleQuestion, Sun} from "lucide-react";
 import React, {useEffect, useState} from "react"
 import {authClient} from "@/lib/auth-client"
 import {useRouter} from "next/navigation"
@@ -11,10 +11,12 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/Popover
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
 import {ButtonSpinner} from "@/components/ButtonSpinner"
+import {useTheme} from "next-themes"
 
 function ProfilePopover({editMode}: {editMode: boolean}) {
     const {session, setSession} = useSessionStore()
     const router = useRouter()
+    const {theme, setTheme} = useTheme()
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -75,7 +77,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 <button
                     type={"button"}
                     onClick={() => window.open("https://github.com/mvriu5/forge/issues")}
-                    className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-secondary hover:text-primary"}
+                    className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-secondary hover:text-primary ring-0 outline-0"}
                 >
                     <MessageCircleQuestion size={16} className={"text-tertiary"}/>
                     <p>Help</p>
@@ -83,7 +85,15 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 <SettingsDialog/>
                 <button
                     type={"button"}
-                    className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-error/5 text-error/90 hover:text-error"}
+                    className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-secondary hover:text-primary ring-0 outline-0"}
+                    onClick={() => theme === "light" ? setTheme("dark") : setTheme("light")}
+                >
+                    <Sun size={16} className={"text-tertiary"}/>
+                    <p>Theme</p>
+                </button>
+                <button
+                    type={"button"}
+                    className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-error/5 text-error/90 hover:text-error ring-0 outline-0"}
                     onClick={onSignout}
                 >
                     {signOutLoading ? <ButtonSpinner className={"text-error"}/> : <LogOut size={16} className={"text-error/65"}/>}
