@@ -65,7 +65,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
                 {...listeners}
             >
                 <Button
-                    className={"absolute z-50 size-8 bg-error/10 hover:bg-error/20 text-error hover:text-error border-error/40 bottom-4"}
+                    className={"absolute z-50 size-8 bg-error/20 hover:bg-error/30 text-error hover:text-error border-error/40 bottom-4 backdrop-blur-lg"}
                     onClick={() => {
                         if (deleteTooltip.onMouseLeave) {
                             deleteTooltip?.onMouseLeave()

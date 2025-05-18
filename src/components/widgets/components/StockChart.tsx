@@ -20,7 +20,12 @@ const StockChart = memo(function StockChart({data, yAxisDomain, priceChangePerce
                     labelFormatter={(date: string) => date}
                     content={<ChartTooltipContent />}
                     allowEscapeViewBox={{ x: true, y: true }}
-                    wrapperStyle={{ overflow: 'visible', zIndex: 999 }}
+                    wrapperStyle={{
+                        overflow: "visible",
+                        zIndex: 999,
+                        position: "absolute",
+                        pointerEvents: "none",
+                    }}
                     contentStyle={{ overflow: 'visible' }}
                 />
                 <XAxis dataKey="date" hide />

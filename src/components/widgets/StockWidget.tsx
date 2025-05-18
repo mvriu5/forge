@@ -22,10 +22,10 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {useDashboardStore} from "@/store/dashboardStore"
 import { WidgetEmpty } from "./base/WidgetEmpty"
 
-const StockMediumWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
+const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
         return (
-            <WidgetTemplate id={id} className={"col-span-1 row-span-2"} name={"stockMedium"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} className={"col-span-1 row-span-2"} name={"stock"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Stock Overview"}>
                     <Button
                         className={cn("font-normal bg-tertiary border-main/60 text-sm items-center gap-2 px-2")}
@@ -56,7 +56,7 @@ const StockMediumWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete,
     const {currentDashboard} = useDashboardStore()
     if (!currentDashboard) return
 
-    const widget = getWidget(currentDashboard.id, "stockMedium")
+    const widget = getWidget(currentDashboard.id, "stock")
     if (!widget) return
 
     const [selectedStocks, setSelectedStocks] = useState<AssetOption[]>(widget.config?.stocks ?? [])
@@ -89,7 +89,7 @@ const StockMediumWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete,
     }, [selectedStocks, assetList])
 
     return (
-        <WidgetTemplate id={id} className={"col-span-1 row-span-2"} name={"stockMedium"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} className={"col-span-1 row-span-2"} name={"stock"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Stock Overview"}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
@@ -335,4 +335,4 @@ const Stock = ({selectedStock, selectedTimespan, isPlaceholder = false}: StockPr
 }
 
 
-export {StockMediumWidget}
+export {StockWidget}

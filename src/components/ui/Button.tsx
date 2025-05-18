@@ -1,5 +1,5 @@
 import {cva, type VariantProps} from "class-variance-authority"
-import React, {ComponentPropsWithRef} from "react"
+import React from "react"
 import {Slot} from "@radix-ui/react-slot"
 import {cn} from "@/lib/utils"
 
@@ -38,4 +38,7 @@ const Button = ({asChild, variant, className, ...props}: ButtonProps) => {
     )
 }
 
-export { Button, type ButtonProps }
+export {
+    Button,
+    type ButtonProps
+}

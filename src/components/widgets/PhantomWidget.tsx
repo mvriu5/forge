@@ -51,7 +51,7 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
             </WidgetHeader>
             {!wallet ? (
                 <WidgetError
-                    message={"If you want to use this widget, you need to integrate your Phantom wallet first!"}
+                    message={"Connect your Phantom wallet to use this widget!"}
                 />
             ) : (
                 <WidgetContent>

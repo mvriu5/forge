@@ -3,9 +3,8 @@
 import type React from "react"
 import {EditorWidget} from "@/components/widgets/EditorWidget"
 import {GithubWidget} from "@/components/widgets/GithubWidget"
-import {StockSmallWidget} from "@/components/widgets/StockSmallWidget"
 import {WeatherWidget} from "@/components/widgets/WeatherWidget"
-import {StockMediumWidget} from "@/components/widgets/StockMediumWidget"
+import {StockWidget} from "@/components/widgets/StockWidget"
 import {BookmarkWidget} from "@/components/widgets/BookmarkWidget"
 import {LinearWidget} from "@/components/widgets/LinearWidget"
 import {PhantomWidget} from "@/components/widgets/PhantomWidget"
@@ -54,27 +53,15 @@ export const widgetRegistry: WidgetElement[] = [
     },
     {
         preview: {
-            widgetType: "stockSmall",
-            height: 1,
-            width: 1,
-            previewImage: '/stocksmall_preview.png',
-            title: 'Stock',
-            description: 'Track your stock data',
-            tags: ["finance"]
-        },
-        component: StockSmallWidget,
-    },
-    {
-        preview: {
-            widgetType: "stockMedium",
+            widgetType: "stock",
             height: 2,
             width: 1,
-            previewImage: '/stockmedium_preview.png',
+            previewImage: '/stock_preview.png',
             title: 'Stock Overview',
             description: 'Track your stock data',
             tags: ["finance"]
         },
-        component: StockMediumWidget,
+        component: StockWidget,
     },
     {
         preview: {

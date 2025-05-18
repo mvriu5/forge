@@ -48,7 +48,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                     className={cn(
                         "h-8 md:border border-main/20 flex items-center gap-2 md:bg-secondary md:hover:bg-tertiary md:data-[state=open]:bg-tertiary",
                         "rounded-md md:px-2 md:group-data-[state=disabled]:bg-secondary",
-                        "md:group-data-[state=disabled]:hover:bg-secondary"
+                        "md:group-data-[state=disabled]:hover:bg-secondary shadow-md"
                     )}
                 >
                     {loading ?

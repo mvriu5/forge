@@ -3,7 +3,7 @@ import {getSessionCookie} from "better-auth/cookies"
 
 const authRoutes = ["/signin", "/signup"]
 const passwordRoutes = ["/reset", "/forgot"]
-const landingRoutes = ["/", "/privacy", "/terms", "/sitemap.xml"]
+const landingRoutes = ["/", "/privacy", "/terms", "/sitemap.xml", "/pricing"]
 
 export async function middleware(request: NextRequest) {
     const { pathname, searchParams } = request.nextUrl

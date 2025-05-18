@@ -1,20 +1,22 @@
 "use client"
 
-import React, {useEffect} from "react"
-import {useRef, useState} from "react"
+import React, {useRef, useState} from "react"
 import {
     Blocks,
-    Check, CircleUserRound, CircleUserRoundIcon,
-    CloudAlert, Eye, EyeOff,
+    Check,
+    CircleUserRound,
+    CloudAlert,
+    Eye,
+    EyeOff,
     Github,
-    ImageIcon,
-    LayoutDashboard, Pencil,
-    Settings, Share2,
+    LayoutDashboard,
+    Pencil,
+    Settings,
     Trash,
     User,
-    UserRoundCheck, Wrench,
-    X,
-    XIcon
+    UserRoundCheck,
+    Wrench,
+    X
 } from "lucide-react"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {useSessionStore} from "@/store/sessionStore"
@@ -34,12 +36,11 @@ import {useToast} from "@/components/ui/ToastProvider"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {Input} from "@/components/ui/Input"
-import { LinearIcon } from "@/components/svg/LinearIcon"
+import {LinearIcon} from "@/components/svg/LinearIcon"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {ScrollArea} from "@/components/ui/ScrollArea"
-import {format} from "date-fns"
 import {CopyButton} from "@/components/CopyButton"
-import { Dashboard } from "@/database"
+import {Dashboard} from "@/database"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {RadioGroup, RadioGroupItem} from "@/components/ui/RadioGroup"
 import {useSettingsStore} from "@/store/settingsStore"
@@ -603,18 +604,28 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                                                         value={field.value}
                                                         className="grid-cols-2"
                                                     >
-                                                        <div className={cn("col-span-1 flex items-center gap-2 p-2 shadow-md border border-main/60 rounded-md", field.value === "public" && "border-brand/40")}>
-                                                            <RadioGroupItem value="public" id="vis-public" />
-                                                            <label htmlFor="vis-public" className="font-medium w-full">
-                                                                Public
-                                                            </label>
+                                                        <div className={cn("col-span-1 flex flex-col gap-2 p-2 shadow-md border border-main/60 rounded-md", field.value === "public" && "border-brand")}>
+                                                            <div className={"flex items-center gap-2"}>
+                                                                <RadioGroupItem value="public" id="vis-public" />
+                                                                <label htmlFor="vis-public" className="font-medium w-full">
+                                                                    Public
+                                                                </label>
+                                                            </div>
+                                                            <p className={"text-xs text-tertiary/50 font-mono"}>
+                                                                Other people can see your dashboard layout and copy it.
+                                                            </p>
                                                         </div>
 
-                                                        <div className={cn("col-span-1 flex items-center gap-2 p-2 shadow-md border rounded-md border border-main/60", field.value === "private" && "border-brand/40")}>
-                                                            <RadioGroupItem value="private" id="vis-private" />
-                                                            <label htmlFor="vis-private" className="font-medium w-full">
-                                                                Private
-                                                            </label>
+                                                        <div className={cn("col-span-1 flex flex-col gap-2 p-2 shadow-md border rounded-md border border-main/60", field.value === "private" && "border-brand")}>
+                                                            <div className={"flex items-center gap-2"}>
+                                                                <RadioGroupItem value="private" id="vis-private" />
+                                                                <label htmlFor="vis-private" className="font-medium w-full">
+                                                                    Private
+                                                                </label>
+                                                            </div>
+                                                            <p className={"text-xs text-tertiary/50 font-mono"}>
+                                                                No one else can see your dashboard layout or copy it.
+                                                            </p>
                                                         </div>
                                                     </RadioGroup>
                                                     <FormMessage />
