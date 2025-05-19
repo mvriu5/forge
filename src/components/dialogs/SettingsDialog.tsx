@@ -223,8 +223,9 @@ const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
                     data-state={integration.active ? "active" : "inactive"}
                     key={integration.name}
                     className={cn(
-                        "relative group w-full h-20 flex flex-col items-center justify-center rounded-md bg-secondary border p-2",
-                        "data-[state=active]:border-success/20 data-[state=inactive]:border-error/20"
+                        "relative group w-full h-20 flex flex-col items-center justify-center rounded-md bg-secondary border p-2 ring-2",
+                        "data-[state=active]:border-success/20 data-[state=inactive]:border-error/20",
+                        "data-[state=active]:ring-success/5 data-[state=inactive]:ring-error/5"
                     )}
                 >
                     <div className={"flex items-center gap-2 bg-tertiary px-2 py-1 rounded-md"}>

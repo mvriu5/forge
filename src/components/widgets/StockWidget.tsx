@@ -20,7 +20,7 @@ import {AssetOption, ChartDataPoint} from "@/actions/twelvedata"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {useDashboardStore} from "@/store/dashboardStore"
-import { WidgetEmpty } from "./base/WidgetEmpty"
+import {WidgetEmpty} from "./base/WidgetEmpty"
 
 const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -320,8 +320,8 @@ const Stock = ({selectedStock, selectedTimespan, isPlaceholder = false}: StockPr
                     <p className={"text-secondary text-sm"}>{`$${Number(data?.currentPrice?.toFixed(2))}`}</p>
                     <div
                         className={cn(
-                            "text-sm flex items-center gap-1 px-1 bg-gradient-to-b from-white/2 rounded-md shadow-xl w-max h-max",
-                            data?.priceChangePercent! >= 0 ? "text-success to-success/10" : "text-error to-error/10"
+                            "text-sm flex items-center gap-1 px-1 bg-gradient-to-b dark:from-white/2 from-black/2 rounded-md shadow-xl w-max h-max",
+                            data?.priceChangePercent! >= 0 ? "text-success to-success/25 dark:to-success/10" : "text-error to-error/25 dark:to-error/10"
                         )}
                     >
                         {data?.priceChangePercent! >= 0 ? <TrendingUp size={16}/> : <TrendingDown size={16}/>}

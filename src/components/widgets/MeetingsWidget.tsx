@@ -248,7 +248,7 @@ const EventCard: React.FC<EventProps> = ({ event, color, hourFormat }) => {
                 }}
             />
 
-            <div className="relative z-10 text-white">
+            <div className="relative z-10 text-primary">
                 <p className="font-medium">{event.summary}</p>
                 <p className={"text-secondary"}>{`${format(event.start.dateTime, hourFormat === "24" ? "HH:mm" : "h:mm a")} - ${format(event.end.dateTime, hourFormat === "24" ? "HH:mm" : "h:mm a")}`}</p>
                 <p className={"text-tertiary"}>{event.location}</p>

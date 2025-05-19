@@ -1,7 +1,10 @@
+"use client"
+
 import React, {memo} from "react"
 import {Area, AreaChart, XAxis, YAxis} from "recharts"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
 import {ChartDataPoint} from "@/actions/twelvedata"
+import {useTheme} from "next-themes"
 
 interface StockChartProps {
     data: ChartDataPoint[]
@@ -12,6 +15,7 @@ interface StockChartProps {
 }
 
 const StockChart = memo(function StockChart({data, yAxisDomain, priceChangePercent, gradientId, chartConfig}: StockChartProps) {
+    const {theme} = useTheme()
     return (
         <ChartContainer className="max-h-28 h-full w-full" config={chartConfig}>
             <AreaChart data={data} margin={{ top: 5 }}>
@@ -49,7 +53,7 @@ const StockChart = memo(function StockChart({data, yAxisDomain, priceChangePerce
                     dataKey="price"
                     stroke={priceChangePercent >= 0 ? "#398e3d" : "#d33131"}
                     fill={`url(#${gradientId})`}
-                    fillOpacity={0.3}
+                    fillOpacity={theme === "dark" ? 0.3 : 0.5}
                     strokeWidth={2}
                     dot={false}
                 />
