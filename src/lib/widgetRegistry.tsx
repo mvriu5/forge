@@ -9,6 +9,7 @@ import {BookmarkWidget} from "@/components/widgets/BookmarkWidget"
 import {LinearWidget} from "@/components/widgets/LinearWidget"
 import {PhantomWidget} from "@/components/widgets/PhantomWidget"
 import {MeetingsWidget} from "@/components/widgets/MeetingsWidget"
+import {FitbitWidget} from "@/components/widgets/FitbitWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -122,8 +123,19 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["productivity"]
         },
         component: MeetingsWidget
+    },
+    {
+        preview: {
+            widgetType: "fitbit",
+            height: 2,
+            width: 1,
+            previewImage: '/fitbit_preview.png',
+            title: 'Fitbit',
+            description: 'Your personal fitbit stats',
+            tags: ["health"]
+        },
+        component: FitbitWidget
     }
-
 ]
 
 

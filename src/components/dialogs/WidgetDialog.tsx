@@ -130,6 +130,9 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                         <ToggleGroupItem value="finance" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
                             Finance
                         </ToggleGroupItem>
+                        <ToggleGroupItem value="health" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
+                            Health
+                        </ToggleGroupItem>
                     </ToggleGroup>
                 </div>
 
