@@ -182,7 +182,7 @@ export default function Dashboard() {
                 </div>
             </DndContext>
             {editMode &&
-                <div className={"px-8 py-2.5 z-50 fixed flex items-center gap-4 bg-primary rounded-md bottom-2 left-1/2 transform -translate-x-1/2 shadow-xl border border-main/40"}>
+                <div className={"w-full px-8 py-2.5 z-50 fixed flex justify-center items-center gap-4 bg-primary bottom-0 left-0 shadow-[0_-12px_12px_-1px_rgba(0,0,0,0.2)] border-t border-main/40"}>
                     <Button onClick={handleEditModeCancel} className={"px-6 bg-secondary border-main/60"}>
                         Cancel
                     </Button>
