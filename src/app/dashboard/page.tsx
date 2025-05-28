@@ -76,6 +76,41 @@ export default function Dashboard() {
         .finally(() => setLoading(false))
     }, [session?.user?.id, getAllDashboards, getAllWidgets, fetchIntegrations])
 
+    const findFreePosition = (width: number, height: number, excludeId?: string) => {
+        const occupiedCells: Record<string, boolean> = {}
+
+        // Mark all occupied cells
+        widgets?.forEach((widget) => {
+            if (excludeId && (widget.id === excludeId || widget.widgetType === excludeId)) return
+
+            for (let i = 0; i < widget.width; i++) {
+                for (let j = 0; j < widget.height; j++) {
+                    occupiedCells[`${widget.positionX + i},${widget.positionY + j}`] = true
+                }
+            }
+        })
+
+        // Find first free position
+        for (let y = 0; y <= 4 - height; y++) {
+            for (let x = 0; x <= 4 - width; x++) {
+                let canPlace = true
+
+                for (let i = 0; i < width && canPlace; i++) {
+                    for (let j = 0; j < height && canPlace; j++) {
+                        if (occupiedCells[`${x + i},${y + j}`]) {
+                            canPlace = false
+                        }
+                    }
+                }
+
+                if (canPlace) {
+                    return { x, y }
+                }
+            }
+        }
+
+        return { x: 0, y: 0 } // Fallback
+    }
 
     const handleEditModeEnter = useCallback(() => {
         setEditMode(true)
@@ -172,7 +207,14 @@ export default function Dashboard() {
                     style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
                 >
                     {gridCells?.map((cell) => (
-                        <GridCell key={`${cell.x},${cell.y}`} x={cell.x} y={cell.y} isDroppable={cell.isDroppable} />
+                        <GridCell
+                            key={`${cell.x},${cell.y}`}
+                            x={cell.x}
+                            y={cell.y}
+                            width={cell.width}
+                            height={cell.height}
+                            isDroppable={cell.isDroppable}
+                        />
                     ))}
 
                     {widgetIds
@@ -220,10 +262,12 @@ const MemoizedWidget = memo(WidgetComponent, (prev, next) => prev.id === next.id
 interface GridCellProps {
     x: number
     y: number
+    width: number
+    height: number
     isDroppable: boolean
 }
 
-const GridCell = ({ x, y, isDroppable }: GridCellProps) => {
+const GridCell = ({ x, y, width, height, isDroppable }: GridCellProps) => {
     const { isOver, setNodeRef } = useDroppable({
         id: `cell-${x}-${y}`,
         data: {x, y},
@@ -233,7 +277,7 @@ const GridCell = ({ x, y, isDroppable }: GridCellProps) => {
     return (
         <div
             ref={setNodeRef}
-            className={`min-h-[160px] rounded-md border-2 ${
+            className={`rounded-md border-2 ${
                 isDroppable
                     ? isOver
                         ? "border-dashed border-main bg-tertiary"
@@ -243,6 +287,9 @@ const GridCell = ({ x, y, isDroppable }: GridCellProps) => {
             style={{
                 gridColumnStart: x + 1,
                 gridRowStart: y + 1,
+                gridColumnEnd: x + 1 + width,
+                gridRowEnd: y + 1 + height,
+                minHeight: `${height * 180}px`,
             }}
         />
     )

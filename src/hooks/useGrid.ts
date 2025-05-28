@@ -6,7 +6,13 @@ import {useDashboardStore} from "@/store/dashboardStore"
 export const useGrid = (activeWidget: Widget | null) => {
     const {currentDashboard} = useDashboardStore()
 
-    const [gridCells, setGridCells] = useState<{ x: number, y: number, isDroppable: boolean }[]>([])
+    const [gridCells, setGridCells] = useState<{
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        isDroppable: boolean
+    }[]>([])
 
     const getOccupiedCells = () => {
         const occupiedCells: Record<string, boolean> = {}
@@ -42,26 +48,23 @@ export const useGrid = (activeWidget: Widget | null) => {
     }
 
     useEffect(() => {
-        if (!currentDashboard) return
+        if (!currentDashboard || !activeWidget) {
+            setGridCells([])
+            return
+        }
 
         const cells = []
-        const occupiedCells = getOccupiedCells()
+        const { width, height } = activeWidget
 
-        for (let y = 0; y < 4; y++) {
-            for (let x = 0; x < 4; x++) {
-                const isOccupied = occupiedCells[`${x},${y}`]
-                let isDroppable = false
-
-                if (activeWidget && !isOccupied) {
-                    isDroppable = canPlaceWidget(activeWidget, x, y)
-                }
-
-                cells.push({ x, y, isDroppable })
+        for (let y = 0; y <= 4 - height; y++) {
+            for (let x = 0; x <= 4 - width; x++) {
+                const isDroppable = canPlaceWidget(activeWidget, x, y)
+                cells.push({ x, y, width, height, isDroppable })
             }
         }
 
         setGridCells(cells)
-    }, [activeWidget])
+    }, [activeWidget, currentDashboard])
 
     return gridCells
 }
