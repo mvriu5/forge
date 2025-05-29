@@ -40,7 +40,7 @@ export default function Dashboard() {
     const [dialogOpen, setDialogOpen] = useState(false)
 
     const gridCells = useGrid(activeWidget)
-    const { sensors, handleDragStart, handleDragEnd } = useDragAndDrop(editMode, setActiveWidget)
+    const { sensors, handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop(editMode, setActiveWidget)
 
     useHotkeys("mod+e", (event) => {
         event.preventDefault()
@@ -50,8 +50,7 @@ export default function Dashboard() {
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
-    const widgetIds = useWidgetStore(useShallow((s) =>
-        s.widgets?.filter((w) => w && w?.dashboardId === currentDashboard?.id).map((w) => w.id)))
+    const currentWidgets = useWidgetStore(useShallow((s) => s.widgets?.filter((w) => w && w?.dashboardId === currentDashboard?.id) || []))
 
     useEffect(() => {
         setLoading(true)
@@ -196,6 +195,7 @@ export default function Dashboard() {
                 sensors={sensors}
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
+                onDragOver={handleDragOver}
             >
                 <div className={"flex h-screen xl:hidden items-center justify-center"}>
                     <Callout variant={"info"} className={"border border-info/20 shadow-lg"}>
@@ -217,10 +217,17 @@ export default function Dashboard() {
                         />
                     ))}
 
-                    {widgetIds
-                        ?.filter((id) => !widgetsToRemove?.some((w) => w.id === id))
-                        .map((id) => <MemoizedWidget key={id} id={id} editMode={editMode} onDelete={handleEditModeDelete} />
-                    )}
+                    {currentWidgets
+                        ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
+                        .map((widget) => (
+                            <MemoizedWidget
+                                key={widget.id}
+                                widget={widget}
+                                editMode={editMode}
+                                onDelete={handleEditModeDelete}
+                                isDragging={activeWidget?.id === widget.id}
+                            />
+                    ))}
                 </div>
             </DndContext>
             {editMode &&
@@ -244,20 +251,40 @@ export default function Dashboard() {
 }
 
 interface WidgetProps {
-    id: string
+    widget: Widget
     onDelete: (id: string) => void
     editMode: boolean
+    isDragging: boolean
 }
 
-const WidgetComponent = ({ id, onDelete, editMode }: WidgetProps) => {
-    const widget = useWidgetStore(useShallow((s) => s.widgets?.find((w) => w.id === id)!))
+const WidgetComponent = ({ widget, onDelete, editMode, isDragging }: WidgetProps) => {
     const Component = getWidgetComponent(widget.widgetType)
-    const handleDelete = useCallback(() => onDelete(id), [onDelete, id])
+    const handleDelete = useCallback(() => onDelete(widget.id), [onDelete, widget.id])
     if (!Component) return null
-    return <Component key={widget.id} id={widget.id} editMode={editMode} onWidgetDelete={handleDelete} />
+
+    return (
+        <div
+            className={`transition-opacity duration-200 ${isDragging ? "opacity-50" : "opacity-100"}`}
+            style={{
+                gridColumnStart: widget.positionX + 1,
+                gridRowStart: widget.positionY + 1,
+                gridColumnEnd: widget.positionX + 1 + widget.width,
+                gridRowEnd: widget.positionY + 1 + widget.height,
+            }}
+        >
+            <Component key={widget.id} id={widget.id} editMode={editMode} onWidgetDelete={handleDelete} />
+        </div>
+    )
 }
 
-const MemoizedWidget = memo(WidgetComponent, (prev, next) => prev.id === next.id && prev.onDelete === next.onDelete && prev.editMode === next.editMode)
+const MemoizedWidget = memo(WidgetComponent, (prev, next) =>
+    prev.widget.id === next.widget.id &&
+    prev.widget.positionX === next.widget.positionX &&
+    prev.widget.positionY === next.widget.positionY &&
+    prev.onDelete === next.onDelete &&
+    prev.editMode === next.editMode &&
+    prev.isDragging === next.isDragging
+)
 
 interface GridCellProps {
     x: number
@@ -278,10 +305,8 @@ const GridCell = ({ x, y, width, height, isDroppable }: GridCellProps) => {
         <div
             ref={setNodeRef}
             className={`rounded-md border-2 ${
-                isDroppable
-                    ? isOver
-                        ? "border-dashed border-main bg-tertiary"
-                        : "border-dashed border-main/50"
+                isDroppable && isOver
+                    ? "border-dashed border-main bg-tertiary"
                     : "border-transparent"
             }`}
             style={{
