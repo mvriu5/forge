@@ -79,7 +79,7 @@ export default function Dashboard() {
         const occupiedCells: Record<string, boolean> = {}
 
         // Mark all occupied cells
-        widgets?.forEach((widget) => {
+        widgets?.map((widget) => {
             if (excludeId && (widget.id === excludeId || widget.widgetType === excludeId)) return
 
             for (let i = 0; i < widget.width; i++) {
