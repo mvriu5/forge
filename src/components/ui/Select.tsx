@@ -15,7 +15,7 @@ const SelectTrigger = ({ className, children, ...props }: ComponentPropsWithRef<
         <SelectPrimitive.Trigger
             className={cn(
                 "group flex h-8 w-full items-center justify-between gap-2 rounded-md border border-main/60 bg-secondary px-2 py-1 text-sm",
-                "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 focus:outline-0 shadow-sm dark:shadow-md",
+                "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 focus:outline-0 shadow-xs dark:shadow-md",
                 className
             )}
             {...props}
@@ -62,7 +62,7 @@ const SelectContent = ({ className, children, ...props }: ComponentPropsWithRef<
             <SelectPrimitive.Content
                 className={cn(
                     "max-h-96 z-50 min-w-[8rem] rounded-md border border-main",
-                    "bg-primary text-secondary shadow-[10px_10px_20px_rgba(0,0,0,0.5)] data-[side=bottom]:slide-in-from-top-2",
+                    "bg-primary text-secondary shadow-[10px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)] data-[side=bottom]:slide-in-from-top-2",
                     "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
                     CONTAINER_STYLES.animation,
                     className,

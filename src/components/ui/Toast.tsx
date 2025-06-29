@@ -110,7 +110,7 @@ const Toast = ({id, title, subtitle, icon, scale = 1, position = "br", closeButt
                 >
                     <div
                         className={cn(
-                            "min-w-72 min-h-16 flex flex-row justify-between p-2 pl-4 rounded-md shadow-md " +
+                            "min-w-72 min-h-16 flex flex-row justify-between p-2 pl-4 rounded-md shadow-xs dark:shadow-md " +
                             "bg-primary border border-main/40",
                             className
                         )}

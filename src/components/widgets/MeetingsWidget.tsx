@@ -77,12 +77,12 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
 
     const refreshTooltip = tooltip<HTMLButtonElement>({
         message: "Refresh your issues & pull requests",
-        anchor: "bc"
+        anchor: "tc"
     })
 
     const filterTooltip = tooltip<HTMLButtonElement>({
         message: "Filter your calendars",
-        anchor: "bc"
+        anchor: "tc"
     })
 
     const handleIntegrate = async () => {

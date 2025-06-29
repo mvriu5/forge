@@ -605,29 +605,37 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                                                         value={field.value}
                                                         className="grid-cols-2"
                                                     >
-                                                        <div className={cn("col-span-1 flex flex-col gap-2 p-2 shadow-md border border-main/60 rounded-md", field.value === "public" && "border-brand")}>
+                                                        <label
+                                                            htmlFor="vis-public"
+                                                            className={cn(
+                                                                "col-span-1 flex flex-col gap-2 p-2 shadow-xs dark:shadow-md border border-main/60 rounded-md",
+                                                                field.value === "public" && "border-brand outline outline-brand/60 bg-brand/5"
+                                                            )}
+                                                        >
                                                             <div className={"flex items-center gap-2"}>
                                                                 <RadioGroupItem value="public" id="vis-public" />
-                                                                <label htmlFor="vis-public" className="font-medium w-full">
-                                                                    Public
-                                                                </label>
+                                                                Public
                                                             </div>
                                                             <p className={"text-xs text-tertiary/50 font-mono"}>
                                                                 Other people can see your dashboard layout and copy it.
                                                             </p>
-                                                        </div>
+                                                        </label>
 
-                                                        <div className={cn("col-span-1 flex flex-col gap-2 p-2 shadow-md border rounded-md border border-main/60", field.value === "private" && "border-brand")}>
+                                                        <label
+                                                            htmlFor="vis-private"
+                                                            className={cn(
+                                                                "col-span-1 flex flex-col gap-2 p-2 shadow-xs dark:shadow-md rounded-md border border-main/60",
+                                                                field.value === "private" && "border-brand outline outline-brand/60 bg-brand/5"
+                                                            )}
+                                                        >
                                                             <div className={"flex items-center gap-2"}>
                                                                 <RadioGroupItem value="private" id="vis-private" />
-                                                                <label htmlFor="vis-private" className="font-medium w-full">
-                                                                    Private
-                                                                </label>
+                                                                Private
                                                             </div>
                                                             <p className={"text-xs text-tertiary/50 font-mono"}>
                                                                 No one else can see your dashboard layout or copy it.
                                                             </p>
-                                                        </div>
+                                                        </label>
                                                     </RadioGroup>
                                                     <FormMessage />
                                                 </FormItem>
@@ -748,27 +756,35 @@ const SettingsSection = ({onClose}: SettingsProps) => {
                         control={form.control}
                         name="hourFormat"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Hourformat</FormLabel>
+                            <FormItem className={"w-full"}>
+                                <FormLabel>Hour format</FormLabel>
                                 <RadioGroup
                                     {...field}
                                     onValueChange={field.onChange}
                                     value={field.value}
-                                    className="grid-cols-2"
+                                    className="grid-cols-2 "
                                 >
-                                    <div className={cn("col-span-1 flex items-center gap-2 p-2 shadow-md border border-main/60 rounded-md", field.value === "12" && "border-brand/40")}>
+                                    <label
+                                        htmlFor={"12h-format"}
+                                        className={cn(
+                                            "col-span-1 flex items-center gap-2 p-2 shadow-xs dark:shadow-md border border-main/60 rounded-md",
+                                            field.value === "12" && "border-brand/40 outline outline-brand/60 bg-brand/5"
+                                        )}
+                                    >
                                         <RadioGroupItem value="12" id="12h-format" />
-                                        <label htmlFor="12h-format" className="font-medium w-full">
-                                            12h
-                                        </label>
-                                    </div>
+                                        12h
+                                    </label>
 
-                                    <div className={cn("col-span-1 flex items-center gap-2 p-2 shadow-md rounded-md border border-main/60", field.value === "24" && "border-brand/40")}>
+                                    <label
+                                        htmlFor={"24h-format"}
+                                        className={cn(
+                                            "col-span-1 flex items-center gap-2 p-2 shadow-xs dark:shadow-md rounded-md border border-main/60",
+                                            field.value === "24" && "border-brand/40 outline outline-brand/60 bg-brand/5"
+                                        )}
+                                    >
                                         <RadioGroupItem value="24" id="24h-format" />
-                                        <label htmlFor="24h-format" className="font-medium w-full">
-                                            24h
-                                        </label>
-                                    </div>
+                                        24h
+                                    </label>
                                 </RadioGroup>
                                 <FormMessage />
                             </FormItem>

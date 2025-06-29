@@ -13,6 +13,7 @@
   --bg-success: 123 43% 39%; /* (war #388e3c */
   --bg-info: 214 92% 56%; /* (war #2982f6 */
   --bg-inverted: 0 0% 12%; /* Inverted background color (war #1e1e1e */
+  --bg-main: 0 0% 70%;
 
   /* Text colors */
   --text-primary: 0 0% 18%; /* (war #171717 */
@@ -72,6 +73,7 @@
   --bg-success: 123 43% 39%; /* (war #388e3c */
   --bg-info: 214 92% 56%; /* (war #2982f6 */
   --bg-inverted: 0 0% 92%; /* Inverted background color for dark mode (war #eaeaea */
+  --bg-main: 0 0% 21%;
 
   /* Text colors */
   --text-primary: 0 0% 93%; /* (war #ededed */

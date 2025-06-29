@@ -16,9 +16,48 @@ interface TooltipProps {
     offset?: number
     shortcut?: string
     customTooltip?: ReactNode
+    showArrow?: boolean
 }
 
-const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset = 8, shortcut, trigger, lastTooltipTimestamp, customTooltip }: TooltipProps & { lastTooltipTimestamp: number | null }) => {
+const getArrowClasses = (anchor: string) => {
+    switch (anchor) {
+        // Top anchors - arrow points up
+        case "tl":
+        case "tc":
+        case "tr":
+            return {
+                arrow: "absolute w-3 h-3 bg-[#0d0d0d] dark:bg-[#f2f2f2] border border-main/60 rotate-45 rounded-br-xs border-t-0 border-l-0",
+                position: "top-full left-1/2 -translate-x-1/2 -translate-y-1/2"
+            }
+
+        // Bottom anchors - arrow points down
+        case "bl":
+        case "bc":
+        case "br":
+            return {
+                arrow: "absolute w-2.5 h-2.5 bg-[#0d0d0d] dark:bg-[#f2f2f2] border border-main/60 rounded-tl-xs rotate-45 border-b-0 border-r-0",
+                position: "bottom-full left-1/2 -translate-x-1/2 translate-y-1/2"
+            }
+
+        // Left anchors - arrow points left
+        case "lt":
+        case "lc":
+        case "lb":
+            return {
+                arrow: "absolute w-2 h-2 bg-[#0d0d0d] dark:bg-[#f2f2f2] border border-main/60 rotate-45 rounded-tr-xs border-b-0 border-l-0",
+                position: "left-full top-1/2 -translate-y-1/2 -translate-x-1/2"
+            }
+
+        // Right anchors - arrow points right
+        default:
+            return {
+                arrow: "absolute w-2 h-2 bg-[#0d0d0d] dark:bg-[#f2f2f2] border border-main/60 rotate-45 rounded-bl-xs border-t-0 border-r-0",
+                position: "right-full top-1/2 -translate-y-1/2 translate-x-1/2"
+            }
+    }
+}
+
+const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset = 8, shortcut, trigger, lastTooltipTimestamp, customTooltip, showArrow = true }: TooltipProps & { lastTooltipTimestamp: number | null }) => {
     const canHover = useHoverSupported()
 
     const [isVisible, setIsVisible] = useState(false)
@@ -138,6 +177,8 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
     if (!isVisible) return
     if (!message && !customTooltip) return
 
+    const arrowStyles = showArrow ? getArrowClasses(anchor) : 0
+
     if (customTooltip) {
         return (
             <div
@@ -151,13 +192,14 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
                 id={`tooltip-${id}`}
             >
                 {customTooltip}
+                {arrowStyles && <div className={cn(arrowStyles.arrow, arrowStyles.position)} />}
             </div>
         )
     }
 
     return (
         <div
-            className={cn("absolute z-50 w-max flex gap-4 items-center px-2 py-1 rounded-md shadow-md text-xs bg-[#0d0d0d] dark:bg-[#f2f2f2] border border-main/60")}
+            className={cn("absolute z-50 w-max flex gap-4 items-center px-2 py-1 rounded-md shadow-md text-xs bg-[#0d0d0d] dark:bg-[#f2f2f2] border border-main/60 overflow-visible")}
             style={{
                 top: position.y,
                 left: position.x,
@@ -176,6 +218,7 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
                     keyString={shortcut}
                     className={"bg-inverted dark:text-black/50"}/>
             }
+            {arrowStyles && <div className={cn(arrowStyles.arrow, arrowStyles.position)} />}
         </div>
     )
 }

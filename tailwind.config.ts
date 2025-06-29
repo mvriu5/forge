@@ -42,6 +42,7 @@ export default {
         info: withOpacity('--bg-info'),
         brand: withOpacity('--bg-brand'),
         inverted: withOpacity('--bg-inverted'),
+        main: withOpacity('--bg-main'),
       },
       textColor: {
         primary: withOpacity('--text-primary'),

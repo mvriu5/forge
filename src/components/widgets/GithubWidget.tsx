@@ -106,12 +106,12 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
     const filterTooltip = tooltip<HTMLButtonElement>({
         message: "Filter your issues",
-        anchor: "bc",
+        anchor: "tc",
     })
 
     const refreshTooltip = tooltip<HTMLButtonElement>({
         message: "Refresh your issues & pull requests",
-        anchor: "bc",
+        anchor: "tc",
     })
 
     const dropdownFilterItems: MenuItem[] = Array.from(new Set(allLabels.map((label) => ({
