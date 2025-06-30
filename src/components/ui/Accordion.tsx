@@ -1,24 +1,23 @@
 "use client"
 
 import * as React from "react"
-import * as AccordionPrimitive from "@radix-ui/react-accordion"
+import {Accordion} from "radix-ui"
 import { ChevronDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import type {ComponentPropsWithRef, ReactNode} from "react"
+import type {ComponentPropsWithRef} from "react"
 
-const Accordion = AccordionPrimitive.Root
 
-const AccordionItem = ({ title, children, className, ...props }: ComponentPropsWithRef<typeof AccordionPrimitive.Item & {title: string}>) => {
+const AccordionItem = ({ title, children, className, ...props }: ComponentPropsWithRef<typeof Accordion.Item & {title: string}>) => {
     return (
         <>
-            <AccordionPrimitive.Item
+            <Accordion.Item
                 className={cn("", className)}
                 {...props}
             >
-                <AccordionPrimitive.Header
+                <Accordion.Header
                     className="flex px-2 rounded-t-md data-[state=open]:text-primary data-[state=open]:bg-tertiary">
-                    <AccordionPrimitive.Trigger
+                    <Accordion.Trigger
                         className={cn(
                             "flex flex-1 items-center justify-between py-2 font-medium transition-all",
                             "[&[data-state=open]>svg]:rotate-180",
@@ -27,18 +26,18 @@ const AccordionItem = ({ title, children, className, ...props }: ComponentPropsW
                     >
                         {title}
                         <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200"/>
-                    </AccordionPrimitive.Trigger>
-                </AccordionPrimitive.Header>
+                    </Accordion.Trigger>
+                </Accordion.Header>
                 {children}
                 <div className={"h-2 border-b border-main mb-2"}/>
-            </AccordionPrimitive.Item>
+            </Accordion.Item>
         </>
     )
 }
 
-const AccordionContent = ({ className, children, ...props }: ComponentPropsWithRef<typeof AccordionPrimitive.Content>) => {
+const AccordionContent = ({ className, children, ...props }: ComponentPropsWithRef<typeof Accordion.Content>) => {
     return (
-        <AccordionPrimitive.Content
+        <Accordion.Content
             className={cn(
                 "overflow-hidden text-sm data-[state=open]:bg-tertiary px-2 rounded-b-md",
                 "transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
@@ -48,7 +47,7 @@ const AccordionContent = ({ className, children, ...props }: ComponentPropsWithR
             <div className={cn("pb-4 pt-0", className)}>
                 {children}
             </div>
-        </AccordionPrimitive.Content>
+        </Accordion.Content>
     )
 }
 

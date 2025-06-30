@@ -44,6 +44,7 @@ import {Dashboard} from "@/database"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {RadioGroup, RadioGroupItem} from "@/components/ui/RadioGroup"
 import {useSettingsStore} from "@/store/settingsStore"
+import {RadioGroupBox} from "@/components/ui/RadioGroupBox"
 
 function SettingsDialog() {
     const {session} = useSessionStore()
@@ -605,37 +606,27 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                                                         value={field.value}
                                                         className="grid-cols-2"
                                                     >
-                                                        <label
-                                                            htmlFor="vis-public"
-                                                            className={cn(
-                                                                "col-span-1 flex flex-col gap-2 p-2 shadow-xs dark:shadow-md border border-main/60 rounded-md",
-                                                                field.value === "public" && "border-brand outline outline-brand/60 bg-brand/5"
-                                                            )}
+                                                        <RadioGroupBox
+                                                            title={"Public"}
+                                                            value={"public"}
+                                                            id={"vis-public"}
+                                                            compareField={field.value}
                                                         >
-                                                            <div className={"flex items-center gap-2"}>
-                                                                <RadioGroupItem value="public" id="vis-public" />
-                                                                Public
-                                                            </div>
                                                             <p className={"text-xs text-tertiary/50 font-mono"}>
                                                                 Other people can see your dashboard layout and copy it.
                                                             </p>
-                                                        </label>
+                                                        </RadioGroupBox>
 
-                                                        <label
-                                                            htmlFor="vis-private"
-                                                            className={cn(
-                                                                "col-span-1 flex flex-col gap-2 p-2 shadow-xs dark:shadow-md rounded-md border border-main/60",
-                                                                field.value === "private" && "border-brand outline outline-brand/60 bg-brand/5"
-                                                            )}
+                                                        <RadioGroupBox
+                                                            title={"Private"}
+                                                            value={"private"}
+                                                            id={"vis-private"}
+                                                            compareField={field.value}
                                                         >
-                                                            <div className={"flex items-center gap-2"}>
-                                                                <RadioGroupItem value="private" id="vis-private" />
-                                                                Private
-                                                            </div>
                                                             <p className={"text-xs text-tertiary/50 font-mono"}>
                                                                 No one else can see your dashboard layout or copy it.
                                                             </p>
-                                                        </label>
+                                                        </RadioGroupBox>
                                                     </RadioGroup>
                                                     <FormMessage />
                                                 </FormItem>
@@ -764,27 +755,18 @@ const SettingsSection = ({onClose}: SettingsProps) => {
                                     value={field.value}
                                     className="grid-cols-2 "
                                 >
-                                    <label
-                                        htmlFor={"12h-format"}
-                                        className={cn(
-                                            "col-span-1 flex items-center gap-2 p-2 shadow-xs dark:shadow-md border border-main/60 rounded-md",
-                                            field.value === "12" && "border-brand/40 outline outline-brand/60 bg-brand/5"
-                                        )}
-                                    >
-                                        <RadioGroupItem value="12" id="12h-format" />
-                                        12h
-                                    </label>
-
-                                    <label
-                                        htmlFor={"24h-format"}
-                                        className={cn(
-                                            "col-span-1 flex items-center gap-2 p-2 shadow-xs dark:shadow-md rounded-md border border-main/60",
-                                            field.value === "24" && "border-brand/40 outline outline-brand/60 bg-brand/5"
-                                        )}
-                                    >
-                                        <RadioGroupItem value="24" id="24h-format" />
-                                        24h
-                                    </label>
+                                    <RadioGroupBox
+                                        title={"12h"}
+                                        value={"12"}
+                                        id={"12h-format"}
+                                        compareField={field.value}
+                                    />
+                                    <RadioGroupBox
+                                        title={"24h"}
+                                        value={"24"}
+                                        id={"24h-format"}
+                                        compareField={field.value}
+                                    />
                                 </RadioGroup>
                                 <FormMessage />
                             </FormItem>

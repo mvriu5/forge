@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { type DialogProps } from "@radix-ui/react-dialog"
 import { Command as CommandPrimitive } from "cmdk"
 import { Search } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -21,7 +20,7 @@ const Command = ({className, ...props}: ComponentPropsWithRef<typeof CommandPrim
     )
 }
 
-const CommandDialog = ({children, ...props}: DialogProps) => {
+const CommandDialog = ({children, ...props}: any) => {
     return (
         <Dialog {...props}>
             <DialogContent className="overflow-hidden p-0 border-0">

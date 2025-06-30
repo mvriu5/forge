@@ -1,10 +1,10 @@
 "use client"
 
 import * as React from "react"
-import * as SelectPrimitive from "@radix-ui/react-select"
+import {Select as SelectPrimitive} from "radix-ui"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
 import {cn, CONTAINER_STYLES} from "@/lib/utils"
-import { ComponentPropsWithRef, ComponentPropsWithoutRef } from "react"
+import { ComponentPropsWithRef } from "react"
 
 const Select = SelectPrimitive.Root
 const SelectGroup = SelectPrimitive.Group

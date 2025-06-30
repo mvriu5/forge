@@ -1,9 +1,8 @@
 "use client"
 
 import * as React from "react"
-import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
+import {ScrollArea as ScrollAreaPrimitive} from "radix-ui"
 import { cn } from "@/lib/utils"
-import {ref} from "framework-utils"
 
 interface ScrollAreaProps extends React.ComponentPropsWithRef<typeof ScrollAreaPrimitive.Root> {
     thumbClassname?: string
