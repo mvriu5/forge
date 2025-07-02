@@ -42,7 +42,7 @@ import {ScrollArea} from "@/components/ui/ScrollArea"
 import {CopyButton} from "@/components/CopyButton"
 import {Dashboard} from "@/database"
 import {tooltip} from "@/components/ui/TooltipProvider"
-import {RadioGroup, RadioGroupItem} from "@/components/ui/RadioGroup"
+import {RadioGroup} from "@/components/ui/RadioGroup"
 import {useSettingsStore} from "@/store/settingsStore"
 import {RadioGroupBox} from "@/components/ui/RadioGroupBox"
 
@@ -573,7 +573,7 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                     <DialogContent className={"md:min-w-[300px] p-4"}>
                         <DialogHeader className={"flex flex-row justify-between items-start"}>
                             <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
-                                Are u sure you want to delete this dashboard?
+                                Edit dashboard
                             </DialogTitle>
                             <DialogClose/>
                         </DialogHeader>
@@ -612,7 +612,7 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                                                             id={"vis-public"}
                                                             compareField={field.value}
                                                         >
-                                                            <p className={"text-xs text-tertiary/50 font-mono"}>
+                                                            <p className={"text-xs text-tertiary font-mono"}>
                                                                 Other people can see your dashboard layout and copy it.
                                                             </p>
                                                         </RadioGroupBox>
@@ -623,7 +623,7 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                                                             id={"vis-private"}
                                                             compareField={field.value}
                                                         >
-                                                            <p className={"text-xs text-tertiary/50 font-mono"}>
+                                                            <p className={"text-xs text-tertiary font-mono"}>
                                                                 No one else can see your dashboard layout or copy it.
                                                             </p>
                                                         </RadioGroupBox>
@@ -674,28 +674,32 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                             <Trash size={16}/>
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className={"md:min-w-[300px] p-4"}>
+                    <DialogContent className={"w-[380px] p-4"}>
                         <DialogHeader className={"flex flex-row justify-between items-start"}>
                             <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
-                                Are u sure you want to delete this dashboard?
+                                Delete dashboard
                             </DialogTitle>
                             <DialogClose/>
                         </DialogHeader>
-                        <div className={"w-full flex gap-2 justify-end"}>
-                            <Button
-                                className={"w-max"}
-                                onClick={() => setDeleteDialogOpen(false)}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                variant={"error"}
-                                className={"w-max"}
-                                onClick={handleDelete}
-                            >
-                                {deleteLoading && <ButtonSpinner/>}
-                                Delete
-                            </Button>
+                        <div className={"w-full flex flex-col gap-2 justify-end"}>
+                            Are you sure you want to delete this dashboard?
+
+                            <div className={"flex items-center gap-2 justify-end"}>
+                                <Button
+                                    className={"w-max"}
+                                    onClick={() => setDeleteDialogOpen(false)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant={"error"}
+                                    className={"w-max"}
+                                    onClick={handleDelete}
+                                >
+                                    {deleteLoading && <ButtonSpinner/>}
+                                    Delete
+                                </Button>
+                            </div>
                         </div>
                     </DialogContent>
                 </Dialog>

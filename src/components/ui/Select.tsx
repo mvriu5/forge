@@ -22,7 +22,7 @@ const SelectTrigger = ({ className, children, ...props }: ComponentPropsWithRef<
         >
             {children}
             <SelectPrimitive.Icon asChild>
-                <ChevronDown size={12} className="text-secondary group-data-[state=open]:rotate-180 transition-all" />
+                <ChevronDown size={14} className="text-tertiary group-data-[state=open]:rotate-180 group-data-[state=open]:mt-0 transition-all mt-0.5" />
             </SelectPrimitive.Icon>
         </SelectPrimitive.Trigger>
     )

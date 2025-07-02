@@ -5,6 +5,7 @@ import {ToastProvider} from "@/components/ui/ToastProvider"
 import {TooltipProvider} from "@/components/ui/TooltipProvider"
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
 import {ThemeProvider} from "@/components/ThemeProvider"
+import { DevTool } from "./DevTool"
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -25,6 +26,7 @@ function Providers({children}: {children: ReactNode}) {
             >
                 <TooltipProvider>
                     <ToastProvider>
+                        <DevTool/>
                         {children}
                     </ToastProvider>
                 </TooltipProvider>

@@ -16,7 +16,7 @@ const RadioGroupBox = ({title, value, id, compareField, children, ...props}: Rad
             htmlFor={id}
             className={cn(
                 "col-span-1 flex flex-col gap-2 p-2 shadow-xs dark:shadow-md rounded-md border border-main/60",
-                compareField === value && "border-brand outline outline-brand/60 bg-brand/5"
+                compareField === value && "border-brand outline outline-brand/60 bg-brand/5 text-primary"
             )}
             {...props}
         >

@@ -129,7 +129,7 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
                                                     id={"vis-public"}
                                                     compareField={field.value}
                                                 >
-                                                    <p className={"text-xs text-tertiary/50 font-mono"}>
+                                                    <p className={"text-xs text-tertiary font-mono"}>
                                                         Other people can see your dashboard layout and copy it.
                                                     </p>
                                                 </RadioGroupBox>
@@ -140,7 +140,7 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
                                                     id={"vis-private"}
                                                     compareField={field.value}
                                                 >
-                                                    <p className={"text-xs text-tertiary/50 font-mono"}>
+                                                    <p className={"text-xs text-tertiary font-mono"}>
                                                         No one else can see your dashboard layout or copy it.
                                                     </p>
                                                 </RadioGroupBox>
