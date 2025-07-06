@@ -55,7 +55,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
         return (
             <div
                 className={cn(
-                    "relative flex flex-col gap-2 rounded-md bg-tertiary border overflow-hidden border-main/40 p-4 cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
+                    "relative h-full flex flex-col gap-2 rounded-md bg-tertiary border overflow-hidden border-main/40 p-4 cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
                     isDragging && "opacity-50 animate-none",
                     className
                 )}
@@ -86,7 +86,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
     return (
         <div
             className={cn(
-                "max-h-full flex flex-col gap-2 rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden",
+                "h-full flex flex-col gap-2 rounded-md bg-tertiary border border-main/40 p-4 overflow-hidden",
                 isPlaceholder && "pointer-events-none",
                 className
             )}

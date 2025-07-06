@@ -282,6 +282,8 @@ const MemoizedWidget = memo(WidgetComponent, (prev, next) =>
     prev.widget.id === next.widget.id &&
     prev.widget.positionX === next.widget.positionX &&
     prev.widget.positionY === next.widget.positionY &&
+    prev.widget.height === next.widget.height &&
+    prev.widget.width === next.widget.width &&
     prev.onDelete === next.onDelete &&
     prev.editMode === next.editMode &&
     prev.isDragging === next.isDragging

@@ -26,7 +26,6 @@ function Providers({children}: {children: ReactNode}) {
             >
                 <TooltipProvider>
                     <ToastProvider>
-                        <DevTool/>
                         {children}
                     </ToastProvider>
                 </TooltipProvider>

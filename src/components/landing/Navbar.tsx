@@ -19,7 +19,7 @@ function Navbar() {
     const menuItems = (
         <div className="flex flex-col items-start gap-2">
             <Link href="/" className={"text-lg text-secondary font-semibold hover:text-brand"}>Home</Link>
-            <p className="text-lg text-tertiary/60 font-semibold cursor-default">Widgets</p>
+            <Link href={"/widgets"} className="text-lg text-secondary font-semibold hover:text-brand">Widgets</Link>
             <Link href={"/pricing"} className="text-lg text-secondary font-semibold hover:text-brand">Pricing</Link>
             <p className="text-lg text-tertiary/60 font-semibold cursor-default">Integrations</p>
             <p className="text-lg text-tertiary/60 font-semibold cursor-default">Docs</p>
