@@ -1,12 +1,36 @@
 import {useIntegrationStore} from "@/store/integrationStore"
 import {useQuery} from "@tanstack/react-query"
-import {fetchCalendarEvents, fetchCalendarList} from "@/actions/google"
+import {fetchCalendarEvents, fetchCalendarList, refreshToken} from "@/actions/google"
 import {useEffect, useState} from "react"
 import {authClient} from "@/lib/auth-client"
 
 export const useGoogleCalendar = () => {
-    const {googleIntegration} = useIntegrationStore()
+    const {googleIntegration, updateIntegration} = useIntegrationStore()
     const [selectedCalendars, setSelectedCalendars] = useState<string[]>([])
+
+    const {data: token} = useQuery({
+        queryKey: ["googleRefreshToken", googleIntegration?.refreshToken],
+        queryFn: async () => await refreshToken(googleIntegration?.refreshToken!),
+        enabled: Boolean(googleIntegration?.refreshToken) && googleIntegration?.accessTokenExpiration!! <= new Date(),
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        refetchInterval: 5 * 60 * 1000, // 5 minutes
+    })
+
+    useEffect(() => {
+        if (!googleIntegration || !token) return
+        updateIntegration(googleIntegration.provider ?? "google", googleIntegration.userId!, {
+            id: googleIntegration.id,
+            accountId: googleIntegration.accountId,
+            userId: googleIntegration.userId,
+            provider: googleIntegration.provider,
+            accessToken: token.access_token,
+            refreshToken: googleIntegration.refreshToken,
+            accessTokenExpiration: googleIntegration.accessTokenExpiration,
+            refreshTokenExpiration: new Date(Date.now() + token.refresh_token_expires_in),
+            createdAt: googleIntegration.createdAt
+
+        })
+    }, [token])
 
     const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError} = useQuery({
         queryKey: ["googleCalendarList", googleIntegration?.accessToken],

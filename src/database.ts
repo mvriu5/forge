@@ -156,6 +156,7 @@ export const getSettingsFromUser = async (userId: string): Promise<SettingsSelec
 
 //Accounts
 export type Account = typeof account.$inferSelect
+export type AccountInsert = typeof account.$inferInsert
 
 export const getGoogleAccount = async (userId: string): Promise<Account[]> => {
     return db
@@ -185,6 +186,18 @@ export const getLinearAccount = async (userId: string): Promise<Account[]> => {
             eq(account.userId, userId),
             eq(account.providerId, "linear")
         ))
+}
+
+export const updateAccount = async (userId: string, provider: string, data: Partial<AccountInsert>) => {
+    const now = new Date()
+    return db
+        .update(account)
+        .set({...data, updatedAt: now})
+        .where(and(
+            eq(account.userId, userId),
+            eq(account.providerId, provider)
+        ))
+        .returning()
 }
 
 //Users

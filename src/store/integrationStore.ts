@@ -8,7 +8,9 @@ interface Integration {
     userId: string
     provider: string
     accessToken: string | null
+    refreshToken: string | null
     accessTokenExpiration: Date | null
+    refreshTokenExpiration: Date | null
     createdAt: Date
 }
 
@@ -17,6 +19,7 @@ interface IntegrationStore {
     fetchIntegrations: (userId: string) => Promise<void>
     addIntegration: (userId: string) => void
     removeIntegration: (provider: string) => Promise<void>
+    updateIntegration: (provider: string, userId: string, data: Integration) => void
     githubIntegration: Integration | null
     googleIntegration: Integration | null
     linearIntegration: Integration | null
@@ -41,7 +44,9 @@ export const useIntegrationStore = create<IntegrationStore>((set, get) => ({
                 userId: account.userId,
                 provider: account.providerId,
                 accessToken: account.accessToken,
+                refreshToken: account.refreshToken,
                 accessTokenExpiration: account.accessTokenExpiresAt,
+                refreshTokenExpiration: account.refreshTokenExpiresAt,
                 createdAt: account.createdAt
             }))
 
@@ -73,5 +78,18 @@ export const useIntegrationStore = create<IntegrationStore>((set, get) => ({
                 linearIntegration: provider === "linear" ? null : state.linearIntegration,
             }
         })
+    },
+    updateIntegration: async (provider, userId, data) => {
+        try {
+            const response = await fetch(`/api/accounts?userId=${userId}&provider=${provider}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            await response.json()
+            await get().fetchIntegrations(userId)
+        } catch (error) {
+            set({ integrations: get().integrations })
+        }
     }
 }))

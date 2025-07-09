@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server"
-import {Account, getGithubAccount, getGoogleAccount, getLinearAccount} from "@/database"
+import {Account, getGithubAccount, getGoogleAccount, getLinearAccount, updateAccount, updateDashboard} from "@/database"
 
 export async function GET(req: Request) {
     try {
@@ -21,5 +21,34 @@ export async function GET(req: Request) {
         return NextResponse.json(accounts, { status: 200 })
     } catch (error) {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    }
+}
+
+export async function PUT(req: Request) {
+    try {
+        const body = await req.json()
+        const { userId, provider, refreshToken } = body
+
+        if (!userId || !provider) {
+            return NextResponse.json(
+                { error: "UserId and Integration are required" },
+                { status: 400 })
+        }
+
+        const updatedAccount = await updateAccount(userId, provider, {
+            refreshToken
+        })
+
+        if (!updatedAccount) {
+            return NextResponse.json(
+                { error: "Account not found or could not be updated" },
+                { status: 404 })
+        }
+
+        return NextResponse.json(updatedAccount, { status: 200 })
+    } catch (error) {
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: 500 })
     }
 }
