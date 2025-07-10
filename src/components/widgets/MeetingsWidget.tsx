@@ -47,11 +47,11 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
 
         return (
             <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Meetings"} icon={ <GoogleIcon className={"fill-primary size-5"}/>}>
-                    <Button className={"px-2 group"}>
+                <WidgetHeader title={"Meetings"}>
+                    <Button className={"h-6 px-2 group border-0 shadow-0"}>
                         <Filter className="size-4" />
                     </Button>
-                    <Button className={"px-2 group"}>
+                    <Button className={"h-6 px-2 group border-0 shadow-0"}>
                         <RefreshCw className="size-4" />
                     </Button>
                 </WidgetHeader>
@@ -162,7 +162,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
 
     return (
         <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Meetings"} icon={ <GoogleIcon className={"fill-primary size-5"}/>}>
+            <WidgetHeader title={"Meetings"}>
                 <DropdownMenu
                     asChild
                     items={dropdownFilterItems}
@@ -172,7 +172,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                 >
                     <Button
                         data-state={dropdownOpen ? "open" : "closed"}
-                        className={"px-2 group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
+                        className={"h-6 px-2 shadow-none group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary border-0"}
                         disabled={!calendars || calendars?.length === 0 || isLoading || isFetching}
                         {...filterTooltip}
                     >
@@ -180,7 +180,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                     </Button>
                 </DropdownMenu>
                 <Button
-                    className={"px-2 group"}
+                    className={"h-6 px-2 group border-0 shadow-none"}
                     onClick={() => refetch()}
                     data-loading={(isLoading || isFetching) ? "true" : "false"}
                     {...refreshTooltip}

@@ -3,7 +3,7 @@ import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTempl
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {getLogoFromLink} from "@/components/svg/BookmarkIcons"
 import {Button} from "@/components//ui/Button"
-import {Bookmark, Link, Trash} from "lucide-react"
+import {Bookmark, Link, Plus, Trash} from "lucide-react"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
@@ -41,9 +41,8 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         return (
             <WidgetTemplate id={id} className={"col-span-1 row-span-2"} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Bookmark"}>
-                    <Button className={"bg-tertiary gap-1 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
-                        <Bookmark size={18}/>
-                        Add
+                    <Button className={"h-6 px-2 border-0 bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
+                        <Plus size={16}/>
                     </Button>
                 </WidgetHeader>
                 <div className={"w-full h-px border-b border-main/40"}/>
@@ -115,9 +114,8 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
             <WidgetHeader title={"Bookmark"}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
-                        <Button className={"bg-tertiary gap-1 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
-                            <Bookmark size={18}/>
-                            Add
+                        <Button className={"h-6 border-0 bg-tertiary px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
+                            <Plus size={16}/>
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className={"w-56"} align={"end"}>

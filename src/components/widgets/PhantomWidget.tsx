@@ -7,7 +7,7 @@ import {Button} from "@/components/ui/Button"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {PhantomIcon} from "@/components/svg/PhantomIcon"
 import {CopyButton} from "@/components/CopyButton"
-import {Copy, TriangleAlert} from "lucide-react"
+import {Copy, Plug, TriangleAlert, Unplug} from "lucide-react"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Callout} from "@/components/ui/Callout"
 import { Skeleton } from "../ui/Skeleton"
@@ -17,9 +17,9 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
     if (isPlaceholder) {
         return (
             <WidgetTemplate id={id} className={"flex flex-col gap-4 col-span-1 row-span-1 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Phantom"} icon={ <PhantomIcon className={"text-primary size-6"}/> } className={"z-[1]"}>
-                    <Button onClick={() => wallet ? disconnect() : connect()}>
-                        Disconnect
+                <WidgetHeader title={"Phantom"} className={"z-[1]"}>
+                    <Button onClick={() => wallet ? disconnect() : connect()} className={"h-6 px-2 border-0 shadow-none"}>
+                        <Unplug size={16}/>
                     </Button>
                 </WidgetHeader>
 
@@ -44,9 +44,9 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
 
     return (
         <WidgetTemplate id={id} className={"flex flex-col gap-4 col-span-1 row-span-1 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Phantom"} icon={ <PhantomIcon className={"text-primary size-6"}/> } className={"z-[1]"}>
-                <Button onClick={() => wallet ? disconnect() : connect()}>
-                    {wallet ? "Disconnect" : "Connect"}
+            <WidgetHeader title={"Phantom"} className={"z-[1]"}>
+                <Button onClick={() => wallet ? disconnect() : connect()} className={"h-6 px-2 shadow-none border-0"}>
+                    {wallet ? <Unplug size={16}/> : <Plug size={16}/>}
                 </Button>
             </WidgetHeader>
             {!wallet ? (

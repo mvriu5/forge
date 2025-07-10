@@ -156,7 +156,13 @@ export default function Dashboard() {
     if (loading) {
         return (
             <div className={"flex flex-col w-screen h-screen"}>
-                <Header onEdit={handleEditModeEnter} editMode={editMode} isLoading={true}/>
+                <Header
+                    onEdit={handleEditModeEnter}
+                    handleEditModeSave={handleEditModeSave}
+                    handleEditModeCancel={handleEditModeCancel}
+                    editMode={editMode}
+                    isLoading={true}
+                />
                 <div className={"h-full w-full flex items-center justify-center"}>
                     <SpinnerDotted size={56} thickness={160} speed={100} color="rgba(237, 102, 49, 1)" />
                 </div>
@@ -191,7 +197,13 @@ export default function Dashboard() {
 
     return (
         <div className={"flex flex-col w-full h-full max-h-screen max-w-screen overflow-hidden"}>
-            <Header onEdit={handleEditModeEnter} editMode={editMode}/>
+            <Header
+                onEdit={handleEditModeEnter}
+                editMode={editMode}
+                editModeLoading={editModeLoading}
+                handleEditModeSave={handleEditModeSave}
+                handleEditModeCancel={handleEditModeCancel}
+            />
             <DndContext
                 sensors={sensors}
                 onDragStart={handleDragStart}
@@ -204,7 +216,7 @@ export default function Dashboard() {
                     </Callout>
                 </div>
                 <div
-                    className="relative w-full h-[calc(100vh-64px)] hidden xl:grid grid-cols-4 gap-8 p-8"
+                    className="relative w-full h-[calc(100vh-64px)] hidden xl:grid grid-cols-4 gap-4 p-4"
                     style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
                 >
                     {gridCells?.map((cell) => (
@@ -231,17 +243,6 @@ export default function Dashboard() {
                     ))}
                 </div>
             </DndContext>
-            {editMode &&
-                <div className={"w-full px-8 py-2.5 z-50 fixed flex justify-center items-center gap-4 bg-primary bottom-0 left-0 shadow-[0_-12px_12px_-1px_rgba(0,0,0,0.2)] border-t border-main/40"}>
-                    <Button onClick={handleEditModeCancel} className={"px-6 bg-secondary border-main/60"}>
-                        Cancel
-                    </Button>
-                    <Button variant="brand" onClick={handleEditModeSave} className={"px-6"}>
-                        {editModeLoading && <ButtonSpinner/>}
-                        Save
-                    </Button>
-                </div>
-            }
             <DashboardDialog
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}

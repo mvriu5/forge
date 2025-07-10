@@ -52,7 +52,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
         return (
             <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Github"} icon={<Github size={20} className={"text-primary"}/>}>
+                <WidgetHeader title={"Github"}>
                     <Badge
                         variant="brand"
                         className="text-xs bg-brand/10 border-brand/40 font-mono"
@@ -157,7 +157,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
     return (
         <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Github"} icon={<Github size={20} className={"text-primary"}/>}>
+            <WidgetHeader title={"Github"}>
                 <Badge
                     variant="brand"
                     className="text-xs bg-brand/10 border-brand/40 font-mono"

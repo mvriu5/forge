@@ -164,7 +164,7 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
                         <p className={"text-brand"}>{dashboard?.name}</p>
                     }
                     <p className={"text-tertiary"}>by</p>
-                    <div className={"h-6 px-1 flex items-center gap-2 text-sm bg-tertiary rounded-md border border-main/40"}>
+                    <div className={"h-6 px-1 flex items-center gap-2 text-sm rounded-md border border-main/40"}>
                         {userLoading || dbLoading ?
                             <Skeleton className={"size-4 rounded-full"}/> :
                             <Avatar className={"size-4 border border-main/20"}>
@@ -180,23 +180,25 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
                 </div>
             </div>
             <div className={"flex items-center gap-4"}>
-                <Button
-                    className={"group gap-2 text-tertiary hover:text-secondary text-sm"}
-                    variant={"ghost"}
-                    onClick={() => router.push("/dashboard")}
-                >
-                    <Undo2 size={16}/>
-                    <p className={"group-hover:text-primary"}>Go back</p>
-                </Button>
-                <Button
-                    className={"px-1.5"}
-                    variant={"brand"}
-                    onClick={handleDashboardCopy}
-                    disabled={!dashboard || !dashboard.isPublic || userLoading || dbLoading}
-                    {...copyDashboardTooltip}
-                >
-                    {copyDashboardLoading ? <ButtonSpinner/> : <Workflow size={20}/>}
-                </Button>
+                <div className={"flex items-center gap-2"}>
+                    <Button
+                        className={"group gap-2 bg-secondary border border-main/60 text-tertiary hover:text-secondary text-sm"}
+                        variant={"ghost"}
+                        onClick={() => router.push("/dashboard")}
+                    >
+                        <Undo2 size={16}/>
+                        <p className={"group-hover:text-primary"}>Go back</p>
+                    </Button>
+                    <Button
+                        className={"px-1.5"}
+                        variant={"brand"}
+                        onClick={handleDashboardCopy}
+                        disabled={!dashboard || !dashboard.isPublic || userLoading || dbLoading}
+                        {...copyDashboardTooltip}
+                    >
+                        {copyDashboardLoading ? <ButtonSpinner/> : <Workflow size={20}/>}
+                    </Button>
+                </div>
                 <ProfilePopover editMode={false}/>
             </div>
         </div>
