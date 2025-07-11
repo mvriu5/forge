@@ -122,6 +122,7 @@ export const getDashboardFromId = async (id: string): Promise<DashboardSelect[]>
 export type Settings = {
     id: string
     userId: string
+    lastDashboardId: string | null
     config: Record<string, any>
     createdAt: Date
     updatedAt: Date

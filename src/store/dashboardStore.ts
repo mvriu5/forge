@@ -12,7 +12,6 @@ interface DashboardStore {
 
 export const useDashboardStore = create<DashboardStore>((set, get) => ({
     dashboards: null,
-
     currentDashboard: null,
 
     addDashboard: async (userId: string, dashboard: DashboardInsert) => {
@@ -65,9 +64,22 @@ export const useDashboardStore = create<DashboardStore>((set, get) => ({
 
     getAllDashboards: async (userId: string) => {
         try {
-            const response = await fetch(`/api/dashboards?userId=${userId}`)
-            const dashboards = await response.json()
-            set({ dashboards, currentDashboard: dashboards && dashboards.length > 0 ? dashboards[0] : null })
+            const [dashboardsRes, settingsRes] = await Promise.all([
+                fetch(`/api/dashboards?userId=${userId}`),
+                fetch(`/api/settings?userId=${userId}`)
+            ])
+
+            const dashboards = await dashboardsRes.json()
+            const settings = await settingsRes.json()
+            const lastDashboardId = settings?.[0]?.lastDashboardId
+
+            const lastDashboard = lastDashboardId
+                ? await fetch(`/api/dashboards?id=${lastDashboardId}`).then(res => res.json())
+                : []
+
+            const currentDashboard = lastDashboard[0] ?? dashboards[0] ?? null
+
+            set({ dashboards, currentDashboard })
         } catch (error) {
             set({ dashboards: get().dashboards })
         }

@@ -4,7 +4,7 @@ import {create} from "zustand/react"
 interface SettingsStore {
     settings: Settings | null
     fetchSettings: (userId: string) => Promise<void>
-    updateSettings: (config: Record<string, any>) => Promise<void>
+    updateSettings: (newSettings: Settings) => Promise<void>
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
@@ -40,20 +40,19 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         }
     },
 
-    updateSettings: async (config: Record<string, any>) => {
+    updateSettings: async (newSettings: Settings) => {
         const {settings} = get()
         if (!settings) return
 
         try {
-            const updatedConfig = {
-                ...settings.config,
-                ...config,
-            }
+            let config: any
+            if (newSettings.config) config = {...settings.config, ...newSettings.config}
+            else config = settings.config
 
             const response = await fetch(`/api/settings?id=${settings.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({...settings, config: updatedConfig})
+                body: JSON.stringify({ ...newSettings, config })
             })
 
             if (!response.ok) throw new Error('Error updating settings')

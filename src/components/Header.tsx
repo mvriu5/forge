@@ -13,6 +13,7 @@ import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 import {Skeleton} from "./ui/Skeleton"
 import Link from "next/link"
 import {ButtonSpinner} from "@/components/ButtonSpinner"
+import {useSettingsStore} from "@/store/settingsStore"
 
 interface HeaderProps {
     editMode: boolean
@@ -26,6 +27,7 @@ interface HeaderProps {
 
 function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false}: HeaderProps) {
     const {dashboards, currentDashboard} = useDashboardStore()
+    const {settings, updateSettings} = useSettingsStore()
 
     const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -35,6 +37,23 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
         anchor: "bc",
         offset: 12
     })
+
+    const onChangeDashboard = async (value: string) => {
+        const dashboard = dashboards?.find(d => d.name === value)
+        if (!dashboard) return
+        if (!settings) return
+
+        useDashboardStore.setState({currentDashboard: dashboard})
+        const newSettings = {
+            id: settings.id,
+            userId: settings.userId,
+            lastDashboardId: dashboard.id,
+            config: settings,
+            createdAt: settings.createdAt,
+            updatedAt: settings.updatedAt
+        }
+        await updateSettings(newSettings)
+    }
 
     return (
         <div className={"w-full top-0 left-0 h-12 px-4 flex justify-between items-center bg-primary border-b border-main/40"}>
@@ -65,10 +84,7 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
                         <div className={"flex"}>
                             <Select
                                 value={currentDashboard?.name ?? ""}
-                                onValueChange={(value) => {
-                                    const dashboard = dashboards?.find(d => d.name === value)
-                                    if (dashboard) useDashboardStore.setState({ currentDashboard: dashboard })
-                                }}
+                                onValueChange={onChangeDashboard}
                                 disabled={!dashboards || dashboards.length === 0 || editMode}
                             >
                                 <SelectTrigger className={"max-w-[280px] bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary hidden lg:flex rounded-r-none gap-0.5"} disabled={editMode}>

@@ -50,7 +50,7 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
     try {
         const body = await req.json()
-        const { id, config } = body
+        const { id, lastDashboardId, config } = body
 
         if (!id) {
             return NextResponse.json(
@@ -58,7 +58,7 @@ export async function PUT(req: Request) {
                 { status: 400 })
         }
 
-        const updatedSettings = await updateSettings(id, { config })
+        const updatedSettings = await updateSettings(id, { lastDashboardId, config })
 
         if (!updatedSettings) {
             return NextResponse.json(
