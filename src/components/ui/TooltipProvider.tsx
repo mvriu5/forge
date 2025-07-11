@@ -111,7 +111,7 @@ function tooltip<T extends HTMLElement>(props: Omit<TooltipProps, "trigger">) {
         targetRef.current = e.currentTarget
         addTooltip({
             ...props,
-            trigger: e.currentTarget.getBoundingClientRect()
+            rect: e.currentTarget.getBoundingClientRect()
         })
     }, [addTooltip, props])
 

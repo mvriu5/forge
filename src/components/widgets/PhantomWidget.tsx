@@ -12,6 +12,7 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Callout} from "@/components/ui/Callout"
 import { Skeleton } from "../ui/Skeleton"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
+import {tooltip} from "@/components/ui/TooltipProvider"
 
 const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -42,10 +43,19 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
 
     const {provider, wallet, connect, disconnect, isLoading, isFetching, isError, refetch} = usePhantom()
 
+    const connectTooltip = tooltip<HTMLButtonElement>({
+        message: wallet ? "Disconnect your phantom wallet" : "Connect your phantom wallet",
+        anchor: "tc"
+    })
+
     return (
         <WidgetTemplate id={id} className={"flex flex-col gap-4 col-span-1 row-span-1 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Phantom"} className={"z-[1]"}>
-                <Button onClick={() => wallet ? disconnect() : connect()} className={"h-6 px-2 shadow-none border-0"}>
+                <Button
+                    onClick={() => wallet ? disconnect() : connect()}
+                    className={"h-6 px-2 shadow-none border-0"}
+                    {...connectTooltip}
+                >
                     {wallet ? <Unplug size={16}/> : <Plug size={16}/>}
                 </Button>
             </WidgetHeader>

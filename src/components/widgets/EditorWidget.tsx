@@ -22,6 +22,7 @@ import GlobalDragHandle from "tiptap-extension-global-drag-handle"
 import AutoJoiner from "tiptap-extension-auto-joiner"
 import {useWidgetStore} from "@/store/widgetStore"
 import { useDashboardStore } from "@/store/dashboardStore"
+import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 
 const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -83,10 +84,12 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
     return (
         <WidgetTemplate id={id} className={"col-span-1 md:col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetHeader title={"Notes"}>
+                <p className={"text-tertiary/50 text-end text-sm"}>{saved ? "Saved" : "Unsaved"}</p>
+            </WidgetHeader>
             <EditorRoot>
                 <div className={"rounded-md h-full w-full border border-main/40 bg-secondary"}>
                 <ScrollArea className="h-full">
-                    <p className={"absolute z-50 top-2 right-2 text-tertiary/50 text-end text-sm"}>{saved ? "Saved" : "Unsaved"}</p>
                     <EditorContent
                         extensions={extensions}
                         initialContent={widget?.config?.content}

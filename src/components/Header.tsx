@@ -37,7 +37,7 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
     })
 
     return (
-        <div className={"w-full top-0 left-0 h-14 px-4 flex justify-between items-center bg-primary border-b border-main/40"}>
+        <div className={"w-full top-0 left-0 h-12 px-4 flex justify-between items-center bg-primary border-b border-main/40"}>
             <div className={"flex items-center gap-4"}>
                 <div className={"flex items-center gap-4"}>
                     <Link href={"/?allowLanding=true"} className={"cursor-default"}>

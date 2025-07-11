@@ -9,7 +9,7 @@ interface TooltipProps {
     id?: number
     message?: string
     width?: number
-    trigger: DOMRect
+    rect: DOMRect
     icon?: ReactNode
     anchor?: "tl" | "tc" | "tr" | "bl" | "bc" | "br" | "lt" | "lc" | "lb" | "rt" | "rc" | "rb"
     delay?: number
@@ -57,7 +57,7 @@ const getArrowClasses = (anchor: string) => {
     }
 }
 
-const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset = 8, shortcut, trigger, lastTooltipTimestamp, customTooltip, showArrow = true }: TooltipProps & { lastTooltipTimestamp: number | null }) => {
+const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset = 8, shortcut, rect, lastTooltipTimestamp, customTooltip, showArrow = true }: TooltipProps & { lastTooltipTimestamp: number | null }) => {
     const canHover = useHoverSupported()
 
     const [isVisible, setIsVisible] = useState(false)
@@ -79,67 +79,67 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
         switch (anchor) {
             //Top
             case "tl":
-                x = trigger.left + scrollX
-                y = trigger.top + scrollY - offset - tooltipRect.height
+                x = rect.left + scrollX
+                y = rect.top + scrollY - offset - tooltipRect.height
                 break
             case "tc":
-                x = trigger.left + scrollX + (trigger.width / 2) - (tooltipRect.width / 2)
-                y = trigger.top + scrollY - offset - tooltipRect.height
+                x = rect.left + scrollX + (rect.width / 2) - (tooltipRect.width / 2)
+                y = rect.top + scrollY - offset - tooltipRect.height
                 break
             case "tr":
-                x = trigger.right + scrollX - tooltipRect.width
-                y = trigger.top + scrollY - offset - tooltipRect.height
+                x = rect.right + scrollX - tooltipRect.width
+                y = rect.top + scrollY - offset - tooltipRect.height
                 break
 
             // Bottom
             case "bl":
-                x = trigger.left + scrollX
-                y = trigger.bottom + scrollY + offset
+                x = rect.left + scrollX
+                y = rect.bottom + scrollY + offset
                 break
             case "bc":
-                x = trigger.left + scrollX + (trigger.width / 2) - (tooltipRect.width / 2)
-                y = trigger.bottom + scrollY + offset
+                x = rect.left + scrollX + (rect.width / 2) - (tooltipRect.width / 2)
+                y = rect.bottom + scrollY + offset
                 break
             case "br":
-                x = trigger.right + scrollX - tooltipRect.width
-                y = trigger.bottom + scrollY + offset
+                x = rect.right + scrollX - tooltipRect.width
+                y = rect.bottom + scrollY + offset
                 break
 
             // Left
             case "lt":
-                x = trigger.left + scrollX - offset - tooltipRect.width
-                y = trigger.top + scrollY
+                x = rect.left + scrollX - offset - tooltipRect.width
+                y = rect.top + scrollY
                 break
             case "lc":
-                x = trigger.left + scrollX - offset - tooltipRect.width
-                y = trigger.top + scrollY + (trigger.height / 2) - (tooltipRect.height / 2)
+                x = rect.left + scrollX - offset - tooltipRect.width
+                y = rect.top + scrollY + (rect.height / 2) - (tooltipRect.height / 2)
                 break
             case "lb":
-                x = trigger.left + scrollX - offset - tooltipRect.width
-                y = trigger.bottom + scrollY - tooltipRect.height
+                x = rect.left + scrollX - offset - tooltipRect.width
+                y = rect.bottom + scrollY - tooltipRect.height
                 break
 
             // Right
             case "rt":
-                x = trigger.right + scrollX + offset
-                y = trigger.top + scrollY
+                x = rect.right + scrollX + offset
+                y = rect.top + scrollY
                 break
             case "rc":
-                x = trigger.right + scrollX + offset
-                y = trigger.top + scrollY + (trigger.height / 2) - (tooltipRect.height / 2)
+                x = rect.right + scrollX + offset
+                y = rect.top + scrollY + (rect.height / 2) - (tooltipRect.height / 2)
                 break
             case "rb":
-                x = trigger.right + scrollX + offset
-                y = trigger.bottom + scrollY - tooltipRect.height
+                x = rect.right + scrollX + offset
+                y = rect.bottom + scrollY - tooltipRect.height
                 break
 
             default:
-                x = trigger.left + scrollX
-                y = trigger.top + scrollY
+                x = rect.left + scrollX
+                y = rect.top + scrollY
         }
 
         setPosition({ x, y })
-    }, [anchor, offset, trigger.bottom, trigger.height, trigger.left, trigger.right, trigger.top, trigger.width])
+    }, [anchor, offset, rect.bottom, rect.height, rect.left, rect.right, rect.top, rect.width])
 
     useLayoutEffect(() => {
         if (isVisible) {

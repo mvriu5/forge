@@ -82,15 +82,9 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
         return (
             <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Linear"} icon={<LinearIcon/>} className={"gap-1"}>
-                    <Button
-                        className={"px-2 group"}
-                        onClick={() => refetch()}
-                    >
-                        <RefreshCw className="h-4 w-4" />
-                    </Button>
+                <WidgetHeader title={"Linear"}>
                     <Select>
-                        <SelectTrigger className="w-min bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
+                        <SelectTrigger className="w-max h-6 shadow-none border-0 bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-tertiary text-nowrap">Sort by:</span>
                                 <SelectValue placeholder="Sort" />
@@ -101,6 +95,12 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                             <SelectItem value="created">Creation Date</SelectItem>
                         </SelectContent>
                     </Select>
+                    <Button
+                        className={"px-2 h-6 border-0 shadow-none group"}
+                        onClick={() => refetch()}
+                    >
+                        <RefreshCw className="h-4 w-4" />
+                    </Button>
                 </WidgetHeader>
                 <WidgetContent scroll>
                     <div className={"grid grid-cols-2 gap-4"}>
@@ -153,18 +153,9 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
     return (
         <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Linear"} icon={<LinearIcon/>} className={"gap-1"}>
-                <Button
-                    className={"px-2 group"}
-                    onClick={() => refetch()}
-                    data-loading={(isLoading || isFetching) ? "true" : "false"}
-                    {...refreshTooltip}
-                >
-                    <RefreshCw
-                        className="h-4 w-4 group-data-[loading=true]:animate-spin" />
-                </Button>
+            <WidgetHeader title={"Linear"}>
                 <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                    <SelectTrigger className="w-min bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
+                    <SelectTrigger className="w-max transition-all bg-tertiary border-0 shadow-none h-6 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
                         <div className="flex items-center gap-2">
                             <span className="text-sm text-tertiary text-nowrap">Sort by:</span>
                             <SelectValue placeholder="Sort" />
@@ -175,6 +166,15 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                         <SelectItem value="created">Creation Date</SelectItem>
                     </SelectContent>
                 </Select>
+                <Button
+                    className={"px-2 h-6 border-0 shadow-none group"}
+                    onClick={() => refetch()}
+                    data-loading={(isLoading || isFetching) ? "true" : "false"}
+                    {...refreshTooltip}
+                >
+                    <RefreshCw
+                        className="h-4 w-4 group-data-[loading=true]:animate-spin" />
+                </Button>
             </WidgetHeader>
             <WidgetContent scroll>
                 {(isLoading || isFetching) ? (

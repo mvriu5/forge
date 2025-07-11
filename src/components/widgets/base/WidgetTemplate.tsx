@@ -51,21 +51,22 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
         zIndex: isDragging ? 30 : 20,
     }
 
-    if (editMode) {
-        return (
-            <div
-                className={cn(
-                    "relative h-full flex flex-col gap-2 rounded-md bg-tertiary border overflow-hidden border-main/40 p-2 cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
-                    isDragging && "opacity-50 animate-none",
-                    className
-                )}
-                ref={setNodeRef}
-                style={style}
-                {...attributes}
-                {...listeners}
-            >
+    return (
+        <div
+            className={cn(
+                "h-full flex flex-col gap-2 rounded-md bg-tertiary border border-main/40 p-2 overflow-hidden",
+                editMode && "relative cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
+                editMode && isDragging && "opacity-50 animate-none",
+                isPlaceholder && "pointer-events-none",
+                className
+            )}
+            ref={editMode ? setNodeRef : undefined}
+            style={style}
+            {...(editMode ? {...attributes, ...listeners} : {})}
+        >
+            {editMode && (
                 <Button
-                    className={"absolute z-50 size-8 bg-error/20 hover:bg-error/30 text-error hover:text-error border-error/40 bottom-4 backdrop-blur-lg"}
+                    className="absolute z-50 size-8 bg-error/20 hover:bg-error/30 text-error hover:text-error border-error/40 bottom-4 backdrop-blur-lg"
                     onClick={() => {
                         if (deleteTooltip.onMouseLeave) {
                             deleteTooltip?.onMouseLeave()
@@ -76,23 +77,13 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
                 >
                     <Trash size={20}/>
                 </Button>
-                <div className={cn("pointer-events-none", className)} style={{ display: "contents" }}>
-                    {children}
-                </div>
-            </div>
-        )
-    }
-
-    return (
-        <div
-            className={cn(
-                "h-full flex flex-col gap-2 rounded-md bg-tertiary border border-main/40 p-2 overflow-hidden",
-                isPlaceholder && "pointer-events-none",
-                className
             )}
-            style={style}
-        >
-            {children}
+            <div
+                className={cn(editMode ? "pointer-events-none" : undefined, className)}
+                style={{ display: "contents" }}
+            >
+                {children}
+            </div>
         </div>
     )
 }

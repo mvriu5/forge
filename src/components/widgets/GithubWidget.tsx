@@ -58,25 +58,23 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                         className="text-xs bg-brand/10 border-brand/40 font-mono"
                         title={"2 open"}
                     />
-                </WidgetHeader>
-                <div className="flex items-center gap-2">
-                    <Input
-                        placeholder="Search..."
-                        className="bg-tertiary"
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
                     <Button
-                        className={"px-2"}
+                        className={"px-2 h-6 border-0 shadow-none"}
                     >
                         <Filter className="h-4 w-4" />
                     </Button>
                     <Button
-                        className={"px-2 group"}
+                        className={"px-2 group h-6 border-0 shadow-none"}
                         onClick={() => refetch()}
                     >
                         <RefreshCw className="h-4 w-4" />
                     </Button>
-                </div>
+                </WidgetHeader>
+                <Input
+                    placeholder="Search..."
+                    className="bg-tertiary"
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
                 <Tabs defaultValue="issues">
                     <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
                         <TabsTrigger value="issues">
@@ -163,14 +161,6 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     className="text-xs bg-brand/10 border-brand/40 font-mono"
                     title={`${activeTab === "issues" ? filteredIssues.length : filteredPRs.length} open`}
                 />
-            </WidgetHeader>
-            <div className="flex items-center gap-2">
-                <Input
-                    placeholder="Search..."
-                    className="bg-tertiary"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
                 {activeTab === "issues" &&
                     <DropdownMenu
                         asChild
@@ -181,7 +171,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     >
                         <Button
                             data-state={dropdownOpen ? "open" : "closed"}
-                            className={"px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
+                            className={"px-2 h-6 shadow-none border-0 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
                             disabled={allLabels.length === 0 || isLoading || isFetching}
                             {...filterTooltip}
                         >
@@ -190,7 +180,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     </DropdownMenu>
                 }
                 <Button
-                    className={"px-2 group"}
+                    className={"px-2 group h-6 shadow-none border-0"}
                     onClick={() => refetch()}
                     data-loading={(isLoading || isFetching) ? "true" : "false"}
                     {...refreshTooltip}
@@ -198,6 +188,14 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     <RefreshCw
                         className="h-4 w-4 group-data-[loading=true]:animate-spin" />
                 </Button>
+            </WidgetHeader>
+            <div className="flex items-center gap-2">
+                <Input
+                    placeholder="Search..."
+                    className="bg-tertiary"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
             </div>
             <Tabs defaultValue="issues" onValueChange={setActiveTab}>
                 <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">

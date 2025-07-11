@@ -45,7 +45,6 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                         <Plus size={16}/>
                     </Button>
                 </WidgetHeader>
-                <div className={"w-full h-px border-b border-main/40"}/>
                 <WidgetContent scroll>
                     {data.map((bookmark) => (
                         <BookmarkItem key={bookmark.title} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.title)}/>
@@ -64,6 +63,11 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
 
     const [bookmarks, setBookmarks] = useState<BookmarkItem[]>(widget.config?.bookmarks ?? [])
     const [open, setOpen] = useState<boolean>(false)
+
+    const addTooltip = tooltip<HTMLButtonElement>({
+        message: "Add a new bookmark",
+        anchor: "tc"
+    })
 
     const formSchema = z.object({
         title: z.string(),
@@ -114,7 +118,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
             <WidgetHeader title={"Bookmark"}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
-                        <Button className={"h-6 border-0 bg-tertiary px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
+                        <Button className={"h-6 border-0 bg-tertiary px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"} {...addTooltip}>
                             <Plus size={16}/>
                         </Button>
                     </PopoverTrigger>
@@ -156,7 +160,6 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                     </PopoverContent>
                 </Popover>
             </WidgetHeader>
-            <div className={"w-full h-px border-b border-main/40"}/>
             {bookmarks.length > 0 ? (
                 <WidgetContent scroll>
                     {bookmarks.map((bookmark) => (

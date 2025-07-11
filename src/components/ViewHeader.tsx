@@ -20,8 +20,6 @@ import {cn} from "@/lib/utils"
 import Link from "next/link"
 
 function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widget[] | null}) {
-    const {addWidget} = useWidgetStore()
-    const {addDashboard} = useDashboardStore()
     const {session} = useSessionStore()
     const {addToast} = useToast()
     const router = useRouter()
@@ -148,7 +146,7 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
     }
 
     return (
-        <div className={"w-full top-0 left-0 h-14 px-8 flex justify-between items-center bg-primary border-b border-main/40"}>
+        <div className={"w-full top-0 left-0 h-12 px-4 flex justify-between items-center bg-primary border-b border-main/40"}>
             <div className={"flex items-center gap-4"}>
                 <div className={"flex items-center gap-4"}>
                     <Link href={"/?allowLanding=true"} className={"cursor-default"}>
