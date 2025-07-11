@@ -103,7 +103,7 @@ const TooltipProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     )
 }
 
-function tooltip<T extends HTMLElement>(props: Omit<TooltipProps, "trigger">) {
+function tooltip<T extends HTMLElement>(props: Omit<TooltipProps, "rect">) {
     const { addTooltip, removeTooltip } = useTooltip()
     const targetRef = useRef<T | null>(null)
 

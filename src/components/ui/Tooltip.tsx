@@ -57,12 +57,69 @@ const getArrowClasses = (anchor: string) => {
     }
 }
 
+const flipAnchor = (anchor: string, tooltipRect: DOMRect, targetRect: DOMRect): string => {
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+
+    const computePos = (a: string) => {
+        let x = 0, y = 0
+        switch (a) {
+            case "tl": x = targetRect.left; y = targetRect.top - tooltipRect.height; break
+            case "tc": x = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2; y = targetRect.top - tooltipRect.height; break
+            case "tr": x = targetRect.right - tooltipRect.width; y = targetRect.top - tooltipRect.height; break
+            case "bl": x = targetRect.left; y = targetRect.bottom; break
+            case "bc": x = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2; y = targetRect.bottom; break
+            case "br": x = targetRect.right - tooltipRect.width; y = targetRect.bottom; break
+            case "lt": x = targetRect.left - tooltipRect.width; y = targetRect.top; break
+            case "lc": x = targetRect.left - tooltipRect.width; y = targetRect.top + targetRect.height / 2 - tooltipRect.height / 2; break
+            case "lb": x = targetRect.left - tooltipRect.width; y = targetRect.bottom - tooltipRect.height; break
+            case "rt": x = targetRect.right; y = targetRect.top; break
+            case "rc": x = targetRect.right; y = targetRect.top + targetRect.height / 2 - tooltipRect.height / 2; break
+            case "rb": x = targetRect.right; y = targetRect.bottom - tooltipRect.height; break
+        }
+        return { x, y }
+    }
+
+    const wouldOverflow = (pos: { x: number, y: number }) =>
+        pos.x < 0 ||
+        pos.x + tooltipRect.width > viewportWidth ||
+        pos.y < 0 ||
+        pos.y + tooltipRect.height > viewportHeight
+
+    // 1️⃣ Check original position
+    let pos = computePos(anchor)
+    if (!wouldOverflow(pos)) return anchor
+
+    // 2️⃣ Try prioritized alternatives
+    const alternatives: Record<string, string[]> = {
+        tl: ["tr", "lt", "bl", "rt"],
+        tc: ["lc", "rc", "bc"],
+        tr: ["tl", "rt", "br", "lt"],
+        bl: ["br", "lb", "tl", "rb"],
+        bc: ["lc", "rc", "tc"],
+        br: ["bl", "rb", "tr", "lb"],
+        lt: ["rt", "lc", "rc"],
+        lc: ["tc", "bc", "rc"],
+        lb: ["rb", "lc", "rc"],
+        rt: ["lt", "rc", "lc"],
+        rc: ["tc", "bc", "lc"],
+        rb: ["lb", "rc", "lc"]
+    }
+
+    for (const alt of alternatives[anchor] || []) {
+        pos = computePos(alt)
+        if (!wouldOverflow(pos)) return alt
+    }
+
+    // 3️⃣ Fallback: clamp original
+    return anchor
+}
+
 const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset = 8, shortcut, rect, lastTooltipTimestamp, customTooltip, showArrow = true }: TooltipProps & { lastTooltipTimestamp: number | null }) => {
     const canHover = useHoverSupported()
-
     const [isVisible, setIsVisible] = useState(false)
     const [position, setPosition] = useState({ x: 0, y: 0 })
-
+    const [adjustedAnchor, setAdjustedAnchor] = useState<string>(anchor)
     const timeout = useRef<number | null>(null)
     const tooltipRef = useRef<HTMLDivElement>(null)
 
@@ -70,75 +127,36 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
         if (!tooltipRef.current) return
         const tooltipRect = tooltipRef.current.getBoundingClientRect()
 
-        const scrollX = window.scrollX || document.documentElement.scrollLeft
-        const scrollY = window.scrollY || document.documentElement.scrollTop
+        const smartAnchor = flipAnchor(anchor, tooltipRect, rect)
+        setAdjustedAnchor(smartAnchor)
 
-        let x: number
-        let y: number
-
-        switch (anchor) {
-            //Top
-            case "tl":
-                x = rect.left + scrollX
-                y = rect.top + scrollY - offset - tooltipRect.height
-                break
-            case "tc":
-                x = rect.left + scrollX + (rect.width / 2) - (tooltipRect.width / 2)
-                y = rect.top + scrollY - offset - tooltipRect.height
-                break
-            case "tr":
-                x = rect.right + scrollX - tooltipRect.width
-                y = rect.top + scrollY - offset - tooltipRect.height
-                break
-
-            // Bottom
-            case "bl":
-                x = rect.left + scrollX
-                y = rect.bottom + scrollY + offset
-                break
-            case "bc":
-                x = rect.left + scrollX + (rect.width / 2) - (tooltipRect.width / 2)
-                y = rect.bottom + scrollY + offset
-                break
-            case "br":
-                x = rect.right + scrollX - tooltipRect.width
-                y = rect.bottom + scrollY + offset
-                break
-
-            // Left
-            case "lt":
-                x = rect.left + scrollX - offset - tooltipRect.width
-                y = rect.top + scrollY
-                break
-            case "lc":
-                x = rect.left + scrollX - offset - tooltipRect.width
-                y = rect.top + scrollY + (rect.height / 2) - (tooltipRect.height / 2)
-                break
-            case "lb":
-                x = rect.left + scrollX - offset - tooltipRect.width
-                y = rect.bottom + scrollY - tooltipRect.height
-                break
-
-            // Right
-            case "rt":
-                x = rect.right + scrollX + offset
-                y = rect.top + scrollY
-                break
-            case "rc":
-                x = rect.right + scrollX + offset
-                y = rect.top + scrollY + (rect.height / 2) - (tooltipRect.height / 2)
-                break
-            case "rb":
-                x = rect.right + scrollX + offset
-                y = rect.bottom + scrollY - tooltipRect.height
-                break
-
-            default:
-                x = rect.left + scrollX
-                y = rect.top + scrollY
+        const computePos = (a: string) => {
+            let x = 0, y = 0
+            switch (a) {
+                case "tl": x = rect.left; y = rect.top - offset - tooltipRect.height; break
+                case "tc": x = rect.left + rect.width / 2 - tooltipRect.width / 2; y = rect.top - offset - tooltipRect.height; break
+                case "tr": x = rect.right - tooltipRect.width; y = rect.top - offset - tooltipRect.height; break
+                case "bl": x = rect.left; y = rect.bottom + offset; break
+                case "bc": x = rect.left + rect.width / 2 - tooltipRect.width / 2; y = rect.bottom + offset; break
+                case "br": x = rect.right - tooltipRect.width; y = rect.bottom + offset; break
+                case "lt": x = rect.left - offset - tooltipRect.width; y = rect.top; break
+                case "lc": x = rect.left - offset - tooltipRect.width; y = rect.top + rect.height / 2 - tooltipRect.height / 2; break
+                case "lb": x = rect.left - offset - tooltipRect.width; y = rect.bottom - tooltipRect.height; break
+                case "rt": x = rect.right + offset; y = rect.top; break
+                case "rc": x = rect.right + offset; y = rect.top + rect.height / 2 - tooltipRect.height / 2; break
+                case "rb": x = rect.right + offset; y = rect.bottom - tooltipRect.height; break
+            }
+            return { x, y }
         }
 
-        setPosition({ x, y })
+        let pos = computePos(smartAnchor)
+
+        const maxX = window.innerWidth - tooltipRect.width
+        const maxY = window.innerHeight - tooltipRect.height
+        const clampedX = Math.max(0, Math.min(pos.x, maxX))
+        const clampedY = Math.max(0, Math.min(pos.y, maxY))
+
+        setPosition({ x: clampedX, y: clampedY })
     }, [anchor, offset, rect.bottom, rect.height, rect.left, rect.right, rect.top, rect.width])
 
     useLayoutEffect(() => {
@@ -177,7 +195,7 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
     if (!isVisible) return
     if (!message && !customTooltip) return
 
-    const arrowStyles = showArrow ? getArrowClasses(anchor) : 0
+    const arrowStyles = showArrow ? getArrowClasses(adjustedAnchor) : 0
 
     if (customTooltip) {
         return (
