@@ -62,7 +62,8 @@ const flipAnchor = (anchor: string, tooltipRect: DOMRect, targetRect: DOMRect): 
     const viewportHeight = window.innerHeight
 
     const computePos = (a: string) => {
-        let x = 0, y = 0
+        let x = 0
+        let y = 0
         switch (a) {
             case "tl": x = targetRect.left; y = targetRect.top - tooltipRect.height; break
             case "tc": x = targetRect.left + targetRect.width / 2 - tooltipRect.width / 2; y = targetRect.top - tooltipRect.height; break
@@ -131,7 +132,8 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
         setAdjustedAnchor(smartAnchor)
 
         const computePos = (a: string) => {
-            let x = 0, y = 0
+            let x = 0
+            let y = 0
             switch (a) {
                 case "tl": x = rect.left; y = rect.top - offset - tooltipRect.height; break
                 case "tc": x = rect.left + rect.width / 2 - tooltipRect.width / 2; y = rect.top - offset - tooltipRect.height; break
@@ -149,7 +151,7 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
             return { x, y }
         }
 
-        let pos = computePos(smartAnchor)
+        const pos = computePos(smartAnchor)
 
         const maxX = window.innerWidth - tooltipRect.width
         const maxY = window.innerHeight - tooltipRect.height
