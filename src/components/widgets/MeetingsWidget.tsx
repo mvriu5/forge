@@ -48,10 +48,10 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         return (
             <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Meetings"}>
-                    <Button className={"h-6 px-2 group border-0 shadow-0"}>
+                    <Button className={"h-6 px-2 group border-0 shadow-none dark:shadow-none"}>
                         <Filter className="size-4" />
                     </Button>
-                    <Button className={"h-6 px-2 group border-0 shadow-0"}>
+                    <Button className={"h-6 px-2 group border-0 shadow-none dark:shadow-none"}>
                         <RefreshCw className="size-4" />
                     </Button>
                 </WidgetHeader>
@@ -172,7 +172,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                 >
                     <Button
                         data-state={dropdownOpen ? "open" : "closed"}
-                        className={"h-6 px-2 shadow-none group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary border-0"}
+                        className={"h-6 px-2 shadow-none dark:shadow-none group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary border-0"}
                         disabled={!calendars || calendars?.length === 0 || isLoading || isFetching}
                         {...filterTooltip}
                     >
@@ -180,7 +180,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                     </Button>
                 </DropdownMenu>
                 <Button
-                    className={"h-6 px-2 group border-0 shadow-none"}
+                    className={"h-6 px-2 group border-0 shadow-none dark:shadow-none"}
                     onClick={() => refetch()}
                     data-loading={(isLoading || isFetching) ? "true" : "false"}
                     {...refreshTooltip}

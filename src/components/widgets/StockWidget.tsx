@@ -28,12 +28,12 @@ const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
             <WidgetTemplate id={id} className={"col-span-1 row-span-2"} name={"stock"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Stock Overview"}>
                     <Button
-                        className={cn("font-normal bg-tertiary border-0 shadow-none h-6 text-sm items-center gap-2 px-2")}
+                        className={cn("font-normal bg-tertiary border-0 shadow-none dark:shadow-none h-6 text-sm items-center gap-2 px-2")}
                     >
                         <ChartCandlestick size={18}/>
                     </Button>
                     <Select>
-                        <SelectTrigger className={"w-max bg-tertiary border-0 shadow-none h-6"}>
+                        <SelectTrigger className={"w-max bg-tertiary border-0 shadow-none dark:shadow-none h-6"}>
                             <SelectValue placeholder="Timespan"/>
                         </SelectTrigger>
                         <SelectContent align={"end"} className={"border-main/40"}>
@@ -95,7 +95,7 @@ const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
                     <PopoverTrigger asChild>
                         <Button
                             data-state={open ? "open" : "closed"}
-                            className={cn("font-normal bg-tertiary border-0 h-6 shadow-none text-sm items-center gap-2 data-[state=open]:text-primary data-[state=open]:bg-inverted/10 px-2")}
+                            className={cn("font-normal bg-tertiary border-0 h-6 shadow-none dark:shadow-none text-sm items-center gap-2 data-[state=open]:text-primary data-[state=open]:bg-inverted/10 px-2")}
                         >
                             <ChartCandlestick size={18}/>
                         </Button>
@@ -141,7 +141,7 @@ const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
                         handleSave({ timespan: value })
                     }}
                 >
-                    <SelectTrigger className={"w-max bg-tertiary border-0 h-6 shadow-none data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
+                    <SelectTrigger className={"w-max bg-tertiary border-0 h-6 shadow-none dark:shadow-none data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
                         <SelectValue placeholder="Timespan"/>
                     </SelectTrigger>
                     <SelectContent align={"end"} className={"border-main/40"}>

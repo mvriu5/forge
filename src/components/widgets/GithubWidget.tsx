@@ -59,12 +59,12 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                         title={"2 open"}
                     />
                     <Button
-                        className={"px-2 h-6 border-0 shadow-none"}
+                        className={"px-2 h-6 border-0 shadow-none dark:shadow-none"}
                     >
                         <Filter className="h-4 w-4" />
                     </Button>
                     <Button
-                        className={"px-2 group h-6 border-0 shadow-none"}
+                        className={"px-2 group h-6 border-0 shadow-none dark:shadow-none"}
                         onClick={() => refetch()}
                     >
                         <RefreshCw className="h-4 w-4" />
@@ -171,7 +171,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     >
                         <Button
                             data-state={dropdownOpen ? "open" : "closed"}
-                            className={"px-2 h-6 shadow-none border-0 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
+                            className={"px-2 h-6 shadow-none dark:shadow-none border-0 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
                             disabled={allLabels.length === 0 || isLoading || isFetching}
                             {...filterTooltip}
                         >
@@ -180,7 +180,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     </DropdownMenu>
                 }
                 <Button
-                    className={"px-2 group h-6 shadow-none border-0"}
+                    className={"px-2 group h-6 shadow-none dark:shadow-none border-0"}
                     onClick={() => refetch()}
                     data-loading={(isLoading || isFetching) ? "true" : "false"}
                     {...refreshTooltip}
