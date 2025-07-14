@@ -216,7 +216,7 @@ export default function Dashboard() {
                     </Callout>
                 </div>
                 <div
-                    className="relative w-full h-[calc(100vh-64px)] hidden xl:grid grid-cols-4 gap-4 p-4"
+                    className="relative w-full h-[calc(100vh-48px)] hidden xl:grid grid-cols-4 gap-4 p-4"
                     style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
                 >
                     {gridCells?.map((cell) => (

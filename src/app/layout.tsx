@@ -17,6 +17,7 @@ export default function RootLayout({children}: Readonly<{ children: ReactNode }>
     return (
         <html lang="en" suppressHydrationWarning>
         <head>
+            <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
             <Script
                 src="https://cdn.seline.com/seline.js"
                 data-token="a4eec62f2340eeb"

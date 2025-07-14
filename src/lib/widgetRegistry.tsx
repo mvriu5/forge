@@ -9,6 +9,7 @@ import {BookmarkWidget} from "@/components/widgets/BookmarkWidget"
 import {LinearWidget} from "@/components/widgets/LinearWidget"
 import {PhantomWidget} from "@/components/widgets/PhantomWidget"
 import {MeetingsWidget} from "@/components/widgets/MeetingsWidget"
+import {GithubHeatmapWidget} from "@/components/widgets/GithubHeatmapWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -122,6 +123,18 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["productivity"]
         },
         component: MeetingsWidget
+    },
+    {
+        preview: {
+            widgetType: "github-heatmap",
+            height: 1,
+            width: 1,
+            previewImage: '/github_heatmap_preview.png',
+            title: 'Github Heatmap',
+            description: 'Overview of your next meetings',
+            tags: ["productivity", "github"]
+        },
+        component: GithubHeatmapWidget
     }
 
 ]
