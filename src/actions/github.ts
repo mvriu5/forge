@@ -92,7 +92,7 @@ const CONTRIBUTIONS_QUERY = `
   }
 `
 
-export async function getContributions(accessToken: string, username: string, fromDate?: Date, toDate?: Date): Promise<GitHubContribution[]> {
+export async function getContributions(accessToken: string, username: string, fromDate?: Date, toDate?: Date): Promise<GitHubContribution[] | undefined> {
     try {
         const octokit = new Octokit({ auth: accessToken})
 
@@ -120,7 +120,6 @@ export async function getContributions(accessToken: string, username: string, fr
 
         if (!response.user) throw new Error(`Benutzer ${username} nicht gefunden`)
 
-        console.log(response)
         const contributions: GitHubContribution[] = []
         const weeks = response.user.contributionsCollection.contributionCalendar.weeks
 
@@ -136,7 +135,5 @@ export async function getContributions(accessToken: string, username: string, fr
         return contributions
 
     } catch (error) {
-        console.error("Fehler beim Laden der GitHub-Daten:", error)
-        throw error
     }
 }

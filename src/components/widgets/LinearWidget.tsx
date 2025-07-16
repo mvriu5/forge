@@ -90,7 +90,7 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                                 <SelectValue placeholder="Sort" />
                             </div>
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className={"border-main/40"}>
                             <SelectItem value="priority">Priority</SelectItem>
                             <SelectItem value="created">Creation Date</SelectItem>
                         </SelectContent>

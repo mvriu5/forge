@@ -128,7 +128,7 @@ export const widgetRegistry: WidgetElement[] = [
         preview: {
             widgetType: "github-heatmap",
             height: 1,
-            width: 1,
+            width: 2,
             previewImage: '/github_heatmap_preview.png',
             title: 'Github Heatmap',
             description: 'Overview of your next meetings',

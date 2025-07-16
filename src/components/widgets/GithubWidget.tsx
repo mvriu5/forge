@@ -1,21 +1,10 @@
 "use client"
 
-import React, {ReactNode, useState} from "react"
+import React, {useState} from "react"
 import {WidgetProps, WidgetTemplate} from "./base/WidgetTemplate"
-import {
-    AlertCircle,
-    Blocks,
-    CloudAlert,
-    Filter,
-    FolderGit,
-    Github,
-    GitPullRequest,
-    RefreshCw,
-    TriangleAlert
-} from "lucide-react"
+import {AlertCircle, Blocks, CloudAlert, Filter, FolderGit, GitPullRequest, RefreshCw} from "lucide-react"
 import {formatDate} from "date-fns"
 import {authClient} from "@/lib/auth-client"
-import {Callout} from "@/components/ui/Callout"
 import {Button} from "@/components/ui/Button"
 import {Badge} from "@/components/ui/Badge"
 import {Input} from "@/components/ui/Input"

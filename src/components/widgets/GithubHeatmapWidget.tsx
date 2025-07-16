@@ -5,92 +5,101 @@ import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTempl
 import { WidgetHeader } from "./base/WidgetHeader"
 import { useGithubHeatmap } from "@/hooks/useGithubHeatmap"
 import { WidgetContent } from "@/components/widgets/base/WidgetContent"
-import CalendarHeatmap, {ReactCalendarHeatmapValue, TooltipDataAttrs} from "react-calendar-heatmap"
+import {Heatmap} from "@/components/ui/Heatmap"
 import {Skeleton} from "@/components/ui/Skeleton"
+import {WidgetError} from "@/components/widgets/base/WidgetError"
+import {useIntegrationStore} from "@/store/integrationStore"
+import {authClient} from "@/lib/auth-client"
+import {Blocks, CloudAlert} from "lucide-react"
+import {useToast} from "@/components/ui/ToastProvider"
 
 const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {}
+    if (isPlaceholder) {
+        return (
+            <WidgetTemplate id={id} className="col-span-2 row-span-1" name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder>
+                <WidgetHeader title={"Github Heatmap"}/>
+                <WidgetContent className={"h-full items-center"}>
+                    <div
+                        className="grid mt-6"
+                        style={{
+                            gridTemplateColumns: "repeat(53, 10px)",
+                            gridTemplateRows: "repeat(7, 10px)",
+                            gap: "2px",
+                        }}
+                    >
+                        {Array.from({ length: 371 }, (_, i) =>
+                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                            <div key={i} className={"bg-green-500 size-2.5 rounded-xs"}/>
+                        )}
+                    </div>
+                </WidgetContent>
+            </WidgetTemplate>
+        )
+    }
 
     const {data, isLoading, isFetching, isError} = useGithubHeatmap()
+    const {githubIntegration} = useIntegrationStore()
+    const {addToast} = useToast()
 
+    const contributions = data?.map(({ date, count }) => ({ date, count }))
 
-
-    const classForValue = (value: any) => {
-        if (!value || value.count === 0) return "color-empty"
-        if (value.count < 5) return "color-scale-1"
-        if (value.count < 10) return "color-scale-2"
-        if (value.count < 15) return "color-scale-3"
-        return "color-scale-4"
-    }
-
-    const tooltipDataAttrs = (value: ReactCalendarHeatmapValue<string> | undefined): TooltipDataAttrs => {
-        if (!value || !value.date) return {}
-
-        const date = new Date(value.date)
-        const formattedDate = date.toLocaleDateString("de-DE", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
+    const handleIntegrate = async () => {
+        const data = await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
+            onRequest: (ctx) => {
+            },
+            onSuccess: (ctx) => {
+                addToast({
+                    title: "Successfully integrated Github",
+                    icon: <Blocks size={24}/>
+                })
+            },
+            onError: (ctx) => {
+                addToast({
+                    title: "An error occurred",
+                    subtitle: ctx.error.message,
+                    icon: <CloudAlert size={24}/>
+                })
+            }
         })
-
-        return {
-            "data-tip": `${value.count} Beiträge am ${formattedDate}`,
-        } as TooltipDataAttrs
     }
 
-    if (isLoading) {
+    if (!githubIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate id={id} className="col-span-1 row-span-1" name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <WidgetHeader>
-                    <Skeleton className={"w-20 h-8"}/>
-                </WidgetHeader>
+            <WidgetTemplate id={id} className="col-span-2 row-span-1" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+                <WidgetError
+                    message={"If you want to use this widget, you need to integrate your Github account first!"}
+                    actionLabel={"Integrate"}
+                    onAction={handleIntegrate}
+                />
             </WidgetTemplate>
         )
     }
 
     return (
-        <WidgetTemplate id={id} className="col-span-1 row-span-1" name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} className="col-span-2 row-span-1" name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Github Heatmap"}/>
-            <WidgetContent className={"h-full"}>
-                <style jsx>{`
-                    :global(.react-calendar-heatmap .text) { 
-                        justify-content: space-between; 
-                    }
-                    :global(.react-calendar-heatmap .color-empty) { fill: #ebedf0; }
-                    :global(.react-calendar-heatmap .color-scale-1) { fill: #9be9a8; }
-                    :global(.react-calendar-heatmap .color-scale-2) { fill: #40c463; }
-                    :global(.react-calendar-heatmap .color-scale-3) { fill: #30a14e; }
-                    :global(.react-calendar-heatmap .color-scale-4) { fill: #216e39; }
-                    :global(.dark .react-calendar-heatmap .color-empty) { fill: #161b22; }
-                    :global(.dark .react-calendar-heatmap .color-scale-1) { fill: #0e4429; }
-                    :global(.dark .react-calendar-heatmap .color-scale-2) { fill: #006d32; }
-                    :global(.dark .react-calendar-heatmap .color-scale-3) { fill: #26a641; }
-                    :global(.dark .react-calendar-heatmap .color-scale-4) { fill: #39d353; }
-                    :global(.react-calendar-heatmap-month-label),
-                    :global(.react-calendar-heatmap-weekday-label) {
-                        font-size: 12px;
-                        fill: #656d76;
-                    }
-                    :global(.dark .react-calendar-heatmap-month-label),
-                    :global(.dark .react-calendar-heatmap-weekday-label) {
-                        fill: #7d8590;
-                    }
-                `}</style>
-                <CalendarHeatmap
-                    startDate={new Date(new Date().getFullYear() - 1, new Date().getMonth(), new Date().getDate())}
-                    endDate={new Date()}
-                    values={data!.map((contrib) => ({
-                        date: contrib.date,
-                        count: contrib.count,
-                    }))}
-                    classForValue={classForValue}
-                    tooltipDataAttrs={tooltipDataAttrs}
-                    showWeekdayLabels={true}
-                    showMonthLabels={true}
-                    weekdayLabels={["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]}
-                    monthLabels={["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]}
-                />
+            <WidgetContent className={"h-full items-center"}>
+                {(isLoading || isFetching) ? (
+                    <div
+                        className="grid mt-6"
+                        style={{
+                            gridTemplateColumns: "repeat(53, 10px)",
+                            gridTemplateRows: "repeat(7, 10px)",
+                            gap: "2px",
+                        }}
+                    >
+                        {Array.from({ length: 371 }, (_, i) =>
+                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                            <Skeleton key={i} className={"size-2.5 rounded-xs"}/>
+                        )}
+                    </div>
+                ) : (
+                    <Heatmap
+                        data={contributions}
+                        cellSize={10}
+                        gap={2}
+                    />
+                )}
             </WidgetContent>
         </WidgetTemplate>
     )
