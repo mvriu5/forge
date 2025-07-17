@@ -40,7 +40,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
         ]
 
         return (
-            <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Github"}>
                     <Badge
                         variant="brand"
@@ -132,7 +132,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
     if (!githubIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Github account first!"}
                     actionLabel={"Integrate"}
@@ -143,7 +143,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     }
 
     return (
-        <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Github"}>
                 <Badge
                     variant="brand"

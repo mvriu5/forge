@@ -1,15 +1,13 @@
 "use client"
 
-import React, {useEffect, useState} from "react"
+import React, {useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {GoogleIcon} from "@/components/svg/GoogleIcon"
 import {useGoogleCalendar} from "@/hooks/useGoogleCalendar"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {authClient} from "@/lib/auth-client"
-import {Blocks, CalendarPlus, CloudAlert, Filter, RefreshCw, TriangleAlert} from "lucide-react"
-import {Callout} from "@/components/ui/Callout"
+import {Blocks, CloudAlert, Filter, RefreshCw} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {useToast} from "@/components/ui/ToastProvider"
 import {format, isSameDay} from "date-fns"
@@ -46,7 +44,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         }
 
         return (
-            <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Meetings"}>
                     <Button className={"h-6 px-2 group border-0 shadow-none dark:shadow-none"}>
                         <Filter className="size-4" />
@@ -109,7 +107,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
 
     if (!googleIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate id={id} className="col-span-1 row-span-2" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Google account first!"}
                     actionLabel={"Integrate"}
@@ -161,7 +159,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
 
 
     return (
-        <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Meetings"}>
                 <DropdownMenu
                     asChild

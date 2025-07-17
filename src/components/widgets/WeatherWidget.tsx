@@ -52,7 +52,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
         ]
 
         return (
-            <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetHeader title={"Weather"}/>
                 <div className={"h-min flex flex-col justify-between gap-2"}>
                     <div className={"h-full flex items-center gap-2 rounded-md bg-info/5 border border-info/20 px-2 py-1"}>
@@ -80,45 +80,20 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
     const {currentWeather, nextWeather, location, isLoading, isError, geolocationError} = useWeather()
     const {settings} = useSettingsStore()
 
-    if (isLoading) {
+    if (isError || geolocationError) {
         return (
-            <WidgetTemplate
-                id={id}
-                className={"col-span-1 row-span-1 h-full flex flex-col justify-between gap-4"}
-                name={"weather"}
-                editMode={editMode}
-                onWidgetDelete={onWidgetDelete}
-            >
-                <Skeleton className={"w-full h-14"} />
-                <div className={"h-full w-full flex items-center gap-4 px-4"}>
-                    <Skeleton className={"h-16 w-1/5"}/>
-                    <Skeleton className={"h-16 w-1/5"}/>
-                    <Skeleton className={"h-16 w-1/5"}/>
-                    <Skeleton className={"h-16 w-1/5"}/>
-                    <Skeleton className={"h-16 w-1/5"}/>
-                </div>
+            <WidgetTemplate id={id} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+                {isError ? (
+                    <WidgetError message={"An error occurred, while getting the weather data. Try again later."}/>
+                ) : (
+                    <WidgetError message={"Please enable your geolocation info."}/>
+                )}
             </WidgetTemplate>
         )
     }
 
-    if (isError) {
-        return (
-            <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <WidgetError message={"An error occurred, while getting the weather data. Try again later."}/>
-            </WidgetTemplate>
-        )
-    }
-
-    if (geolocationError) {
-        return (
-            <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <WidgetError message={"Please enable your geolocation info."}/>
-            </WidgetTemplate>
-        )
-    }
-    
     return (
-        <WidgetTemplate id={id} className={"col-span-1 row-span-1"} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
            <WidgetHeader title={"Weather"}>
                <div
                    data-state={location ? "true" : "false"}
@@ -129,23 +104,39 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
                </div>
            </WidgetHeader>
             <div className={"h-full flex flex-col justify-between gap-2"}>
-                <div className={"h-min flex items-center gap-2 rounded-md bg-info/5 border border-info/20 px-2 py-1"}>
-                    <div className={"text-primary"}>
-                        {getWeatherIcon(currentWeather?.weathercode, 28)}
+                {isLoading ? (
+                    <Skeleton className={"h-12 w-full"}/>
+                ) : (
+                    <div className={"h-min flex items-center gap-2 rounded-md bg-info/5 border border-info/20 px-2 py-1"}>
+                        <div className={"text-primary"}>
+                            {getWeatherIcon(currentWeather?.weathercode, 28)}
+                        </div>
+                        <p className={"text-lg text-primary font-semibold"}>{`${currentWeather?.temperature}°C`}</p>
                     </div>
-                    <p className={"text-lg text-primary font-semibold"}>{`${currentWeather?.temperature}°C`}</p>
+                )}
+                <div className={"h-full w-full flex items-center justify-between gap-4 px-2"}>
+                    {isLoading ? (
+                        <>
+                            <Skeleton className={"-ml-2 h-16 w-1/5"}/>
+                            <Skeleton className={"h-16 w-1/5"}/>
+                            <Skeleton className={"h-16 w-1/5"}/>
+                            <Skeleton className={"h-16 w-1/5"}/>
+                            <Skeleton className={"-mr-2 h-16 w-1/5"}/>
+                        </>
+                    ) : (
+                        <>
+                            {nextWeather?.map((weather: any) =>
+                                <div className={"flex flex-col items-center gap-1"} key={weather.time}>
+                                    <p className={"text-xs text-tertiary"}>{formatDate(weather.time, settings?.config.hourFormat === "24" ?  "HH:00" : "h a")}</p>
+                                    {getWeatherIcon(weather.weathercode)}
+                                    <p className={"text-primary"}>{`${Number(weather.temperature.toFixed(0))}°C`}</p>
+                                </div>
+                            )}
+                        </>
+                    )}
+
                 </div>
-                <div className={"flex items-center gap-2 justify-between"}>
-                    <div className={"h-full w-full flex items-center justify-between px-2"}>
-                        {nextWeather?.map((weather: any) =>
-                            <div className={"flex flex-col items-center gap-1"} key={weather.time}>
-                                <p className={"text-xs text-tertiary"}>{formatDate(weather.time, settings?.config.hourFormat === "24" ?  "HH:00" : "h a")}</p>
-                                {getWeatherIcon(weather.weathercode)}
-                                <p className={"text-primary"}>{`${Number(weather.temperature.toFixed(0))}°C`}</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
+
             </div>
         </WidgetTemplate>
     )

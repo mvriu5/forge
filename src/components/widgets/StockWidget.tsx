@@ -25,7 +25,7 @@ import {WidgetEmpty} from "./base/WidgetEmpty"
 const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
         return (
-            <WidgetTemplate id={id} className={"col-span-1 row-span-2"} name={"stock"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} name={"stock"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Stock Overview"}>
                     <Button
                         className={cn("font-normal bg-tertiary border-0 shadow-none dark:shadow-none h-6 text-sm items-center gap-2 px-2")}
@@ -89,7 +89,7 @@ const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
     }, [selectedStocks, assetList])
 
     return (
-        <WidgetTemplate id={id} className={"col-span-1 row-span-2"} name={"stock"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} name={"stock"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Stock Overview"}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>

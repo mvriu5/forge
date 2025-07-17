@@ -16,7 +16,7 @@ import {useToast} from "@/components/ui/ToastProvider"
 const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
         return (
-            <WidgetTemplate id={id} className="col-span-2 row-span-1" name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder>
+            <WidgetTemplate id={id} name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder>
                 <WidgetHeader title={"Github Heatmap"}/>
                 <WidgetContent className={"h-full items-center"}>
                     <div
@@ -65,7 +65,7 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelet
 
     if (!githubIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate id={id} className="col-span-2 row-span-1" name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Github account first!"}
                     actionLabel={"Integrate"}
@@ -76,7 +76,7 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelet
     }
 
     return (
-        <WidgetTemplate id={id} className="col-span-2 row-span-1" name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Github Heatmap"}/>
             <WidgetContent className={"h-full items-center"}>
                 {(isLoading || isFetching) ? (

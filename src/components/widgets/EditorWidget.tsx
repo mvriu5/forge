@@ -27,7 +27,7 @@ import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
         return (
-            <WidgetTemplate id={id} className={"col-span-1 md:col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
+            <WidgetTemplate id={id} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <div className={"rounded-md h-full w-full border border-main/40 bg-secondary"}/>
             </WidgetTemplate>
         )
@@ -83,7 +83,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     }
 
     return (
-        <WidgetTemplate id={id} className={"col-span-1 md:col-span-2 row-span-2"} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Notes"}>
                 <p className={"text-tertiary/50 text-end text-sm"}>{saved ? "Saved" : "Unsaved"}</p>
             </WidgetHeader>
