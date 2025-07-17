@@ -33,7 +33,7 @@ export const widgetRegistry: WidgetElement[] = [
             widgetType: "editor",
             height: 2,
             width: 2,
-            previewImage: '/editor_preview.png',
+            previewImage: '/editor_preview.svg',
             title: 'Editor',
             description: 'A simple text editor widget',
             tags: ["productivity"]
@@ -81,7 +81,7 @@ export const widgetRegistry: WidgetElement[] = [
             widgetType: "bookmark",
             height: 2,
             width: 1,
-            previewImage: '/bookmark_preview.png',
+            previewImage: '/bookmark_preview.svg',
             title: 'Bookmark',
             description: 'Store your bookmarks',
             tags: ["productivity"]

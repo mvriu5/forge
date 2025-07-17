@@ -142,9 +142,9 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                                 data-selected={widget.widgetType === selectedWidget?.widgetType ? "true" : "false"}
                                 className={cn(
                                     "relative group cursor-default col-span-1 flex flex-col p-2 m-1 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
-                                    "data-[selected=true]:border-brand/20 data-[used=true]:border-success/20",
-                                    "data-[used=true]:ring-4 data-[used=true]:ring-success/5",
-                                    "data-[selected=true]:ring-4 data-[selected=true]:ring-brand/5"
+                                    "data-[selected=true]:border-brand/30 data-[used=true]:border-success/30",
+                                    "data-[used=true]:ring-4 data-[used=true]:ring-success/10",
+                                    "data-[selected=true]:ring-4 data-[selected=true]:ring-brand/10"
                                 )}
                                 onClick={() => handleSelect(widget)}
                             >
@@ -158,7 +158,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                                     </div>
                                 </div>
                                 <p className={"text-sm text-secondary"}>{widget.description}</p>
-                                <div className={"absolute -right-2 -bottom-6 rounded-md shadow-md pt-0.5 pl-0.5 border border-main/40 bg-secondary"}>
+                                <div className={"absolute -right-2 -bottom-16 rounded-md shadow-md pt-0.5 pl-0.5 border border-main/40 bg-secondary"}>
                                     <Image src={widget.previewImage} alt={widget.title} width={330} height={300}/>
                                 </div>
                             </div>
