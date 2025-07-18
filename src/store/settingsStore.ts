@@ -1,4 +1,4 @@
-import {Settings, SettingsInsert} from "@/database"
+import {Settings} from "@/database"
 import {create} from "zustand/react"
 
 interface SettingsStore {

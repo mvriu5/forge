@@ -11,7 +11,7 @@ import {
     Github,
     LayoutDashboard,
     Pencil,
-    Settings,
+    Settings as SettingsIcon,
     Trash,
     User,
     UserRoundCheck,
@@ -45,6 +45,8 @@ import {tooltip} from "@/components/ui/TooltipProvider"
 import {RadioGroup} from "@/components/ui/RadioGroup"
 import {useSettingsStore} from "@/store/settingsStore"
 import {RadioGroupBox} from "@/components/ui/RadioGroupBox"
+import {Settings} from "@/database"
+
 
 function SettingsDialog() {
     const {session} = useSessionStore()
@@ -61,7 +63,7 @@ function SettingsDialog() {
                     type={"button"}
                     className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-secondary hover:text-primary ring-0 outline-0"}
                 >
-                    <Settings size={16} className={"text-tertiary"}/>
+                    <SettingsIcon size={16} className={"text-tertiary"}/>
                     <p>Settings</p>
                 </button>
             </DialogTrigger>
@@ -717,6 +719,8 @@ const SettingsSection = ({onClose}: SettingsProps) => {
     const {settings, updateSettings} = useSettingsStore()
     const {addToast} = useToast()
 
+    if (!settings) return
+
     const formSchema = z.object({
         hourFormat: z.enum(["12", "24"])
     })
@@ -733,11 +737,20 @@ const SettingsSection = ({onClose}: SettingsProps) => {
             hourFormat: values.hourFormat
         }
 
-        await updateSettings(newConfig)
+        const newSettings: Settings = {
+            id: settings.id,
+            userId: settings.userId,
+            lastDashboardId: settings.lastDashboardId,
+            config: newConfig,
+            createdAt: settings.createdAt,
+            updatedAt: settings.updatedAt
+        }
+
+        await updateSettings(newSettings)
 
         addToast({
             title: "Successfully updated your settings!",
-            icon: <Settings size={24} className={"text-brand"}/>
+            icon: <SettingsIcon size={24} className={"text-brand"}/>
         })
 
         onClose()
