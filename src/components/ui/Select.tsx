@@ -61,7 +61,7 @@ const SelectContent = ({ className, children, ...props }: ComponentPropsWithRef<
         <SelectPrimitive.Portal>
             <SelectPrimitive.Content
                 className={cn(
-                    "max-h-96 z-50 min-w-[8rem] rounded-md border border-main",
+                    "max-h-96 z-50 min-w-[8rem] rounded-md border border-main/40",
                     "bg-primary text-secondary shadow-[10px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)] data-[side=bottom]:slide-in-from-top-2",
                     "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
                     CONTAINER_STYLES.animation,

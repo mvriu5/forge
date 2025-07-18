@@ -2,7 +2,17 @@
 
 import React, {useState} from "react"
 import {WidgetProps, WidgetTemplate} from "./base/WidgetTemplate"
-import {AlertCircle, Blocks, CloudAlert, Filter, FolderGit, GitPullRequest, RefreshCw} from "lucide-react"
+import {
+    AlertCircle,
+    Blocks,
+    CircleDashed,
+    CloudAlert,
+    Filter,
+    FolderGit,
+    FolderOpen,
+    GitPullRequest,
+    RefreshCw
+} from "lucide-react"
 import {formatDate} from "date-fns"
 import {authClient} from "@/lib/auth-client"
 import {Button} from "@/components/ui/Button"
@@ -189,11 +199,9 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
             <Tabs defaultValue="issues" onValueChange={setActiveTab}>
                 <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
                     <TabsTrigger value="issues">
-                        <AlertCircle className="h-4 w-4 mr-2" />
                         Issues
                     </TabsTrigger>
                     <TabsTrigger value="pull-requests">
-                        <GitPullRequest className="h-4 w-4 mr-2" />
                         Pull Requests
                     </TabsTrigger>
                 </TabsList>
@@ -238,15 +246,15 @@ const IssueCard = ({issue}: { issue: any }) => {
                 key={issue.id}
                 className="flex items-start gap-2 p-2 pr-4 rounded-md hover:bg-secondary cursor-pointer"
             >
-                <AlertCircle className="h-5 w-5 text-info mt-0.5" />
+                <CircleDashed size={16} className="text-warning mt-0.5" />
                 <div className="flex-1 space-y-1">
                     <p className="font-medium text-sm text-primary">{issue.title}</p>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between text-xs text-secondary">
                         <div className="flex items-center">
-                            <FolderGit size={14} className="mr-1" />
+                            <FolderOpen size={14} className="mr-1" />
                             {issue.repository_url.split('/').pop()}
                         </div>
-                        <span className={"text-tertiary"}>{formatDate(issue.created_at, "dd.MM.yyyy")}</span>
+                        <span className={"text-tertiary font-mono"}>{formatDate(issue.created_at, "dd/MM/yyyy")}</span>
                     </div>
                     <div className="flex flex-wrap gap-1 mt-1">
                         {issue.labels.map((label: any) => (
@@ -271,10 +279,10 @@ const PulLRequestCard = ({pr}: {pr: any}) => {
                 <p className="font-medium text-sm text-primary">{pr.title}</p>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <div className="flex items-center">
-                        <FolderGit size={14} className="mr-1" />
+                        <FolderOpen size={14} className="mr-1" />
                         {pr.repository_url.split('/').pop()}
                     </div>
-                    <span className={"text-tertiary"}>{formatDate(pr.created_at, "dd.MM.yyyy")}</span>
+                    <span className={"text-tertiary font-mono"}>{formatDate(pr.created_at, "dd/MM/yyyy")}</span>
                 </div>
                 <div className="flex flex-wrap gap-1 mt-1">
                     {pr.labels.map((label: any) => (

@@ -45,7 +45,7 @@ export const widgetRegistry: WidgetElement[] = [
             widgetType: "github",
             height: 2,
             width: 1,
-            previewImage: '/github_preview.png',
+            previewImage: '/github_preview.svg',
             title: 'Github',
             description: 'See your open github issues & pull requests',
             tags: ["github"]

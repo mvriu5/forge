@@ -205,7 +205,7 @@ const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, a
                         "focus:outline-none z-50",
                         "max-h-[--radix-dropdown-menu-content-available-height]",
                         "min-w-[--radix-dropdown-menu-trigger-width]",
-                        "bg-primary overflow-y-auto rounded-md border border-main/60 p-1 shadow-[10px_10px_20px_rgba(0,0,0,0.5)]",
+                        "bg-primary overflow-y-auto rounded-md border border-main/60 p-1 shadow-[10px_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)]",
                         CONTAINER_STYLES.animation,
                         className
                     )}

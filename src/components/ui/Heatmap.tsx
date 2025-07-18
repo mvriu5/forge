@@ -161,8 +161,8 @@ function Heatmap({data, startDate, endDate, cellSize = 12, gap = 2, className}: 
                                         {...getTooltip(cell)}
                                         className={cn(
                                             "rounded-xs bg-gray-400",
-                                            intensity === 0 && "bg-white/10",
-                                            intensity === 1 && "bg-green-300",
+                                            intensity === 0 && "bg-white/30 dark:bg-white/10",
+                                            intensity === 1 && "bg-green-400 dark:bg-green-300",
                                             intensity === 2 && "bg-green-500",
                                             intensity === 3 && "bg-green-700",
                                             intensity === 4 && "bg-green-800",

@@ -185,7 +185,7 @@ const BookmarkItem = ({title, link, onDelete}: BookmarkItem & {onDelete: (title:
             onClick={() => window.open(link, '_blank', 'noopener,noreferrer')}
         >
             <div className={"flex items-center gap-2"}>
-                <div className={"flex justify-center items-center p-1 rounded-md bg-white/10"}>
+                <div className={"flex justify-center items-center p-1 rounded-md bg-white/50 dark:bg-white/10"}>
                     {getLogoFromLink(link)}
                 </div>
                 <p className={"text-primary truncate"}>{title}</p>

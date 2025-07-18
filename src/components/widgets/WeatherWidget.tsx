@@ -107,11 +107,11 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
                 {isLoading ? (
                     <Skeleton className={"h-12 w-full"}/>
                 ) : (
-                    <div className={"h-min flex items-center gap-2 rounded-md bg-info/5 border border-info/20 px-2 py-1"}>
-                        <div className={"text-primary"}>
+                    <div className={"h-min flex items-center gap-2 rounded-md bg-info/10 border border-info/20 px-2 py-1"}>
+                        <div className={"text-info/80"}>
                             {getWeatherIcon(currentWeather?.weathercode, 28)}
                         </div>
-                        <p className={"text-lg text-primary font-semibold"}>{`${currentWeather?.temperature}°C`}</p>
+                        <p className={"text-lg text-info/80 font-semibold"}>{`${currentWeather?.temperature}°C`}</p>
                     </div>
                 )}
                 <div className={"h-full w-full flex items-center justify-between gap-4 px-2"}>
@@ -127,9 +127,9 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
                         <>
                             {nextWeather?.map((weather: any) =>
                                 <div className={"flex flex-col items-center gap-1"} key={weather.time}>
-                                    <p className={"text-xs text-tertiary"}>{formatDate(weather.time, settings?.config.hourFormat === "24" ?  "HH:00" : "h a")}</p>
+                                    <p className={"text-xs font-medium text-tertiary"}>{formatDate(weather.time, settings?.config.hourFormat === "24" ?  "HH:00" : "h a")}</p>
                                     {getWeatherIcon(weather.weathercode)}
-                                    <p className={"text-primary"}>{`${Number(weather.temperature.toFixed(0))}°C`}</p>
+                                    <p className={"text-secondary font-medium"}>{`${Number(weather.temperature.toFixed(0))}°C`}</p>
                                 </div>
                             )}
                         </>

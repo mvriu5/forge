@@ -103,7 +103,7 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     </Button>
                 </WidgetHeader>
                 <WidgetContent scroll>
-                    <div className={"grid grid-cols-2 gap-4"}>
+                    <div className={"flex flex-col gap-2"}>
                         {issues?.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
                     </div>
                 </WidgetContent>
@@ -178,14 +178,14 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
             </WidgetHeader>
             <WidgetContent scroll>
                 {(isLoading || isFetching) ? (
-                    <div className={"h-full grid grid-cols-2 gap-4"}>
-                        <Skeleton className={"col-span-1 h-38"}/>
-                        <Skeleton className={"col-span-1 h-38"}/>
-                        <Skeleton className={"col-span-1 h-38"}/>
-                        <Skeleton className={"col-span-1 h-38"}/>
+                    <div className={"h-full flex flex-col gap-2"}>
+                        <Skeleton className={"h-16"}/>
+                        <Skeleton className={"h-16"}/>
+                        <Skeleton className={"h-16"}/>
+                        <Skeleton className={"h-16"}/>
                     </div>
                 ) : (
-                    <div className={"grid grid-cols-2 gap-4"}>
+                    <div className={"flex flex-col gap-2"}>
                         {data?.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
                     </div>
                 )}
@@ -201,8 +201,8 @@ const IssueCard = ({issue, className}: {issue: any, className?: string}) => {
     })
 
     return (
-        <div className={cn("flex flex-col gap-2 bg-secondary rounded-md p-2 border border-main/20 shadow-md", className)}>
-            <div className="flex items-center gap-2">
+        <div className={cn("flex flex-col gap-2 bg-secondary rounded-md p-1 border border-main/20 shadow-xs dark:shadow-md", className)}>
+            <div className={"flex items-center gap-2"}>
                 <StatusBadge statusId={issue.stateName}/>
                 <p className={"text-primary text-sm truncate"}>{issue.title}</p>
                 <div className={"hidden lg:flex items-center justify-center"} {...descriptionTooltip}>
@@ -241,7 +241,7 @@ const IssueCard = ({issue, className}: {issue: any, className?: string}) => {
                     </div>
                 )}
             </div>
-            <p className={"text-tertiary text-end text-xs font-mono"}>{new Date(issue.createdAt).toLocaleDateString("en-US")}</p>
+            <p className={"text-tertiary text-xs font-mono"}>{new Date(issue.createdAt).toLocaleDateString("en-US")}</p>
         </div>
     )
 }
