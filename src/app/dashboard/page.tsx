@@ -21,6 +21,7 @@ import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 import {useHotkeys} from "react-hotkeys-hook"
 import {SpinnerDotted} from "spinners-react"
 import {useSettingsStore} from "@/store/settingsStore"
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
@@ -29,6 +30,7 @@ export default function Dashboard() {
     const { fetchIntegrations } = useIntegrationStore()
     const { fetchSettings } = useSettingsStore()
     const { addToast } = useToast()
+
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
     const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
@@ -49,6 +51,8 @@ export default function Dashboard() {
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
     const currentWidgets = useWidgetStore(useShallow((s) => s.widgets?.filter((w) => w && w?.dashboardId === currentDashboard?.id) || []))
+
+    const { transformedWidgets, breakpoint, gridClasses, containerHeight, canEdit, isDesktop } = useResponsiveLayout(currentWidgets)
 
     useEffect(() => {
         setLoading(true)
@@ -146,11 +150,8 @@ export default function Dashboard() {
                             onDragEnd={handleDragEnd}
                             onDragOver={handleDragOver}
                         >
-                            <div
-                                className="relative w-full h-[calc(100vh-48px)] hidden xl:grid grid-cols-4 gap-4 p-4"
-                                style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
-                            >
-                                {gridCells?.map((cell) => (
+                            <div className={`relative w-full ${containerHeight} grid ${gridClasses}`}>
+                                {isDesktop && gridCells?.map((cell) => (
                                     <GridCell
                                         key={`${cell.x},${cell.y}`}
                                         x={cell.x}
@@ -161,7 +162,7 @@ export default function Dashboard() {
                                     />
                                 ))}
 
-                                {currentWidgets
+                                {transformedWidgets
                                     ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
                                     .map((widget) => (
                                         <MemoizedWidget
