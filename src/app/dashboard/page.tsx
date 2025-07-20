@@ -73,42 +73,6 @@ export default function Dashboard() {
         .finally(() => setLoading(false))
     }, [session?.user?.id, getAllDashboards, getAllWidgets, fetchIntegrations])
 
-    const findFreePosition = (width: number, height: number, excludeId?: string) => {
-        const occupiedCells: Record<string, boolean> = {}
-
-        // Mark all occupied cells
-        widgets?.map((widget) => {
-            if (excludeId && (widget.id === excludeId || widget.widgetType === excludeId)) return
-
-            for (let i = 0; i < widget.width; i++) {
-                for (let j = 0; j < widget.height; j++) {
-                    occupiedCells[`${widget.positionX + i},${widget.positionY + j}`] = true
-                }
-            }
-        })
-
-        // Find first free position
-        for (let y = 0; y <= 4 - height; y++) {
-            for (let x = 0; x <= 4 - width; x++) {
-                let canPlace = true
-
-                for (let i = 0; i < width && canPlace; i++) {
-                    for (let j = 0; j < height && canPlace; j++) {
-                        if (occupiedCells[`${x + i},${y + j}`]) {
-                            canPlace = false
-                        }
-                    }
-                }
-
-                if (canPlace) {
-                    return { x, y }
-                }
-            }
-        }
-
-        return { x: 0, y: 0 } // Fallback
-    }
-
     const handleEditModeEnter = useCallback(() => {
         setEditMode(true)
         cachedWidgetsRef.current = useWidgetStore.getState().widgets
@@ -150,48 +114,6 @@ export default function Dashboard() {
         if (widget) setWidgetsToRemove((w) => [...w, widget])
     }, [])
 
-    if (loading) {
-        return (
-            <div className={"flex flex-col w-screen h-screen"}>
-                <Header
-                    onEdit={handleEditModeEnter}
-                    handleEditModeSave={handleEditModeSave}
-                    handleEditModeCancel={handleEditModeCancel}
-                    editMode={editMode}
-                    isLoading={true}
-                />
-                <div className={"h-full w-full flex items-center justify-center"}>
-                    <SpinnerDotted size={56} thickness={160} speed={100} color="rgba(237, 102, 49, 1)" />
-                </div>
-                <DashboardDialog
-                    open={dialogOpen}
-                    onOpenChange={setDialogOpen}
-                    showOnClose={false}
-                />
-            </div>
-        )
-    }
-
-    if (widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0 && currentDashboard) {
-        return (
-            <div className={"flex flex-col w-full h-screen"}>
-                <Header onEdit={handleEditModeEnter} editMode={editMode} widgetsEmpty={true}/>
-                <div className={"w-full h-full flex items-center justify-center"}>
-                    <div className={"flex flex-col gap-4 items-center justify-center p-4 md:p-12 border border-main border-dashed rounded-md shadow-md dark:shadow-xl"}>
-                        <EmptyAddSVG/>
-                        <p className={"w-56 md:w-80 text-center text-sm"}>You dont have any widgets in your dashboard. Add a new widget, by visiting the widget store.</p>
-                        <WidgetDialog editMode={false} title={"Widget-Store"}/>
-                    </div>
-                </div>
-                <DashboardDialog
-                    open={dialogOpen}
-                    onOpenChange={setDialogOpen}
-                    showOnClose={false}
-                />
-            </div>
-        )
-    }
-
     return (
         <div className={"flex flex-col w-full h-full max-h-screen max-w-screen overflow-hidden"}>
             <Header
@@ -200,46 +122,61 @@ export default function Dashboard() {
                 editModeLoading={editModeLoading}
                 handleEditModeSave={handleEditModeSave}
                 handleEditModeCancel={handleEditModeCancel}
+                isLoading={loading}
+                widgetsEmpty={widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0 && currentDashboard !== null}
             />
-            <DndContext
-                sensors={sensors}
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                onDragOver={handleDragOver}
-            >
-                <div className={"flex h-screen xl:hidden items-center justify-center"}>
-                    <Callout variant={"info"} className={"border border-info/20 shadow-lg"}>
-                        The browser window is to small to render your widgets!
-                    </Callout>
+            {loading ? (
+                <div className={"h-screen w-screen flex items-center justify-center"}>
+                    <SpinnerDotted size={56} thickness={160} speed={100} color="rgba(237, 102, 49, 1)" />
                 </div>
-                <div
-                    className="relative w-full h-[calc(100vh-48px)] hidden xl:grid grid-cols-4 gap-4 p-4"
-                    style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
-                >
-                    {gridCells?.map((cell) => (
-                        <GridCell
-                            key={`${cell.x},${cell.y}`}
-                            x={cell.x}
-                            y={cell.y}
-                            width={cell.width}
-                            height={cell.height}
-                            isDroppable={cell.isDroppable}
-                        />
-                    ))}
+            ) : (
+                <>
+                    {widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0 && currentDashboard ? (
+                        <div className={"w-full h-full flex items-center justify-center"}>
+                            <div className={"flex flex-col gap-4 items-center justify-center p-4 md:p-12 border border-main border-dashed rounded-md shadow-md dark:shadow-xl"}>
+                                <EmptyAddSVG/>
+                                <p className={"w-56 md:w-80 text-center text-sm"}>You dont have any widgets in your dashboard. Add a new widget, by visiting the widget store.</p>
+                                <WidgetDialog editMode={false} title={"Widget-Store"}/>
+                            </div>
+                        </div>
+                    ) : (
+                        <DndContext
+                            sensors={sensors}
+                            onDragStart={handleDragStart}
+                            onDragEnd={handleDragEnd}
+                            onDragOver={handleDragOver}
+                        >
+                            <div
+                                className="relative w-full h-[calc(100vh-48px)] hidden xl:grid grid-cols-4 gap-4 p-4"
+                                style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
+                            >
+                                {gridCells?.map((cell) => (
+                                    <GridCell
+                                        key={`${cell.x},${cell.y}`}
+                                        x={cell.x}
+                                        y={cell.y}
+                                        width={cell.width}
+                                        height={cell.height}
+                                        isDroppable={cell.isDroppable}
+                                    />
+                                ))}
 
-                    {currentWidgets
-                        ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
-                        .map((widget) => (
-                            <MemoizedWidget
-                                key={widget.id}
-                                widget={widget}
-                                editMode={editMode}
-                                onDelete={handleEditModeDelete}
-                                isDragging={activeWidget?.id === widget.id}
-                            />
-                    ))}
-                </div>
-            </DndContext>
+                                {currentWidgets
+                                    ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
+                                    .map((widget) => (
+                                        <MemoizedWidget
+                                            key={widget.id}
+                                            widget={widget}
+                                            editMode={editMode}
+                                            onDelete={handleEditModeDelete}
+                                            isDragging={activeWidget?.id === widget.id}
+                                        />
+                                    ))}
+                            </div>
+                        </DndContext>
+                    )}
+                </>
+            )}
             <DashboardDialog
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}

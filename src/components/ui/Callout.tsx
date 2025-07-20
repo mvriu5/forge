@@ -8,11 +8,11 @@ const calloutVariants = cva(
         variants: {
             variant: {
                 default: "bg-inverted/5 text-secondary",
-                brand: "bg-brand/10 text-brand",
-                success: "bg-success/10 text-success",
-                warning: "bg-warning/10 text-warning",
-                error: "bg-error/10 text-error",
-                info: "bg-info/10 text-info",
+                brand: "bg-brand/20 dark:bg-brand/10 text-brand",
+                success: "bg-success dark:bg-success/10 text-success",
+                warning: "bg-warning/20 dark:bg-warning/10 text-warning",
+                error: "bg-error/20 dark:bg-error/10 text-error",
+                info: "bg-info/20 dark:bg-info/10 text-info",
             },
         },
         defaultVariants: {

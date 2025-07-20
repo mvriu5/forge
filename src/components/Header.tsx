@@ -17,12 +17,12 @@ import {useSettingsStore} from "@/store/settingsStore"
 
 interface HeaderProps {
     editMode: boolean
-    editModeLoading?: boolean
-    handleEditModeCancel?: () => void
-    handleEditModeSave?: () => void
+    editModeLoading: boolean
+    handleEditModeCancel: () => void
+    handleEditModeSave: () => void
     onEdit: () => void
-    widgetsEmpty?: boolean
-    isLoading?: boolean
+    widgetsEmpty: boolean
+    isLoading: boolean
 }
 
 function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false}: HeaderProps) {

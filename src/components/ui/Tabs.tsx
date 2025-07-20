@@ -24,7 +24,7 @@ const TabsTrigger = ({ className, ...props }: ComponentPropsWithRef<typeof TabsP
         <TabsPrimitive.Trigger
             className={cn(
                 "inline-flex border-0 border-main/40 items-center justify-center whitespace-nowrap rounded-md h-8 px-3 py-1 text-sm",
-                "font-normal ring-offset-background focus-visible:outline-none disabled:pointer-events-none",
+                "font-medium ring-offset-background focus-visible:outline-none disabled:pointer-events-none",
                 "disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary data-[state=active]:shadow-xs data-[state=active]:dark:shadow-md",
                 "data-[state=active]:border-1",
                 className
