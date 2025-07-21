@@ -17,11 +17,9 @@ export const transformLayout = (widgets: Widget[], breakpoint: Breakpoint): Widg
 
     return sortedWidgets.map((widget, index) => {
         const widgetConfig = getWidgetPreview(widget.widgetType)
-
         if (!widgetConfig || !widgetConfig.preview.sizes) return widget
 
         const responsiveSize = widgetConfig.preview.sizes[breakpoint]
-
         if (!responsiveSize) return widget
 
         if (breakpoint === "mobile") {
@@ -52,15 +50,14 @@ export const transformLayout = (widgets: Widget[], breakpoint: Breakpoint): Widg
     })
 }
 
-// Hilfsfunktionen für CSS-Klassen
 export const getGridClasses = (breakpoint: Breakpoint): string => {
     switch (breakpoint) {
         case "mobile":
-            return "grid-cols-1 gap-2 p-2"
+            return "grid grid-cols-1 auto-rows-max gap-4 p-4"
         case "tablet":
-            return "grid-cols-2 gap-4 p-4"
+            return "grid grid-cols-2 auto-rows-max gap-4 p-4"
         default:
-            return "grid-cols-4 grid-rows-4 gap-4 p-4"
+            return "grid grid-cols-4 grid-rows-4 gap-4 p-4"
     }
 }
 

@@ -22,6 +22,7 @@ import {useHotkeys} from "react-hotkeys-hook"
 import {SpinnerDotted} from "spinners-react"
 import {useSettingsStore} from "@/store/settingsStore"
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout"
+import {cn} from "@/lib/utils"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
@@ -119,7 +120,7 @@ export default function Dashboard() {
     }, [])
 
     return (
-        <div className={"flex flex-col w-full h-full max-h-screen max-w-screen overflow-hidden"}>
+        <div className={cn("flex flex-col w-full h-full overflow-hidden", isDesktop && "max-h-screen max-w-screen")}>
             <Header
                 onEdit={handleEditModeEnter}
                 editMode={editMode}
@@ -150,7 +151,7 @@ export default function Dashboard() {
                             onDragEnd={handleDragEnd}
                             onDragOver={handleDragOver}
                         >
-                            <div className={`relative w-full ${containerHeight} grid ${gridClasses}`}>
+                            <div className={`relative w-full ${containerHeight} ${gridClasses}`}>
                                 {isDesktop && gridCells?.map((cell) => (
                                     <GridCell
                                         key={`${cell.x},${cell.y}`}
