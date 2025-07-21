@@ -4,7 +4,7 @@ import {Header} from "@/components/Header"
 import React, {memo, useCallback, useEffect, useRef, useState} from "react"
 import {useSessionStore} from "@/store/sessionStore"
 import {useWidgetStore} from "@/store/widgetStore"
-import {getWidgetComponent} from "@/lib/widgetRegistry"
+import {getWidgetComponent, getWidgetPreview} from "@/lib/widgetRegistry"
 import {useIntegrationStore} from "@/store/integrationStore"
 import {DndContext, useDroppable} from "@dnd-kit/core"
 import type {Widget} from "@/database"
@@ -15,7 +15,6 @@ import {useToast} from "@/components/ui/ToastProvider"
 import {useShallow} from "zustand/react/shallow"
 import {useGrid} from "@/hooks/useGrid"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
-import {Callout} from "@/components/ui/Callout"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 import {useHotkeys} from "react-hotkeys-hook"
@@ -23,6 +22,7 @@ import {SpinnerDotted} from "spinners-react"
 import {useSettingsStore} from "@/store/settingsStore"
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout"
 import {cn} from "@/lib/utils"
+import {useBreakpoint} from "@/hooks/useBreakpoint"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
@@ -31,7 +31,6 @@ export default function Dashboard() {
     const { fetchIntegrations } = useIntegrationStore()
     const { fetchSettings } = useSettingsStore()
     const { addToast } = useToast()
-
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
     const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
@@ -151,7 +150,7 @@ export default function Dashboard() {
                             onDragEnd={handleDragEnd}
                             onDragOver={handleDragOver}
                         >
-                            <div className={`relative w-full ${containerHeight} ${gridClasses}`}>
+                            <div className={cn(`relative w-full ${containerHeight} ${gridClasses}`)}>
                                 {isDesktop && gridCells?.map((cell) => (
                                     <GridCell
                                         key={`${cell.x},${cell.y}`}
@@ -196,9 +195,16 @@ interface WidgetProps {
 }
 
 const WidgetComponent = ({ widget, onDelete, editMode, isDragging }: WidgetProps) => {
+    const breakpoint = useBreakpoint()
+
     const Component = getWidgetComponent(widget.widgetType)
+    const widgetPreview = getWidgetPreview(widget.widgetType)
+    if (!widgetPreview) return null
+
     const handleDelete = useCallback(() => onDelete(widget.id), [onDelete, widget.id])
     if (!Component) return null
+
+    const responsiveSize = widgetPreview.preview.sizes[breakpoint]
 
     return (
         <div
@@ -206,8 +212,8 @@ const WidgetComponent = ({ widget, onDelete, editMode, isDragging }: WidgetProps
             style={{
                 gridColumnStart: widget.positionX + 1,
                 gridRowStart: widget.positionY + 1,
-                gridColumnEnd: widget.positionX + 1 + widget.width,
-                gridRowEnd: widget.positionY + 1 + widget.height,
+                gridColumnEnd: widget.positionX + 1 + responsiveSize.width,
+                gridRowEnd: widget.positionY + 1 + responsiveSize.height,
             }}
         >
             <Component key={widget.id} id={widget.id} editMode={editMode} onWidgetDelete={handleDelete} />

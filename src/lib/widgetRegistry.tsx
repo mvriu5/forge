@@ -55,7 +55,7 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["github"],
             sizes: {
                 desktop: { width: 1, height: 2 },
-                tablet: { width: 1, height: 1 },
+                tablet: { width: 1, height: 2 },
                 mobile: { width: 1, height: 1 }
             }
         },
@@ -115,7 +115,7 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["productivity"],
             sizes: {
                 desktop: { width: 1, height: 2 },
-                tablet: { width: 1, height: 1 },
+                tablet: { width: 1, height: 2 },
                 mobile: { width: 1, height: 1 }
             }
         },
@@ -145,7 +145,7 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["productivity"],
             sizes: {
                 desktop: { width: 1, height: 2},
-                tablet: { width: 1, height: 1 },
+                tablet: { width: 1, height: 2 },
                 mobile: { width: 1, height: 1 }
             }
         },

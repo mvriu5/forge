@@ -1,33 +1,10 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import {transformLayout, type Breakpoint, getGridClasses, getContainerHeight} from "@/lib/transformLayout"
-import {Widget} from "@/database"
+import { useMemo } from "react"
+import { transformLayout, type Breakpoint, getGridClasses, getContainerHeight } from "@/lib/transformLayout"
+import { Widget } from "@/database"
+import { useBreakpoint } from "@/hooks/useBreakpoint"
 
-
-const useBreakpoint = (): Breakpoint => {
-    const [breakpoint, setBreakpoint] = useState<Breakpoint>("desktop")
-
-    useEffect(() => {
-        const updateBreakpoint = () => {
-            const width = window.innerWidth
-            if (width < 768) {
-                setBreakpoint("mobile")
-            } else if (width < 1280) {
-                setBreakpoint("tablet")
-            } else {
-                setBreakpoint("desktop")
-            }
-        }
-
-        updateBreakpoint()
-
-        window.addEventListener("resize", updateBreakpoint)
-        return () => window.removeEventListener("resize", updateBreakpoint)
-    }, [])
-
-    return breakpoint
-}
 
 const layoutCache = new Map<string, Widget[]>()
 
@@ -36,11 +13,9 @@ const getCacheKey = (widgets: Widget[], breakpoint: Breakpoint): string => {
     return `${breakpoint}-${widgetIds}`
 }
 
-// Main Responsive Layout Hook
 export const useResponsiveLayout = (originalWidgets: Widget[]) => {
     const breakpoint = useBreakpoint()
 
-    // Transformierte Widgets mit Caching
     const transformedWidgets = useMemo(() => {
         if (!originalWidgets || originalWidgets.length === 0) return []
 
@@ -53,7 +28,6 @@ export const useResponsiveLayout = (originalWidgets: Widget[]) => {
         const transformed = transformLayout(originalWidgets, breakpoint)
         layoutCache.set(cacheKey, transformed)
 
-        // Cache-Größe begrenzen (LRU-ähnlich)
         if (layoutCache.size > 50) {
             const firstKey = layoutCache.keys().next().value ?? ""
             layoutCache.delete(firstKey)

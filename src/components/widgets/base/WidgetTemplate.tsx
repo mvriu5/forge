@@ -55,15 +55,15 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
         transition: isDragging ? "none" : "transform 200ms ease",
         gridColumnStart: widget.positionX + 1,
         gridRowStart: widget.positionY + 1,
-        gridColumnEnd: widget.positionX + 1 + widget.width,
-        gridRowEnd: widget.positionY + 1 + widget.height,
+        gridColumnEnd: widget.positionX + 1 + responsiveSize.width,
+        gridRowEnd: widget.positionY + 1 + responsiveSize.height,
         zIndex: isDragging ? 30 : 20,
     }
 
     return (
         <div
             className={cn(
-                `h-full flex flex-col gap-2 rounded-md bg-tertiary border border-main/40 p-2 overflow-hidden col-span-[${responsiveSize.height}] row-span-[${responsiveSize.width}]`,
+                `h-full flex flex-col gap-2 rounded-md bg-tertiary border border-main/40 p-2 overflow-hidden col-span-[${responsiveSize.width}] row-span-[${responsiveSize.height}]`,
                 editMode && "relative cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
                 editMode && isDragging && "opacity-50 animate-none",
                 isPlaceholder && "pointer-events-none",
