@@ -9,7 +9,6 @@ import {Button} from "@/components/ui/Button"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {getWidgetPreview} from "@/lib/widgetRegistry"
-import {useResponsiveLayout} from "@/hooks/useResponsiveLayout"
 import {useBreakpoint} from "@/hooks/useBreakpoint"
 
 interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
@@ -24,7 +23,7 @@ interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
 const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, editMode, onWidgetDelete, isPlaceholder = false}) => {
     const {getWidget} = useWidgetStore()
     const {currentDashboard} = useDashboardStore()
-    const breakpoint = useBreakpoint()
+    const {breakpoint} = useBreakpoint()
 
     const widget = id
         ? useWidgetStore(state => state.widgets?.find(w => w.id === id))

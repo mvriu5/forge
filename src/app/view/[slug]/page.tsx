@@ -2,7 +2,7 @@
 
 import {Callout} from "@/components/ui/Callout"
 import React, {useEffect} from "react"
-import {getWidgetComponent} from "@/lib/widgetRegistry"
+import {getWidgetComponent, getWidgetPreview} from "@/lib/widgetRegistry"
 import {Dashboard, Widget} from "@/database"
 import {useQuery} from "@tanstack/react-query"
 import {useParams} from "next/navigation"
@@ -14,6 +14,7 @@ import {useWidgetStore} from "@/store/widgetStore"
 import {useDashboardStore} from "@/store/dashboardStore"
 import { cn } from "@/lib/utils"
 import {useResponsiveLayout} from "@/hooks/useResponsiveLayout"
+import {useBreakpoint} from "@/hooks/useBreakpoint"
 
 export default function SharedDashboard() {
     const { slug } = useParams()
@@ -86,9 +87,29 @@ export default function SharedDashboard() {
             <ViewHeader dashboardId={slug as string} widgets={data ?? null}/>
             <div className={cn("relative w-full", containerHeight, gridClasses)}>
                 {transformedWidgets?.map((widget: Widget) => {
+                    const {breakpoint} = useBreakpoint()
+
                     const Component = getWidgetComponent(widget.widgetType)
                     if (!Component) return null
-                    return <Component key={widget.id} id={widget.id} editMode={false} isPlaceholder={true}/>
+
+                    const widgetPreview = getWidgetPreview(widget.widgetType)
+                    if (!widgetPreview) return null
+
+                    const responsiveSize = widgetPreview.preview.sizes[breakpoint]
+
+                    return (
+                        <div
+                            key={widget.id}
+                            style={{
+                                gridColumnStart: widget.positionX + 1,
+                                gridRowStart: widget.positionY + 1,
+                                gridColumnEnd: widget.positionX + 1 + responsiveSize.width,
+                                gridRowEnd: widget.positionY + 1 + responsiveSize.height,
+                            }}
+                        >
+                            <Component id={widget.id} editMode={false} isPlaceholder={true}/>
+                        </div>
+                    )
                 })}
             </div>
         </div>

@@ -87,7 +87,7 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
                                 onValueChange={onChangeDashboard}
                                 disabled={!dashboards || dashboards.length === 0 || editMode}
                             >
-                                <SelectTrigger className={"max-w-[280px] bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary hidden lg:flex rounded-r-none gap-0.5"} disabled={editMode}>
+                                <SelectTrigger className={"max-w-[280px] bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary flex lg:rounded-r-none gap-0.5"} disabled={editMode}>
                                     <div className={"w-full flex items-center gap-1 overflow-hidden text-xs"}>
                                         <p className={"text-tertiary text-xs font-mono"}>Dashboard:</p>
                                         {isLoading ?

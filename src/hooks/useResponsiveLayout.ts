@@ -14,7 +14,7 @@ const getCacheKey = (widgets: Widget[], breakpoint: Breakpoint): string => {
 }
 
 export const useResponsiveLayout = (originalWidgets: Widget[]) => {
-    const breakpoint = useBreakpoint()
+    const {breakpoint} = useBreakpoint()
 
     const transformedWidgets = useMemo(() => {
         if (!originalWidgets || originalWidgets.length === 0) return []

@@ -23,6 +23,7 @@ import {useSettingsStore} from "@/store/settingsStore"
 import { useResponsiveLayout } from "@/hooks/useResponsiveLayout"
 import {cn} from "@/lib/utils"
 import {useBreakpoint} from "@/hooks/useBreakpoint"
+import {GridCell} from "@/components/GridCell"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
@@ -118,6 +119,8 @@ export default function Dashboard() {
         if (widget) setWidgetsToRemove((w) => [...w, widget])
     }, [])
 
+    const widgetsEmpty = widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0
+
     return (
         <div className={cn("flex flex-col w-full h-full overflow-hidden", isDesktop && "max-h-screen max-w-screen")}>
             <Header
@@ -127,7 +130,7 @@ export default function Dashboard() {
                 handleEditModeSave={handleEditModeSave}
                 handleEditModeCancel={handleEditModeCancel}
                 isLoading={loading}
-                widgetsEmpty={widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0 && currentDashboard !== null}
+                widgetsEmpty={widgetsEmpty && currentDashboard !== null}
             />
             {loading ? (
                 <div className={"h-screen w-screen flex items-center justify-center"}>
@@ -135,11 +138,13 @@ export default function Dashboard() {
                 </div>
             ) : (
                 <>
-                    {widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0 && currentDashboard ? (
+                    {widgetsEmpty && currentDashboard ? (
                         <div className={"w-full h-full flex items-center justify-center"}>
                             <div className={"flex flex-col gap-4 items-center justify-center p-4 md:p-12 border border-main border-dashed rounded-md shadow-md dark:shadow-xl"}>
                                 <EmptyAddSVG/>
-                                <p className={"w-56 md:w-80 text-center text-sm"}>You dont have any widgets in your dashboard. Add a new widget, by visiting the widget store.</p>
+                                <p className={"w-56 md:w-80 text-center text-sm"}>
+                                    You dont have any widgets in your dashboard. Add a new widget, by visiting the widget store.
+                                </p>
                                 <WidgetDialog editMode={false} title={"Widget-Store"}/>
                             </div>
                         </div>
@@ -194,8 +199,8 @@ interface WidgetProps {
     isDragging: boolean
 }
 
-const WidgetComponent = ({ widget, onDelete, editMode, isDragging }: WidgetProps) => {
-    const breakpoint = useBreakpoint()
+const WidgetOverlay = ({ widget, onDelete, editMode, isDragging }: WidgetProps) => {
+    const {breakpoint} = useBreakpoint()
 
     const Component = getWidgetComponent(widget.widgetType)
     const widgetPreview = getWidgetPreview(widget.widgetType)
@@ -221,7 +226,7 @@ const WidgetComponent = ({ widget, onDelete, editMode, isDragging }: WidgetProps
     )
 }
 
-const MemoizedWidget = memo(WidgetComponent, (prev, next) =>
+const MemoizedWidget = memo(WidgetOverlay, (prev, next) =>
     prev.widget.id === next.widget.id &&
     prev.widget.positionX === next.widget.positionX &&
     prev.widget.positionY === next.widget.positionY &&
@@ -231,37 +236,3 @@ const MemoizedWidget = memo(WidgetComponent, (prev, next) =>
     prev.editMode === next.editMode &&
     prev.isDragging === next.isDragging
 )
-
-interface GridCellProps {
-    x: number
-    y: number
-    width: number
-    height: number
-    isDroppable: boolean
-}
-
-const GridCell = ({ x, y, width, height, isDroppable }: GridCellProps) => {
-    const { isOver, setNodeRef } = useDroppable({
-        id: `cell-${x}-${y}`,
-        data: {x, y},
-        disabled: !isDroppable
-    })
-
-    return (
-        <div
-            ref={setNodeRef}
-            className={`rounded-md border-2 ${
-                isDroppable && isOver
-                    ? "border-dashed border-main bg-tertiary"
-                    : "border-transparent"
-            }`}
-            style={{
-                gridColumnStart: x + 1,
-                gridRowStart: y + 1,
-                gridColumnEnd: x + 1 + width,
-                gridRowEnd: y + 1 + height,
-                minHeight: `${height * 180}px`,
-            }}
-        />
-    )
-}

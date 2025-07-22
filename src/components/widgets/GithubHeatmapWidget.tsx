@@ -12,6 +12,7 @@ import {useIntegrationStore} from "@/store/integrationStore"
 import {authClient} from "@/lib/auth-client"
 import {Blocks, CloudAlert} from "lucide-react"
 import {useToast} from "@/components/ui/ToastProvider"
+import {useBreakpoint} from "@/hooks/useBreakpoint"
 
 const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -40,6 +41,16 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelet
     const {data, isLoading, isFetching, isError} = useGithubHeatmap()
     const {githubIntegration} = useIntegrationStore()
     const {addToast} = useToast()
+    const {tailwindBreakpoint} = useBreakpoint()
+
+    const cellSize = {
+        "2xl": 10,
+        xl: 8,
+        lg: 7,
+        md: 4,
+        sm: 6,
+        xs: 5
+    }
 
     const contributions = data?.map(({ date, count }) => ({ date, count }))
 
@@ -96,7 +107,7 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelet
                 ) : (
                     <Heatmap
                         data={contributions}
-                        cellSize={10}
+                        cellSize={cellSize[tailwindBreakpoint]}
                         gap={2}
                     />
                 )}
