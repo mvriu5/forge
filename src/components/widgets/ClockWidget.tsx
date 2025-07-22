@@ -36,7 +36,7 @@ const ClockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
         { value: "UTC", label: "UTC " },
     ]
     const [currentTime, setCurrentTime] = useState(new Date())
-    const [selectedTimezone, setSelectedTimezone] = useState(widget.config?.timezone ?? "Europe/Berlin")
+    const [selectedTimezone, setSelectedTimezone] = useState(widget.config.timezone ?? "Europe/Berlin")
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -49,7 +49,7 @@ const ClockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
-            hour12: settings.config?.hourFormat === "12" ?? false,
+            hour12: settings.config?.hourFormat === "12",
         }).format(date)
     }
 
