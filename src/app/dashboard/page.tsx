@@ -52,7 +52,7 @@ export default function Dashboard() {
 
     const currentWidgets = useWidgetStore(useShallow((s) => s.widgets?.filter((w) => w && w?.dashboardId === currentDashboard?.id) || []))
 
-    const { transformedWidgets, breakpoint, gridClasses, containerHeight, canEdit, isDesktop } = useResponsiveLayout(currentWidgets)
+    const { transformedWidgets, gridClasses, containerHeight, isDesktop } = useResponsiveLayout(currentWidgets)
 
     useEffect(() => {
         setLoading(true)
@@ -150,7 +150,7 @@ export default function Dashboard() {
                             onDragEnd={handleDragEnd}
                             onDragOver={handleDragOver}
                         >
-                            <div className={cn(`relative w-full ${containerHeight} ${gridClasses}`)}>
+                            <div className={cn("relative w-full", containerHeight, gridClasses)}>
                                 {isDesktop && gridCells?.map((cell) => (
                                     <GridCell
                                         key={`${cell.x},${cell.y}`}

@@ -39,14 +39,11 @@ export const useResponsiveLayout = (originalWidgets: Widget[]) => {
     const gridClasses = useMemo(() => getGridClasses(breakpoint), [breakpoint])
     const containerHeight = useMemo(() => getContainerHeight(breakpoint), [breakpoint])
 
-    const canEdit = breakpoint === "desktop"
-
     return {
         transformedWidgets,
         breakpoint,
         gridClasses,
         containerHeight,
-        canEdit,
         isMobile: breakpoint === "mobile",
         isTablet: breakpoint === "tablet",
         isDesktop: breakpoint === "desktop",

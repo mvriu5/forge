@@ -12,6 +12,8 @@ import {ShieldCheck} from "lucide-react"
 import {useSessionStore} from "@/store/sessionStore"
 import {useWidgetStore} from "@/store/widgetStore"
 import {useDashboardStore} from "@/store/dashboardStore"
+import { cn } from "@/lib/utils"
+import {useResponsiveLayout} from "@/hooks/useResponsiveLayout"
 
 export default function SharedDashboard() {
     const { slug } = useParams()
@@ -50,6 +52,9 @@ export default function SharedDashboard() {
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchInterval: 5 * 60 * 1000 // 5 minutes
     })
+    if (!data) return
+
+    const { transformedWidgets, gridClasses, containerHeight, isDesktop } = useResponsiveLayout(data)
 
     if (isLoading || dashLoading) {
         return (
@@ -77,18 +82,10 @@ export default function SharedDashboard() {
     }
 
     return (
-        <div className={"flex flex-col w-full h-full max-h-screen max-w-screen overflow-hidden"}>
+        <div className={cn("flex flex-col w-full h-full overflow-hidden", isDesktop && "max-h-screen max-w-screen")}>
             <ViewHeader dashboardId={slug as string} widgets={data ?? null}/>
-            <div className={"flex h-screen xl:hidden items-center justify-center"}>
-                <Callout variant={"info"} className={"border border-info/20 shadow-lg"}>
-                    The browser window is to small to render these widgets!
-                </Callout>
-            </div>
-            <div
-                className="w-full h-[calc(100vh-48px)] hidden xl:grid grid-cols-4 gap-4 p-4"
-                style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
-            >
-                {data?.map((widget: Widget) => {
+            <div className={cn("relative w-full", containerHeight, gridClasses)}>
+                {transformedWidgets?.map((widget: Widget) => {
                     const Component = getWidgetComponent(widget.widgetType)
                     if (!Component) return null
                     return <Component key={widget.id} id={widget.id} editMode={false} isPlaceholder={true}/>
