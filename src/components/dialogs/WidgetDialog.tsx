@@ -64,8 +64,8 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                 userId: session.user.id,
                 dashboardId: currentDashboard.id,
                 widgetType: selectedWidget.widgetType,
-                height: selectedWidget.height,
-                width: selectedWidget.width,
+                height: selectedWidget.sizes.desktop.height,
+                width: selectedWidget.sizes.desktop.width,
                 positionX: 0,
                 positionY: 0,
                 createdAt: new Date(),
@@ -153,7 +153,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                                     <div className={"px-2 rounded-md bg-white/5 border border-main/40 group-data-[used=true]:bg-success/10 group-data-[used=true]:text-success group-data-[used=true]:border-success/20"}>
                                         {widgets?.find((w) => w.widgetType === widget.widgetType && w.dashboardId === currentDashboard?.id) ?
                                             "In use" :
-                                            `${widget.width}x${widget.height}`
+                                            `${widget.sizes.desktop.width}x${widget.sizes.desktop.height}`
                                         }
                                     </div>
                                 </div>

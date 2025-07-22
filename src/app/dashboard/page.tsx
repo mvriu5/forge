@@ -4,7 +4,7 @@ import {Header} from "@/components/Header"
 import React, {memo, useCallback, useEffect, useRef, useState} from "react"
 import {useSessionStore} from "@/store/sessionStore"
 import {useWidgetStore} from "@/store/widgetStore"
-import {getWidgetComponent} from "@/lib/widgetRegistry"
+import {getWidgetComponent, getWidgetPreview} from "@/lib/widgetRegistry"
 import {useIntegrationStore} from "@/store/integrationStore"
 import {DndContext, useDroppable} from "@dnd-kit/core"
 import type {Widget} from "@/database"
@@ -15,12 +15,15 @@ import {useToast} from "@/components/ui/ToastProvider"
 import {useShallow} from "zustand/react/shallow"
 import {useGrid} from "@/hooks/useGrid"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
-import {Callout} from "@/components/ui/Callout"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 import {useHotkeys} from "react-hotkeys-hook"
 import {SpinnerDotted} from "spinners-react"
 import {useSettingsStore} from "@/store/settingsStore"
+import { useResponsiveLayout } from "@/hooks/useResponsiveLayout"
+import {cn} from "@/lib/utils"
+import {useBreakpoint} from "@/hooks/useBreakpoint"
+import {GridCell} from "@/components/GridCell"
 
 export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
@@ -49,6 +52,8 @@ export default function Dashboard() {
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
     const currentWidgets = useWidgetStore(useShallow((s) => s.widgets?.filter((w) => w && w?.dashboardId === currentDashboard?.id) || []))
+
+    const { transformedWidgets, gridClasses, containerHeight, isDesktop } = useResponsiveLayout(currentWidgets)
 
     useEffect(() => {
         setLoading(true)
@@ -114,8 +119,10 @@ export default function Dashboard() {
         if (widget) setWidgetsToRemove((w) => [...w, widget])
     }, [])
 
+    const widgetsEmpty = widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0
+
     return (
-        <div className={"flex flex-col w-full h-full max-h-screen max-w-screen overflow-hidden"}>
+        <div className={cn("flex flex-col w-full h-full overflow-hidden", isDesktop && "max-h-screen max-w-screen")}>
             <Header
                 onEdit={handleEditModeEnter}
                 editMode={editMode}
@@ -123,7 +130,7 @@ export default function Dashboard() {
                 handleEditModeSave={handleEditModeSave}
                 handleEditModeCancel={handleEditModeCancel}
                 isLoading={loading}
-                widgetsEmpty={widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0 && currentDashboard !== null}
+                widgetsEmpty={widgetsEmpty && currentDashboard !== null}
             />
             {loading ? (
                 <div className={"h-screen w-screen flex items-center justify-center"}>
@@ -131,11 +138,13 @@ export default function Dashboard() {
                 </div>
             ) : (
                 <>
-                    {widgets?.filter((w) => w.dashboardId === currentDashboard?.id).length === 0 && currentDashboard ? (
+                    {widgetsEmpty && currentDashboard ? (
                         <div className={"w-full h-full flex items-center justify-center"}>
                             <div className={"flex flex-col gap-4 items-center justify-center p-4 md:p-12 border border-main border-dashed rounded-md shadow-md dark:shadow-xl"}>
                                 <EmptyAddSVG/>
-                                <p className={"w-56 md:w-80 text-center text-sm"}>You dont have any widgets in your dashboard. Add a new widget, by visiting the widget store.</p>
+                                <p className={"w-56 md:w-80 text-center text-sm"}>
+                                    You dont have any widgets in your dashboard. Add a new widget, by visiting the widget store.
+                                </p>
                                 <WidgetDialog editMode={false} title={"Widget-Store"}/>
                             </div>
                         </div>
@@ -146,11 +155,8 @@ export default function Dashboard() {
                             onDragEnd={handleDragEnd}
                             onDragOver={handleDragOver}
                         >
-                            <div
-                                className="relative w-full h-[calc(100vh-48px)] hidden xl:grid grid-cols-4 gap-4 p-4"
-                                style={{ gridTemplateRows: "repeat(4, minmax(0, 1fr))" }}
-                            >
-                                {gridCells?.map((cell) => (
+                            <div className={cn("relative w-full", containerHeight, gridClasses)}>
+                                {isDesktop && gridCells?.map((cell) => (
                                     <GridCell
                                         key={`${cell.x},${cell.y}`}
                                         x={cell.x}
@@ -161,7 +167,7 @@ export default function Dashboard() {
                                     />
                                 ))}
 
-                                {currentWidgets
+                                {transformedWidgets
                                     ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
                                     .map((widget) => (
                                         <MemoizedWidget
@@ -193,10 +199,17 @@ interface WidgetProps {
     isDragging: boolean
 }
 
-const WidgetComponent = ({ widget, onDelete, editMode, isDragging }: WidgetProps) => {
+const WidgetOverlay = ({ widget, onDelete, editMode, isDragging }: WidgetProps) => {
+    const {breakpoint} = useBreakpoint()
+
     const Component = getWidgetComponent(widget.widgetType)
+    const widgetPreview = getWidgetPreview(widget.widgetType)
+    if (!widgetPreview) return null
+
     const handleDelete = useCallback(() => onDelete(widget.id), [onDelete, widget.id])
     if (!Component) return null
+
+    const responsiveSize = widgetPreview.preview.sizes[breakpoint]
 
     return (
         <div
@@ -204,8 +217,8 @@ const WidgetComponent = ({ widget, onDelete, editMode, isDragging }: WidgetProps
             style={{
                 gridColumnStart: widget.positionX + 1,
                 gridRowStart: widget.positionY + 1,
-                gridColumnEnd: widget.positionX + 1 + widget.width,
-                gridRowEnd: widget.positionY + 1 + widget.height,
+                gridColumnEnd: widget.positionX + 1 + responsiveSize.width,
+                gridRowEnd: widget.positionY + 1 + responsiveSize.height,
             }}
         >
             <Component key={widget.id} id={widget.id} editMode={editMode} onWidgetDelete={handleDelete} />
@@ -213,7 +226,7 @@ const WidgetComponent = ({ widget, onDelete, editMode, isDragging }: WidgetProps
     )
 }
 
-const MemoizedWidget = memo(WidgetComponent, (prev, next) =>
+const MemoizedWidget = memo(WidgetOverlay, (prev, next) =>
     prev.widget.id === next.widget.id &&
     prev.widget.positionX === next.widget.positionX &&
     prev.widget.positionY === next.widget.positionY &&
@@ -223,37 +236,3 @@ const MemoizedWidget = memo(WidgetComponent, (prev, next) =>
     prev.editMode === next.editMode &&
     prev.isDragging === next.isDragging
 )
-
-interface GridCellProps {
-    x: number
-    y: number
-    width: number
-    height: number
-    isDroppable: boolean
-}
-
-const GridCell = ({ x, y, width, height, isDroppable }: GridCellProps) => {
-    const { isOver, setNodeRef } = useDroppable({
-        id: `cell-${x}-${y}`,
-        data: {x, y},
-        disabled: !isDroppable
-    })
-
-    return (
-        <div
-            ref={setNodeRef}
-            className={`rounded-md border-2 ${
-                isDroppable && isOver
-                    ? "border-dashed border-main bg-tertiary"
-                    : "border-transparent"
-            }`}
-            style={{
-                gridColumnStart: x + 1,
-                gridRowStart: y + 1,
-                gridColumnEnd: x + 1 + width,
-                gridRowEnd: y + 1 + height,
-                minHeight: `${height * 180}px`,
-            }}
-        />
-    )
-}

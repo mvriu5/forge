@@ -12,7 +12,7 @@ const WidgetContent = ({children, className, scroll = false}: WidgetContentProps
 
     if (scroll) {
         return (
-            <ScrollArea className={cn("h-full", className)} thumbClassname={"bg-white/5"}>
+            <ScrollArea className={cn("h-full max-h-[400px]", className)} thumbClassname={"bg-black/5 dark:bg-white/5"}>
                 {children}
             </ScrollArea>
         )

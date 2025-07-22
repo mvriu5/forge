@@ -183,6 +183,7 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                         <Skeleton className={"h-16"}/>
                         <Skeleton className={"h-16"}/>
                         <Skeleton className={"h-16"}/>
+                        <Skeleton className={"h-16"}/>
                     </div>
                 ) : (
                     <div className={"flex flex-col gap-2"}>
