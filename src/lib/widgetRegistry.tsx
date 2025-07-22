@@ -10,6 +10,7 @@ import {LinearWidget} from "@/components/widgets/LinearWidget"
 import {PhantomWidget} from "@/components/widgets/PhantomWidget"
 import {MeetingsWidget} from "@/components/widgets/MeetingsWidget"
 import {GithubHeatmapWidget} from "@/components/widgets/GithubHeatmapWidget"
+import {ClockWidget} from "@/components/widgets/ClockWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -165,6 +166,21 @@ export const widgetRegistry: WidgetElement[] = [
             }
         },
         component: GithubHeatmapWidget
+    },
+    {
+        preview: {
+            widgetType: "clock",
+            previewImage: '/clock_preview.png',
+            title: 'Clock',
+            description: 'Beautiful clock to display your current time',
+            tags: ["productivity"],
+            sizes: {
+                desktop: { width: 1, height: 1 },
+                tablet: { width: 1, height: 1 },
+                mobile: { width: 1, height: 1 }
+            }
+        },
+        component: ClockWidget
     }
 
 ]
