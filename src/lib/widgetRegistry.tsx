@@ -11,6 +11,7 @@ import {PhantomWidget} from "@/components/widgets/PhantomWidget"
 import {MeetingsWidget} from "@/components/widgets/MeetingsWidget"
 import {GithubHeatmapWidget} from "@/components/widgets/GithubHeatmapWidget"
 import {ClockWidget} from "@/components/widgets/ClockWidget"
+import {TodoWidget} from "@/components/widgets/TodoWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -181,8 +182,22 @@ export const widgetRegistry: WidgetElement[] = [
             }
         },
         component: ClockWidget
+    },
+    {
+        preview: {
+            widgetType: "todo",
+            previewImage: '/todo_preview.png',
+            title: 'Todo List',
+            description: 'All your tasks in one place',
+            tags: ["productivity"],
+            sizes: {
+                desktop: { width: 1, height: 2 },
+                tablet: { width: 1, height: 2 },
+                mobile: { width: 1, height: 1 }
+            }
+        },
+        component: TodoWidget
     }
-
 ]
 
 
