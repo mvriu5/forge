@@ -1,21 +1,20 @@
 "use client"
 
 import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
-import React, {useEffect, useState} from "react"
+import React from "react"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {LayoutDashboard, SquarePen} from "lucide-react"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Button} from "@/components/ui/Button"
-import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {useToast} from "@/components/ui/ToastProvider"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {useSessionStore} from "@/store/sessionStore"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/RadioGroup"
-import {cn} from "@/lib/utils"
+import {RadioGroup} from "@/components/ui/RadioGroup"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {RadioGroupBox} from "@/components/ui/RadioGroupBox"
+import {Spinner} from "@/components/ui/Spinner"
 
 interface DashboardDialogProps {
     open: boolean
@@ -170,7 +169,7 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
                                     type={"submit"}
                                     disabled={form.formState.isSubmitting}
                                 >
-                                    {(form.formState.isSubmitting) && <ButtonSpinner/>}
+                                    {(form.formState.isSubmitting) && <Spinner/>}
                                     Create
                                 </Button>
                             </div>

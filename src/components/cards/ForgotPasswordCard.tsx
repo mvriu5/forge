@@ -6,13 +6,13 @@ import {zodResolver} from "@hookform/resolvers/zod"
 import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
-import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {ArrowLeft, CloudAlert, Mailbox} from "lucide-react"
 import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form";
 import { useToast } from "@/components/ui/ToastProvider";
 import {Button} from "@/components/ui/Button"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import Link from "next/link";
+import {Spinner} from "@/components/ui/Spinner"
 
 function ForgotPasswordCard() {
     const {addToast} = useToast()
@@ -95,7 +95,7 @@ function ForgotPasswordCard() {
                         className={"w-full"}
                         disabled={loading}
                     >
-                        {loading && <ButtonSpinner/>}
+                        {loading && <Spinner/>}
                         Send email
                     </Button>
                 </form>

@@ -10,10 +10,10 @@ import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
 import {CloudAlert, Github, Inbox} from "lucide-react"
-import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {GoogleIcon} from "@/components/svg/GoogleIcon"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import Link from "next/link"
+import {Spinner} from "@/components/ui/Spinner"
 
 function SignUpCard() {
     const router = useRouter()
@@ -152,7 +152,7 @@ function SignUpCard() {
                             className={"w-full"}
                             disabled={loading}
                         >
-                            {loading && <ButtonSpinner/>}
+                            {loading && <Spinner/>}
                             Sign in
                         </Button>
                         <div className={"w-full flex gap-2"}>

@@ -7,7 +7,7 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Checkbox} from "@/components/ui/Checkbox"
 import {cn} from "@/lib/utils"
 import {Button} from "@/components/ui/Button"
-import {Forward, Trash} from "lucide-react"
+import {Eraser, Forward, Trash} from "lucide-react"
 import {Input} from "@/components/ui/Input"
 import {useWidgetStore} from "@/store/widgetStore"
 import {useDashboardStore} from "@/store/dashboardStore"
@@ -52,7 +52,18 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
 
     return (
         <WidgetTemplate id={id} name={"todo"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Todo's"}/>
+            <WidgetHeader title={"Todo's"}>
+                <Button
+                    className={"font-normal bg-tertiary border-0 h-6 shadow-none dark:shadow-none text-sm items-center gap-2 hover:text-primary hover:bg-inverted/10 px-2"}
+                    onClick={() => {
+                        setTodos([])
+                        handleSave([])
+                    }}
+                >
+                    <Eraser size={16} />
+                    Clear
+                </Button>
+            </WidgetHeader>
             <WidgetContent scroll>
                 {todos.map((todo, index) => (
                     <Todo
@@ -82,7 +93,7 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
                     onKeyDown={(e) => e.key === "Enter" && enterInput()}
                 />
                 <Button
-                    className={"px-2 border-0 hover:bg-inverted/10"}
+                    className={"px-2 border-0 hover:bg-inverted/10 shadow-none dark:shadow-none"}
                     onClick={ () => enterInput()}
                 >
                     <Forward size={16}/>
@@ -98,19 +109,19 @@ const Todo = ({checked, text, onDelete, onCheckChange}: TodoProps & { onDelete: 
     }
     return (
         <div
-            className={"group h-8 flex items-center justify-between cursor-pointer pl-2 pr-1 gap-4 rounded-md hover:bg-secondary"}
+            className={"group min-h-8 flex items-center justify-between cursor-pointer pl-2 pr-1 gap-4 rounded-md hover:bg-secondary"}
             onClick={toggleChecked}
         >
-            <div className={"flex items-center gap-4"}>
+            <div className={"flex items-center gap-4 w-full"}>
                 <Checkbox
                     checked={checked}
                     onCheckedChange={(value) => onCheckChange(!!value)}
                 />
-                <p className={cn(checked && "line-through")}>{text}</p>
+                <p className={cn("break-all", checked && "line-through")}>{text}</p>
             </div>
             <Button
                 variant={"ghost"}
-                className={"p-1 h-6 hidden group-hover:flex hover:text-error hover:bg-error/10"}
+                className={"p-1 h-6 hidden group-hover:flex hover:text-error hover:bg-error/10 shadow-none dark:shadow-none"}
                 onClick={(e) => {
                     e.stopPropagation()
                     onDelete()

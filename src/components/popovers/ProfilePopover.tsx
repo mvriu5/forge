@@ -10,8 +10,8 @@ import {cn} from "@/lib/utils"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/Popover";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
-import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {useTheme} from "next-themes"
+import {Spinner} from "@/components/ui/Spinner"
 
 function ProfilePopover({editMode}: {editMode: boolean}) {
     const {session, setSession} = useSessionStore()
@@ -96,7 +96,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                     className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-error/5 text-error/90 hover:text-error ring-0 outline-0"}
                     onClick={onSignout}
                 >
-                    {signOutLoading ? <ButtonSpinner className={"text-error"}/> : <LogOut size={16} className={"text-error/65"}/>}
+                    {signOutLoading ? <Spinner className={"text-error"}/> : <LogOut size={16} className={"text-error/65"}/>}
                     <p>Logout</p>
                 </button>
             </PopoverContent>

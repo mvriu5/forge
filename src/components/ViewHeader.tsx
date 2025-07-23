@@ -2,7 +2,7 @@
 
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import {ProfilePopover} from "@/components/popovers/ProfilePopover"
-import React, { useState } from "react"
+import React, {useState} from "react"
 import {CloudAlert, Undo2, Workflow} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {Dashboard, DashboardInsert, User, Widget, WidgetInsert} from "@/database"
@@ -11,13 +11,11 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {useRouter} from "next/navigation"
 import {tooltip} from "@/components/ui/TooltipProvider"
-import {useWidgetStore} from "@/store/widgetStore"
-import {useDashboardStore} from "@/store/dashboardStore"
 import {useSessionStore} from "@/store/sessionStore"
 import {useToast} from "@/components/ui/ToastProvider"
-import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {cn} from "@/lib/utils"
 import Link from "next/link"
+import {Spinner} from "@/components/ui/Spinner"
 
 function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widget[] | null}) {
     const {session} = useSessionStore()
@@ -194,7 +192,7 @@ function ViewHeader({dashboardId, widgets}: {dashboardId: string, widgets?: Widg
                         disabled={!dashboard || !dashboard.isPublic || userLoading || dbLoading}
                         {...copyDashboardTooltip}
                     >
-                        {copyDashboardLoading ? <ButtonSpinner/> : <Workflow size={20}/>}
+                        {copyDashboardLoading ? <Spinner/> : <Workflow size={20}/>}
                     </Button>
                 </div>
                 <ProfilePopover editMode={false}/>

@@ -12,8 +12,8 @@ import {useDashboardStore} from "@/store/dashboardStore"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 import {Skeleton} from "./ui/Skeleton"
 import Link from "next/link"
-import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {useSettingsStore} from "@/store/settingsStore"
+import {Spinner} from "@/components/ui/Spinner"
 
 interface HeaderProps {
     editMode: boolean
@@ -68,7 +68,7 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
                 {editMode ?
                     <div className={"flex gap-2"}>
                         <Button variant="brand" onClick={handleEditModeSave} className={"h-8 px-2"}>
-                            {editModeLoading ? <ButtonSpinner/> : <Save size={16} className={"mr-2"}/>}
+                            {editModeLoading ? <Spinner/> : <Save size={16} className={"mr-2"}/>}
                             Save
                         </Button>
                         <Button onClick={handleEditModeCancel} className={"size-8 bg-secondary border-main/60"}>

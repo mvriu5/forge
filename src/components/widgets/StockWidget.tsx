@@ -15,12 +15,12 @@ import {StockChart} from "@/components/widgets/components/StockChart"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Button} from "@/components/ui/Button"
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/Command"
-import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {AssetOption, ChartDataPoint} from "@/actions/twelvedata"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {WidgetEmpty} from "./base/WidgetEmpty"
+import {Spinner} from "@/components/ui/Spinner"
 
 const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -104,7 +104,7 @@ const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
                         <Command className={"border-main/60"}>
                             <CommandInput placeholder="Search stock..." value={query} onValueChange={setQuery} key="stock-search"/>
                             <CommandEmpty className={"flex items-center justify-center p-4"}>
-                                {assetListLoading ? "No results found." : <ButtonSpinner/>}
+                                {assetListLoading ? "No results found." : <Spinner/>}
                             </CommandEmpty>
                             <CommandList className={"scrollbar-hide"}>
                                 <CommandGroup>

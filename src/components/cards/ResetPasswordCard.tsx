@@ -9,10 +9,10 @@ import {zodResolver} from "@hookform/resolvers/zod"
 import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
-import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {CloudAlert} from "lucide-react"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import Link from "next/link"
+import {Spinner} from "@/components/ui/Spinner"
 
 function ResetPasswordCard() {
     const router = useRouter()
@@ -91,7 +91,7 @@ function ResetPasswordCard() {
                         className={"w-full"}
                         disabled={loading}
                     >
-                        {loading && <ButtonSpinner/>}
+                        {loading && <Spinner/>}
                         Reset Password
                     </Button>
                 </form>

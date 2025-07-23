@@ -7,14 +7,14 @@ import {Dashboard, Widget} from "@/database"
 import {useQuery} from "@tanstack/react-query"
 import {useParams} from "next/navigation"
 import {ViewHeader} from "@/components/ViewHeader"
-import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {ShieldCheck} from "lucide-react"
 import {useSessionStore} from "@/store/sessionStore"
 import {useWidgetStore} from "@/store/widgetStore"
-import {useDashboardStore} from "@/store/dashboardStore"
 import { cn } from "@/lib/utils"
 import {useResponsiveLayout} from "@/hooks/useResponsiveLayout"
 import {useBreakpoint} from "@/hooks/useBreakpoint"
+import {Spinner} from "@/components/ui/Spinner"
+import {SpinnerDotted} from "spinners-react"
 
 export default function SharedDashboard() {
     const { slug } = useParams()
@@ -62,7 +62,7 @@ export default function SharedDashboard() {
             <div className={"flex flex-col w-screen h-screen"}>
                 <ViewHeader dashboardId={slug as string}/>
                 <div className={"h-full w-full flex items-center justify-center"}>
-                    <ButtonSpinner/>
+                    <SpinnerDotted size={56} thickness={160} speed={100} color="rgba(237, 102, 49, 1)" />
                 </div>
             </div>
         )

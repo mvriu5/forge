@@ -3,7 +3,7 @@
 import {Button} from "@/components/ui/Button"
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter} from "@/components/ui/Dialog"
 import {Input} from "@/components/ui/Input"
-import {CloudAlert, Grid2x2Plus, PanelsTopLeft} from "lucide-react"
+import {CloudAlert, Grid2x2Plus} from "lucide-react"
 import React, { useState } from "react"
 import {cn} from "@/lib/utils"
 import Image from "next/image"
@@ -13,10 +13,10 @@ import {getAllWidgetPreviews, type WidgetPreview} from "@/lib/widgetRegistry"
 import { tooltip } from "@/components/ui/TooltipProvider"
 import {ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup"
 import { ScrollArea } from "@/components/ui/ScrollArea"
-import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {useHotkeys} from "react-hotkeys-hook"
 import {useToast} from "@/components/ui/ToastProvider"
+import {Spinner} from "@/components/ui/Spinner"
 
 function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
     const {widgets, addWidget} = useWidgetStore()
@@ -172,7 +172,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                         disabled={!selectedWidget}
                         onClick={handleAddWidget}
                     >
-                        {addLoading && <ButtonSpinner/>}
+                        {addLoading && <Spinner/>}
                         Add widget
                     </Button>
                 </DialogFooter>

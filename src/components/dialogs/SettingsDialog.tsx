@@ -28,7 +28,6 @@ import {useIntegrationStore} from "@/store/integrationStore"
 import {cn} from "@/lib/utils"
 import {authClient} from "@/lib/auth-client"
 import type {PutBlobResult} from "@vercel/blob"
-import {ButtonSpinner} from "@/components/ButtonSpinner"
 import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
 import {Button} from "@/components/ui/Button"
@@ -46,6 +45,7 @@ import {RadioGroup} from "@/components/ui/RadioGroup"
 import {useSettingsStore} from "@/store/settingsStore"
 import {RadioGroupBox} from "@/components/ui/RadioGroupBox"
 import {Settings} from "@/database"
+import {Spinner} from "@/components/ui/Spinner"
 
 
 function SettingsDialog() {
@@ -448,7 +448,7 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
                                 type={"submit"}
                                 disabled={form.formState.isSubmitting || uploading}
                             >
-                                {(form.formState.isSubmitting || uploading) && <ButtonSpinner/>}
+                                {(form.formState.isSubmitting || uploading) && <Spinner/>}
                                 Save
                             </Button>
                         </div>
@@ -652,7 +652,7 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                                             type={"submit"}
                                             disabled={form.formState.isSubmitting || (dashboard.name === form.getValues().name && dashboard.isPublic === (form.getValues("visibility") === "public"))}
                                         >
-                                            {(form.formState.isSubmitting) && <ButtonSpinner/>}
+                                            {(form.formState.isSubmitting) && <Spinner/>}
                                             Save
                                         </Button>
                                     </div>
@@ -698,7 +698,7 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                                     className={"w-max"}
                                     onClick={handleDelete}
                                 >
-                                    {deleteLoading && <ButtonSpinner/>}
+                                    {deleteLoading && <Spinner/>}
                                     Delete
                                 </Button>
                             </div>
@@ -804,7 +804,7 @@ const SettingsSection = ({onClose}: SettingsProps) => {
                         type={"submit"}
                         disabled={form.formState.isSubmitting}
                     >
-                        {(form.formState.isSubmitting) && <ButtonSpinner/>}
+                        {(form.formState.isSubmitting) && <Spinner/>}
                         Save
                     </Button>
                 </div>
