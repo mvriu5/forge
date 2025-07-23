@@ -139,7 +139,7 @@ export default function Dashboard() {
             ) : (
                 <>
                     {widgetsEmpty && currentDashboard ? (
-                        <div className={"w-full h-full flex items-center justify-center"}>
+                        <div className={"w-full h-screen flex items-center justify-center"}>
                             <div className={"flex flex-col gap-4 items-center justify-center p-4 md:p-12 border border-main border-dashed rounded-md shadow-md dark:shadow-xl"}>
                                 <EmptyAddSVG/>
                                 <p className={"w-56 md:w-80 text-center text-sm"}>

@@ -132,7 +132,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     }))))
 
     const renderEvents = () => {
-        if (!sortedEvents || !sortedEvents.length) return <WidgetEmpty message={"No upcoming meetings"}/>
+        if (!sortedEvents || sortedEvents.length === 0) return
 
         let currentDate: Date | null = null
 
@@ -187,20 +187,24 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                 </Button>
             </WidgetHeader>
 
-            <WidgetContent scroll>
-                {(isLoading || isFetching) ? (
-                    <div className="flex flex-col justify-between gap-4 pt-2">
-                        <Skeleton className={"h-16 w-full px-2"} />
-                        <Skeleton className={"h-16 w-full px-2"} />
-                        <Skeleton className={"h-16 w-full px-2"} />
-                        <Skeleton className={"h-16 w-full px-2"} />
-                    </div>
-                ) : (
-                    <div className={"w-full flex flex-col gap-2 items-center"}>
-                        {renderEvents()}
-                    </div>
-                )}
-            </WidgetContent>
+            {(sortedEvents && sortedEvents.length > 0) || (isLoading || isFetching) ? (
+                <WidgetContent scroll>
+                    {(isLoading || isFetching) ? (
+                        <div className="flex flex-col justify-between gap-4 pt-2">
+                            <Skeleton className={"h-16 w-full px-2"} />
+                            <Skeleton className={"h-16 w-full px-2"} />
+                            <Skeleton className={"h-16 w-full px-2"} />
+                            <Skeleton className={"h-16 w-full px-2"} />
+                        </div>
+                    ) : (
+                        <div className={"w-full flex flex-col gap-2 items-center"}>
+                            {renderEvents()}
+                        </div>
+                    )}
+                </WidgetContent>
+            ) : (
+                <WidgetEmpty message={"No upcoming meetings"}/>
+            )}
         </WidgetTemplate>
     )
 }

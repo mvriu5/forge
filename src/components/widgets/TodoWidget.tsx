@@ -18,7 +18,36 @@ interface TodoProps {
 }
 
 const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {}
+    if (isPlaceholder) {
+        return (
+            <WidgetTemplate id={id} name={"todo"} isPlaceholder={isPlaceholder} editMode={editMode}>
+                <WidgetHeader title={"Todo's"}>
+                    <Button className={"font-normal bg-tertiary border-0 h-6 shadow-none dark:shadow-none text-sm items-center gap-2 hover:text-primary hover:bg-inverted/10 px-2"}>
+                        <Eraser size={16} />
+                        Clear
+                    </Button>
+                </WidgetHeader>
+                <WidgetContent scroll>
+                    <Todo
+                        text={"Clean apartment"}
+                        checked={false}
+                        onDelete={() => {}}
+                        onCheckChange={() => {}}
+                    />
+                </WidgetContent>
+                <div className={"flex items-center gap-2"}>
+                    <Input
+                        className={"shadow-none dark:shadow-none bg-0 border-0 focus:border-0 focus:bg-0 focus:outline-0"}
+                        placeholder={"Type your todo..."}
+                        disabled={true}
+                    />
+                    <Button className={"px-2 border-0 hover:bg-inverted/10 shadow-none dark:shadow-none"}>
+                        <Forward size={16}/>
+                    </Button>
+                </div>
+            </WidgetTemplate>
+        )
+    }
 
     const {getWidget, refreshWidget} = useWidgetStore()
 

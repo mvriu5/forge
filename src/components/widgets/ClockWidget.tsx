@@ -11,7 +11,27 @@ import {useWidgetStore} from "@/store/widgetStore"
 import {useDashboardStore} from "@/store/dashboardStore"
 
 const ClockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {}
+    if (isPlaceholder) {
+        return (
+            <WidgetTemplate id={id} name={"clock"} editMode={editMode} isPlaceholder={isPlaceholder}>
+                <WidgetHeader title={"Clock"}>
+                    <Select value={"Berlin (MEZ/MESZ)"}>
+                        <SelectTrigger className="w-max h-6 shadow-none dark:shadow-none border-0 bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
+                            <SelectValue />
+                        </SelectTrigger>
+                    </Select>
+                </WidgetHeader>
+                <WidgetContent className={"flex flex-col items-center justify-center"}>
+                    <div className="text-5xl font-mono text-primary font-bold tracking-wider">
+                        13:04:22
+                    </div>
+                    <div className="text-tertiary">
+                        Tuesday, 22nd July 2025
+                    </div>
+                </WidgetContent>
+            </WidgetTemplate>
+        )
+    }
 
     const {getWidget, refreshWidget} = useWidgetStore()
 
@@ -36,7 +56,7 @@ const ClockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
         { value: "UTC", label: "UTC " },
     ]
     const [currentTime, setCurrentTime] = useState(new Date())
-    const [selectedTimezone, setSelectedTimezone] = useState(widget.config.timezone ?? "Europe/Berlin")
+    const [selectedTimezone, setSelectedTimezone] = useState(widget.config?.timezone ?? "Europe/Berlin")
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)
