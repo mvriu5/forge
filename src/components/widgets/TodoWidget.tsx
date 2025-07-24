@@ -149,8 +149,7 @@ const Todo = ({checked, text, onDelete, onCheckChange}: TodoProps & { onDelete: 
                 <p className={cn("break-all", checked && "line-through")}>{text}</p>
             </div>
             <Button
-                variant={"ghost"}
-                className={"p-1 h-6 hidden group-hover:flex hover:text-error hover:bg-error/10 shadow-none dark:shadow-none"}
+                className={"hidden group-hover:flex px-1 h-6"}
                 onClick={(e) => {
                     e.stopPropagation()
                     onDelete()

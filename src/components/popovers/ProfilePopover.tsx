@@ -80,7 +80,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                     className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-secondary hover:text-primary ring-0 outline-0"}
                 >
                     <MessageCircleQuestion size={16} className={"text-tertiary"}/>
-                    <p>Help</p>
+                    <p>Issue</p>
                 </button>
                 <SettingsDialog/>
                 <button

@@ -23,6 +23,8 @@ import AutoJoiner from "tiptap-extension-auto-joiner"
 import {useWidgetStore} from "@/store/widgetStore"
 import { useDashboardStore } from "@/store/dashboardStore"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
+import {Spinner} from "@/components/ui/Spinner"
+import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 
 const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -42,7 +44,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
     const [openNode, setOpenNode] = useState(false)
     const [saved, setSaved] = useState(true)
-
+    const [isSaving, setIsSaving] = useState(false)
     const extensions = [
         GlobalDragHandle.configure({
             dragHandleWidth: 20,
@@ -67,6 +69,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     };
 
     const handleSave = async (editor: EditorInstance) => {
+        setIsSaving(true)
         const json = editor.getJSON()
         const html = highlightCodeblocks(editor.getHTML())
         window.localStorage.setItem("html-content", highlightCodeblocks(html))
@@ -80,66 +83,71 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                 content: json
             }
         })
+
+        setIsSaving(false)
     }
 
     return (
         <WidgetTemplate id={id} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Notes"}>
-                <p className={"text-tertiary/50 text-end text-sm"}>{saved ? "Saved" : "Unsaved"}</p>
-            </WidgetHeader>
-            <EditorRoot>
-                <div className={"rounded-md h-full w-full border border-main/40 bg-secondary"}>
-                <ScrollArea className="h-full">
-                    <EditorContent
-                        extensions={extensions}
-                        initialContent={widget?.config?.content}
-                        immediatelyRender={false}
-                        onBlur={(params) => handleSave(params.editor)}
-                        onUpdate={() => setSaved(false)}
-                        className="p-2 rounded-md h-full w-full bg-secondary"
-                        editorProps={{
-                            handleDOMEvents: {
-                                keydown: (_view, event) => handleCommandNavigation(event)
-                            },
-                            attributes: {class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",},
-                        }}
-                    >
-                        <EditorCommand className="z-50 w-72 rounded-md border border-main/60 bg-primary shadow-md transition-all">
-                            <EditorCommandEmpty className="flex items-center justify-center px-2 text-tertiary">
-                                No results
-                            </EditorCommandEmpty>
-                            <ScrollArea className="h-80">
-                                <EditorCommandList className={"p-2 pr-4"}>
-                                    {suggestionItems.map((item) => (
-                                        <EditorCommandItem
-                                            value={item.title}
-                                            onCommand={(val) => item.command?.(val)}
-                                            className="group cursor-pointer flex w-full items-center gap-2 rounded-md py-1 px-2 text-left text-sm hover:bg-secondary aria-selected:bg-secondary"
-                                            key={item.title}
-                                        >
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-main/40 bg-primary group-hover:text-brand group-aria-selected:text-brand">
-                                                {item.icon}
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-primary">{item.title}</p>
-                                                <p className="text-xs text-secondary">{item.description}</p>
-                                            </div>
-                                        </EditorCommandItem>
-                                    ))}
-                                </EditorCommandList>
-                            </ScrollArea>
-                        </EditorCommand>
-                        <EditorBubble
-                            tippyOptions={{placement: "top"}}
-                            className='flex w-fit max-w-[90vw] overflow-hidden rounded-md border border-main bg-primary shadow-lg'
-                        >
-                            <NodeSelector open={openNode} onOpenChange={setOpenNode} />
-                            <TextButtons />
-                        </EditorBubble>
-                    </EditorContent>
-                </ScrollArea>
+                <div className={"flex items-center text-tertiary/50 text-end text-sm"}>
+                    {isSaving && <Spinner size={16} />}
+                    {saved ? "Saved" : "Unsaved"}
                 </div>
-            </EditorRoot>
+            </WidgetHeader>
+            <WidgetContent scroll>
+                <EditorRoot>
+                    <div className={"rounded-md min-h-94 w-full border border-main/40 bg-secondary"}>
+                        <EditorContent
+                            extensions={extensions}
+                            initialContent={widget?.config?.content}
+                            immediatelyRender={false}
+                            onBlur={(params) => handleSave(params.editor)}
+                            onUpdate={() => setSaved(false)}
+                            className="p-2 rounded-md h-full w-full bg-secondary"
+                            editorProps={{
+                                handleDOMEvents: {
+                                    keydown: (_view, event) => handleCommandNavigation(event)
+                                },
+                                attributes: {class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",},
+                            }}
+                        >
+                            <EditorCommand className="z-50 w-72 rounded-md border border-main/60 bg-primary shadow-md transition-all">
+                                <EditorCommandEmpty className="flex items-center justify-center px-2 text-tertiary">
+                                    No results
+                                </EditorCommandEmpty>
+                                <ScrollArea className="h-80">
+                                    <EditorCommandList className={"p-2 pr-4"}>
+                                        {suggestionItems.map((item) => (
+                                            <EditorCommandItem
+                                                value={item.title}
+                                                onCommand={(val) => item.command?.(val)}
+                                                className="group cursor-pointer flex w-full items-center gap-2 rounded-md py-1 px-2 text-left text-sm hover:bg-secondary aria-selected:bg-secondary"
+                                                key={item.title}
+                                            >
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-md border border-main/40 bg-primary group-hover:text-brand group-aria-selected:text-brand">
+                                                    {item.icon}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-primary">{item.title}</p>
+                                                    <p className="text-xs text-secondary">{item.description}</p>
+                                                </div>
+                                            </EditorCommandItem>
+                                        ))}
+                                    </EditorCommandList>
+                                </ScrollArea>
+                            </EditorCommand>
+                            <EditorBubble
+                                tippyOptions={{placement: "top"}}
+                                className='flex w-fit max-w-[90vw] overflow-hidden rounded-md border border-main bg-primary shadow-lg'
+                            >
+                                <NodeSelector open={openNode} onOpenChange={setOpenNode} />
+                                <TextButtons />
+                            </EditorBubble>
+                        </EditorContent>
+                    </div>
+                </EditorRoot>
+            </WidgetContent>
         </WidgetTemplate>
     )
 }
