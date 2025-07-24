@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useState} from "react"
+import React, {useCallback, useMemo, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
@@ -117,21 +117,22 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         )
     }
 
-    const validEvents = events?.filter(e => e.start.dateTime && e.end.dateTime) || []
-    const sortedEvents = [...validEvents].sort((a, b) => {
-        return new Date(a.start.dateTime).getTime() - new Date(b.start.dateTime).getTime()
-    })
+    const validEvents = useMemo(() => events?.filter(e => e.start.dateTime && e.end.dateTime) || [], [events])
 
-    const dropdownFilterItems: MenuItem[] = Array.from(new Set(calendars?.map((cal: any) => ({
+    const sortedEvents = useMemo(() => [...validEvents].sort((a, b) => {
+        return new Date(a.start.dateTime).getTime() - new Date(b.start.dateTime).getTime()
+    }), [validEvents])
+
+    const dropdownFilterItems: MenuItem[] = useMemo(() => Array.from(new Set(calendars?.map((cal: any) => ({
         type: "checkbox",
         icon: <div className={"size-3 rounded-sm"} style={{backgroundColor: cal.backgroundColor ?? "white"}}/>,
         key: cal.id,
         label: cal.summary.substring(0, 40),
         checked: selectedCalendars.includes(cal.id),
         onCheckedChange: () => setSelectedCalendars((prev) => (prev.includes(cal.id) ? prev.filter((l) => l !== cal.id) : [...prev, cal.id]))
-    }))))
+    })))), [calendars, selectedCalendars, setSelectedCalendars])
 
-    const renderEvents = () => {
+    const renderEvents = useCallback(() => {
         if (!sortedEvents || sortedEvents.length === 0) return
 
         let currentDate: Date | null = null
@@ -155,8 +156,20 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
 
             return <EventCard key={event.id} event={event} color={getColor(event.id)} hourFormat={settings?.config.hourFormat ?? "24"}/>
         })
-    }
+    }, [sortedEvents, getColor, settings?.config.hourFormat])
 
+    const isInitialLoading = useMemo(() => {
+        return (
+            (isLoading && !calendars) ||
+            (isLoading && !events) ||
+            (!calendars && !isError) ||
+            (calendars && calendars.length > 0 && !events && !isError)
+        )
+    }, [isLoading, calendars, events, isError])
+
+    const hasNoEvents = useMemo(() => {
+        return calendars && Array.isArray(events) && events.length === 0 && !isInitialLoading
+    }, [calendars, events, isInitialLoading])
 
     return (
         <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
@@ -187,23 +200,22 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                 </Button>
             </WidgetHeader>
 
-            {(sortedEvents && sortedEvents.length > 0) || (isLoading || isFetching) ? (
+            {isInitialLoading ? (
                 <WidgetContent scroll>
-                    {(isLoading || isFetching) ? (
-                        <div className="flex flex-col justify-between gap-4 pt-2">
-                            <Skeleton className={"h-16 w-full px-2"} />
-                            <Skeleton className={"h-16 w-full px-2"} />
-                            <Skeleton className={"h-16 w-full px-2"} />
-                            <Skeleton className={"h-16 w-full px-2"} />
-                        </div>
-                    ) : (
-                        <div className={"w-full flex flex-col gap-2 items-center"}>
-                            {renderEvents()}
-                        </div>
-                    )}
+                    <div className="flex flex-col justify-between gap-4 pt-2">
+                        <Skeleton className={"h-14 w-full px-2"} />
+                        <Skeleton className={"h-14 w-full px-2"} />
+                        <Skeleton className={"h-14 w-full px-2"} />
+                        <Skeleton className={"h-14 w-full px-2"} />
+                        <Skeleton className={"h-14 w-full px-2"} />
+                    </div>
                 </WidgetContent>
+            ) : hasNoEvents ? (
+                <WidgetEmpty message={"No upcoming meetings"} />
             ) : (
-                <WidgetEmpty message={"No upcoming meetings"}/>
+                <WidgetContent scroll>
+                    <div className={"w-full flex flex-col gap-2 items-center"}>{renderEvents()}</div>
+                </WidgetContent>
             )}
         </WidgetTemplate>
     )

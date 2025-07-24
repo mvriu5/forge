@@ -227,8 +227,10 @@ const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
                     key={integration.name}
                     className={cn(
                         "relative group w-full h-20 flex flex-col items-center justify-center rounded-md bg-secondary border p-2 ring-2",
-                        "data-[state=active]:border-success/20 data-[state=inactive]:border-error/20",
-                        "data-[state=active]:ring-success/5 data-[state=inactive]:ring-error/5"
+                        "data-[state=active]:border-success/40 data-[state=inactive]:border-error/40",
+                        "dark:data-[state=active]:border-success/20 dark:data-[state=inactive]:border-error/20",
+                        "data-[state=active]:ring-success/15 data-[state=inactive]:ring-error/15",
+                        "dark:data-[state=active]:ring-success/5 dark:data-[state=inactive]:ring-error/5"
                     )}
                 >
                     <div className={"flex items-center gap-2 bg-tertiary px-2 py-1 rounded-md"}>
@@ -244,7 +246,7 @@ const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
                             {integration.active ? "Disconnect" : "Connect"}
                         </Button>
                     </div>
-                    <div className={"z-[60] absolute right-1 top-1 text-xs group-data-[state=active]:bg-success/10 group-data-[state=inactive]:bg-error/10 rounded-md p-0.5"}>
+                    <div className={"z-[60] absolute right-1 top-1 text-xs group-data-[state=active]:bg-success/20 group-data-[state=inactive]:bg-error/20 dark:group-data-[state=active]:bg-success/10 dark:group-data-[state=inactive]:bg-error/10 rounded-md p-0.5"}>
                         <p>{integration.active ? <Check size={16} className={"text-success"}/> : <X size={16} className={"text-error"}/>}</p>
                     </div>
                 </div>
@@ -401,7 +403,7 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
 
                                 {avatarUrl && (
                                     <Button
-                                        className="absolute -top-1 -right-1 p-0 size-6 rounded-full bg-gray-300 text-black/80 hover:bg-white hover:text-black border-0"
+                                        className="absolute -top-1 -right-1 p-0 size-6 rounded-full bg-tertiary text-secondary hover:bg-primary hover:text-primary border border-main/40"
                                         onClick={handleDelete}
                                         aria-label="Remove image"
                                         type={"button"}
@@ -548,9 +550,9 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
     }
 
     return (
-        <div key={dashboard.id} className={"w-full flex items-center justify-between gap-2 bg-tertiary rounded-md py-2 px-4"}>
+        <div key={dashboard.id} className={"w-full flex items-center justify-between gap-2 bg-tertiary border border-main/20 rounded-md py-2 px-4"}>
             <div className={"flex items-center gap-2"}>
-                <div className={"p-1 bg-info/10 rounded-md border border-info/20 text-info"}>
+                <div className={"p-1 bg-info/20 dark:bg-info/10 rounded-md border border-info/30 dark:border-info/20 text-info"}>
                     {dashboard.isPublic ? <Eye size={16}/> : <EyeOff size={16}/>}
                 </div>
                 <p className={"text-primary"}>{dashboard.name}</p>

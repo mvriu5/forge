@@ -44,5 +44,11 @@ export async function refreshToken(refreshToken: string) {
 
     if (!res.ok) throw new Error("Failed to refresh Google access token")
 
-    return await res.json()
+    const data = await res.json()
+
+    return {
+        access_token: data.access_token,
+        expires_in: data.expires_in || 3600,
+        id_token: data.id_token || null
+    }
 }
