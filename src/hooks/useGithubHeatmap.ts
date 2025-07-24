@@ -10,7 +10,9 @@ export const useGithubHeatmap = () => {
         queryFn: async () => await getContributions(githubIntegration?.accessToken!, "mvriu5"),
         enabled: Boolean(githubIntegration?.accessToken),
         staleTime: 5 * 60 * 1000, // 5 minutes
-        refetchInterval: 5 * 60 * 1000 // 5 minutes
+        refetchInterval: 5 * 60 * 1000, // 5 minutes
+        refetchOnWindowFocus: false,
+        refetchOnMount: false
     })
 
     return {
