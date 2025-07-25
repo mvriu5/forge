@@ -109,7 +109,7 @@ const DropdownMenuCheckboxItem = ({item, ...props}: DropdownMenuCheckboxProps) =
             onCheckedChange={item.onCheckedChange}
             className={cn(
                 "flex items-center gap-2 text-sm border-0 hover:bg-secondary outline-0 px-2 py-1",
-                "rounded-md cursor-pointer hover:text-primary"
+                "rounded-md cursor-pointer hover:text-primary",
             )}
             {...props}
         >

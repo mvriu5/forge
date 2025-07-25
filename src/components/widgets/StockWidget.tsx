@@ -122,7 +122,10 @@ const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
                                                     handleSave({ stocks: newSelectedStocks })
                                                     setOpen(false)
                                                 }}
-                                                className="flex items-center justify-between"
+                                                className={cn(
+                                                    "flex items-center justify-between hover:text-primary",
+                                                    selectedStocks.includes(item) && "bg-brand/5 text-brand hover:text-brand"
+                                                )}
                                             >
                                                 <span>{item.label}</span>
                                                 {selectedStocks.includes(item) && <CheckIcon size={16} className="mr-2" />}

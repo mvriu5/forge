@@ -100,7 +100,7 @@ const SelectItem = ({ className, children, ...props }: ComponentPropsWithRef<typ
         <SelectPrimitive.Item
             className={cn(
                 "relative flex w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-2",
-                "text-sm outline-none focus:bg-secondary focus:text-primary data-[disabled]:pointer-events-none",
+                "text-sm outline-none focus:bg-secondary focus:text-primary data-[disabled]:pointer-events-none data-[state=checked]:bg-brand/5 data-[state=checked]:text-brand",
                 "data-[disabled]:opacity-50",
                 className
             )}

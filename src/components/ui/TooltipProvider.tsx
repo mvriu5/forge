@@ -1,6 +1,6 @@
 "use client"
 
-import {createContext, useContext, useState, useCallback, useRef, memo, useMemo} from "react"
+import {createContext, useContext, useState, useCallback, useRef, memo, useMemo, useEffect} from "react"
 import type React from "react"
 import type {ReactNode} from "react"
 import {Tooltip, type TooltipProps} from "@/components/ui/Tooltip"
@@ -117,6 +117,10 @@ function tooltip<T extends HTMLElement>(props: Omit<TooltipProps, "rect">) {
 
     const onMouseLeave = useCallback(() => {
         removeTooltip()
+    }, [removeTooltip])
+
+    useEffect(() => {
+        return () => removeTooltip()
     }, [removeTooltip])
 
     return {

@@ -29,9 +29,13 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
     const onSignout = async () => {
         setSignOutLoading(true)
 
-        await authClient.signOut()
-
-        router.replace("/")
+        await authClient.signOut({
+            fetchOptions: {
+                onSuccess: () => {
+                    router.push("/");
+                },
+            },
+        })
 
         setTimeout(() => {
             setSession(null)

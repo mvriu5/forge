@@ -16,6 +16,10 @@ Forge brings all your most important dashboards and tools into a single app, so 
 - **Markdown Editor**: Draft notes, documentation, or blog posts inline
 - **Linear**: Watch all your linear issues
 - **Bookmark**: Save all your favorite websites in one store to have them handy
+- **Todo**: Manage your tasks and to-dos
+- **Clock**: Keep track of time with a clock widget
+- **GitHub Heatmap**: Visualize your GitHub contributions over time#
+- **Kanban Board**: Organize tasks in a Kanban-style board
 
 ## Tech Stack
 - **Framework**: Next.js
