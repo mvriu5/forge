@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, {useEffect, useState } from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
@@ -61,6 +61,10 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     const [columnPopoverOpen, setColumnPopoverOpen] = useState(false)
     const [activeId, setActiveId] = useState<string | null>(null)
 
+    useEffect(() => {
+        updateWidgetConfig();
+    }, [columns]);
+
     const sensors = useSensors(
         useSensor(MouseSensor, {
             activationConstraint: {
@@ -109,8 +113,6 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
             }
             setColumns((prev) => [...prev, newColumn])
 
-            updateWidgetConfig()
-
             setColumnPopoverOpen(false)
             form.reset()
         }
@@ -118,17 +120,10 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
     const handleColumnDelete = (columnId: string) => {
         setColumns((prevColumns) => prevColumns.filter((col) => col.id !== columnId))
-        updateWidgetConfig()
     }
 
     const handleCardDelete = (cardId: string) => {
-        setColumns((prevColumns) =>
-            prevColumns.map((col) => ({
-                ...col,
-                cards: col.cards.filter((card) => card.id !== cardId),
-            })),
-        )
-        updateWidgetConfig()
+        setColumns((prev) => prev.map((col) => ({...col, cards: col.cards.filter((card) => card.id !== cardId)})))
     }
 
     const handleAddCardToColumn = (columnId: string, title: string) => {
@@ -136,11 +131,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
             id: `card-${crypto.randomUUID()}`,
             title
         }
-        setColumns((prevColumns) =>
-            prevColumns.map((col) => (col.id === columnId ? { ...col, cards: [...col.cards, newCard] } : col)),
-        )
-
-        updateWidgetConfig()
+        setColumns((prev) => prev.map((col) => (col.id === columnId ? { ...col, cards: [...col.cards, newCard] } : col)),)
     }
 
     const findColumn = (id: string) => {
@@ -298,7 +289,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     onDragEnd={onDragEnd}
                 >
                     <SortableContext items={columns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
-                        <div className="flex flex-grow gap-4 overflow-x-auto pb-4">
+                        <div className="flex flex-grow gap-4 overflow-x-auto">
                             {columns.map((column) => (
                                 <KanbanColumn
                                     key={column.id}
