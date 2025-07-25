@@ -4,14 +4,15 @@ import {Area, AreaChart, XAxis, YAxis} from "recharts"
 import {ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
 import React, {useMemo} from "react"
 import {ChartDataPoint} from "@/actions/twelvedata"
-import {Bookmark, Link, RefreshCw, TrendingDown} from "lucide-react"
-import {cn} from "@/lib/utils"
+import {Bookmark, Box, Captions, Hourglass, Link, TrendingDown, Users} from "lucide-react"
+import {cn, hexToRgba} from "@/lib/utils"
 import {SelectorItems} from "@/components/widgets/components/NodeSelector"
 import {Button} from "@/components/ui/Button"
 import {getLogoFromLink} from "@/components/svg/BookmarkIcons"
 import {LinearIcon} from "@/components/svg/LinearIcon"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
-import {IssueCard} from "@/components/widgets/LinearWidget"
+import {tooltip} from "@/components/ui/TooltipProvider"
+import {StatusBadge} from "@/components/widgets/components/StatusBadge"
 
 function WidgetSection() {
     return (
@@ -323,6 +324,58 @@ const BentoLinear = () => {
             <div className={"grid grid-cols-2 gap-4"}>
                 {issues.map((issue) => <IssueCard key={issue.id} issue={issue} className={"bg-tertiary"}/>)}
             </div>
+        </div>
+    )
+}
+
+const IssueCard = ({issue, className}: {issue: any, className?: string}) => {
+
+    const descriptionTooltip = tooltip<HTMLDivElement>({
+        message: issue.description
+    })
+
+    return (
+        <div className={cn("flex flex-col gap-2 bg-secondary rounded-md p-1 border border-main/20 shadow-xs dark:shadow-md", className)}>
+            <div className={"flex items-center gap-2"}>
+                <StatusBadge statusId={issue.stateName}/>
+                <p className={"text-primary text-sm truncate"}>{issue.title}</p>
+                <div className={"hidden lg:flex items-center justify-center"} {...descriptionTooltip}>
+                    {issue.description?.length > 0 &&
+                        <Captions className={"text-tertiary"} size={18}/>
+                    }
+                </div>
+            </div>
+            <span className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>
+                <Hourglass size={14}/>
+                <p className={"hidden lg:flex"}>Priority:</p>
+                <span className={"inline break-words text-secondary text-nowrap text-truncate"}>{issue.priorityName ?? "No priority"}</span>
+            </span>
+            <span className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>
+                <Users size={14}/>
+                <p className={"hidden lg:flex"}>Team:</p>
+                <span className={"inline break-words text-secondary text-nowrap text-truncate"}>{issue.team ?? "No team"}</span>
+            </span>
+            <span className={"flex items-center gap-1.5 text-tertiary text-xs text-wrap"}>
+                <Box size={14}/>
+                <p className={"hidden lg:flex"}>Project:</p>
+                <span className={"inline break-words text-secondary text-nowrap text-truncate"}>{issue.project ?? "No project"}</span>
+            </span>
+            <div className={"flex items-center gap-2"}>
+                {issue.labels.map((label: any) =>
+                    <div
+                        key={label.name}
+                        className={"px-1 rounded-full"}
+                        style={{
+                            backgroundColor: hexToRgba(label.color, 0.05),
+                            borderWidth: "1px",
+                            borderColor: hexToRgba(label.color, 0.4),
+                        }}
+                    >
+                        <p className={"text-xs"} style={{color: label.color}}>{label.name}</p>
+                    </div>
+                )}
+            </div>
+            <p className={"text-tertiary text-xs font-mono"}>{new Date(issue.createdAt).toLocaleDateString("en-US")}</p>
         </div>
     )
 }

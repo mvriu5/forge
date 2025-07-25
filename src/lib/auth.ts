@@ -7,6 +7,7 @@ import {VerificationEmail} from "@/components/emails/VerificationEmail"
 import {ReactNode} from "react"
 import {ResetPasswordEmail} from "@/components/emails/ResetPasswordEmail"
 import {genericOAuth} from "better-auth/plugins"
+import {nextCookies} from "better-auth/next-js"
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -72,6 +73,7 @@ export const auth = betterAuth({
         }
     },
     plugins: [
+        nextCookies(),
         genericOAuth({
             config: [
                 {
