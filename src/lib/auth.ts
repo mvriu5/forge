@@ -16,6 +16,7 @@ export const auth = betterAuth({
         provider: "pg",
         schema: schema
     }),
+    trustedOrigins: ["http://localhost:3000", "https://tryforge.io"],
     account: {
         accountLinking: {
             enabled: true,
@@ -66,6 +67,13 @@ export const auth = betterAuth({
         cookieCache: {
             enabled: true,
             maxAge: 300 // 5 minutes
+        }
+    },
+    advanced: {
+        useSecureCookies: true,
+        defaultCookieAttributes: {
+            httpOnly: true,
+            secure: true
         }
     },
     plugins: [
