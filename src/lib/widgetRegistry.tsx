@@ -12,6 +12,7 @@ import {MeetingsWidget} from "@/components/widgets/MeetingsWidget"
 import {GithubHeatmapWidget} from "@/components/widgets/GithubHeatmapWidget"
 import {ClockWidget} from "@/components/widgets/ClockWidget"
 import {TodoWidget} from "@/components/widgets/TodoWidget"
+import {KanbanWidget} from "@/components/widgets/KanbanWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -197,6 +198,21 @@ export const widgetRegistry: WidgetElement[] = [
             }
         },
         component: TodoWidget
+    },
+    {
+        preview: {
+            widgetType: "kanban",
+            previewImage: '/kanban_preview.png',
+            title: 'Kanban Board',
+            description: 'Organize your tasks in a kanban board',
+            tags: ["productivity"],
+            sizes: {
+                desktop: { width: 2, height: 2 },
+                tablet: { width: 1, height: 2 },
+                mobile: { width: 1, height: 1 }
+            }
+        },
+        component: KanbanWidget
     }
 ]
 
