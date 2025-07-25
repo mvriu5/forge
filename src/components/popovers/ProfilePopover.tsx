@@ -33,13 +33,10 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
             fetchOptions: {
                 onSuccess: () => {
                     router.push("/");
+                    setSession(null)
                 },
             },
         })
-
-        setTimeout(() => {
-            setSession(null)
-        }, 500)
     }
 
     return (
