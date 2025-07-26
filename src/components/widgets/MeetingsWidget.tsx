@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useCallback, useMemo, useState} from "react"
+import React, {useCallback, useEffect, useMemo, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
@@ -67,7 +67,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         )
     }
 
-    const { calendars, events, isLoading, isFetching, isError, refetch, googleIntegration, getColor, selectedCalendars, setSelectedCalendars} = useGoogleCalendar()
+    const { calendars, events, isLoading, isFetching, isError, refetch, googleIntegration, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
     const {settings} = useSettingsStore()
     const {addToast} = useToast()
     const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -163,9 +163,10 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
             (isLoading && !calendars) ||
             (isLoading && !events) ||
             (!calendars && !isError) ||
-            (calendars && calendars.length > 0 && !events && !isError)
+            (calendars && calendars.length > 0 && !events && !isError) ||
+            (filterLoading)
         )
-    }, [isLoading, calendars, events, isError])
+    }, [isLoading, calendars, events, isError, filterLoading])
 
     const hasNoEvents = useMemo(() => {
         return calendars && Array.isArray(events) && events.length === 0 && !isInitialLoading
@@ -192,7 +193,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                 </DropdownMenu>
                 <Button
                     className={"h-6 px-2 group border-0 shadow-none dark:shadow-none"}
-                    onClick={() => refetch()}
+                    onClick={refetch}
                     data-loading={(isLoading || isFetching) ? "true" : "false"}
                     {...refreshTooltip}
                 >

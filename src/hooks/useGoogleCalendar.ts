@@ -6,6 +6,7 @@ import {useCallback, useEffect, useMemo, useState} from "react"
 export const useGoogleCalendar = () => {
     const {googleIntegration, updateIntegration} = useIntegrationStore()
     const [selectedCalendars, setSelectedCalendars] = useState<string[]>([])
+    const [filterLoading, setFilterLoading] = useState<boolean>(false)
     const queryClient = useQueryClient()
 
     const isTokenExpired = useMemo(() => {
@@ -125,6 +126,14 @@ export const useGoogleCalendar = () => {
         ])
     }, [queryClient])
 
+    useEffect(() => {
+        setFilterLoading(true)
+    }, [selectedCalendars])
+
+    useEffect(() => {
+        if (!calendarLoading && !eventsLoading && filterLoading) setFilterLoading(false)
+    }, [calendarLoading, eventsLoading, filterLoading])
+
     return {
         calendars,
         events: filteredEvents,
@@ -136,5 +145,6 @@ export const useGoogleCalendar = () => {
         getColor,
         selectedCalendars,
         setSelectedCalendars,
+        filterLoading
     }
 }
