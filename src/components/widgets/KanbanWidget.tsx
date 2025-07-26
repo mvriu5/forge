@@ -34,6 +34,7 @@ import {CSS} from "@dnd-kit/utilities"
 import { Input } from "../ui/Input"
 import {useWidgetStore} from "@/store/widgetStore"
 import {useDashboardStore} from "@/store/dashboardStore"
+import {ScrollArea} from "@/components/ui/ScrollArea"
 
 export type Card = {
     id: string
@@ -289,17 +290,19 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     onDragEnd={onDragEnd}
                 >
                     <SortableContext items={columns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
-                        <div className="flex flex-grow gap-4 overflow-x-auto">
-                            {columns.map((column) => (
-                                <KanbanColumn
-                                    key={column.id}
-                                    column={column}
-                                    onAddCardToColumn={handleAddCardToColumn}
-                                    onDeleteColumn={handleColumnDelete}
-                                    onDeleteCard={handleCardDelete}
-                                />
-                            ))}
-                        </div>
+                        <ScrollArea className={"min-w-80"} orientation={"horizontal"} thumbClassname={"bg-white/10"}>
+                            <div className="flex gap-4 overflow-x-auto">
+                                {columns.map((column) => (
+                                    <KanbanColumn
+                                        key={column.id}
+                                        column={column}
+                                        onAddCardToColumn={handleAddCardToColumn}
+                                        onDeleteColumn={handleColumnDelete}
+                                        onDeleteCard={handleCardDelete}
+                                    />
+                                ))}
+                            </div>
+                        </ScrollArea>
                     </SortableContext>
                 </DndContext>
             </WidgetContent>
@@ -345,7 +348,7 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard}:
 
     return (
         <div
-            className={"flex flex-col justify-between gap-2 w-56 bg-secondary rounded-md border border-main/40 p-2 shadow-xs dark:shadow-md"}
+            className={"flex flex-col justify-between gap-2 h-full min-w-52 bg-secondary rounded-md border border-main/40 p-2 shadow-xs dark:shadow-md"}
             style={style}
             ref={setNodeRef}
             {...attributes}
@@ -366,7 +369,7 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard}:
                     </Button>
                 </div>
 
-                <div className={"flex-grow min-h-[100px]"}>
+                <ScrollArea className={"h-54"} thumbClassname={"bg-white/10"}>
                     <SortableContext items={column.cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
                         <div className="flex flex-col gap-0.5">
                             {column.cards.map((card) => (
@@ -374,8 +377,8 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard}:
                             ))}
                         </div>
                     </SortableContext>
-                </div>
-                </div>
+                </ScrollArea>
+            </div>
             <form onSubmit={handleAddCardSubmit} className="flex gap-2">
                 <Input
                     type="text"

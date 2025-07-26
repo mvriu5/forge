@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 
 interface ScrollAreaProps extends React.ComponentPropsWithRef<typeof ScrollAreaPrimitive.Root> {
     thumbClassname?: string
+    orientation?: "vertical" | "horizontal"
 }
 
 interface ScrollBarProps extends React.ComponentPropsWithRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar> {
@@ -13,7 +14,7 @@ interface ScrollBarProps extends React.ComponentPropsWithRef<typeof ScrollAreaPr
     thumbClassname?: string
 }
 
-const ScrollArea = ({ className, thumbClassname, children, ...props }: ScrollAreaProps) => {
+const ScrollArea = ({ className, thumbClassname, orientation = "vertical", children, ...props }: ScrollAreaProps) => {
     return (
         <ScrollAreaPrimitive.Root
             className={cn("relative overflow-hidden", className)}
@@ -22,7 +23,7 @@ const ScrollArea = ({ className, thumbClassname, children, ...props }: ScrollAre
             <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
                 {children}
             </ScrollAreaPrimitive.Viewport>
-            <ScrollBar thumbClassname={thumbClassname}/>
+            <ScrollBar thumbClassname={thumbClassname} orientation={orientation}/>
             <ScrollAreaPrimitive.Corner />
         </ScrollAreaPrimitive.Root>
     )
