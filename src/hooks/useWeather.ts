@@ -22,7 +22,9 @@ export const useWeather = () => {
     const { data: locationData } = useQuery({
         queryKey: ["reverse-geocoding", coords],
         queryFn: async () => await fetchReverseGeocoding(coords!.lat, coords!.lon),
-        enabled: !!coords
+        enabled: !!coords,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false
     })
 
     const location = locationData?.address?.town ?? null
@@ -31,7 +33,9 @@ export const useWeather = () => {
         queryKey: ["weather", coords],
         queryFn: async () => await fetchWeatherData(coords!.lat, coords!.lon),
         enabled: !!coords,
-        refetchInterval: 15 * 60 * 1000 // 15 minutes
+        refetchInterval: 15 * 60 * 1000, // 15 minutes
+        refetchOnWindowFocus: false,
+        refetchOnMount: false
     })
 
 
@@ -59,7 +63,7 @@ export const useWeather = () => {
         if (currentIndex === -1) return null
 
         const result = []
-        for (let i = currentIndex + 1; i < Math.min(currentIndex + 6, time.length); i++) {
+        for (let i = currentIndex + 1; i < Math.min(currentIndex + 8, time.length); i++) {
             result.push({
                 time: time[i],
                 temperature: temperature_2m[i],
