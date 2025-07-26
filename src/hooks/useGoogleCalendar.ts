@@ -3,6 +3,14 @@ import {useQuery, useQueryClient} from "@tanstack/react-query"
 import {fetchCalendarEvents, fetchCalendarList, refreshToken} from "@/actions/google"
 import {useCallback, useEffect, useMemo, useState} from "react"
 
+export interface CalendarEvent {
+    id: string
+    summary: string
+    start: { dateTime: string }
+    end: { dateTime: string }
+    location: string
+}
+
 export const useGoogleCalendar = () => {
     const {googleIntegration, updateIntegration} = useIntegrationStore()
     const [selectedCalendars, setSelectedCalendars] = useState<string[]>([])

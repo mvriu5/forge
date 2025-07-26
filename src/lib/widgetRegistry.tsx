@@ -13,6 +13,7 @@ import {GithubHeatmapWidget} from "@/components/widgets/GithubHeatmapWidget"
 import {ClockWidget} from "@/components/widgets/ClockWidget"
 import {TodoWidget} from "@/components/widgets/TodoWidget"
 import {KanbanWidget} from "@/components/widgets/KanbanWidget"
+import {CalendarWidget} from "@/components/widgets/CalendarWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -208,11 +209,26 @@ export const widgetRegistry: WidgetElement[] = [
             tags: ["productivity"],
             sizes: {
                 desktop: { width: 2, height: 2 },
-                tablet: { width: 1, height: 2 },
+                tablet: { width: 2, height: 2 },
                 mobile: { width: 1, height: 1 }
             }
         },
         component: KanbanWidget
+    },
+    {
+        preview: {
+            widgetType: "calendar",
+            previewImage: '/calendar_preview.png',
+            title: 'Calendar',
+            description: 'See your calendar events',
+            tags: ["productivity"],
+            sizes: {
+                desktop: { width: 3, height: 3 },
+                tablet: { width: 2, height: 2 },
+                mobile: { width: 1, height: 2 }
+            }
+        },
+        component: CalendarWidget
     }
 ]
 
