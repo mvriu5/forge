@@ -225,14 +225,14 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         <WidgetTemplate id={id} name={"calendar"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Calendar"}>
                 <div className="flex items-center gap-1">
-                    <Button variant="ghost" onClick={() => navigateWeek("prev")} className="h-6 px-2">
-                        <ChevronLeft className="w-4 h-4" />
+                    <Button variant="widget" onClick={() => navigateWeek("prev")}>
+                        <ChevronLeft size={16} />
                     </Button>
-                    <Button variant="ghost" onClick={() => navigateWeek("next")} className="h-6 px-2">
-                        <ChevronRight className="w-4 h-4" />
+                    <Button variant="widget" onClick={() => navigateWeek("next")}>
+                        <ChevronRight size={16} />
                     </Button>
                 </div>
-                <Button className={"font-normal bg-tertiary border-0 h-6 shadow-none dark:shadow-none text-sm items-center gap-2 hover:text-primary hover:bg-inverted/10 px-2"}>
+                <Button variant={"widget"}>
                     <Plus size={16} />
                 </Button>
             </WidgetHeader>

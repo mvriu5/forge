@@ -27,10 +27,8 @@ const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
         return (
             <WidgetTemplate id={id} name={"stock"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Stock Overview"}>
-                    <Button
-                        className={cn("font-normal bg-tertiary border-0 shadow-none dark:shadow-none h-6 text-sm items-center gap-2 px-2")}
-                    >
-                        <ChartCandlestick size={18}/>
+                    <Button variant={"widget"}>
+                        <ChartCandlestick size={16}/>
                     </Button>
                     <Select>
                         <SelectTrigger className={"w-max bg-tertiary border-0 shadow-none dark:shadow-none h-6"}>
@@ -95,9 +93,10 @@ const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
                     <PopoverTrigger asChild>
                         <Button
                             data-state={open ? "open" : "closed"}
-                            className={cn("font-normal bg-tertiary border-0 h-6 shadow-none dark:shadow-none text-sm items-center gap-2 data-[state=open]:text-primary data-[state=open]:bg-inverted/10 px-2")}
+                            variant={"widget"}
+                            className={"data-[state=open]:text-primary data-[state=open]:bg-inverted/10"}
                         >
-                            <ChartCandlestick size={18}/>
+                            <ChartCandlestick size={16}/>
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className={"border-0 p-0 w-[160px]"} align={"start"}>

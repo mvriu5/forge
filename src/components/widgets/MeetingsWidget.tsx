@@ -39,11 +39,11 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         return (
             <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Meetings"}>
-                    <Button className={"h-6 px-2 group border-0 shadow-none dark:shadow-none"}>
-                        <Filter className="size-4" />
+                    <Button variant={"widget"}>
+                        <Filter size={16} />
                     </Button>
-                    <Button className={"h-6 px-2 group border-0 shadow-none dark:shadow-none"}>
-                        <RefreshCw className="size-4" />
+                    <Button variant={"widget"}>
+                        <RefreshCw size={16} />
                     </Button>
                 </WidgetHeader>
 
@@ -177,20 +177,22 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                 >
                     <Button
                         data-state={dropdownOpen ? "open" : "closed"}
-                        className={"h-6 px-2 shadow-none dark:shadow-none group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary border-0"}
+                        variant={"widget"}
+                        className={"group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
                         disabled={!calendars || calendars?.length === 0 || isLoading || isFetching}
                         {...filterTooltip}
                     >
-                        <Filter className="size-4" />
+                        <Filter size={16} />
                     </Button>
                 </DropdownMenu>
                 <Button
-                    className={"h-6 px-2 group border-0 shadow-none dark:shadow-none"}
+                    className={"group"}
+                    variant={"widget"}
                     onClick={refetch}
                     data-loading={(isLoading || isFetching) ? "true" : "false"}
                     {...refreshTooltip}
                 >
-                    <RefreshCw className="size-4 group-data-[loading=true]:animate-spin" />
+                    <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
                 </Button>
             </WidgetHeader>
 

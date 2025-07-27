@@ -15,6 +15,7 @@ const buttonVariants = cva(
                 brand: "bg-brand/70 hover:bg-brand border border-brand/40 text-white/80 hover:text-white disabled:opacity-70",
                 error: "bg-error/70 hover:bg-error border border-error/40 text-white/80 hover:text-white",
                 ghost: "bg-transparent hover:bg-inverted/10 text-secondary hover:text-primary",
+                widget: "h-6 px-2 border-0 shadow-none dark:shadow-none bg-transparent hover:bg-inverted/10 text-secondary hover:text-primary gap-2 font-normal text-sm"
             }
         },
         defaultVariants: {

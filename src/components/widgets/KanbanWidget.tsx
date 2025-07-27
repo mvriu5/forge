@@ -250,7 +250,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
             <WidgetHeader title={"Kanban Board"}>
                 <Popover open={columnPopoverOpen} onOpenChange={setColumnPopoverOpen}>
                     <PopoverTrigger asChild>
-                        <Button className={"h-6 border-0 shadow-none dark:shadow-none bg-tertiary px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"} {...addColumnTooltip}>
+                        <Button variant={"widget"} className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"} {...addColumnTooltip}>
                             <Plus size={16}/>
                         </Button>
                     </PopoverTrigger>

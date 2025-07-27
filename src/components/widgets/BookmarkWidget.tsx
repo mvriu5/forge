@@ -40,7 +40,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         return (
             <WidgetTemplate id={id} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Bookmark"}>
-                    <Button className={"h-6 px-2 border-0 shadow-none dark:shadow-none bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
+                    <Button variant={"widget"} className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
                         <Plus size={16}/>
                     </Button>
                 </WidgetHeader>
@@ -117,7 +117,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
             <WidgetHeader title={"Bookmark"}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
-                        <Button className={"h-6 border-0 shadow-none dark:shadow-none bg-tertiary px-2 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"} {...addTooltip}>
+                        <Button variant={"widget"} className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"} {...addTooltip}>
                             <Plus size={16}/>
                         </Button>
                     </PopoverTrigger>
