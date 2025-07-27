@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useEffect, useState } from "react"
+import React, {useEffect, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
@@ -18,8 +18,8 @@ import {
     DragEndEvent,
     DragOverEvent,
     DragStartEvent,
-    KeyboardSensor, MouseSensor,
-    PointerSensor, TouchSensor,
+    MouseSensor,
+    TouchSensor,
     useSensor,
     useSensors
 } from "@dnd-kit/core"
@@ -31,10 +31,12 @@ import {
     verticalListSortingStrategy
 } from "@dnd-kit/sortable"
 import {CSS} from "@dnd-kit/utilities"
-import { Input } from "../ui/Input"
+import {Input} from "../ui/Input"
 import {useWidgetStore} from "@/store/widgetStore"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {ScrollArea} from "@/components/ui/ScrollArea"
+import Compact from "@uiw/react-color-compact"
+import {convertToRGBA} from "@/lib/colorConvert"
 
 export type Card = {
     id: string
@@ -44,6 +46,7 @@ export type Card = {
 type Column = {
     id: string
     title: string
+    color: string
     cards: Card[]
 }
 
@@ -61,6 +64,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     const [columns, setColumns] = useState<Column[]>(widget.config?.kanban ?? [])
     const [columnPopoverOpen, setColumnPopoverOpen] = useState(false)
     const [activeId, setActiveId] = useState<string | null>(null)
+    const [hex, setHex] = useState("#ffffff")
 
     useEffect(() => {
         updateWidgetConfig();
@@ -110,11 +114,13 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
             const newColumn: Column = {
                 id: `column-${crypto.randomUUID()}`,
                 title: column.title?.trim(),
+                color: hex,
                 cards: [],
             }
             setColumns((prev) => [...prev, newColumn])
 
             setColumnPopoverOpen(false)
+            setHex("#ffffff")
             form.reset()
         }
     }
@@ -254,7 +260,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                             <Plus size={16}/>
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent className={"w-56"} align={"end"}>
+                    <PopoverContent className={"w-64"} align={"end"}>
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(handleAddColumn)} className="space-y-2">
                                 <FormField
@@ -267,6 +273,44 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                                             <FormMessage />
                                         </FormItem>
                                     )}
+                                />
+                                <p className={"pt-2 text-tertiary text-sm"}>Color</p>
+                                <Compact
+                                    style={{
+                                        background: "transparent",
+                                        border: "none",
+                                        boxShadow: "none",
+                                    }}
+                                    color={hex}
+                                    colors={[
+                                        "#FF4C4C", // Knallrot
+                                        "#FF914D", // Helles Orange
+                                        "#FFC300", // Sattgelb
+                                        "#90EE02", // Neongrün
+                                        "#00E0B8", // Türkis
+                                        "#00BFFF", // Himmelsblau
+                                        "#4B7EFF", // Klares Blau
+                                        "#A066FF", // Violett
+                                        "#FF66C4", // Knallpink
+                                        "#FF8FAB", // Rosé
+                                        "#FFDE59", // Sonnengelb
+                                        "#8CFF98", // Mintgrün
+                                        "#A1E3D8", // Eisgrün
+                                        "#00FFAB", // Neon-Aqua
+                                        "#85E3FF", // Babyblau
+                                        "#B28DFF", // Flieder
+                                        "#FFAB76", // Apricot
+                                        "#FFD6A5", // Pastellorange
+                                        "#D291BC", // Pastelllila
+                                        "#FF6F61", // Korallrot
+                                        "#FFB5E8", // Zuckerwatte
+                                        "#C1FFD7", // Sanftgrün
+                                        "#FFFF8F", // Zitronengelb
+                                        "#D0AAFF"  // Lavendel
+                                    ]}
+                                    onChange={(color) => {
+                                        setHex(color.hex);
+                                    }}
                                 />
                                 <Button
                                     type="submit"
@@ -336,6 +380,8 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard}:
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.5 : 1,
+        background: convertToRGBA(column.color, 0.1),
+        border: `1px solid ${convertToRGBA(column.color, 0.2)}`,
     }
 
     const handleAddCardSubmit = (e: React.FormEvent) => {
@@ -348,14 +394,20 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard}:
 
     return (
         <div
-            className={"flex flex-col justify-between gap-2 h-full min-w-52 bg-secondary rounded-md border border-main/40 p-2 shadow-xs dark:shadow-md"}
+            className={"flex flex-col justify-between gap-2 h-full min-w-52 rounded-md p-2 shadow-xs dark:shadow-md"}
             style={style}
             ref={setNodeRef}
             {...attributes}
             {...listeners}
         >
             <div className={"flex flex-col gap-2"}>
-                <div className={"flex items-center justify-between text-primary font-medium border-b border-main/40 -mx-2 px-2 pb-2"}>
+                <div
+                    className={"flex items-center justify-between font-medium -mx-2 px-2 pb-2"}
+                    style={{
+                        color: column.color,
+                        borderBottom: `1px solid ${convertToRGBA(column.color, 0.2)}`,
+                }}
+                >
                     {column.title}
                     <Button
                         className={"h-6 border-0 text-tertiary shadow-none dark:shadow-none bg-0 px-2 hover:bg-inverted/10 hover:text-primary"}
@@ -373,7 +425,7 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard}:
                     <SortableContext items={column.cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
                         <div className="flex flex-col gap-0.5">
                             {column.cards.map((card) => (
-                                <KanbanCard key={card.id} card={card} onCardDelete={() => onDeleteCard(card.id)}/>
+                                <KanbanCard key={card.id} card={card} onCardDelete={() => onDeleteCard(card.id)} color={column.color}/>
                             ))}
                         </div>
                     </SortableContext>
@@ -400,10 +452,11 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard}:
 
 interface KanbanCardProps {
     card: Card
+    color: string
     onCardDelete: (cardId: string) => void
 }
 
-function KanbanCard({card, onCardDelete}: KanbanCardProps) {
+function KanbanCard({card, color, onCardDelete}: KanbanCardProps) {
     const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
         id: card.id,
         data: {
@@ -415,12 +468,14 @@ function KanbanCard({card, onCardDelete}: KanbanCardProps) {
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.5 : 1
+        opacity: isDragging ? 0.5 : 1,
+        background: convertToRGBA(color, 0.2),
+        border: `1px solid ${convertToRGBA(color, 0.3)}`,
     }
 
     return (
         <div
-            className={"group flex flex gap-2 items-center justify-between rounded-md p-1 bg-primary border border-main/20"}
+            className={"group flex flex gap-2 items-center justify-between rounded-md p-1 text-primary"}
             ref={setNodeRef}
             style={style}
             {...attributes}
