@@ -11,6 +11,19 @@ import {cn} from "@/lib/utils"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import { format } from 'date-fns'
 import {convertToRGBA} from "@/lib/colorConvert"
+import {
+    DndContext,
+    DragOverlay,
+    useDraggable,
+    useDroppable,
+    closestCenter,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent,
+} from "@dnd-kit/core"
+import { restrictToVerticalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers"
+
 
 const weekdays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 const months = [
@@ -42,8 +55,15 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         monday.setDate(today.getDate() - dayOfWeek + 1)
         return monday
     })
+    const [activeDragEvent, setActiveDragEvent] = useState<CalendarEvent | null>(null)
 
-    const [draggedAppointment, setDraggedAppointment] = useState<string | null>(null)
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+    )
 
     useEffect(() => {
         if (appointments && appointments.length > 0) {
@@ -126,36 +146,37 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         return { top, height }
     }
 
-    const handleDragStart = (e: React.DragEvent, appointmentId: string) => {
-        setDraggedAppointment(appointmentId)
-        e.dataTransfer.effectAllowed = "move"
+    const handleDragStart = (event: any) => {
+        const draggedEvent = events.find((evt) => evt.id === event.active.id)
+        if (draggedEvent) setActiveDragEvent(draggedEvent)
     }
 
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault()
-        e.dataTransfer.dropEffect = "move"
-    }
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over, delta } = event
 
-    const handleDrop = (e: React.DragEvent, newDate: string) => {
-        e.preventDefault()
-        if (draggedAppointment) {
-            const event = events.find((evt) => evt.id === draggedAppointment)
-            if (event) {
-                const calendarContainer = e.currentTarget.closest(".calendar-drop-zone")
-                if (!calendarContainer) return
+        if (active && over) {
+            const draggedEvent = events.find((evt) => evt.id === active.id)
+            const targetDateString = String(over.id) // over.id is the dateString of the column
 
-                const containerRect = calendarContainer.getBoundingClientRect()
-                const relativeY = e.clientY - containerRect.top
+            if (draggedEvent && targetDateString) {
+                const initialTop = active.data.current?.initialTop as number // Get initial top from draggable data
+                const newTopPixels = initialTop + delta.y
 
-                const totalMinutesFromStart = Math.round(relativeY / 15) * 15
-                const baseHour = 6
-                const newStartHour = baseHour + Math.floor(totalMinutesFromStart / 60)
-                const newStartMinutes = totalMinutesFromStart % 60
+                // Calculate total minutes from 0:00 based on newTopPixels
+                const totalMinutesFromStart = (newTopPixels / 60) * 60 // 60px per hour
+                const snappedMinutes = Math.round(totalMinutesFromStart / 15) * 15 // Snap to 15-min intervals
 
-                if (newStartHour < 6 || newStartHour >= 22) return
+                const newStartHour = Math.floor(snappedMinutes / 60)
+                const newStartMinutes = snappedMinutes % 60
 
-                const originalStart = timeToMinutes(event.start.dateTime)
-                const originalEnd = timeToMinutes(event.end.dateTime)
+                // Ensure time is within 0:00 - 23:59 range
+                if (newStartHour < 0 || newStartHour > 23) {
+                    setActiveDragEvent(null)
+                    return // Invalid drop outside calendar hours
+                }
+
+                const originalStart = timeToMinutes(draggedEvent.start.dateTime)
+                const originalEnd = timeToMinutes(draggedEvent.end.dateTime)
                 const duration = originalEnd - originalStart
 
                 const newStartTime = `${newStartHour.toString().padStart(2, "0")}:${newStartMinutes.toString().padStart(2, "0")}`
@@ -163,20 +184,24 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                 const newEndHour = Math.floor(newEndTotalMinutes / 60)
                 const newEndMin = newEndTotalMinutes % 60
 
-                if (newEndHour > 22) return
+                // Ensure end time does not exceed 24:00 (or 23:59)
+                if (newEndTotalMinutes > 1440) {
+                    setActiveDragEvent(null)
+                    return // Termin geht über 24:00 hinaus
+                }
 
                 const newEndTime = `${newEndHour.toString().padStart(2, "0")}:${newEndMin.toString().padStart(2, "0")}`
 
-                setEvents(
-                    events.map((evt) =>
-                        evt.id === draggedAppointment
-                            ? { ...evt, date: newDate, startTime: newStartTime, endTime: newEndTime }
+                setEvents((prevEvents) =>
+                    prevEvents.map((evt) =>
+                        evt.id === draggedEvent.id
+                            ? { ...evt, date: targetDateString, startTime: newStartTime, endTime: newEndTime }
                             : evt,
                     ),
                 )
             }
-            setDraggedAppointment(null)
         }
+        setActiveDragEvent(null)
     }
 
     const navigateWeek = (direction: "prev" | "next") => {
@@ -188,6 +213,13 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     const days = getWeekDays()
     const today = new Date().toISOString().split("T")[0]
     const currentTimePosition = getCurrentTimePosition()
+
+    const droppableRefs = days.map((day, index) => {
+        const { dateString } = formatDate(day)
+        return useDroppable({
+            id: dateString, // ID for the droppable area is the date string
+        }).setNodeRef
+    })
 
     return (
         <WidgetTemplate id={id} name={"calendar"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
@@ -205,102 +237,108 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                 </Button>
             </WidgetHeader>
             <WidgetContent className={"border border-main/40 bg-secondary rounded-md gap-0 p-0"}>
-                {/* Calendar Grid */}
-                <div className="grid grid-cols-8 border-b border-main bg-primary rounded-t-md">
-                    <div className="filler"></div>
-                    {days.map((day, index) => {
-                        const { day: dayNum, weekday, dateString } = formatDate(day)
-                        const isToday = dateString === today
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
+                >
+                    {/* Calendar Grid */}
+                    <div className="grid grid-cols-8 border-b border-main bg-primary rounded-t-md">
+                        <div className="filler"/>
+                        {days.map((day) => {
+                            const { day: dayNum, weekday, dateString } = formatDate(day)
+                            const isToday = dateString === today
 
-                        return (
-                            <div key={index} className={cn("flex items-center justify-center gap-2 py-1 text-center border-l border-main first:border-l-0")}>
-                                <div className="text-sm text-primary font-normal">{weekday}</div>
-                                <div
-                                    className={cn(
-                                        "text-sm font-mono",
-                                        isToday
-                                            ? "bg-brand text-primary rounded-full size-6 flex items-center justify-center"
-                                            : "text-secondary"
-                                    )}
-                                >
-                                    {dayNum}
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
-                <ScrollArea className={"h-[475px]"}>
-                    <div className="relative calendar-drop-zone">
-                        {/* Current time indicator */}
-                        {currentTimePosition !== null && (
-                            <div
-                                className="absolute left-4 right-0 z-20 pointer-events-none"
-                                style={{ top: `${currentTimePosition}px` }}
-                            >
-                                <div className="flex items-center">
-                                    <div className="bg-error text-white text-xs px-2 py-1 rounded font-normal mr-2">
-                                        {currentTime.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                            return (
+                                <div key={day.toString()} className={cn("flex items-center justify-center gap-2 py-1 text-center border-l border-main first:border-l-0")}>
+                                    <div className="text-sm text-primary font-normal">{weekday}</div>
+                                    <div
+                                        className={cn(
+                                            "text-sm font-mono",
+                                            isToday
+                                                ? "bg-brand text-primary rounded-full size-6 flex items-center justify-center"
+                                                : "text-secondary"
+                                        )}
+                                    >
+                                        {dayNum}
                                     </div>
-                                    <div className="flex-1 h-0.5 bg-error"/>
                                 </div>
-                            </div>
-                        )}
-
-                        {hours.map((hour, hourIndex) => (
-                            <div key={hour} className="relative">
-                                <div className="grid grid-cols-8 border-b border-main last:border-b-0 min-h-[60px]">
-                                    <div className={cn("-mt-2.5 px-2 text-sm text-secondary font-mono flex items-start justify-end")}>
-                                        {hour.toString().padStart(2, "0")}:00
-                                    </div>
-
-                                    {days.map((day, dayIndex) => {
-                                        const { dateString } = formatDate(day)
-                                        const isToday = dateString === today
-
-                                        return (
-                                            <div
-                                                key={dayIndex}
-                                                className={`border-l border-main first:border-l-0 relative ${isToday ? "bg-brand/5" : ""}`}
-                                                onDragOver={handleDragOver}
-                                                onDrop={(e) => handleDrop(e, dateString)}
-                                            >
-                                                {/* 15-Minuten-Hilfslinien */}
-                                                <div className="absolute inset-0 pointer-events-none">
-                                                    <div className="absolute top-[0px] left-0 right-0 h-px bg-white/20"/>
-                                                    <div className="absolute top-[15px] left-0 right-0 h-px bg-white/5"/>
-                                                    <div className="absolute top-[30px] left-0 right-0 h-px bg-white/10"/>
-                                                    <div className="absolute top-[45px] left-0 right-0 h-px bg-white/5"/>
-                                                </div>
-
-                                                {getEventsForDate(dateString).map((evt) => {
-                                                    const { top, height } = getAppointmentPosition(evt)
-
-                                                    const appointmentStartMinutes = timeToMinutes(evt.start.dateTime)
-                                                    const appointmentHour = Math.floor(appointmentStartMinutes / 60)
-                                                    if (appointmentHour !== hour)  return null
-
-                                                    const minutesInHour = appointmentStartMinutes % 60
-                                                    const topPosition = (minutesInHour / 60) * 60
-
-                                                    return (
-                                                        <EventCard
-                                                            key={evt.id}
-                                                            event={evt}
-                                                            topPosition={topPosition}
-                                                            height={height}
-                                                            handleDragStart={handleDragStart}
-                                                            color={getColor(evt.id)}
-                                                        />
-                                                    )
-                                                })}
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
-                </ScrollArea>
+                    <ScrollArea className={"h-[475px]"}>
+                        <div className="relative calendar-drop-zone">
+                            {/* Current time indicator */}
+                            {currentTimePosition !== null && (
+                                <div
+                                    className="absolute left-4 right-0 z-20 pointer-events-none"
+                                    style={{ top: `${currentTimePosition}px` }}
+                                >
+                                    <div className="flex items-center">
+                                        <div className="bg-error text-white text-xs px-2 py-1 rounded font-normal mr-2">
+                                            {currentTime.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                                        </div>
+                                        <div className="flex-1 h-0.5 bg-error"/>
+                                    </div>
+                                </div>
+                            )}
+
+                            {hours.map((hour, hourIndex) => (
+                                <div key={hour} className="relative">
+                                    <div className="grid grid-cols-8 border-b border-main last:border-b-0 min-h-[60px]">
+                                        <div className={cn("-mt-2.5 px-2 text-sm text-secondary font-mono flex items-start justify-end")}>
+                                            {hour.toString().padStart(2, "0")}:00
+                                        </div>
+
+                                        {days.map((day, dayIndex) => {
+                                            const { dateString } = formatDate(day)
+                                            const isToday = dateString === today
+
+                                            const setDroppableRef = droppableRefs[dayIndex]
+
+                                            return (
+                                                <div
+                                                    key={day.toString()}
+                                                    ref={setDroppableRef}
+                                                    className={`border-l border-main first:border-l-0 relative ${isToday ? "bg-brand/5" : ""}`}
+                                                >
+                                                    {/* 15-Minuten-Hilfslinien */}
+                                                    <div className="absolute inset-0 pointer-events-none">
+                                                        <div className="absolute top-[0px] left-0 right-0 h-px bg-main"/>
+                                                    </div>
+
+                                                    {getEventsForDate(dateString).map((evt) => {
+                                                        const { top, height } = getAppointmentPosition(evt)
+
+                                                        const appointmentStartMinutes = timeToMinutes(evt.start.dateTime)
+                                                        const appointmentHour = Math.floor(appointmentStartMinutes / 60)
+                                                        if (appointmentHour !== hour)  return null
+
+                                                        const minutesInHour = appointmentStartMinutes % 60
+                                                        const topPosition = (minutesInHour / 60) * 60
+
+                                                        return (
+                                                            <EventCard
+                                                                key={evt.id}
+                                                                event={evt}
+                                                                topPosition={topPosition}
+                                                                height={height}
+                                                                handleDragStart={handleDragStart}
+                                                                color={getColor(evt.id)}
+                                                            />
+                                                        )
+                                                    })}
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </ScrollArea>
+                </DndContext>
             </WidgetContent>
         </WidgetTemplate>
     )
@@ -315,19 +353,29 @@ interface EventProps {
 }
 
 const EventCard: React.FC<EventProps> = ({event, topPosition, height, handleDragStart, color}) => {
+    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+        id: event.id,
+        data: { event, initialTop: topPosition },
+    })
+
     return (
         <div
-            key={event.id}
-            draggable
-            onDragStart={(e) => handleDragStart(e, event.id)}
-            className={`absolute left-2 right-2 rounded-md p-2 text-xs cursor-move hover:shadow-sm transition-shadow z-10`}
+            ref={setNodeRef}
+            {...listeners}
+            {...attributes}
+            className={cn(
+                "absolute left-2 right-2 rounded-md p-2 text-xs cursor-move hover:shadow-sm," +
+                "transition-shadow z-10 overflow-hidden",
+                isDragging && "opacity-50"
+            )}
             style={{
-                top: `${topPosition}px`,
-                height: `${Math.max(height, 24)}px`,
+                top: `${topPosition+2}px`,
+                height: `${Math.max(height, 24)-2}px`,
                 borderWidth: "1px",
                 borderStyle: "solid",
                 borderColor: convertToRGBA(color ?? "white", 1),
                 backgroundColor: convertToRGBA(color ?? "white", 0.5),
+                transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
             }}
         >
             <div className="text-primary font-medium truncate">{event.summary}</div>
