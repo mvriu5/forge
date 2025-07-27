@@ -57,16 +57,11 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                         className="text-xs bg-brand/10 border-brand/40 font-mono"
                         title={"2 open"}
                     />
-                    <Button
-                        className={"px-2 h-6 border-0 shadow-none dark:shadow-none"}
-                    >
-                        <Filter className="h-4 w-4" />
+                    <Button variant={"widget"}>
+                        <Filter size={16} />
                     </Button>
-                    <Button
-                        className={"px-2 group h-6 border-0 shadow-none dark:shadow-none"}
-                        onClick={() => refetch()}
-                    >
-                        <RefreshCw className="h-4 w-4" />
+                    <Button variant={"widget"}>
+                        <RefreshCw size={16} />
                     </Button>
                 </WidgetHeader>
                 <Input
@@ -77,11 +72,11 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                 <Tabs defaultValue="issues">
                     <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
                         <TabsTrigger value="issues">
-                            <AlertCircle className="h-4 w-4 mr-2" />
+                            <AlertCircle size={16} className="mr-2" />
                             Issues
                         </TabsTrigger>
                         <TabsTrigger value="pull-requests">
-                            <GitPullRequest className="h-4 w-4 mr-2" />
+                            <GitPullRequest size={16} className="mr-2" />
                             Pull Requests
                         </TabsTrigger>
                     </TabsList>
@@ -170,22 +165,22 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     >
                         <Button
                             data-state={dropdownOpen ? "open" : "closed"}
-                            className={"px-2 h-6 shadow-none dark:shadow-none border-0 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
+                            variant={"widget"}
+                            className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
                             disabled={allLabels.length === 0 || isLoading || isFetching}
                             {...filterTooltip}
                         >
-                            <Filter className="h-4 w-4" />
+                            <Filter size={16} />
                         </Button>
                     </DropdownMenu>
                 }
                 <Button
-                    className={"px-2 group h-6 shadow-none dark:shadow-none border-0"}
+                    variant={"widget"}
                     onClick={() => refetch()}
                     data-loading={(isLoading || isFetching) ? "true" : "false"}
                     {...refreshTooltip}
                 >
-                    <RefreshCw
-                        className="h-4 w-4 group-data-[loading=true]:animate-spin" />
+                    <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
                 </Button>
             </WidgetHeader>
             <div className="flex items-center gap-2">

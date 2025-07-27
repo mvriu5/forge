@@ -110,6 +110,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
                     {isLoading ? (
                         <>
                             {[...Array(8)].map((_, index) => (
+                                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                                 <div className={"flex items-center justify-center"} key={index}>
                                     <Skeleton className={"h-12 w-16 rounded-md"}/>
                                 </div>

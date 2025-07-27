@@ -74,7 +74,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
         >
             {editMode && (
                 <Button
-                    className="absolute z-50 size-8 bg-error/20 hover:bg-error/30 text-error hover:text-error border-error/40 bottom-4 backdrop-blur-lg"
+                    className="absolute z-50 size-8 bg-error/20 hover:bg-error/30 text-error hover:text-error border-error/40 bottom-2 backdrop-blur-lg"
                     onClick={() => {
                         if (deleteTooltip.onMouseLeave) {
                             deleteTooltip?.onMouseLeave()

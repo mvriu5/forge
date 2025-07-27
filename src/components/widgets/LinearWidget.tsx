@@ -96,10 +96,9 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                         </SelectContent>
                     </Select>
                     <Button
-                        className={"px-2 h-6 border-0 shadow-none dark:shadow-none group"}
-                        onClick={() => refetch()}
+                        variant={"widget"}
                     >
-                        <RefreshCw className="h-4 w-4" />
+                        <RefreshCw size={16} />
                     </Button>
                 </WidgetHeader>
                 <WidgetContent scroll>
@@ -167,13 +166,13 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     </SelectContent>
                 </Select>
                 <Button
-                    className={"px-2 h-6 border-0 shadow-none dark:shadow-none group"}
+                    variant={"widget"}
+                    className={"group"}
                     onClick={() => refetch()}
                     data-loading={(isLoading || isFetching) ? "true" : "false"}
                     {...refreshTooltip}
                 >
-                    <RefreshCw
-                        className="h-4 w-4 group-data-[loading=true]:animate-spin" />
+                    <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
                 </Button>
             </WidgetHeader>
             <WidgetContent scroll>

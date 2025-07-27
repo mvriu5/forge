@@ -22,7 +22,7 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
         return (
             <WidgetTemplate id={id} name={"todo"} isPlaceholder={isPlaceholder} editMode={editMode}>
                 <WidgetHeader title={"Todo's"}>
-                    <Button className={"font-normal bg-tertiary border-0 h-6 shadow-none dark:shadow-none text-sm items-center gap-2 hover:text-primary hover:bg-inverted/10 px-2"}>
+                    <Button variant={"widget"}>
                         <Eraser size={16} />
                         Clear
                     </Button>
@@ -83,7 +83,8 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
         <WidgetTemplate id={id} name={"todo"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Todo's"}>
                 <Button
-                    className={"font-normal bg-tertiary border-0 h-6 shadow-none dark:shadow-none text-sm items-center gap-2 hover:text-primary hover:bg-inverted/10 px-2"}
+                    variant={"widget"}
+                    className={""}
                     onClick={() => {
                         setTodos([])
                         handleSave([])

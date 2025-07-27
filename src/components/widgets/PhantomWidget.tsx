@@ -19,7 +19,10 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
         return (
             <WidgetTemplate id={id} className={"flex flex-col gap-4 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Phantom"} className={"z-[1]"}>
-                    <Button onClick={() => wallet ? disconnect() : connect()} className={"h-6 px-2 border-0 shadow-none dark:shadow-none"}>
+                    <Button
+                        variant={"widget"}
+                        onClick={() => wallet ? disconnect() : connect()}
+                    >
                         <Unplug size={16}/>
                     </Button>
                 </WidgetHeader>
@@ -52,8 +55,8 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
         <WidgetTemplate id={id} className={"flex flex-col gap-4 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Phantom"} className={"z-[1]"}>
                 <Button
+                    variant={"widget"}
                     onClick={() => wallet ? disconnect() : connect()}
-                    className={"h-6 px-2 shadow-none dark:shadow-none border-0"}
                     {...connectTooltip}
                 >
                     {wallet ? <Unplug size={16}/> : <Plug size={16}/>}

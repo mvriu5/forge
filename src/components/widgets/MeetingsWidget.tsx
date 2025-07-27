@@ -4,7 +4,7 @@ import React, {useCallback, useEffect, useMemo, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {useGoogleCalendar} from "@/hooks/useGoogleCalendar"
+import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {authClient} from "@/lib/auth-client"
 import {Blocks, CloudAlert, Filter, RefreshCw} from "lucide-react"
@@ -16,14 +16,7 @@ import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
 import {useSettingsStore} from "@/store/settingsStore"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
-
-interface CalendarEvent {
-    id: string
-    summary: string
-    start: { dateTime: string }
-    end: { dateTime: string }
-    location: string
-}
+import {convertToRGBA} from "@/lib/colorConvert"
 
 const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -46,11 +39,11 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         return (
             <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Meetings"}>
-                    <Button className={"h-6 px-2 group border-0 shadow-none dark:shadow-none"}>
-                        <Filter className="size-4" />
+                    <Button variant={"widget"}>
+                        <Filter size={16} />
                     </Button>
-                    <Button className={"h-6 px-2 group border-0 shadow-none dark:shadow-none"}>
-                        <RefreshCw className="size-4" />
+                    <Button variant={"widget"}>
+                        <RefreshCw size={16} />
                     </Button>
                 </WidgetHeader>
 
@@ -184,31 +177,32 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                 >
                     <Button
                         data-state={dropdownOpen ? "open" : "closed"}
-                        className={"h-6 px-2 shadow-none dark:shadow-none group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary border-0"}
+                        variant={"widget"}
+                        className={"group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
                         disabled={!calendars || calendars?.length === 0 || isLoading || isFetching}
                         {...filterTooltip}
                     >
-                        <Filter className="size-4" />
+                        <Filter size={16} />
                     </Button>
                 </DropdownMenu>
                 <Button
-                    className={"h-6 px-2 group border-0 shadow-none dark:shadow-none"}
+                    className={"group"}
+                    variant={"widget"}
                     onClick={refetch}
                     data-loading={(isLoading || isFetching) ? "true" : "false"}
                     {...refreshTooltip}
                 >
-                    <RefreshCw className="size-4 group-data-[loading=true]:animate-spin" />
+                    <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
                 </Button>
             </WidgetHeader>
 
             {isInitialLoading ? (
                 <WidgetContent scroll>
                     <div className="flex flex-col justify-between gap-4 pt-2">
-                        <Skeleton className={"h-14 w-full px-2"} />
-                        <Skeleton className={"h-14 w-full px-2"} />
-                        <Skeleton className={"h-14 w-full px-2"} />
-                        <Skeleton className={"h-14 w-full px-2"} />
-                        <Skeleton className={"h-14 w-full px-2"} />
+                        <Skeleton className={"h-15 w-full px-2"} />
+                        <Skeleton className={"h-15 w-full px-2"} />
+                        <Skeleton className={"h-15 w-full px-2"} />
+                        <Skeleton className={"h-15 w-full px-2"} />
                     </div>
                 </WidgetContent>
             ) : hasNoEvents ? (
@@ -229,21 +223,6 @@ interface EventProps {
 }
 
 const EventCard: React.FC<EventProps> = ({ event, color, hourFormat }) => {
-    const convertToRGBA = (color: string, opacity: number): string => {
-        if (color.startsWith('rgba')) {
-            return color
-        }
-
-        if (color.startsWith('#')) {
-            const r = Number.parseInt(color.slice(1, 3), 16)
-            const g = Number.parseInt(color.slice(3, 5), 16)
-            const b = Number.parseInt(color.slice(5, 7), 16)
-            return `rgba(${r}, ${g}, ${b}, ${opacity})`
-        }
-
-        return `${color.split(')')[0]})`.replace('rgb', 'rgba').replace(')', `, ${opacity})`)
-    }
-
     return (
         <div
             className="p-2 pl-4 w-full flex flex-col gap-2 rounded-md relative"
@@ -253,7 +232,7 @@ const EventCard: React.FC<EventProps> = ({ event, color, hourFormat }) => {
                 borderColor: convertToRGBA(color ?? "white", 0.2)
             }}
         >
-            <div className={"absolute inset-0 h-full w-1 rounded-full"} style={{backgroundColor: color ?? "white"}}/>
+            <div className={"absolute left-0 -top-px h-full my-px w-1 rounded-l-xl"} style={{backgroundColor: color ?? "white"}}/>
             <div
                 className="absolute inset-0 rounded-md"
                 style={{
