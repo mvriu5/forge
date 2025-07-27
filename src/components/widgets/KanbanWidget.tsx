@@ -380,7 +380,7 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard}:
         transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.5 : 1,
-        background: convertToRGBA(column.color, 0.1),
+        background: convertToRGBA(column.color, 0.2),
         border: `1px solid ${convertToRGBA(column.color, 0.2)}`,
     }
 

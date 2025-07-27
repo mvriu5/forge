@@ -4,7 +4,7 @@ import React, {useEffect, useState} from 'react'
 import {WidgetProps, WidgetTemplate} from './base/WidgetTemplate'
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Button} from "@/components/ui/Button"
-import {ChevronLeft, ChevronRight, Plus} from "lucide-react"
+import {Blocks, ChevronLeft, ChevronRight, CloudAlert, Plus} from "lucide-react"
 import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {cn} from "@/lib/utils"
@@ -23,6 +23,9 @@ import {
     type DragEndEvent,
 } from "@dnd-kit/core"
 import { restrictToVerticalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers"
+import {authClient} from "@/lib/auth-client"
+import {WidgetError} from "@/components/widgets/base/WidgetError"
+import {useToast} from "@/components/ui/ToastProvider"
 
 
 const weekdays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
@@ -45,8 +48,9 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     if (isPlaceholder) {}
 
     const { calendars, events: appointments, isLoading, isFetching, isError, refetch, googleIntegration, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
-    const [events, setEvents] = useState<CalendarEvent[]>([])
+    const { addToast } = useToast()
 
+    const [events, setEvents] = useState<CalendarEvent[]>([])
     const [currentTime, setCurrentTime] = useState(new Date())
     const [currentWeekStart, setCurrentWeekStart] = useState(() => {
         const today = new Date()
@@ -61,8 +65,8 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         useSensor(PointerSensor, {
             activationConstraint: {
                 distance: 8,
-            },
-        }),
+            }
+        })
     )
 
     useEffect(() => {
@@ -83,6 +87,41 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         }, 60000)
         return () => clearInterval(timer)
     }, [])
+
+    const handleIntegrate = async () => {
+        const data = await authClient.signIn.social({
+            provider: "google",
+            callbackURL: "/dashboard",
+        }, {
+            onRequest: (ctx) => {
+            },
+            onSuccess: (ctx) => {
+                addToast({
+                    title: "Successfully integrated Google",
+                    icon: <Blocks size={24}/>
+                })
+            },
+            onError: (ctx) => {
+                addToast({
+                    title: "An error occurred",
+                    subtitle: ctx.error.message,
+                    icon: <CloudAlert size={24}/>
+                })
+            }
+        })
+    }
+
+    if (!googleIntegration?.accessToken && !isLoading) {
+        return (
+            <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+                <WidgetError
+                    message={"If you want to use this widget, you need to integrate your Google account first!"}
+                    actionLabel={"Integrate"}
+                    onAction={handleIntegrate}
+                />
+            </WidgetTemplate>
+        )
+    }
 
     const hours = Array.from({ length: 25 }, (_, i) => i )
 
@@ -214,11 +253,9 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     const today = new Date().toISOString().split("T")[0]
     const currentTimePosition = getCurrentTimePosition()
 
-    const droppableRefs = days.map((day, index) => {
+    const droppableRefs = days.map((day) => {
         const { dateString } = formatDate(day)
-        return useDroppable({
-            id: dateString, // ID for the droppable area is the date string
-        }).setNodeRef
+        return useDroppable({id: dateString}).setNodeRef
     })
 
     return (
@@ -285,7 +322,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                                 </div>
                             )}
 
-                            {hours.map((hour, hourIndex) => (
+                            {hours.map((hour) => (
                                 <div key={hour} className="relative">
                                     <div className="grid grid-cols-8 border-b border-main last:border-b-0 min-h-[60px]">
                                         <div className={cn("-mt-2.5 px-2 text-sm text-secondary font-mono flex items-start justify-end")}>
