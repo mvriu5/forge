@@ -30,12 +30,12 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
         setSignOutLoading(true)
 
         await authClient.signOut({
-            //fetchOptions: {
-            //    onSuccess: () => {
-            //        router.push("/");
-            //        setSession(null)
-            //    },
-            //},
+            fetchOptions: {
+                onSuccess: () => {
+                    router.push("/")
+                    setSession(null)
+                }
+            }
         })
 
         router.push("/")
