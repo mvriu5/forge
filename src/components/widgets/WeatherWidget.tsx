@@ -118,14 +118,14 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
                         </>
                     ) : (
                         <>
-                            <div className={"h-full flex flex-col items-center gap-1 rounded-md bg-info/10 border border-info/20 px-2 py-1"}>
+                            <div className={"h-full flex flex-col justify-center items-center gap-1 rounded-md bg-info/10 border border-info/20 px-2 py-1"}>
                                 <div className={"text-info/80"}>
                                     {getWeatherIcon(currentWeather?.weathercode, 24)}
                                 </div>
                                 <p className={"text-info/80 font-semibold"}>{`${currentWeather?.temperature}°C`}</p>
                             </div>
                             {nextWeather?.map((weather: any) =>
-                                <div className={"flex flex-col items-center justify-center"} key={weather.time}>
+                                <div className={"h-full flex flex-col items-center justify-center"} key={weather.time}>
                                     <p className={"text-xs font-medium text-tertiary"}>
                                         {formatDate(weather.time, settings?.config.hourFormat === "24" ?  "HH:00" : "h a")}
                                     </p>

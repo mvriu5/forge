@@ -16,6 +16,7 @@ export const auth = betterAuth({
         provider: "pg",
         schema: schema
     }),
+    baseUrl: process.env.BETTER_AUTH_URL,
     trustedOrigins: ["http://localhost:3000", "https://tryforge.io"],
     account: {
         accountLinking: {
@@ -62,8 +63,12 @@ export const auth = betterAuth({
         },
     },
     session: {
-        expiresIn: 604800, // 7 days
-        updateAge: 86400 // 1 day
+        cookieCache: {
+            enabled: true,
+            maxAge: 60 * 60 * 24 * 30, // 30 days
+        },
+        expiresIn: 60 * 60 * 24 * 30, // 30 days
+        updateAge: 60 * 60 * 24 * 3, // 1 day (every 1 day the session expiration is updated)
     },
     advanced: {
         useSecureCookies: true,
@@ -73,7 +78,6 @@ export const auth = betterAuth({
         }
     },
     plugins: [
-        nextCookies(),
         genericOAuth({
             config: [
                 {
@@ -110,7 +114,8 @@ export const auth = betterAuth({
                     }
                 }
             ]
-        })
+        }),
+        nextCookies()
     ]
 })
 

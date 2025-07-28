@@ -153,7 +153,7 @@ function SignUpCard() {
                             disabled={loading}
                         >
                             {loading && <Spinner/>}
-                            Sign in
+                            Sign up
                         </Button>
                         <div className={"w-full flex gap-2"}>
                             <Button

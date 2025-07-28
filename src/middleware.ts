@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
         if (isAuthRoute || isPasswordRoute || isLanding) {
             return NextResponse.next()
         }
-        return NextResponse.redirect(new URL("/signin", request.url))
+        return NextResponse.redirect(new URL("/", request.url))
     }
 
     if (session && (isAuthRoute || isPasswordRoute)) {
