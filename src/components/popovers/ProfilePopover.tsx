@@ -1,15 +1,15 @@
 "use client"
 
-import {Bug, Hourglass, LogOut, MessageCircleQuestion, Sun} from "lucide-react";
+import {LogOut, MessageCircleQuestion, Sun} from "lucide-react"
 import React, {useEffect, useState} from "react"
 import {authClient} from "@/lib/auth-client"
 import {useRouter} from "next/navigation"
 import {useSessionStore} from "@/store/sessionStore"
 import {SettingsDialog} from "@/components/dialogs/SettingsDialog"
 import {cn} from "@/lib/utils"
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/Popover";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/Popover"
 import { Skeleton } from "@/components/ui/Skeleton";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar"
 import {useTheme} from "next-themes"
 import {Spinner} from "@/components/ui/Spinner"
 
@@ -30,13 +30,15 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
         setSignOutLoading(true)
 
         await authClient.signOut({
-            fetchOptions: {
-                onSuccess: () => {
-                    router.push("/");
-                    setSession(null)
-                },
-            },
+            //fetchOptions: {
+            //    onSuccess: () => {
+            //        router.push("/");
+            //        setSession(null)
+            //    },
+            //},
         })
+
+        router.push("/")
     }
 
     return (
