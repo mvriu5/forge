@@ -69,23 +69,23 @@ const Calendar = ({className, showOutsideDays = true, showYearSwitcher = true, y
         <DayPicker
             showOutsideDays={showOutsideDays}
             numberOfMonths={columnsDisplayed}
-            className={cn("p-3 bg-primary shadow-md rounded-md border border-main", className)}
+            className={cn("p-2 bg-primary rounded-md", className)}
             classNames={{
                 months: "relative flex",
                 month_caption: "relative mx-10 flex h-7 items-center justify-center",
                 weekdays: "flex flex-row",
-                weekday: "w-8 text-sm font-normal text-secondary",
+                weekday: "w-8 text-sm font-mono text-secondary",
                 month: "w-full",
                 nav: "flex items-start",
                 week: "mt-2 flex w-max items-start",
                 day: "rounded-md flex size-8 flex-1 items-center justify-center p-0 text-sm " +
-                    "hover:bg-tertiary hover:text-primary",
+                     "hover:bg-tertiary hover:text-primary cursor-pointer transition-colors ",
                 day_button: "size-8 rounded-md p-0 font-normal transition-none aria-selected:opacity-100",
                 range_start: "day-range-start rounded-l-md rounded-r-none",
                 range_middle: "bg-tertiary text-primary hover:bg-tertiary hover:text-primary rounded-none",
                 range_end: "day-range-end rounded-r-md rounded-l-none",
                 selected: "bg-tertiary text-primary hover:bg-tertiary hover:text-primary",
-                today: "bg-info/10 text-primary font-medium",
+                today: "bg-brand/20 dark:bg-brand/10 text-brand font-medium",
                 outside: "day-outside text-tertiary",
                 disabled: "text-tertiary/50 opacity-50",
                 hidden: "invisible flex-1"
@@ -191,7 +191,8 @@ const Nav = ({className, navView, startMonth, endMonth, displayYears, setDisplay
     return (
         <nav className={cn("flex items-center", className)}>
             <Button
-                className="absolute left-0 h-7 w-7 bg-transparent p-0 text-secondary hover:text-primary hover:bg-tertiary border-0"
+                className="absolute left-0"
+                variant={"widget"}
                 type="button"
                 tabIndex={isPreviousDisabled ? undefined : -1}
                 disabled={isPreviousDisabled}
@@ -202,11 +203,12 @@ const Nav = ({className, navView, startMonth, endMonth, displayYears, setDisplay
                 }
                 onClick={handlePreviousClick}
             >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft size={16} />
             </Button>
 
             <Button
-                className="absolute right-0 h-7 w-7 bg-transparent p-0 text-secondary hover:text-primary hover:bg-tertiary border-0"
+                className="absolute right-0"
+                variant={"widget"}
                 type="button"
                 tabIndex={isNextDisabled ? undefined : -1}
                 disabled={isNextDisabled}
@@ -217,7 +219,7 @@ const Nav = ({className, navView, startMonth, endMonth, displayYears, setDisplay
                 }
                 onClick={handleNextClick}
             >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight size={16} />
             </Button>
         </nav>
     )
@@ -228,7 +230,8 @@ const CaptionLabel = ({children, showYearSwitcher, navView, setNavView, displayY
 
     return (
         <Button
-            className="h-7 w-full truncate text-sm font-medium hover:bg-tertiary bg-transparent border-0"
+            variant={"widget"}
+            className={"w-full text-primary font-medium"}
             onClick={() => setNavView((prev) => (prev === "days" ? "years" : "days"))}
         >
             {navView === "days" ? children : `${displayYears.from} - ${displayYears.to}`}
@@ -272,7 +275,8 @@ const YearGrid = ({className, displayYears, startMonth, endMonth, setNavView, na
 
                 return (
                     <Button
-                        key={`${displayYears.from}-${displayYears.to}`}
+                        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                        key={i}
                         className={cn(
                             "h-7 w-full text-sm font-normal hover:bg-tertiary bg-transparent border-0",
                             displayYears.from + i === new Date().getFullYear() && "bg-tertiary font-medium text-primary"

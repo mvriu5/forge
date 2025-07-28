@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useEffect, useState} from "react"
+import React, {useCallback, useEffect, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
@@ -37,6 +37,14 @@ import {useDashboardStore} from "@/store/dashboardStore"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import Compact from "@uiw/react-color-compact"
 import {convertToRGBA} from "@/lib/colorConvert"
+import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
+import {
+    restrictToFirstScrollableAncestor,
+    restrictToHorizontalAxis,
+    restrictToParentElement,
+    restrictToVerticalAxis, restrictToWindowEdges
+} from "@dnd-kit/modifiers"
+import {restrictToBoundingRect} from "@dnd-kit/modifiers/dist/utilities"
 
 export type Card = {
     id: string
@@ -85,7 +93,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     )
 
     const addColumnTooltip = tooltip<HTMLButtonElement>({
-        message: "Add a new column",
+        message: "Add a new category",
         anchor: "tc"
     })
 
@@ -326,29 +334,34 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                 </Popover>
             </WidgetHeader>
             <WidgetContent>
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCorners}
-                    onDragStart={onDragStart}
-                    onDragOver={onDragOver}
-                    onDragEnd={onDragEnd}
-                >
-                    <SortableContext items={columns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
-                        <ScrollArea className={"min-w-80"} orientation={"horizontal"} thumbClassname={"bg-white/10"}>
-                            <div className="flex gap-4 overflow-x-auto">
-                                {columns.map((column) => (
-                                    <KanbanColumn
-                                        key={column.id}
-                                        column={column}
-                                        onAddCardToColumn={handleAddCardToColumn}
-                                        onDeleteColumn={handleColumnDelete}
-                                        onDeleteCard={handleCardDelete}
-                                    />
-                                ))}
-                            </div>
-                        </ScrollArea>
-                    </SortableContext>
-                </DndContext>
+                {columns.length === 0 ? (
+                    <WidgetEmpty message={"No categories yet. Add a category to get started."}/>
+                ) : (
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCorners}
+                        onDragStart={onDragStart}
+                        onDragOver={onDragOver}
+                        onDragEnd={onDragEnd}
+                        modifiers={activeId?.startsWith("column-") ? [restrictToHorizontalAxis, restrictToFirstScrollableAncestor] : [restrictToWindowEdges]}
+                    >
+                        <SortableContext items={columns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
+                            <ScrollArea className={"min-w-80"} orientation={"horizontal"} thumbClassname={"bg-white/10"}>
+                                <div className="flex gap-4 overflow-x-auto">
+                                    {columns.map((column) => (
+                                        <KanbanColumn
+                                            key={column.id}
+                                            column={column}
+                                            onAddCardToColumn={handleAddCardToColumn}
+                                            onDeleteColumn={handleColumnDelete}
+                                            onDeleteCard={handleCardDelete}
+                                        />
+                                    ))}
+                                </div>
+                            </ScrollArea>
+                        </SortableContext>
+                    </DndContext>
+                )}
             </WidgetContent>
         </WidgetTemplate>
     )

@@ -26,6 +26,9 @@ import { restrictToVerticalAxis, restrictToWindowEdges } from "@dnd-kit/modifier
 import {authClient} from "@/lib/auth-client"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {useToast} from "@/components/ui/ToastProvider"
+import { Popover, PopoverTrigger, PopoverContent } from '../ui/Popover'
+import {Calendar} from "@/components/ui/Calendar"
+import {Calendar as CalendarIcon} from "lucide-react"
 
 
 const weekdays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
@@ -60,6 +63,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         return monday
     })
     const [activeDragEvent, setActiveDragEvent] = useState<CalendarEvent | null>(null)
+    const [calendarPopoverOpen, setCalendarPopoverOpen] = useState(false)
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -249,6 +253,13 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         setCurrentWeekStart(newDate)
     }
 
+    const navigateToWeek = (date: Date) => {
+        const dayOfWeek = date.getDay()
+        const monday = new Date(date)
+        monday.setDate(date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)) // Adjust for Monday start
+        setCurrentWeekStart(monday)
+    }
+
     const days = getWeekDays()
     const today = new Date().toISOString().split("T")[0]
     const currentTimePosition = getCurrentTimePosition()
@@ -261,14 +272,27 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     return (
         <WidgetTemplate id={id} name={"calendar"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Calendar"}>
-                <div className="flex items-center gap-1">
-                    <Button variant="widget" onClick={() => navigateWeek("prev")}>
-                        <ChevronLeft size={16} />
-                    </Button>
-                    <Button variant="widget" onClick={() => navigateWeek("next")}>
-                        <ChevronRight size={16} />
-                    </Button>
-                </div>
+                <Popover open={calendarPopoverOpen} onOpenChange={setCalendarPopoverOpen}>
+                    <PopoverTrigger asChild className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary mx-2"}>
+                        <Button variant={"widget"}>
+                            <CalendarIcon size={16} />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align={"end"} className={"p-0 w-62"}>
+                        <Calendar
+                            onDayClick={(date) => {
+                                navigateToWeek(date)
+                                setCalendarPopoverOpen(false)
+                            }}
+                        />
+                    </PopoverContent>
+                </Popover>
+                <Button variant="widget" onClick={() => navigateWeek("prev")} className={"-mx-2"}>
+                    <ChevronLeft size={16} />
+                </Button>
+                <Button variant="widget" onClick={() => navigateWeek("next")}>
+                    <ChevronRight size={16} />
+                </Button>
                 <Button variant={"widget"}>
                     <Plus size={16} />
                 </Button>
@@ -295,7 +319,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                                         className={cn(
                                             "text-sm font-mono",
                                             isToday
-                                                ? "bg-brand text-primary rounded-full size-6 flex items-center justify-center"
+                                                ? "bg-brand/70 dark:bg-brand text-primary rounded-full size-6 flex items-center justify-center"
                                                 : "text-secondary"
                                         )}
                                     >
@@ -339,11 +363,11 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                                                 <div
                                                     key={day.toString()}
                                                     ref={setDroppableRef}
-                                                    className={`border-l border-main first:border-l-0 relative ${isToday ? "bg-brand/5" : ""}`}
+                                                    className={`border-l border-main first:border-l-0 relative ${isToday ? "bg-brand/10 dark:bg-brand/5" : ""}`}
                                                 >
                                                     {/* 15-Minuten-Hilfslinien */}
                                                     <div className="absolute inset-0 pointer-events-none">
-                                                        <div className="absolute top-[0px] left-0 right-0 h-px bg-main"/>
+                                                        <div className="absolute top-[0px] left-0 right-0 h-px bg-main/50 dark:bg-main"/>
                                                     </div>
 
                                                     {getEventsForDate(dateString).map((evt) => {

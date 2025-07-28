@@ -11,6 +11,7 @@ import {Eraser, Forward, Trash} from "lucide-react"
 import {Input} from "@/components/ui/Input"
 import {useWidgetStore} from "@/store/widgetStore"
 import {useDashboardStore} from "@/store/dashboardStore"
+import {tooltip} from "@/components/ui/TooltipProvider"
 
 interface TodoProps {
     checked: boolean
@@ -24,7 +25,6 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
                 <WidgetHeader title={"Todo's"}>
                     <Button variant={"widget"}>
                         <Eraser size={16} />
-                        Clear
                     </Button>
                 </WidgetHeader>
                 <WidgetContent scroll>
@@ -60,6 +60,11 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
     const [todos, setTodos] = useState<TodoProps[]>(widget.config?.todos ?? [])
     const inputRef = useRef<HTMLInputElement>(null)
 
+    const clearTodosTooltip = tooltip<HTMLButtonElement>({
+        message: "Clear all todos",
+        anchor: "tc"
+    })
+
     const enterInput = () => {
         const input = inputRef.current!
         if (input?.value.trim()) {
@@ -89,9 +94,9 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
                         setTodos([])
                         handleSave([])
                     }}
+                    {...clearTodosTooltip}
                 >
                     <Eraser size={16} />
-                    Clear
                 </Button>
             </WidgetHeader>
             <WidgetContent scroll>
