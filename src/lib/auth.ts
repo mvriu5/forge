@@ -17,7 +17,7 @@ export const auth = betterAuth({
         schema: schema
     }),
     baseUrl: process.env.BETTER_AUTH_URL,
-    trustedOrigins: ["http://localhost:3000", "https://tryforge.io", "https://www.tryforge.io/"],
+    trustedOrigins: ["http://localhost:3000", "https://tryforge.io", "https://www.tryforge.io"],
     account: {
         accountLinking: {
             enabled: true,
