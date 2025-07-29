@@ -52,6 +52,7 @@ export const auth = betterAuth({
             scope: ["repo", "user:email"],
             clientId: process.env.GITHUB_CLIENT_ID as string,
             clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+            redirectURI: "https://www.tryforge.io/api/auth/callback/github"
         },
         google: {
             scope: ["https://www.googleapis.com/auth/calendar"],
