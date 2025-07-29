@@ -13,8 +13,8 @@ export async function fetchCalendarList(accessToken: string) {
 
 export async function fetchCalendarEvents(accessToken: string, calendarId: string) {
     const params = new URLSearchParams({
-        timeMin: new Date().toISOString(),
-        maxResults: "500"
+        maxResults: "1000",
+        orderBy: "updated"
     })
 
     const res = await fetch(

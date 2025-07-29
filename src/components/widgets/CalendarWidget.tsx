@@ -419,6 +419,8 @@ const EventCard: React.FC<EventProps> = ({event, topPosition, height, handleDrag
         data: { event, initialTop: topPosition },
     })
 
+    const isPast = new Date(event.end.dateTime) < new Date(Date.now())
+
     return (
         <div
             ref={setNodeRef}
@@ -434,12 +436,12 @@ const EventCard: React.FC<EventProps> = ({event, topPosition, height, handleDrag
                 height: `${Math.max(height, 24)-2}px`,
                 borderWidth: "1px",
                 borderStyle: "solid",
-                borderColor: convertToRGBA(color ?? "white", 1),
-                backgroundColor: convertToRGBA(color ?? "white", 0.5),
+                borderColor: isPast ? convertToRGBA(color ?? "white", 0.5) : convertToRGBA(color ?? "white", 1),
+                backgroundColor: isPast ? convertToRGBA(color ?? "white", 0.2) : convertToRGBA(color ?? "white", 0.5),
                 transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
             }}
         >
-            <div className="text-primary font-medium truncate">{event.summary}</div>
+            <div className={cn("font-medium truncate", isPast ? "text-secondary" : "text-primary")}>{event.summary}</div>
             <p className="text-xs mt-0.5">
                 {format(event.start.dateTime, "hh:mm")}–{format(event.end.dateTime, "hh:mm")}
             </p>

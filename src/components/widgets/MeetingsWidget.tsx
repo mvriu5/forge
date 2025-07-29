@@ -110,7 +110,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         )
     }
 
-    const validEvents = useMemo(() => events?.filter(e => e.start.dateTime && e.end.dateTime) || [], [events])
+    const validEvents = useMemo(() => events?.filter(e => e.start.dateTime && e.end.dateTime && new Date(e.start.dateTime) >= new Date(Date.now())) || [], [events])
 
     const sortedEvents = useMemo(() => [...validEvents].sort((a, b) => {
         return new Date(a.start.dateTime).getTime() - new Date(b.start.dateTime).getTime()
