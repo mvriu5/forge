@@ -29,7 +29,8 @@ export default function Dashboard() {
     const { session, fetchSession } = useSessionStore()
     const { currentDashboard, getAllDashboards } = useDashboardStore()
     const { widgets, getAllWidgets, removeWidget, saveWidgetsLayout } = useWidgetStore()
-    const { fetchIntegrations } = useIntegrationStore()
+    const { integrations, fetchIntegrations } = useIntegrationStore()
+    console.log("Fetched integrations:", integrations)
     const { fetchSettings } = useSettingsStore()
     const { addToast } = useToast()
 

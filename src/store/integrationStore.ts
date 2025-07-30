@@ -51,7 +51,6 @@ export const useIntegrationStore = create<IntegrationStore>((set, get) => ({
                 refreshTokenExpiration: account.refreshTokenExpiresAt,
                 createdAt: account.createdAt
             }))
-            console.log("Fetched integrations:", integrations)
 
             set({
                 integrations,
