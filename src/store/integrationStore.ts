@@ -39,7 +39,9 @@ export const useIntegrationStore = create<IntegrationStore>((set, get) => ({
 
             const accounts: Account[] = await response.json()
 
-            const integrations = accounts.map(account => ({
+            const integrations = accounts
+                .filter((a): a is Account => !!a)
+                .map(account => ({
                 id: account.id,
                 accountId: account.accountId,
                 userId: account.userId,
