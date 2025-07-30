@@ -135,8 +135,6 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
         })
     }
 
-    console.log(githubIntegration)
-
     if (!githubIntegration?.accessToken && !isLoading) {
         return (
             <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
