@@ -119,7 +119,7 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     })
 
     const handleIntegrate = async () => {
-        await authClient.signIn.oauth2({providerId: "linear", callbackURL: "/dashboard"}, {
+        await authClient.signIn.social({provider: "linear", callbackURL: "/dashboard"}, {
             onRequest: (ctx) => {
             },
             onSuccess: (ctx) => {

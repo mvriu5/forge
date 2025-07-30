@@ -46,6 +46,7 @@ function SignUpCard() {
                 setLoading(true)
             },
             onSuccess: (ctx) => {
+                setLoading(false)
                 addToast({
                     title: "We sent you an email!",
                     subtitle: "Verify your email to continue.",

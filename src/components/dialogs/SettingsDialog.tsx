@@ -197,7 +197,7 @@ const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
             icon: LinearIcon,
             active: !!linearIntegration,
             onConnect: async () => {
-                await authClient.signIn.oauth2({providerId: "linear"}, {
+                await authClient.signIn.social({provider: "linear"}, {
                     onRequest: (ctx) => {
                     },
                     onSuccess: (ctx) => {
