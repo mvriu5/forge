@@ -10,7 +10,7 @@ import {
     EditorCommandList,
     EditorCommandItem, handleCommandNavigation,
     EditorBubble,
-    EditorInstance
+    EditorInstance, JSONContent
 } from "novel"
 import {defaultExtensions} from "@/lib/extensions"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
@@ -25,6 +25,16 @@ import { useDashboardStore } from "@/store/dashboardStore"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Spinner} from "@/components/ui/Spinner"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
+import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "../ui/Dialog"
+import {Widget} from "@/database"
+import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
+import {Input} from "@/components/ui/Input"
+
+type Note = {
+    id: string
+    title: string
+    content: string
+}
 
 const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
@@ -42,9 +52,58 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     const widget = getWidget(currentDashboard.id, "editor")
     if (!widget) return
 
+    const [openNoteId, setOpenNoteId] = useState<string | null>(null)
+    const [notes, setNotes] = useState<Note[]>(widget.config?.notes ?? [{
+        id: "1",
+        title: "Welcome to the Editor",
+        content: "This is a"
+    }])
+
+    const handleSave = async (id: string, json: JSONContent) => {
+        await refreshWidget({
+            ...widget,
+            config: {
+                ...widget.config,
+                notes: {
+                    ...widget.config.notes,
+                    [id]: json
+                }
+            }
+        })
+    }
+
+    return (
+        <WidgetTemplate id={id} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetHeader title={"Notes"}/>
+            <WidgetContent scroll>
+                {notes.map((note: Note) => (
+                    <NoteDialog
+                        key={note.id}
+                        open={openNoteId === note.id}
+                        onOpenChange={(isOpen) => setOpenNoteId(isOpen ? note.id : null)}
+                        note={note}
+                        widget={widget}
+                        onSave={(json) => handleSave(note.id, json)}
+                    />
+                ))}
+            </WidgetContent>
+        </WidgetTemplate>
+    )
+}
+
+interface NoteDialogProps {
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    note: Note
+    widget: Widget
+    onSave: (json: JSONContent) => void
+}
+
+const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget, onSave}) => {
     const [openNode, setOpenNode] = useState(false)
     const [saved, setSaved] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
+
     const extensions = [
         GlobalDragHandle.configure({
             dragHandleWidth: 20,
@@ -70,34 +129,36 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
     const handleSave = async (editor: EditorInstance) => {
         setIsSaving(true)
+
         const json = editor.getJSON()
         const html = highlightCodeblocks(editor.getHTML())
         window.localStorage.setItem("html-content", highlightCodeblocks(html))
 
         setSaved(true)
-
-        await refreshWidget({
-            ...widget,
-            config: {
-                ...widget.config,
-                content: json
-            }
-        })
-
+        onSave(json)
         setIsSaving(false)
     }
 
     return (
-        <WidgetTemplate id={id} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Notes"}>
-                <div className={"flex items-center text-tertiary/50 text-end text-sm"}>
-                    {isSaving && <Spinner size={16} />}
-                    {saved ? "Saved" : "Unsaved"}
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogTrigger asChild>
+                <div className={"w-full h-12 rounded-md hover:bg-primary"}>
+                    {note.title || "New Note"}
                 </div>
-            </WidgetHeader>
-            <WidgetContent scroll>
+            </DialogTrigger>
+            <DialogContent className={"md:min-w-[400px] h-full max-h-[80vh] w-full overflow-hidden gap-0 p-2"}>
+                <DialogHeader>
+                    <Input
+                        placeholder={"New note"}
+                        value={note.title ?? ""}
+                        className={"shadow-none dark:shadow-none bg-0 border-0 focus:border-0 focus:bg-0 focus:outline-0 text-xl text-primary font-medium px-0"}
+                    />
+                    <VisuallyHidden>
+                        <DialogTitle/>
+                    </VisuallyHidden>
+                </DialogHeader>
                 <EditorRoot>
-                    <div className={"rounded-md min-h-94 w-full border border-main/40 bg-secondary"}>
+                    <div className={"rounded-md h-[72vh]"}>
                         <EditorContent
                             extensions={extensions}
                             initialContent={widget?.config?.content}
@@ -147,8 +208,8 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                         </EditorContent>
                     </div>
                 </EditorRoot>
-            </WidgetContent>
-        </WidgetTemplate>
+            </DialogContent>
+        </Dialog>
     )
 }
 

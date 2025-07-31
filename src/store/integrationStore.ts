@@ -42,16 +42,16 @@ export const useIntegrationStore = create<IntegrationStore>((set, get) => ({
             const integrations = accounts
                 .filter((a): a is Account => !!a)
                 .map(account => ({
-                id: account.id,
-                accountId: account.accountId,
-                userId: account.userId,
-                provider: account.providerId,
-                accessToken: account.accessToken,
-                refreshToken: account.refreshToken,
-                idToken: account.idToken,
-                accessTokenExpiration: account.accessTokenExpiresAt,
-                refreshTokenExpiration: account.refreshTokenExpiresAt,
-                createdAt: account.createdAt
+                    id: account.id,
+                    accountId: account.accountId,
+                    userId: account.userId,
+                    provider: account.providerId,
+                    accessToken: account.accessToken,
+                    refreshToken: account.refreshToken,
+                    idToken: account.idToken,
+                    accessTokenExpiration: account.accessTokenExpiresAt,
+                    refreshTokenExpiration: account.refreshTokenExpiresAt,
+                    createdAt: account.createdAt
             }))
 
             set({
