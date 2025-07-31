@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button"
 
 export default function Pricing() {
     return (
-        <div className={"flex gap-32 bg-primary w-full h-full 2xl:px-48 xl:px-32 lg:px-24 md:px-12 px-4"}>
+        <div className={"dark flex gap-32 bg-primary w-full h-full 2xl:px-48 xl:px-32 lg:px-24 md:px-12 px-4"}>
             <Navbar/>
             <div className={"flex flex-col gap-8 md:gap-24 md:pl-48 bg-primary w-full h-full pt-20 md:pt-16"}>
                 <div className={"flex flex-col gap-4"}>

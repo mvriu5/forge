@@ -1,4 +1,4 @@
-import React, {useState} from "react"
+import React, {useCallback, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {getLogoFromLink} from "@/components/svg/BookmarkIcons"
 import {Button} from "@/components//ui/Button"
@@ -14,8 +14,27 @@ import {WidgetHeader} from "./base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    type DragEndEvent, MouseSensor, TouchSensor,
+} from "@dnd-kit/core"
+import {
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import { arrayMove } from "@dnd-kit/sortable"
+import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
 
 interface BookmarkItem {
+    id: string
     title: string
     link: string
 }
@@ -24,14 +43,17 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     if (isPlaceholder) {
         const data = [
             {
+                id: "1",
                 title: "Amazon Wishlist",
                 link: "https://amazon.com/"
             },
             {
+                id: "2",
                 title: "Youtube - Watch later",
                 link: "https://www.youtube.com/"
             },
             {
+                id: "3",
                 title: "Github repo",
                 link: "https://github.com/"
             }
@@ -46,7 +68,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                 </WidgetHeader>
                 <WidgetContent scroll>
                     {data.map((bookmark) => (
-                        <BookmarkItem key={bookmark.title} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.title)}/>
+                        <BookmarkItem key={bookmark.id} id={bookmark.id} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.title)}/>
                     ))}
                 </WidgetContent>
             </WidgetTemplate>
@@ -81,36 +103,61 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         },
     })
 
-    const handleAdd = async (bookmark: BookmarkItem) => {
-        const updatedBookmarks = bookmarks.find(b => b.title === bookmark.title)
-            ? bookmarks
-            : [...bookmarks, bookmark];
-
-        setBookmarks(updatedBookmarks);
-
+    const handleSave = useCallback(async (updatedBookmarks: BookmarkItem[]) => {
         await refreshWidget({
             ...widget,
             config: {
-                bookmarks: updatedBookmarks
+                bookmarks: updatedBookmarks,
             }
         })
+    }, [refreshWidget, currentDashboard])
 
+    const handleAdd = async (data: z.infer<typeof formSchema>) => {
+        const newBookmark: BookmarkItem = {
+            id: `bookmark-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, // Unique ID
+            title: data.title,
+            link: data.link,
+        }
+        const updatedBookmarks = [...bookmarks, newBookmark]
+        setBookmarks(updatedBookmarks)
+        await handleSave(updatedBookmarks)
         setOpen(false)
         form.reset()
     }
 
-    const handleDelete = async (title: string) => {
-        const updatedBookmarks = bookmarks.filter((b) => b.title !== title);
+    const handleDelete = useCallback(async (idToDelete: string) => {
+        const updatedBookmarks = bookmarks.filter((b) => b.id !== idToDelete)
+        setBookmarks(updatedBookmarks)
+        await handleSave(updatedBookmarks)
+    }, [bookmarks, handleSave])
 
-        setBookmarks(updatedBookmarks);
-
-        await refreshWidget({
-            ...widget,
-            config: {
-                bookmarks: updatedBookmarks
+    const sensors = useSensors(
+        useSensor(MouseSensor, {
+            activationConstraint: {
+                distance: 10
+            }
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 250,
+                tolerance: 5
             }
         })
-    }
+    )
+
+    const handleDragEnd = useCallback((event: DragEndEvent) => {
+        const { active, over } = event
+
+        if (active.id !== over?.id) {
+            setBookmarks((items) => {
+                const oldIndex = items.findIndex((item) => item.id === active.id)
+                const newIndex = items.findIndex((item) => item.id === over?.id)
+                const newOrder = arrayMove(items, oldIndex, newIndex)
+                handleSave(newOrder)
+                return newOrder
+            })
+        }
+    }, [handleSave])
 
     return (
         <WidgetTemplate id={id} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
@@ -161,9 +208,16 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
             </WidgetHeader>
             {bookmarks.length > 0 ? (
                 <WidgetContent scroll>
-                    {bookmarks.map((bookmark) => (
-                        <BookmarkItem key={bookmark.title} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.title)}/>
-                    ))}
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis]}>
+                        <SortableContext
+                            items={bookmarks.map((bookmark) => bookmark.id)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {bookmarks.map((bookmark) => (
+                                <BookmarkItem key={bookmark.id} id={bookmark.id} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.id)}/>
+                            ))}
+                        </SortableContext>
+                    </DndContext>
                 </WidgetContent>
             ) : (
                 <WidgetEmpty message={" No bookmarks yet."}/>
@@ -173,7 +227,15 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
 }
 
 
-const BookmarkItem = ({title, link, onDelete}: BookmarkItem & {onDelete: (title: string) => void}) => {
+const BookmarkItem = ({id, title, link, onDelete}: BookmarkItem & {onDelete: (title: string) => void}) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: id })
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 10 : 0,
+        opacity: isDragging ? 0.8 : 1
+    }
 
     const linkTooltip = tooltip<HTMLDivElement>({
         message: link
@@ -181,6 +243,10 @@ const BookmarkItem = ({title, link, onDelete}: BookmarkItem & {onDelete: (title:
 
     return (
         <div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
             className={"group w-full flex items-center gap-2 justify-between rounded-md hover:bg-secondary p-2 cursor-pointer overflow-hidden"}
             onClick={() => window.open(link, '_blank', 'noopener,noreferrer')}
         >
