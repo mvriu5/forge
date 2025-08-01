@@ -155,7 +155,6 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
             <WidgetHeader title={"Todos"}>
                 <Button
                     variant={"widget"}
-                    className={""}
                     onClick={() => {
                         setTodos([])
                         handleSave([])

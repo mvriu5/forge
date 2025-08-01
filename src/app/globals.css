@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @config "../../tailwind.config.ts";
+@source "../node_modules/@ferrucc-io/emoji-picker";
 
 :root {
   /* Background colors */

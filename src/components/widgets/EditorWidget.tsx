@@ -28,15 +28,18 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from ".
 import {Widget} from "@/database"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {Input} from "@/components/ui/Input"
-import {Plus, Trash} from "lucide-react"
+import {File, Plus, Trash} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
+import {EmojiPicker} from "@ferrucc-io/emoji-picker"
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 
 type Note = {
     id: string
     title: string
     content: JSONContent
+    emoji: string
     lastUpdated: Date
 }
 
@@ -65,10 +68,11 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     const [notes, setNotes] = useState<Note[]>(() => {
         const cfg: Note[] = widget.config?.notes
         if (!cfg) return []
-        return Object.entries(cfg).map(([id, { title, content, lastUpdated }]) => ({
+        return Object.entries(cfg).map(([id, { title, content, emoji, lastUpdated }]) => ({
             id,
             title,
             content,
+            emoji,
             lastUpdated: new Date(lastUpdated)
         }))
     })
@@ -77,28 +81,29 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
         const cfg = widget.config?.notes as Note[]
         if (!cfg) return
         setNotes(
-            Object.entries(cfg).map(([id, { title, content, lastUpdated }]) => ({
+            Object.entries(cfg).map(([id, { title, content, emoji, lastUpdated }]) => ({
                 id,
                 title,
                 content,
+                emoji,
                 lastUpdated: new Date(lastUpdated)
             }))
         )
     }, [widget.config?.notes])
-
 
     const createNewNote = () => {
         const newNote: Note = {
             id: `note-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             title: "New Note",
             content: {} as JSONContent,
+            emoji: "",
             lastUpdated: new Date()
         }
         setNotes([...notes, newNote])
         setOpenNoteId(newNote.id)
     }
 
-    const handleSave = async (id: string, data: { title: string, content: JSONContent, lastUpdated: Date }) => {
+    const handleSave = async (id: string, data: { title: string, content: JSONContent, emoji: string, lastUpdated: Date }) => {
         const existingNotes = widget.config?.notes ?? {}
 
         await refreshWidget({
@@ -114,7 +119,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
         setNotes((prev) =>
             prev.map((n) =>
-                n.id === id ? { ...n, title: data.title, content: data.content, lastUpdated: data.lastUpdated } : n
+                n.id === id ? { ...n, title: data.title, content: data.content, emoji: data.emoji, lastUpdated: data.lastUpdated } : n
             )
         )
     }
@@ -168,19 +173,22 @@ interface NoteDialogProps {
     onOpenChange: (open: boolean) => void
     note: Note
     widget: Widget
-    onSave: (id: string, data: { title: string; content: JSONContent, lastUpdated: Date }) => void
+    onSave: (id: string, data: { title: string, content: JSONContent, emoji: string, lastUpdated: Date }) => void
     onDelete: (id: string) => void
 }
 
 const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget, onSave, onDelete}) => {
     const [title, setTitle] = useState(note.title)
+    const [emoji, setEmoji] = useState(note.emoji)
     const [openNode, setOpenNode] = useState(false)
+    const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
     const [saved, setSaved] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
 
     useEffect(() => {
         setTitle(note.title)
-    }, [note.title])
+        setEmoji(note.emoji)
+    }, [note.title, note.emoji])
 
     const extensions = [
         GlobalDragHandle.configure({
@@ -243,9 +251,23 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
 
     const handleTitleBlur = () => {
         if (title !== note.title) {
-            onSave(note.id, { title, content: note.content as any, lastUpdated: new Date() })
+            onSave(note.id, { title, content: note.content as any, emoji: note.emoji, lastUpdated: new Date() })
             setSaved(true)
         }
+    }
+
+    const handleEmojiSelect = (emoji: string) => {
+        setEmoji(emoji)
+        onSave(note.id, { title, content: note.content as any, emoji, lastUpdated: new Date() })
+        setSaved(true)
+        setEmojiPickerOpen(false)
+    }
+
+    const handleRemoveEmoji = () => {
+        setEmoji("")
+        onSave(note.id, { title, content: note.content as any, emoji: "", lastUpdated: new Date() })
+        setSaved(true)
+        setEmojiPickerOpen(false)
     }
 
     const handleSave = async (editor: EditorInstance) => {
@@ -255,7 +277,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
         const html = highlightCodeblocks(editor.getHTML())
         window.localStorage.setItem("html-content", highlightCodeblocks(html))
 
-        onSave(note.id, { title, content: json, lastUpdated: new Date() })
+        onSave(note.id, { title, content: json, emoji, lastUpdated: new Date() })
         setSaved(true)
         setIsSaving(false)
     }
@@ -264,12 +286,18 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
                 <div className={"group w-full p-1 flex items-center justify-between text-primary rounded-md hover:bg-primary"}>
-                    <div className={"flex flex-col gap-1"}>
-                        {note.title ?? "New Note"}
-                        <p className={"text-tertiary font-mono text-sm"}>
-                            {getUpdateLabel()}
-                        </p>
+                    <div className="flex items-center gap-2">
+                        <div className={"text-2xl p-1 ml-1 rounded-md bg-white/5 text-primary flex items-center justify-center"}>
+                            {emoji?.length > 0 ? emoji : <div className={"size-8 flex items-center justify-center"}><File size={24}/></div>}
+                        </div>
+                        <div className={"flex flex-col gap-1"}>
+                            {note.title ?? "New Note"}
+                            <p className={"text-tertiary font-mono text-sm"}>
+                                {getUpdateLabel()}
+                            </p>
+                        </div>
                     </div>
+
                     <Button
                         className={"hidden group-hover:flex px-1 h-6 mx-2"}
                         onClick={(e) => {
@@ -282,7 +310,36 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
                 </div>
             </DialogTrigger>
             <DialogContent className={"md:min-w-[800px] h-full max-h-[80vh] w-full overflow-hidden gap-0 p-2"}>
-                <DialogHeader className={"py-2"}>
+                <DialogHeader className={"flex flex-row items-center py-2"}>
+                    <Popover open={emojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
+                        <PopoverTrigger asChild>
+                            <Button variant={"widget"} className={"size-10 text-2xl"}>
+                                {emoji?.length > 0 ? emoji : <File size={24}/>}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className={"p-0"}>
+                            <EmojiPicker
+                                emojisPerRow={6}
+                                emojiSize={40}
+                                onEmojiSelect={(emoji) => handleEmojiSelect(emoji)}
+                                className={"border-0"}
+                            >
+                                <EmojiPicker.Header>
+                                    <EmojiPicker.Input placeholder="Search emoji" hideIcon className={"px-1 bg-secondary border border-main/40"}/>
+                                    <Button
+                                        variant={"widget"}
+                                        className={"h-7 hover:bg-error/10 hover:text-error"}
+                                        onClick={handleRemoveEmoji}
+                                    >
+                                        Remove
+                                    </Button>
+                                </EmojiPicker.Header>
+                                <EmojiPicker.Group className={"scrollbar-hide overflow-y-scroll>"}>
+                                    <EmojiPicker.List hideStickyHeader />
+                                </EmojiPicker.Group>
+                            </EmojiPicker>
+                        </PopoverContent>
+                    </Popover>
                     <Input
                         placeholder={"New note"}
                         value={title ?? ""}
