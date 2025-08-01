@@ -43,7 +43,7 @@ export const widgetRegistry: WidgetElement[] = [
             description: 'A simple text editor widget',
             tags: ["productivity"],
             sizes: {
-                desktop: { width: 2, height: 2 },
+                desktop: { width: 1, height: 2 },
                 tablet: { width: 1, height: 1 },
                 mobile: { width: 1, height: 1 }
             }
