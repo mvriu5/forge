@@ -94,7 +94,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     const createNewNote = () => {
         const newNote: Note = {
             id: `note-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-            title: "New Note",
+            title: "",
             content: {} as JSONContent,
             emoji: "",
             lastUpdated: new Date()
@@ -291,7 +291,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
                             {emoji?.length > 0 ? emoji : <div className={"size-8 flex items-center justify-center"}><File size={24}/></div>}
                         </div>
                         <div className={"flex flex-col gap-1"}>
-                            {note.title ?? "New Note"}
+                            {note.title && note.title.trim().length > 0 ? note.title : "No title"}
                             <p className={"text-tertiary font-mono text-sm"}>
                                 {getUpdateLabel()}
                             </p>
@@ -347,7 +347,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
                             setTitle(e.target.value)
                             setSaved(false)
                         }}
-                        autoFocus={false}
+                        autoFocus={title.length === 0}
                         onBlur={handleTitleBlur}
                         className={"shadow-none dark:shadow-none bg-0 border-0 focus:border-0 focus:bg-0 focus:outline-0 !text-2xl text-primary font-medium p-2"}
                     />
@@ -358,7 +358,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
                 <EditorRoot>
                     <div className={"rounded-md h-[72vh]"}>
                         <EditorContent
-                            autofocus={"end"}
+                            autofocus={title.length !== 0 && "end"}
                             extensions={extensions}
                             initialContent={widget?.config?.notes?.[note.id]?.content ?? {}}
                             immediatelyRender={false}
