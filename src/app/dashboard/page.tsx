@@ -30,7 +30,6 @@ export default function Dashboard() {
     const { currentDashboard, getAllDashboards } = useDashboardStore()
     const { widgets, getAllWidgets, removeWidget, saveWidgetsLayout } = useWidgetStore()
     const { integrations, fetchIntegrations } = useIntegrationStore()
-    console.log("Integrations:", integrations)
     const { fetchSettings } = useSettingsStore()
     const { addToast } = useToast()
 
