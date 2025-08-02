@@ -8,7 +8,7 @@ const WidgetEmpty = ({ message }: WidgetEmptyProps) => {
     return (
         <WidgetContent>
             <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-tertiary">{message}</p>
+                <p className="text-center text-sm text-tertiary">{message}</p>
             </div>
         </WidgetContent>
     )
