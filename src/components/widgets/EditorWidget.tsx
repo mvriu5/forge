@@ -70,7 +70,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                 </WidgetHeader>
                 <WidgetContent scroll>
                     {Object.entries(placeholderNotes).map(([noteId, note]) => (
-                        <div key={note.id} className={"group w-full p-1 flex items-center justify-between text-primary rounded-md hover:bg-secondary"}>
+                        <div key={noteId} className={"group w-full p-1 flex items-center justify-between text-primary rounded-md hover:bg-secondary"}>
                             <div className="flex items-center gap-2">
                                 <div className={"text-2xl p-1 ml-1 rounded-md bg-white/5 text-primary flex items-center justify-center"}>
                                     {note.emoji?.length > 0 ? note.emoji : <div className={"size-8 flex items-center justify-center"}><File size={24}/></div>}
