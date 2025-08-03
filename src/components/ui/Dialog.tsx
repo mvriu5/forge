@@ -41,7 +41,7 @@ export const DialogContent = ({ className, children, ...props }: ComponentPropsW
 )
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
-export const DialogClose = ({ className, children, ...props }: ComponentPropsWithRef<typeof DialogPrimitive.Close>) => (
+export const DialogClose = ({ iconSize = 16, className, children, ...props }: ComponentPropsWithRef<typeof DialogPrimitive.Close> & {iconSize?: number}) => (
     <DialogPrimitive.Close
         data-slot="dialog-close"
         className={cn(
@@ -51,7 +51,7 @@ export const DialogClose = ({ className, children, ...props }: ComponentPropsWit
         )}
         {...props}
     >
-        <X className="h-4 w-4" />
+        <X size={iconSize} />
         <span className="sr-only">Close</span>
         {children}
     </DialogPrimitive.Close>

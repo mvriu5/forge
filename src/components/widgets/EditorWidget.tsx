@@ -24,7 +24,7 @@ import {useWidgetStore} from "@/store/widgetStore"
 import { useDashboardStore } from "@/store/dashboardStore"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "../ui/Dialog"
+import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "../ui/Dialog"
 import {Widget} from "@/database"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {Input} from "@/components/ui/Input"
@@ -34,6 +34,7 @@ import {tooltip} from "@/components/ui/TooltipProvider"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
+import {getUpdateTimeLabel} from "@/lib/utils"
 
 type Note = {
     id: string
@@ -45,9 +46,49 @@ type Note = {
 
 const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
     if (isPlaceholder) {
+        const placeholderNotes = {
+            "note-1": {
+                title: "Sample Note",
+                content: { type: "paragraph", content: [{ type: "text", text: "This is a sample note." }] },
+                emoji: "📝",
+                lastUpdated: new Date()
+            },
+            "note-2": {
+                title: "Another Note",
+                content: { type: "paragraph", content: [{ type: "text", text: "This is another sample note." }] },
+                emoji: "📓",
+                lastUpdated: new Date()
+            }
+        }
+
         return (
             <WidgetTemplate id={id} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <div className={"rounded-md h-full w-full border border-main/40 bg-secondary"}/>
+                <WidgetHeader title={"Notes"}>
+                    <Button variant={"widget"}>
+                        <Plus size={16}/>
+                    </Button>
+                </WidgetHeader>
+                <WidgetContent scroll>
+                    {Object.entries(placeholderNotes).map(([noteId, note]) => (
+                        <div key={note.id} className={"group w-full p-1 flex items-center justify-between text-primary rounded-md hover:bg-secondary"}>
+                            <div className="flex items-center gap-2">
+                                <div className={"text-2xl p-1 ml-1 rounded-md bg-white/5 text-primary flex items-center justify-center"}>
+                                    {note.emoji?.length > 0 ? note.emoji : <div className={"size-8 flex items-center justify-center"}><File size={24}/></div>}
+                                </div>
+                                <div className={"flex flex-col gap-1"}>
+                                    {note.title && note.title.trim().length > 0 ? note.title : "No title"}
+                                    <p className={"text-tertiary font-mono text-sm"}>
+                                        {getUpdateTimeLabel(note.lastUpdated)}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <Button className={"hidden group-hover:flex px-1 h-6 mx-2"}>
+                                <Trash size={14}/>
+                            </Button>
+                        </div>
+                    ))}
+                </WidgetContent>
             </WidgetTemplate>
         )
     }
@@ -152,17 +193,19 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
             </WidgetHeader>
             {notes.length === 0 && <WidgetEmpty message={"No notes available. Create a new note to get started."}/>}
             <WidgetContent scroll>
-                {notes.map((note: Note) => (
-                    <NoteDialog
-                        key={note.id}
-                        open={openNoteId === note.id}
-                        onOpenChange={(isOpen) => setOpenNoteId(isOpen ? note.id : null)}
-                        note={note}
-                        widget={widget}
-                        onSave={(id, data) => handleSave(id, data)}
-                        onDelete={(id) => handleDelete(id)}
-                    />
-                ))}
+                <div className={"flex flex-col gap-2"}>
+                    {notes.map((note: Note) => (
+                        <NoteDialog
+                            key={note.id}
+                            open={openNoteId === note.id}
+                            onOpenChange={(isOpen) => setOpenNoteId(isOpen ? note.id : null)}
+                            note={note}
+                            widget={widget}
+                            onSave={(id, data) => handleSave(id, data)}
+                            onDelete={(id) => handleDelete(id)}
+                        />
+                    ))}
+                </div>
             </WidgetContent>
         </WidgetTemplate>
     )
@@ -213,42 +256,6 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
         return new XMLSerializer().serializeToString(doc);
     }
 
-    const getUpdateLabel = () => {
-        const now = new Date()
-        const diffSec = (now.getTime() - note.lastUpdated.getTime()) / 1000
-
-        if (diffSec < 120) {
-            return 'Updated now'
-        }
-
-        const minutes = Math.floor(diffSec / 60)
-        if (diffSec < 60 * 60) {
-            return `Updated ${minutes} minute${minutes !== 1 ? 's' : ''} ago`
-        }
-
-        const hours = Math.floor(diffSec / 3600)
-        if (diffSec < 60 * 60 * 24) {
-            return `Updated ${hours} hour${hours !== 1 ? 's' : ''} ago`
-        }
-
-        const days = Math.floor(diffSec / (3600 * 24))
-        if (diffSec < 3600 * 24 * 7) {
-            return `Updated ${days} day${days !== 1 ? 's' : ''} ago`
-        }
-
-        const weeks = Math.floor(diffSec / (3600 * 24 * 7))
-        if (diffSec < 3600 * 24 * 30) {
-            return `Updated ${weeks} week${weeks !== 1 ? 's' : ''} ago`
-        }
-
-        const months = Math.floor(diffSec / (3600 * 24 * 30))
-        if (diffSec < 3600 * 24 * 30 * 12) {
-            return `Updated ${months} month${months !== 1 ? 's' : ''} ago`
-        }
-
-        return 'Updated last year'
-    }
-
     const handleTitleBlur = () => {
         if (title !== note.title) {
             onSave(note.id, { title, content: note.content as any, emoji: note.emoji, lastUpdated: new Date() })
@@ -285,7 +292,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
-                <div className={"group w-full p-1 flex items-center justify-between text-primary rounded-md hover:bg-primary"}>
+                <div className={"group w-full p-1 flex items-center justify-between text-primary rounded-md hover:bg-secondary"}>
                     <div className="flex items-center gap-2">
                         <div className={"text-2xl p-1 ml-1 rounded-md bg-white/5 text-primary flex items-center justify-center"}>
                             {emoji?.length > 0 ? emoji : <div className={"size-8 flex items-center justify-center"}><File size={24}/></div>}
@@ -293,7 +300,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
                         <div className={"flex flex-col gap-1"}>
                             {note.title && note.title.trim().length > 0 ? note.title : "No title"}
                             <p className={"text-tertiary font-mono text-sm"}>
-                                {getUpdateLabel()}
+                                {getUpdateTimeLabel(note.lastUpdated)}
                             </p>
                         </div>
                     </div>
@@ -354,6 +361,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
                     <VisuallyHidden>
                         <DialogTitle/>
                     </VisuallyHidden>
+                    <DialogClose iconSize={24} className={"absolute top-4 right-4 p-1 rounded-md hover:bg-white/5"}/>
                 </DialogHeader>
                 <EditorRoot>
                     <div className={"rounded-md h-[72vh]"}>

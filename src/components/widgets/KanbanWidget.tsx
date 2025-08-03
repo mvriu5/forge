@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useCallback, useEffect, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
@@ -12,6 +12,7 @@ import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {tooltip} from "@/components/ui/TooltipProvider"
+import {cn} from "@/lib/utils"
 import {
     closestCorners,
     DndContext,
@@ -38,13 +39,7 @@ import {ScrollArea} from "@/components/ui/ScrollArea"
 import Compact from "@uiw/react-color-compact"
 import {convertToRGBA} from "@/lib/colorConvert"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
-import {
-    restrictToFirstScrollableAncestor,
-    restrictToHorizontalAxis,
-    restrictToParentElement,
-    restrictToVerticalAxis, restrictToWindowEdges
-} from "@dnd-kit/modifiers"
-import {restrictToBoundingRect} from "@dnd-kit/modifiers/dist/utilities"
+import {restrictToFirstScrollableAncestor, restrictToHorizontalAxis, restrictToWindowEdges} from "@dnd-kit/modifiers"
 
 export type Card = {
     id: string
@@ -59,7 +54,43 @@ type Column = {
 }
 
 const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {}
+    if (isPlaceholder) {
+        const cards: Card[] = [
+            {id: "card-1", title: "Sample Task 1"},
+            {id: "card-2", title: "Sample Task 2"},
+            {id: "card-3", title: "Sample Task 3"},
+        ]
+
+        const columns: Column[] = [
+            {id: "column-1", title: "To Do", color: "#FF4C4C", cards},
+            {id: "column-2", title: "In Progress", color: "#FF914D", cards},
+            {id: "column-3", title: "Done", color: "#00BFFF", cards},
+        ]
+
+        return (
+            <WidgetTemplate id={id} name={"kanban"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+                <WidgetHeader title={"Kanban Board"}>
+                    <Button variant={"widget"}>
+                        <Plus size={16}/>
+                    </Button>
+                </WidgetHeader>
+                <WidgetContent>
+                    <div className="flex gap-4 overflow-x-auto">
+                        {columns.map((column) => (
+                            <KanbanColumn
+                                isPlaceholder
+                                key={column.id}
+                                column={column}
+                                onAddCardToColumn={() => {}}
+                                onDeleteColumn={() => {}}
+                                onDeleteCard={() => {}}
+                            />
+                        ))}
+                    </div>
+                </WidgetContent>
+            </WidgetTemplate>
+        )
+    }
 
     const {getWidget, refreshWidget} = useWidgetStore()
 
@@ -372,9 +403,10 @@ interface KanbanColumnProps {
     onAddCardToColumn: (columnId: string, title: string) => void
     onDeleteColumn: (columnId: string) => void
     onDeleteCard: (cardId: string) => void
+    isPlaceholder?: boolean
 }
 
-function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard}: KanbanColumnProps) {
+function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard, isPlaceholder = false}: KanbanColumnProps) {
     const [newCardTitle, setNewCardTitle] = useState("")
     const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
         id: column.id,
@@ -407,7 +439,7 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard}:
 
     return (
         <div
-            className={"flex flex-col justify-between gap-2 h-full min-w-52 rounded-md p-2 shadow-xs dark:shadow-md"}
+            className={cn("flex flex-col justify-between gap-2 h-full min-w-52 rounded-md p-2 shadow-xs dark:shadow-md", isPlaceholder && "pointer-events-none")}
             style={style}
             ref={setNodeRef}
             {...attributes}
@@ -438,7 +470,13 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard}:
                     <SortableContext items={column.cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
                         <div className="flex flex-col gap-0.5">
                             {column.cards.map((card) => (
-                                <KanbanCard key={card.id} card={card} onCardDelete={() => onDeleteCard(card.id)} color={column.color}/>
+                                <KanbanCard
+                                    key={card.id}
+                                    card={card}
+                                    onCardDelete={() => onDeleteCard(card.id)}
+                                    color={column.color}
+                                    isPlceholder={isPlaceholder}
+                                />
                             ))}
                         </div>
                     </SortableContext>
@@ -467,9 +505,10 @@ interface KanbanCardProps {
     card: Card
     color: string
     onCardDelete: (cardId: string) => void
+    isPlceholder?: boolean
 }
 
-function KanbanCard({card, color, onCardDelete}: KanbanCardProps) {
+function KanbanCard({card, color, onCardDelete, isPlceholder = false}: KanbanCardProps) {
     const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
         id: card.id,
         data: {
@@ -488,7 +527,7 @@ function KanbanCard({card, color, onCardDelete}: KanbanCardProps) {
 
     return (
         <div
-            className={"group flex flex gap-2 items-center justify-between rounded-md p-1 text-primary"}
+            className={cn("group flex gap-2 items-center justify-between rounded-md p-1 text-primary", isPlceholder && "pointer-events-none")}
             ref={setNodeRef}
             style={style}
             {...attributes}
