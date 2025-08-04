@@ -324,14 +324,14 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
                                 {emoji?.length > 0 ? emoji : <File size={24}/>}
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className={"p-0"}>
+                        <PopoverContent className={"p-0 z-[60]"} onWheel={(e) => e.stopPropagation()}>
                             <EmojiPicker
                                 emojisPerRow={6}
                                 emojiSize={40}
                                 onEmojiSelect={(emoji) => handleEmojiSelect(emoji)}
-                                className={"border-0"}
+                                className={"border-0 h-full"}
                             >
-                                <EmojiPicker.Header>
+                                <EmojiPicker.Header className={"shadow-md dark:shadow-xl pb-1"}>
                                     <EmojiPicker.Input placeholder="Search emoji" hideIcon className={"px-1 bg-secondary border border-main/40"}/>
                                     <Button
                                         variant={"widget"}
@@ -341,9 +341,12 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
                                         Remove
                                     </Button>
                                 </EmojiPicker.Header>
-                                <EmojiPicker.Group className={"scrollbar-hide overflow-y-scroll>"}>
-                                    <EmojiPicker.List hideStickyHeader />
+                                <EmojiPicker.Group>
+                                    <ScrollArea className={"h-80"} thumbClassname={"bg-white/10"}>
+                                        <EmojiPicker.List containerHeight={12976}/>
+                                    </ScrollArea>
                                 </EmojiPicker.Group>
+
                             </EmojiPicker>
                         </PopoverContent>
                     </Popover>
