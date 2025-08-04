@@ -7,7 +7,7 @@ export default function Robots(): MetadataRoute.Robots {
             allow: ["/", "/privacy", "/terms"],
             disallow: "/dashboard/"
         },
-        host:  "tryforge.io",
-        sitemap: "https://tryforge.io/sitemap.xml"
+        host:  "www.tryforge.io",
+        sitemap: "https://www.tryforge.io/sitemap.xml"
     }
 }

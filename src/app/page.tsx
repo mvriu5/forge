@@ -5,6 +5,10 @@ import {FeatureSection} from "@/components/landing/FeatureSection"
 import {Footer} from "@/components/landing/Footer"
 import {Navbar} from "@/components/landing/Navbar"
 
+export const metadata = {
+    title: "Forge - Building dashboards made easy",
+};
+
 export default function Page() {
     return (
         <div className={"dark flex gap-32 bg-primary w-full h-full 2xl:px-48 xl:px-32 lg:px-24 md:px-12 px-4"}>

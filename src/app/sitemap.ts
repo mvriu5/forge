@@ -13,7 +13,7 @@ type SitemapEntry = {
 }
 
 export default async function Sitemap(): Promise<SitemapEntry[]> {
-    const baseUrl = "https://tryforge.io"
+    const baseUrl = "https://www.tryforge.io"
 
     const staticPages: SitemapEntry[] = [
         {
