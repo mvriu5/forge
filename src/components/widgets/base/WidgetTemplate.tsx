@@ -64,7 +64,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
             className={cn(
                 `h-full flex flex-col gap-2 rounded-md bg-tertiary border border-main/40 p-2 overflow-hidden col-span-[${responsiveSize.width}] row-span-[${responsiveSize.height}]`,
                 editMode && "relative cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
-                editMode && isDragging && "opacity-50 animate-none",
+                editMode && isDragging && "opacity-70 animate-none border-2 border-dashed border-main/60",
                 isPlaceholder && "pointer-events-none",
                 className
             )}

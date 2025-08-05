@@ -33,6 +33,7 @@ export const useWeather = () => {
         queryKey: ["weather", coords],
         queryFn: async () => await fetchWeatherData(coords!.lat, coords!.lon),
         enabled: !!coords,
+        staleTime: 15 * 60 * 1000, // 15 minutes
         refetchInterval: 15 * 60 * 1000, // 15 minutes
         refetchOnWindowFocus: false,
         refetchOnMount: false

@@ -73,7 +73,7 @@ const SelectContent = ({ className, children, ...props }: ComponentPropsWithRef<
                 <SelectScrollUpButton />
                 <SelectPrimitive.Viewport
                     className={cn(
-                        "p-1 max-h-[200px]",
+                        "flex flex-col gap-1 p-1 max-h-[200px]",
                         "h-[var(--radix-select-trigger-height)] w-full",
                         "min-w-[var(--radix-select-trigger-width)]"
                     )}

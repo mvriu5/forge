@@ -15,22 +15,16 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {
-    DndContext,
     closestCenter,
-    KeyboardSensor,
-    PointerSensor,
+    DndContext,
+    type DragEndEvent,
+    MouseSensor,
+    TouchSensor,
     useSensor,
     useSensors,
-    type DragEndEvent, MouseSensor, TouchSensor,
 } from "@dnd-kit/core"
-import {
-    SortableContext,
-    sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
-    useSortable,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
-import { arrayMove } from "@dnd-kit/sortable"
+import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} from "@dnd-kit/sortable"
+import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
 
 interface BookmarkItem {
@@ -91,8 +85,8 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     })
 
     const formSchema = z.object({
-        title: z.string(),
-        link: z.string().url()
+        title: z.string().nonempty({message: "Title is required"}),
+        link: z.string().url({message: "Invalid URL"}).nonempty({message: "Link is required"}),
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -162,7 +156,13 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     return (
         <WidgetTemplate id={id} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Bookmark"}>
-                <Popover open={open} onOpenChange={setOpen}>
+                <Popover
+                    open={open}
+                    onOpenChange={(open) => {
+                        setOpen (open)
+                        if (!open) form.reset()
+                    }}
+                >
                     <PopoverTrigger asChild>
                         <Button variant={"widget"} className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"} {...addTooltip}>
                             <Plus size={16}/>
@@ -195,7 +195,6 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                                 />
                                 <Button
                                     type="submit"
-                                    variant={"brand"}
                                     className={"w-full mt-2"}
                                 >
                                     Add link
