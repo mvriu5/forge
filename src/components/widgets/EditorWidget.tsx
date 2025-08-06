@@ -34,7 +34,9 @@ import {tooltip} from "@/components/ui/TooltipProvider"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
-import {getUpdateTimeLabel} from "@/lib/utils"
+import {cn, getUpdateTimeLabel} from "@/lib/utils"
+import {createPortal} from "react-dom"
+import {handleSmoothScroll} from "next/dist/shared/lib/router/utils/handle-smooth-scroll"
 
 type Note = {
     id: string
@@ -290,9 +292,9 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
     }
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
             <DialogTrigger asChild>
-                <div className={"group w-full p-1 flex items-center justify-between text-primary rounded-md hover:bg-secondary"}>
+                <div className={"group w-full p-1 flex items-center justify-between cursor-pointer text-primary rounded-md hover:bg-secondary"}>
                     <div className="flex items-center gap-2">
                         <div className={"text-2xl p-1 ml-1 rounded-md bg-white/5 text-primary flex items-center justify-center"}>
                             {emoji?.length > 0 ? emoji : <div className={"size-8 flex items-center justify-center"}><File size={24}/></div>}
@@ -383,7 +385,11 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
                                 attributes: {class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",},
                             }}
                         >
-                            <EditorCommand className="z-[60] w-72 rounded-md border border-main/60 bg-primary shadow-[10px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)] transition-all">
+                            <EditorCommand
+                                className={cn(
+                                    "z-[60] w-72 rounded-md border border-main/60 bg-primary transition-all",
+                                    "shadow-[10px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)]")}
+                            >
                                 <EditorCommandEmpty className="flex items-center justify-center px-2 text-tertiary">
                                     No results
                                 </EditorCommandEmpty>
@@ -393,7 +399,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
                                             <EditorCommandItem
                                                 value={item.title}
                                                 onCommand={(val) => item.command?.(val)}
-                                                className="group cursor-pointer flex w-full items-center gap-2 rounded-md py-1 px-2 text-left text-sm hover:bg-secondary aria-selected:bg-secondary"
+                                                className="group cursor-pointer flex w-full items-center gap-2 rounded-md py-1 px-2 text-left text-sm hover:bg-tertiary aria-selected:bg-tertiary"
                                                 key={item.title}
                                             >
                                                 <div className="flex h-10 w-10 items-center justify-center rounded-md border border-main/40 bg-primary group-hover:text-brand group-aria-selected:text-brand">
@@ -410,7 +416,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
                             </EditorCommand>
                             <EditorBubble
                                 tippyOptions={{placement: "top"}}
-                                className='flex w-fit max-w-[90vw] overflow-hidden rounded-md border border-main bg-primary shadow-lg'
+                                className='flex overflow-hidden rounded-md border border-main bg-primary shadow-lg'
                             >
                                 <NodeSelector open={openNode} onOpenChange={setOpenNode} />
                                 <TextButtons />

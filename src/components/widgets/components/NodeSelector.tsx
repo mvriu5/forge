@@ -98,9 +98,10 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
     return (
         <Popover modal={true} open={open} onOpenChange={onOpenChange}>
             <PopoverTrigger
+                data-state={open ? "open" : "closed"}
                 asChild
                 className='gap-2 rounded-md border-none hover:bg-secondary focus:ring-0'>
-                <Button variant='ghost' className='gap-2'>
+                <Button variant='ghost' className='hover:bg-inverted/5 gap-2 data-[state=open]:bg-inverted/5 data-[state=open]:text-primary rounded-r-none'>
                     <span className='whitespace-nowrap text-sm'>{activeItem.name}</span>
                     <ChevronDown className='h-4 w-4' />
                 </Button>
@@ -114,7 +115,7 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
                             onOpenChange(false)
                         }}
                         data-state={activeItem.name === item.name ? "active" : "inactive"}
-                        className='group flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-sm data-[state=active]:bg-secondary hover:bg-secondary'>
+                        className='group flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-sm data-[state=active]:bg-tertiary hover:bg-tertiary'>
                         <div className='flex items-center space-x-2'>
                             <div className='group-data-[state=active]:text-brand rounded-sm border border-main/60 p-1 group-hover:text-brand'>
                                 <item.icon className='h-3 w-3 ' />

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { EditorBubbleItem, useEditor } from "novel";
-import { BoldIcon, ItalicIcon, StrikethroughIcon, CodeIcon } from "lucide-react";
+import {BoldIcon, ItalicIcon, StrikethroughIcon, CodeIcon, UnderlineIcon} from "lucide-react";
 import {SelectorItem} from "@/components/widgets/components/NodeSelector"
 import {Button} from "@/components/ui/Button"
 
@@ -40,18 +40,18 @@ export const TextButtons = () => {
         },
     ];
     return (
-        <div className='flex'>
+        <div className="flex">
             {items.map((item) => (
                 <EditorBubbleItem
                     key={item.name}
+                    className={"group"}
                     onSelect={(editor) => {
                         item.command(editor);
                     }}>
-                    <Button className='rounded-md' variant='ghost'>
+                    <Button className="rounded-none group:last:rounded-r-md px-2" variant="ghost">
                         <item.icon
-                            className={cn("h-4 w-4", {
-                                "text-brand": item.isActive(editor),
-                            })}
+                            className={cn(item.isActive(editor) && "text-brand")}
+                            size={16}
                         />
                     </Button>
                 </EditorBubbleItem>
