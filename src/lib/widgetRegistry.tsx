@@ -14,6 +14,7 @@ import {ClockWidget} from "@/components/widgets/ClockWidget"
 import {TodoWidget} from "@/components/widgets/TodoWidget"
 import {KanbanWidget} from "@/components/widgets/KanbanWidget"
 import {CalendarWidget} from "@/components/widgets/CalendarWidget"
+import {CountdownWidget} from "@/components/widgets/CountdownWidget"
 
 export interface WidgetPreview {
     widgetType: string
@@ -229,6 +230,21 @@ export const widgetRegistry: WidgetElement[] = [
             }
         },
         component: CalendarWidget
+    },
+    {
+        preview: {
+            widgetType: "countdown",
+            previewImage: '/countdown_preview.png',
+            title: 'Countdown',
+            description: 'See how much time is left to a special event',
+            tags: [],
+            sizes: {
+                desktop: { width: 1, height: 1 },
+                tablet: { width: 1, height: 1 },
+                mobile: { width: 1, height: 2 }
+            }
+        },
+        component: CountdownWidget
     }
 ]
 
