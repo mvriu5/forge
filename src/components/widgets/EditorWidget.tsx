@@ -296,7 +296,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
             <DialogTrigger asChild>
                 <div className={"group w-full p-1 flex items-center justify-between cursor-pointer text-primary rounded-md hover:bg-secondary"}>
                     <div className="flex items-center gap-2">
-                        <div className={"text-2xl p-1 ml-1 rounded-md bg-white/5 text-primary flex items-center justify-center"}>
+                        <div className={"text-2xl p-1 ml-1 rounded-md bg-black/5 dark:bg-white/5 text-primary flex items-center justify-center"}>
                             {emoji?.length > 0 ? emoji : <div className={"size-8 flex items-center justify-center"}><File size={24}/></div>}
                         </div>
                         <div className={"flex flex-col gap-1"}>
