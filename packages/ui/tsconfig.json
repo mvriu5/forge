@@ -1,0 +1,14 @@
+{
+  "extends": "@forge/tsconfig/base.json",
+  "compilerOptions": {
+    "jsx": "react",
+    "baseUrl": ".",
+    "lib": ["ES2019", "DOM"],
+    "paths": {
+      "@forge/ui/*": ["./src/*"]
+    },
+    "noEmit": true
+  },
+  "include": ["."],
+  "exclude": ["node_modules"]
+}

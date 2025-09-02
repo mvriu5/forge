@@ -1,6 +1,6 @@
 # Forge - A new way of building dashboards
 
-![Dashboard Preview](/public/example_layout.png)
+![Dashboard Preview](/apps/web/public/example_layout.png)
 
 ## Overview
 Forge brings all your most important dashboards and tools into a single app, so you never have to juggle multiple websites or programs again. Track stock prices, check the weather, monitor GitHub activity, manage tasks, or write in Markdown—all from one place.
