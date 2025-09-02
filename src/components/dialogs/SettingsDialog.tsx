@@ -518,19 +518,17 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
         name: z.string()
             .min(3, { message: "Bitte mindestens 3 Zeichen." })
             .max(12, { message: "Maximal 12 Zeichen." })
-            .refine((name) => !dashboards.some(d => d.name === name && d.id !== dashboard.id), { message: "Ein Dashboard mit diesem Namen existiert bereits." }),
-        visibility: z.enum(["public", "private"], {required_error: "Please select visibility"})
+            .refine((name) => !dashboards.some(d => d.name === name && d.id !== dashboard.id), { message: "Ein Dashboard mit diesem Namen existiert bereits." })
     })
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: dashboard.name,
-            visibility: dashboard.isPublic ? "public" : "private"
+            name: dashboard.name
         }
     })
 
     const handleUpdate = async (values: z.infer<typeof formSchema>) => {
-        await refreshDashboard({ ...dashboard, name: values.name, isPublic: values.visibility === "public" })
+        await refreshDashboard({ ...dashboard, name: values.name })
         addToast({
             title: "Successfully updated dashboard!",
             icon: <LayoutDashboard size={24} className="text-brand" />
@@ -551,12 +549,7 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
 
     return (
         <div key={dashboard.id} className={"w-full flex items-center justify-between gap-2 bg-tertiary border border-main/20 rounded-md py-2 px-4"}>
-            <div className={"flex items-center gap-2"}>
-                <div className={"p-1 bg-info/20 dark:bg-info/10 rounded-md border border-info/30 dark:border-info/20 text-info"}>
-                    {dashboard.isPublic ? <Eye size={16}/> : <EyeOff size={16}/>}
-                </div>
-                <p className={"text-primary"}>{dashboard.name}</p>
-            </div>
+            <p className={"text-primary"}>{dashboard.name}</p>
             <div className={"flex items-center"}>
                 <Dialog
                     open={editDialogOpen}
@@ -599,43 +592,6 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                                                 </FormItem>
                                             )}
                                         />
-                                        <FormField
-                                            control={form.control}
-                                            name="visibility"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <RadioGroup
-                                                        {...field}
-                                                        onValueChange={field.onChange}
-                                                        value={field.value}
-                                                        className="grid-cols-2"
-                                                    >
-                                                        <RadioGroupBox
-                                                            title={"Public"}
-                                                            value={"public"}
-                                                            id={"vis-public"}
-                                                            compareField={field.value}
-                                                        >
-                                                            <p className={"text-xs text-tertiary font-mono"}>
-                                                                Other people can see your dashboard layout and copy it.
-                                                            </p>
-                                                        </RadioGroupBox>
-
-                                                        <RadioGroupBox
-                                                            title={"Private"}
-                                                            value={"private"}
-                                                            id={"vis-private"}
-                                                            compareField={field.value}
-                                                        >
-                                                            <p className={"text-xs text-tertiary font-mono"}>
-                                                                No one else can see your dashboard layout or copy it.
-                                                            </p>
-                                                        </RadioGroupBox>
-                                                    </RadioGroup>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
                                     </div>
                                     <div className={"w-full flex gap-2 justify-end"}>
                                         <Button
@@ -652,7 +608,7 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                                             variant={"brand"}
                                             className={"w-max"}
                                             type={"submit"}
-                                            disabled={form.formState.isSubmitting || (dashboard.name === form.getValues().name && dashboard.isPublic === (form.getValues("visibility") === "public"))}
+                                            disabled={form.formState.isSubmitting || dashboard.name === form.getValues().name}
                                         >
                                             {(form.formState.isSubmitting) && <Spinner/>}
                                             Save
@@ -663,11 +619,6 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
                         </div>
                     </DialogContent>
                 </Dialog>
-                <CopyButton
-                    tooltip={copyTooltip}
-                    copyText={`https://tryforge.io/view/${dashboard.id}`}
-                    className={"px-1.5 rounded-none border border-main/60 border-r-0 text-secondary"}
-                />
                 <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                     <DialogTrigger asChild>
                         <Button

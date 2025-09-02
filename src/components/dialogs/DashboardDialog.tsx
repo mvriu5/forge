@@ -32,17 +32,14 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
         name: z.string()
             .min(3, {message: "Please enter more than 3 characters."})
             .max(12, {message: "Please enter less than 12 characters."})
-            .refine((name) => !dashboards?.some(d => d.name === name), { message: "A dashboard with this name already exists." }),
-        visibility: z.enum(["public", "private"], {required_error: "Please select visibility"})
+            .refine((name) => !dashboards?.some(d => d.name === name), { message: "A dashboard with this name already exists." })
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: "",
-            visibility: "private",
-        },
-
+            name: ""
+        }
     })
 
     const dashboardTooltip = tooltip<HTMLButtonElement>({
@@ -57,7 +54,6 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
         await addDashboard(session.user.id, {
             userId: session.user.id,
             name: values.name,
-            isPublic: values.visibility === "public",
             createdAt: new Date(Date.now()),
             updatedAt: new Date(Date.now())
         })
@@ -107,43 +103,6 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
                                         <FormItem>
                                             <FormLabel>Name</FormLabel>
                                             <FormInput placeholder="Name" {...field} />
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="visibility"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <RadioGroup
-                                                {...field}
-                                                onValueChange={field.onChange}
-                                                value={field.value}
-                                                className="grid-cols-2"
-                                            >
-                                                <RadioGroupBox
-                                                    title={"Public"}
-                                                    value={"public"}
-                                                    id={"vis-public"}
-                                                    compareField={field.value}
-                                                >
-                                                    <p className={"text-xs text-tertiary font-mono"}>
-                                                        Other people can see your dashboard layout and copy it.
-                                                    </p>
-                                                </RadioGroupBox>
-
-                                                <RadioGroupBox
-                                                    title={"Private"}
-                                                    value={"private"}
-                                                    id={"vis-private"}
-                                                    compareField={field.value}
-                                                >
-                                                    <p className={"text-xs text-tertiary font-mono"}>
-                                                        No one else can see your dashboard layout or copy it.
-                                                    </p>
-                                                </RadioGroupBox>
-                                            </RadioGroup>
                                             <FormMessage />
                                         </FormItem>
                                     )}

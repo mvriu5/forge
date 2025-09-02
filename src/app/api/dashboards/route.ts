@@ -10,7 +10,7 @@ import {
 export async function POST(req: Request) {
     try {
         const body = await req.json()
-        const { userId, name, isPublic } = body
+        const { userId, name } = body
 
         if (!userId) {
             return NextResponse.json(
@@ -21,7 +21,6 @@ export async function POST(req: Request) {
         const newDashboard = await createDashboard({
             userId,
             name,
-            isPublic,
             createdAt: new Date(),
             updatedAt: new Date()
         })
@@ -65,7 +64,7 @@ export async function GET(req: Request) {
 export async function PUT(req: Request) {
     try {
         const body = await req.json()
-        const { id, name, isPublic } = body
+        const { id, name } = body
 
         if (!id) {
             return NextResponse.json(
@@ -73,7 +72,7 @@ export async function PUT(req: Request) {
                 { status: 400 })
         }
 
-        const updatedDashboard = await updateDashboard(id, { name, isPublic })
+        const updatedDashboard = await updateDashboard(id, { name })
 
         if (!updatedDashboard) {
             return NextResponse.json(
