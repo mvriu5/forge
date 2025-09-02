@@ -1,0 +1,7 @@
+{
+  "name": "@forge/tsconfig",
+  "private": true,
+  "exports": {
+    "./base": "./base.json"
+  }
+}
