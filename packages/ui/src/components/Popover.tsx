@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import {Popover as PopoverPrimitive} from "radix-ui"
 import { cn, CONTAINER_STYLES } from "../lib/utils"
 import {ComponentPropsWithRef} from "react"

@@ -1,13 +1,17 @@
 {
   "extends": "@forge/tsconfig/base.json",
   "compilerOptions": {
-    "jsx": "react",
+    "outDir": "dist",
+    "rootDir": "src",
     "baseUrl": ".",
-    "lib": ["ES2019", "DOM"],
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["node", "react", "react-dom"],
     "paths": {
       "@forge/ui/*": ["./src/*"]
     },
-    "noEmit": true
+    "noEmit": true,
+    "esModuleInterop": true
   },
   "include": ["."],
   "exclude": ["node_modules"]

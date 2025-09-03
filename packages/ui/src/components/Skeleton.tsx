@@ -1,5 +1,4 @@
 import {cn} from "../lib/utils"
-import * as React from "react"
 import {HTMLAttributes} from "react"
 
 const Skeleton = ({className, ...props}: HTMLAttributes<HTMLDivElement>) => {

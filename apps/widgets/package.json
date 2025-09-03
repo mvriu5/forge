@@ -1,17 +1,13 @@
 {
-  "name": "widgets",
+  "name": "@forge/widgets",
   "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
   "devDependencies": {
+    "@forge/ui": "workspace:*",
     "@chromatic-com/storybook": "4.1.1",
     "@storybook/addon-a11y": "9.1.3",
     "@storybook/addon-docs": "9.1.3",
@@ -25,6 +21,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@storybook/react": "^9.1.4",
     "@tailwindcss/vite": "^4.1.12",
     "tailwindcss": "^4.0.7"
   }

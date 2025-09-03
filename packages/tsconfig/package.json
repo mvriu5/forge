@@ -1,7 +1,5 @@
 {
   "name": "@forge/tsconfig",
-  "private": true,
-  "exports": {
-    "./base": "./base.json"
-  }
+  "type": "module",
+  "private": true
 }

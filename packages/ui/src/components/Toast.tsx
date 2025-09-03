@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import {type HTMLAttributes, type ReactNode, useEffect, useRef, useState} from "react"
 import {X} from "lucide-react"
 import {AnimatePresence, motion} from "motion/react"

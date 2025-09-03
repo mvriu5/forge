@@ -1,7 +1,6 @@
 "use client"
 
 import {cn} from "../lib/utils"
-import * as React from "react"
 import {tooltip} from "../components/TooltipProvider"
 import {useMemo} from "react"
 

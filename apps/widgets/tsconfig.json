@@ -1,0 +1,11 @@
+{
+  "extends": "@forge/tsconfig/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "moduleResolution": "nodenext"
+  },
+  "include": ["."],
+  "exclude": ["node_modules"]
+}

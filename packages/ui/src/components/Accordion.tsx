@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import {Accordion} from "radix-ui"
 import { ChevronDown } from "lucide-react"
 

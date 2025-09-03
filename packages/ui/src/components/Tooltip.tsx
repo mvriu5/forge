@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import {type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState} from "react"
 import {KeyboardShortcut} from "../components/KeyboardShortcut"
 import {cn} from "../lib/utils"

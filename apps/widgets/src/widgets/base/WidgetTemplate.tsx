@@ -1,6 +1,5 @@
 import type {HTMLAttributes} from "react"
-import React from "react"
-import {cn} from "@/lib/utils"
+import * as React from "react"
 import {useDraggable} from "@dnd-kit/core"
 import {CSS} from "@dnd-kit/utilities"
 import {useWidgetStore} from "@/store/widgetStore"
@@ -10,6 +9,7 @@ import {tooltip} from "@/components/ui/TooltipProvider"
 import {useDashboardStore} from "@/store/dashboardStore"
 import {getWidgetPreview} from "@/lib/widgetRegistry"
 import {useBreakpoint} from "@forge/ui/hooks/useBreakpoint"
+import {cn} from "@forge/ui/lib/utils"
 
 interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
     id?: string
@@ -17,10 +17,9 @@ interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
     name: string
     editMode: boolean
     onWidgetDelete?: (id: string) => void
-    isPlaceholder?: boolean
 }
 
-const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, editMode, onWidgetDelete, isPlaceholder = false}) => {
+const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, editMode, onWidgetDelete}) => {
     const {getWidget} = useWidgetStore()
     const {currentDashboard} = useDashboardStore()
     const {breakpoint} = useBreakpoint()
@@ -64,8 +63,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
             className={cn(
                 `h-full flex flex-col gap-2 rounded-md bg-tertiary border border-main/40 p-2 overflow-hidden col-span-[${responsiveSize.width}] row-span-[${responsiveSize.height}]`,
                 editMode && "relative cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
-                editMode && isDragging && "opacity-70 animate-none border-2 border-dashed border-main/60",
-                isPlaceholder && "pointer-events-none",
+                editMode && isDragging && "opacity-70 animate-none border-2 border-dashed border-main/60"
                 className
             )}
             ref={editMode ? setNodeRef : undefined}

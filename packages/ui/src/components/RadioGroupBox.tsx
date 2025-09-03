@@ -1,5 +1,4 @@
 import {ComponentPropsWithRef} from "react"
-import * as React from "react"
 import {RadioGroupItem} from "../components/RadioGroup"
 import {cn} from "../lib/utils"
 

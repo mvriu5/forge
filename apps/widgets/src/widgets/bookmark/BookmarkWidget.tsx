@@ -33,26 +33,7 @@ interface BookmarkItem {
     link: string
 }
 
-const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        const data = [
-            {
-                id: "1",
-                title: "Amazon Wishlist",
-                link: "https://amazon.com/"
-            },
-            {
-                id: "2",
-                title: "Youtube - Watch later",
-                link: "https://www.youtube.com/"
-            },
-            {
-                id: "3",
-                title: "Github repo",
-                link: "https://github.com/"
-            }
-        ]
-
+const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete}) => {
         return (
             <WidgetTemplate id={id} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
                 <WidgetHeader title={"Bookmark"}>

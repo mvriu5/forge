@@ -1,6 +1,5 @@
 import { isMacOs } from "react-device-detect"
 import {cn} from "../lib/utils"
-import * as React from "react"
 
 type KeyboardShortcutProps = {
     keyString: string
