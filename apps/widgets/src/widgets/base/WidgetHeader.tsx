@@ -1,11 +1,9 @@
-import React, {ReactNode} from "react"
-import {cn} from "@/lib/utils"
+import {cn} from "@forge/ui/lib/utils"
+import {HTMLAttributes, ReactNode} from "react"
 
-interface WidgetHeaderProps {
-    children?: ReactNode
+interface WidgetHeaderProps extends HTMLAttributes<HTMLDivElement> {
     title?: string
     icon?: ReactNode
-    className?: string
 }
 
 const WidgetHeader = ({children, title, icon, className}: WidgetHeaderProps) => {

@@ -1,4 +1,4 @@
-import {cn} from "@/lib/utils"
+import {cn} from "@forge/ui/lib/utils"
 
 interface DotPatternProps {
     width?: number

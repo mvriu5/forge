@@ -3,7 +3,7 @@
 import {Navbar} from "@/components/landing/Navbar"
 import React from "react"
 import {Footer} from "@/components/landing/Footer"
-import {getAllWidgetPreviews, WidgetPreview} from "@/lib/widgetRegistry"
+import {getAllWidgetPreviews, WidgetPreview} from "../../../../widgets/src/widgets/widgetRegistry"
 import Image from "next/image"
 
 export default function Widgets() {

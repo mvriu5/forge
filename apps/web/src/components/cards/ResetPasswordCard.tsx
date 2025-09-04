@@ -10,7 +10,7 @@ import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
 import {CloudAlert} from "lucide-react"
-import {ForgeLogo} from "@/components/svg/ForgeLogo"
+import {ForgeLogo} from "@forge/ui/components/svg/ForgeLogo"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
 

@@ -3,8 +3,11 @@
   "compilerOptions": {
     "baseUrl": ".",
     "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["node", "react", "react-dom"],
     "noEmit": true,
-    "moduleResolution": "nodenext"
+    "allowImportingTsExtensions": true,
+    "moduleResolution": "bundler"
   },
   "include": ["."],
   "exclude": ["node_modules"]

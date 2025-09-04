@@ -2,7 +2,7 @@
 
 import {SignUpCard} from "@/components/cards/SignUpCard"
 import {cn} from "@/lib/utils"
-import {DotPattern} from "@/components/svg/DotPattern"
+import {DotPattern} from "@forge/ui/components/svg/DotPattern"
 import {ToastProvider} from "@/components/ui/ToastProvider"
 
 export default function SignUp() {

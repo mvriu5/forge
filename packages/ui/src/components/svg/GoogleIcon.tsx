@@ -1,4 +1,4 @@
-import {cn} from "@/lib/utils"
+import {cn} from "@forge/ui/lib/utils"
 
 function GoogleIcon({className}: {className?: string}) {
     return (

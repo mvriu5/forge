@@ -1,36 +1,22 @@
-import type {HTMLAttributes} from "react"
-import * as React from "react"
+import React, {HTMLAttributes} from "react"
 import {useDraggable} from "@dnd-kit/core"
 import {CSS} from "@dnd-kit/utilities"
-import {useWidgetStore} from "@/store/widgetStore"
 import {Trash} from "lucide-react"
-import {Button} from "@/components/ui/Button"
-import {tooltip} from "@/components/ui/TooltipProvider"
-import {useDashboardStore} from "@/store/dashboardStore"
-import {getWidgetPreview} from "@/lib/widgetRegistry"
+import {Button} from "@forge/ui/components/Button"
+import {tooltip} from "@forge/ui/components/TooltipProvider"
+import {getWidgetPreview} from "../widgetRegistry.tsx"
 import {useBreakpoint} from "@forge/ui/hooks/useBreakpoint"
 import {cn} from "@forge/ui/lib/utils"
+import {Widget} from "../../types"
 
 interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
-    id?: string
-    children: React.ReactNode
-    name: string
-    editMode: boolean
+    widget: Widget
+    editMode?: boolean
     onWidgetDelete?: (id: string) => void
 }
 
-const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, editMode, onWidgetDelete}) => {
-    const {getWidget} = useWidgetStore()
-    const {currentDashboard} = useDashboardStore()
+const WidgetTemplate: React.FC<WidgetProps> = ({widget, className, children, editMode, onWidgetDelete}) => {
     const {breakpoint} = useBreakpoint()
-
-    const widget = id
-        ? useWidgetStore(state => state.widgets?.find(w => w.id === id))
-        : currentDashboard
-            ? getWidget(currentDashboard.id, name)
-            : null
-
-    if (!widget) return
 
     const widgetConfig = getWidgetPreview(widget.widgetType)
     if (!widgetConfig) return
@@ -63,7 +49,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
             className={cn(
                 `h-full flex flex-col gap-2 rounded-md bg-tertiary border border-main/40 p-2 overflow-hidden col-span-[${responsiveSize.width}] row-span-[${responsiveSize.height}]`,
                 editMode && "relative cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
-                editMode && isDragging && "opacity-70 animate-none border-2 border-dashed border-main/60"
+                editMode && isDragging && "opacity-70 animate-none border-2 border-dashed border-main/60",
                 className
             )}
             ref={editMode ? setNodeRef : undefined}

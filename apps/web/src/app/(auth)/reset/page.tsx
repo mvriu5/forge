@@ -1,6 +1,6 @@
 "use client"
 
-import {DotPattern} from "@/components/svg/DotPattern"
+import {DotPattern} from "@forge/ui/components/svg/DotPattern"
 import {cn} from "@/lib/utils"
 import {ToastProvider} from "@/components/ui/ToastProvider"
 import {ResetPasswordCard} from "@/components/cards/ResetPasswordCard"

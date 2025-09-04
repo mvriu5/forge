@@ -1,8 +1,7 @@
-import { Button } from "@/components/ui/Button"
 import { WidgetContent } from "./WidgetContent"
 import {TriangleAlert} from "lucide-react"
-import {Callout} from "@/components/ui/Callout"
-import React from "react"
+import {Callout} from "@forge/ui/components/Callout"
+import {Button} from "@forge/ui/components/Button"
 
 interface WidgetErrorProps {
     message: string

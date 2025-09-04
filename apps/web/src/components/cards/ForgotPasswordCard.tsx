@@ -10,7 +10,7 @@ import {ArrowLeft, CloudAlert, Mailbox} from "lucide-react"
 import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form";
 import { useToast } from "@/components/ui/ToastProvider";
 import {Button} from "@/components/ui/Button"
-import {ForgeLogo} from "@/components/svg/ForgeLogo"
+import {ForgeLogo} from "@forge/ui/components/svg/ForgeLogo"
 import Link from "next/link";
 import {Spinner} from "@/components/ui/Spinner"
 

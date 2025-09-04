@@ -1,19 +1,14 @@
 import React, {useCallback, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
-import {getLogoFromLink} from "@/components/svg/BookmarkIcons"
-import {Button} from "@/components/ui/Button"
+import {getLogoFromLink} from "@forge/ui/components/svg/BookmarkIcons"
+import {Button} from "@forge/ui/components/Button"
 import {Link, Plus, Trash} from "lucide-react"
-import {tooltip} from "@/components/ui/TooltipProvider"
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
-import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
+import {tooltip} from "@forge/ui/components/TooltipProvider"
+import {Popover, PopoverContent, PopoverTrigger} from "@forge/ui/components/Popover"
+import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@forge/ui/components/Form"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
-import {useWidgetStore} from "@/store/widgetStore"
 import {WidgetHeader} from "../base/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {useDashboardStore} from "@/store/dashboardStore"
-import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {
     closestCenter,
     DndContext,
@@ -26,6 +21,9 @@ import {
 import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} from "@dnd-kit/sortable"
 import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
+import {WidgetProps, WidgetTemplate} from "../base/WidgetTemplate"
+import {WidgetContent} from "../base/WidgetContent"
+import {WidgetEmpty} from "../base/WidgetEmpty"
 
 interface BookmarkItem {
     id: string
@@ -33,30 +31,11 @@ interface BookmarkItem {
     link: string
 }
 
-const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete}) => {
-        return (
-            <WidgetTemplate id={id} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Bookmark"}>
-                    <Button variant={"widget"} className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}>
-                        <Plus size={16}/>
-                    </Button>
-                </WidgetHeader>
-                <WidgetContent scroll>
-                    {data.map((bookmark) => (
-                        <BookmarkItem key={bookmark.id} id={bookmark.id} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.title)}/>
-                    ))}
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
+interface BookmarkWidgetProps extends WidgetProps {
+    onUpdateBookmarks: (bookmarks: BookmarkItem[]) => void
+}
 
-    const {getWidget, refreshWidget} = useWidgetStore()
-    const {currentDashboard} = useDashboardStore()
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, "bookmark")
-    if (!widget) return null
-
+const BookmarkWidget: React.FC<BookmarkWidgetProps> = ({widget, editMode, onWidgetDelete, onUpdateBookmarks}) => {
     const [bookmarks, setBookmarks] = useState<BookmarkItem[]>(widget.config?.bookmarks ?? [])
     const [open, setOpen] = useState<boolean>(false)
 
@@ -78,15 +57,6 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete}) =
         },
     })
 
-    const handleSave = useCallback(async (updatedBookmarks: BookmarkItem[]) => {
-        await refreshWidget({
-            ...widget,
-            config: {
-                bookmarks: updatedBookmarks,
-            }
-        })
-    }, [refreshWidget, currentDashboard])
-
     const handleAdd = async (data: z.infer<typeof formSchema>) => {
         const newBookmark: BookmarkItem = {
             id: `bookmark-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, // Unique ID
@@ -95,7 +65,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete}) =
         }
         const updatedBookmarks = [...bookmarks, newBookmark]
         setBookmarks(updatedBookmarks)
-        await handleSave(updatedBookmarks)
+        await onUpdateBookmarks(updatedBookmarks)
         setOpen(false)
         form.reset()
     }
@@ -103,8 +73,8 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete}) =
     const handleDelete = useCallback(async (idToDelete: string) => {
         const updatedBookmarks = bookmarks.filter((b) => b.id !== idToDelete)
         setBookmarks(updatedBookmarks)
-        await handleSave(updatedBookmarks)
-    }, [bookmarks, handleSave])
+        await onUpdateBookmarks(updatedBookmarks)
+    }, [bookmarks, onUpdateBookmarks])
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -128,14 +98,14 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete}) =
                 const oldIndex = items.findIndex((item) => item.id === active.id)
                 const newIndex = items.findIndex((item) => item.id === over?.id)
                 const newOrder = arrayMove(items, oldIndex, newIndex)
-                handleSave(newOrder)
+                onUpdateBookmarks(newOrder)
                 return newOrder
             })
         }
-    }, [handleSave])
+    }, [onUpdateBookmarks])
 
     return (
-        <WidgetTemplate id={id} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Bookmark"}>
                 <Popover
                     open={open}
@@ -150,10 +120,10 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete}) =
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className={"w-56"} align={"end"}>
-                        <Form {...form}>
+                        <Form {...form as any}>
                             <form onSubmit={form.handleSubmit(handleAdd)} className="space-y-2">
                                 <FormField
-                                    control={form.control}
+                                    control={form.control as any}
                                     name="title"
                                     render={({ field }) => (
                                         <FormItem>
@@ -164,7 +134,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete}) =
                                     )}
                                 />
                                 <FormField
-                                    control={form.control}
+                                    control={form.control as any}
                                     name="link"
                                     render={({ field }) => (
                                         <FormItem>
@@ -257,4 +227,4 @@ const BookmarkItem = ({id, title, link, onDelete}: BookmarkItem & {onDelete: (ti
 
 
 
-export {BookmarkWidget}
+export {BookmarkWidget, type BookmarkWidgetProps, type BookmarkItem}

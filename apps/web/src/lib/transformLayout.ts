@@ -1,5 +1,5 @@
 import {Widget} from "@/database"
-import {getWidgetPreview} from "@/lib/widgetRegistry"
+import {getWidgetPreview} from "../../../widgets/src/widgets/widgetRegistry"
 
 export type Breakpoint = "desktop" | "tablet" | "mobile"
 

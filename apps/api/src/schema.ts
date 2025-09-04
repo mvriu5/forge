@@ -1,4 +1,5 @@
-import {boolean, integer, jsonb, pgTable, text, timestamp, uuid} from "drizzle-orm/pg-core"
+import {pgTable, boolean, integer, jsonb, text, timestamp, uuid} from "drizzle-orm/pg-core"
+import {sql} from "drizzle-orm"
 
 export const user = pgTable("users", {
     id: text("id").primaryKey(),
@@ -6,8 +7,8 @@ export const user = pgTable("users", {
     email: text('email').notNull().unique(),
     emailVerified: boolean('email_verified').notNull(),
     image: text('image'),
-    createdAt: timestamp('created_at').notNull(),
-    updatedAt: timestamp('updated_at').notNull()
+    createdAt: timestamp('created_at').notNull().default(sql`now()`),
+    updatedAt: timestamp('updated_at').notNull().default(sql`now()`)
 })
 
 export const session = pgTable("session", {

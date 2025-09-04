@@ -1,10 +1,8 @@
-import React, {ReactNode} from "react"
-import {cn} from "@/lib/utils"
-import {ScrollArea} from "@/components/ui/ScrollArea"
+import {cn} from "@forge/ui/lib/utils"
+import {HTMLAttributes} from "react"
+import {ScrollArea} from "@forge/ui/components/ScrollArea"
 
-interface WidgetContentProps {
-    children: ReactNode
-    className?: string
+interface WidgetContentProps extends HTMLAttributes<HTMLDivElement> {
     scroll?: boolean
 }
 

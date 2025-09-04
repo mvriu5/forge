@@ -10,8 +10,8 @@ import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
 import {CloudAlert, Github} from "lucide-react";
-import {GoogleIcon} from "@/components/svg/GoogleIcon"
-import {ForgeLogo} from "@/components/svg/ForgeLogo"
+import {GoogleIcon} from "@forge/ui/components/svg/GoogleIcon"
+import {ForgeLogo} from "@forge/ui/components/svg/ForgeLogo"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
 

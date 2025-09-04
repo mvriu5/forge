@@ -1,12 +1,10 @@
 import {betterAuth} from "better-auth"
 import {drizzleAdapter} from "better-auth/adapters/drizzle"
-import {db} from "@/database"
-import {schema} from "@/db/schema"
 import {Resend} from 'resend'
-import {VerificationEmail} from "@/components/emails/VerificationEmail"
-import {ReactNode} from "react"
-import {ResetPasswordEmail} from "@/components/emails/ResetPasswordEmail"
-import {nextCookies} from "better-auth/next-js"
+//import {VerificationEmail} from "@/components/emails/VerificationEmail"
+//import {ResetPasswordEmail} from "@/components/emails/ResetPasswordEmail"
+import {schema} from "../schema.ts"
+import {db} from "../db.ts"
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -24,27 +22,27 @@ export const auth = betterAuth({
     },
     emailVerification: {
         autoSignInAfterVerification: true,
-        sendVerificationEmail: async ({ user, url }) => {
+        /*sendVerificationEmail: async ({ user, url }) => {
             await resend.emails.send({
                 from: "hello@tryforge.io",
                 to: [user.email],
                 subject: "Welcome to forge!",
                 react: VerificationEmail({url}) as ReactNode
             })
-        }
+        }*/
     },
     emailAndPassword: {
         enabled: true,
         autoSignIn: true,
         requireEmailVerification: true,
-        sendResetPassword: async ({user, url}) => {
+        /*sendResetPassword: async ({user, url}) => {
             await resend.emails.send({
                 from: "hello@tryforge.io",
                 to: [user.email],
                 subject: "Reset your password",
                 react: ResetPasswordEmail({url}) as ReactNode
             })
-        }
+        }*/
     },
     socialProviders: {
         github: {
@@ -80,8 +78,5 @@ export const auth = betterAuth({
         defaultCookieAttributes: {
             secure: true
         }
-    },
-    plugins: [nextCookies()]
+    }
 })
-
-export type Session = typeof auth.$Infer.Session

@@ -1,4 +1,4 @@
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
+import {WidgetContent} from "./WidgetContent.tsx"
 
 interface WidgetEmptyProps {
     message: string
@@ -8,7 +8,9 @@ const WidgetEmpty = ({ message }: WidgetEmptyProps) => {
     return (
         <WidgetContent>
             <div className="flex h-full items-center justify-center">
-                <p className="text-center text-sm text-tertiary">{message}</p>
+                <p className="text-center text-sm text-tertiary">
+                    {message}
+                </p>
             </div>
         </WidgetContent>
     )

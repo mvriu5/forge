@@ -1,6 +1,6 @@
-import {LinearIcon} from "@/components/svg/LinearIcon"
-import {GoogleIcon} from "@/components/svg/GoogleIcon"
-import {Github} from "@/components/svg/BookmarkIcons"
+import {LinearIcon} from "@forge/ui/components/svg/LinearIcon"
+import {GoogleIcon} from "@forge/ui/components/svg/GoogleIcon"
+import {Github} from "@forge/ui/components/svg/BookmarkIcons"
 import React from "react"
 import {Check, X} from "lucide-react"
 
