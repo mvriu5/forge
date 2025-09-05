@@ -5,11 +5,9 @@ import {useQuery} from "@tanstack/react-query"
 import {fetchLinearIssues, LinearIssue} from "@/actions/linear"
 import {useState} from "react"
 
-type SortOption = "priority" | "created"
-
 const useLinear = () => {
     const { linearIntegration } = useIntegrationStore()
-    const [sortBy, setSortBy] = useState<SortOption>("priority")
+    const [sortBy, setSortBy] = useState<"priority" | "created">("priority")
 
     const {data, isLoading, isFetching, isError, refetch} = useQuery<LinearIssue[]>({
         queryKey: ["linearIssues", linearIntegration?.accessToken],

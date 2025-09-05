@@ -1,7 +1,7 @@
 import type {Meta, StoryObj} from "@storybook/react"
-import {BookmarkWidget, type BookmarkItem} from "./BookmarkWidget"
-import {getWidgetPreview} from "../widgetRegistry"
+import {BookmarkWidget} from "./BookmarkWidget"
 import {useBreakpoint} from "@forge/ui/hooks/useBreakpoint"
+import {TooltipProvider} from "@forge/ui/components/TooltipProvider"
 
 const meta: Meta<typeof BookmarkWidget> = {
     title: "Components/BookmarkWidget",
@@ -16,30 +16,37 @@ type Story = StoryObj<typeof BookmarkWidget>
 
 export const Default: Story = {
     render: () => {
-        const widget = getWidgetPreview("bookmark")
-        if (!widget) return <div>Error</div>
+        const sizes = {
+            desktop: { width: 1, height: 2 },
+            tablet: { width: 1, height: 1 },
+            mobile: { width: 1, height: 1 }
+        }
 
         const {breakpoint} = useBreakpoint()
 
         return (
-           <BookmarkWidget
-               widget={{
-                   id: "1",
-                   userId: "1",
-                   dashboardId: "1",
-                   widgetType: widget.preview.widgetType,
-                   height: widget.preview.sizes[breakpoint].height,
-                   width: widget.preview.sizes[breakpoint].width,
-                   config: {},
-                   positionX: 0,
-                   positionY: 0,
-                   createdAt: new Date(),
-                   updatedAt: new Date()
-               }}
-               onUpdateBookmarks={(bm: BookmarkItem[]) => console.log(bm)}
-               editMode={false}
-               onWidgetDelete={() => {}}
-           />
+            <div className={"h-full w-full"}>
+                <TooltipProvider>
+                    <BookmarkWidget
+                        widget={{
+                            id: "1",
+                            userId: "1",
+                            dashboardId: "1",
+                            widgetType: "bookmark",
+                            height: sizes[breakpoint].height,
+                            width: sizes[breakpoint].width,
+                            config: {},
+                            positionX: 0,
+                            positionY: 0,
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                        }}
+                        onUpdateBookmarks={() => Promise.resolve()}
+                        editMode={false}
+                        onWidgetDelete={() => {}}
+                    />
+                </TooltipProvider>
+            </div>
         )
     }
 }

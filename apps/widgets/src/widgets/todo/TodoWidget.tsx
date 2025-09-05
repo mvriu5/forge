@@ -1,35 +1,30 @@
 "use client"
 
 import React, {useCallback, useRef, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
-import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {Checkbox} from "@/components/ui/Checkbox"
-import {cn} from "@/lib/utils"
-import {Button} from "@/components/ui/Button"
-import {Eraser, Forward, GripVertical, Trash} from "lucide-react"
-import {Input} from "@/components/ui/Input"
-import {useWidgetStore} from "@/store/widgetStore"
-import {useDashboardStore} from "@/store/dashboardStore"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {Eraser, Forward, Trash} from "lucide-react"
 import {
     DndContext,
     closestCenter,
-    KeyboardSensor,
-    PointerSensor,
     useSensor,
     useSensors,
     type DragEndEvent, MouseSensor, TouchSensor,
 } from "@dnd-kit/core"
 import {
     SortableContext,
-    sortableKeyboardCoordinates,
     verticalListSortingStrategy,
     useSortable,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { arrayMove } from "@dnd-kit/sortable"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
+import {WidgetProps, WidgetTemplate} from "../base/WidgetTemplate"
+import { tooltip } from "@forge/ui/components/TooltipProvider"
+import {WidgetHeader} from "../base/WidgetHeader"
+import {Button} from "@forge/ui/components/Button"
+import { WidgetContent } from "../base/WidgetContent"
+import {Input} from "@forge/ui/components/Input"
+import {Checkbox} from "@forge/ui/components/Checkbox"
+import {cn} from "@forge/ui/lib/utils"
 
 interface TodoProps {
     id: string
@@ -37,46 +32,11 @@ interface TodoProps {
     text: string
 }
 
-const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        return (
-            <WidgetTemplate id={id} name={"todo"} isPlaceholder={isPlaceholder} editMode={editMode}>
-                <WidgetHeader title={"Todo's"}>
-                    <Button variant={"widget"}>
-                        <Eraser size={16} />
-                    </Button>
-                </WidgetHeader>
-                <WidgetContent scroll>
-                    <Todo
-                        id={""}
-                        text={"Clean apartment"}
-                        checked={false}
-                        onDelete={() => {}}
-                        onCheckChange={() => {}}
-                    />
-                </WidgetContent>
-                <div className={"flex items-center gap-2"}>
-                    <Input
-                        className={"shadow-none dark:shadow-none bg-0 border-0 focus:border-0 focus:bg-0 focus:outline-0"}
-                        placeholder={"Type your todo..."}
-                        disabled={true}
-                    />
-                    <Button className={"px-2 border-0 hover:bg-inverted/10 shadow-none dark:shadow-none"}>
-                        <Forward size={16}/>
-                    </Button>
-                </div>
-            </WidgetTemplate>
-        )
-    }
+interface TodoWidgetProps extends WidgetProps {
+    onUpdateTodos: (todos: TodoProps[]) => void
+}
 
-    const {getWidget, refreshWidget} = useWidgetStore()
-
-    const {currentDashboard} = useDashboardStore()
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, "todo")
-    if (!widget) return
-
+const TodoWidget: React.FC<TodoWidgetProps> = ({widget, editMode, onWidgetDelete, onUpdateTodos}) => {
     const [todos, setTodos] = useState<TodoProps[]>(widget.config?.todos ?? [])
     const inputRef = useRef<HTMLInputElement>(null)
 
@@ -95,32 +55,23 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
             }
             const updatedTodos = [...todos, newTodo]
             setTodos(updatedTodos)
-            handleSave(updatedTodos)
+            onUpdateTodos(updatedTodos)
             input.value = ""
         }
-    }
-
-    const handleSave = async (updatedTodos: TodoProps[] = todos) => {
-        await refreshWidget({
-            ...widget,
-            config: {
-                todos: updatedTodos,
-            },
-        })
     }
 
     const handleDelete = useCallback((indexToDelete: number) => {
         const updatedTodos = todos.filter((_, i) => i !== indexToDelete)
         setTodos(updatedTodos)
-        handleSave(updatedTodos)
-    }, [todos, handleSave])
+        onUpdateTodos(updatedTodos)
+    }, [todos, onUpdateTodos])
 
     const handleCheckChange = useCallback((indexToUpdate: number, checked: boolean) => {
         const updatedTodos = [...todos]
         updatedTodos[indexToUpdate].checked = checked
         setTodos(updatedTodos)
-        handleSave(updatedTodos)
-    }, [todos, handleSave])
+        onUpdateTodos(updatedTodos)
+    }, [todos, onUpdateTodos])
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -144,20 +95,20 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
                     const oldIndex = items.findIndex((item) => item.id === active.id)
                     const newIndex = items.findIndex((item) => item.id === over?.id)
                     const newOrder = arrayMove(items, oldIndex, newIndex)
-                    handleSave(newOrder)
+                    onUpdateTodos(newOrder)
                     return newOrder
                 })
             }
-        }, [handleSave])
+        }, [onUpdateTodos])
 
     return (
-        <WidgetTemplate id={id} name={"todo"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Todos"}>
                 <Button
                     variant={"widget"}
                     onClick={() => {
                         setTodos([])
-                        handleSave([])
+                        onUpdateTodos([])
                     }}
                     {...clearTodosTooltip}
                 >

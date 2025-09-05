@@ -1,46 +1,28 @@
 "use client"
 
 import React from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import { WidgetHeader } from "../base/WidgetHeader"
-import { useGithubHeatmap } from "@/hooks/useGithubHeatmap"
-import { WidgetContent } from "@/components/widgets/base/WidgetContent"
-import {Heatmap} from "@/components/ui/Heatmap"
-import {Skeleton} from "@/components/ui/Skeleton"
-import {WidgetError} from "@/components/widgets/base/WidgetError"
-import {useIntegrationStore} from "@/store/integrationStore"
-import {authClient} from "@/lib/auth-client"
-import {Blocks, CloudAlert} from "lucide-react"
-import {useToast} from "@/components/ui/ToastProvider"
 import {useBreakpoint} from "@forge/ui/hooks/useBreakpoint"
+import {WidgetProps, WidgetTemplate} from "../base/WidgetTemplate"
+import { WidgetError } from "../base/WidgetError"
+import {WidgetContent} from "../base/WidgetContent"
+import { Skeleton } from "@forge/ui/components/Skeleton"
+import {Heatmap} from "@forge/ui/components/Heatmap"
 
-const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        return (
-            <WidgetTemplate id={id} name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder>
-                <WidgetHeader title={"Github Heatmap"}/>
-                <WidgetContent className={"h-full items-center"}>
-                    <div
-                        className="grid mt-6"
-                        style={{
-                            gridTemplateColumns: "repeat(53, 10px)",
-                            gridTemplateRows: "repeat(7, 10px)",
-                            gap: "2px",
-                        }}
-                    >
-                        {Array.from({ length: 371 }, (_, i) =>
-                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                            <div key={i} className={"bg-green-500 size-2.5 rounded-xs"}/>
-                        )}
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
+type GithubReturnType = {
+    data: any
+    isLoading: boolean
+    isFetching: boolean
+    isError: boolean
+}
 
-    const {data, isLoading, isFetching, isError} = useGithubHeatmap()
-    const {githubIntegration} = useIntegrationStore()
-    const {addToast} = useToast()
+interface GithubHeatmapWidgetProps extends WidgetProps {
+    hook: GithubReturnType
+    onIntegrate: () => void
+    githubIntegration: any
+}
+
+const GithubHeatmapWidget: React.FC<GithubHeatmapWidgetProps> = ({widget, editMode, onWidgetDelete, hook, onIntegrate, githubIntegration}) => {
     const {tailwindBreakpoint} = useBreakpoint()
 
     const cellSize = {
@@ -52,45 +34,23 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelet
         xs: 5
     }
 
-    const contributions = data?.map(({ date, count }) => ({ date, count }))
-
-    const handleIntegrate = async () => {
-        const data = await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
-            onRequest: (ctx) => {
-            },
-            onSuccess: (ctx) => {
-                addToast({
-                    title: "Successfully integrated Github",
-                    icon: <Blocks size={24}/>
-                })
-            },
-            onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
-            }
-        })
-    }
-
-    if (!githubIntegration?.accessToken && !isLoading) {
+    if (!githubIntegration?.accessToken && !hook.isLoading) {
         return (
-            <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Github account first!"}
                     actionLabel={"Integrate"}
-                    onAction={handleIntegrate}
+                    onAction={onIntegrate() ?? undefined}
                 />
             </WidgetTemplate>
         )
     }
 
     return (
-        <WidgetTemplate id={id} name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Github Heatmap"}/>
             <WidgetContent className={"h-full items-center"}>
-                {(isLoading || isFetching) ? (
+                {(hook.isLoading || hook.isFetching) ? (
                     <div
                         className="grid mt-6"
                         style={{
@@ -100,13 +60,12 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelet
                         }}
                     >
                         {Array.from({ length: 371 }, (_, i) =>
-                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                             <Skeleton key={i} className={"size-2.5 rounded-xs"}/>
                         )}
                     </div>
                 ) : (
                     <Heatmap
-                        data={contributions}
+                        data={hook.data}
                         cellSize={cellSize[tailwindBreakpoint]}
                         gap={2}
                     />

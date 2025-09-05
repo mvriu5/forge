@@ -1,13 +1,12 @@
 "use client"
 
-import React, {memo} from "react"
+import {memo} from "react"
 import {Area, AreaChart, XAxis, YAxis} from "recharts"
-import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
-import {ChartDataPoint} from "@/actions/twelvedata"
 import {useTheme} from "next-themes"
+import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@forge/ui/components/Chart"
 
 interface StockChartProps {
-    data: ChartDataPoint[]
+    data: any[]
     yAxisDomain: number[]
     priceChangePercent: number
     gradientId: string

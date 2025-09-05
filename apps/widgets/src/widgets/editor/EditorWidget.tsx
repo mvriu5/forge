@@ -1,7 +1,6 @@
 "use client"
 
-import React, {useEffect} from "react"
-import {useState} from "react"
+import React, {useEffect, useState} from "react"
 import {
     EditorRoot,
     EditorContent,
@@ -12,31 +11,27 @@ import {
     EditorBubble,
     EditorInstance, JSONContent
 } from "novel"
-import {defaultExtensions} from "@/lib/extensions"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
-import {slashCommand, suggestionItems} from "@/components/widgets/components/SlashCommand"
-import {ScrollArea} from "@/components/ui/ScrollArea"
 import {NodeSelector } from "../components/NodeSelector"
-import {TextButtons} from "@/components/widgets/components/TextButtons"
 import GlobalDragHandle from "tiptap-extension-global-drag-handle"
 import AutoJoiner from "tiptap-extension-auto-joiner"
-import {useWidgetStore} from "@/store/widgetStore"
-import { useDashboardStore } from "@/store/dashboardStore"
-import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "../ui/Dialog"
-import {Widget} from "@/database"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
-import {Input} from "@/components/ui/Input"
 import {File, Plus, Trash} from "lucide-react"
-import {Button} from "@/components/ui/Button"
-import {tooltip} from "@/components/ui/TooltipProvider"
-import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {EmojiPicker} from "@ferrucc-io/emoji-picker"
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
-import {cn, getUpdateTimeLabel} from "@/lib/utils"
-import {createPortal} from "react-dom"
-import {handleSmoothScroll} from "next/dist/shared/lib/router/utils/handle-smooth-scroll"
+import {WidgetProps, WidgetTemplate} from "../base/WidgetTemplate"
+import { tooltip } from "@forge/ui/components/TooltipProvider"
+import { WidgetHeader } from "../base/WidgetHeader"
+import { Button } from "@forge/ui/components/Button"
+import { WidgetEmpty } from "../base/WidgetEmpty"
+import { WidgetContent } from "../base/WidgetContent"
+import {Widget} from "../../types"
+import {slashCommand, suggestionItems} from "../components/SlashCommand"
+import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@forge/ui/components/Dialog"
+import { Popover, PopoverContent, PopoverTrigger } from "@forge/ui/components/Popover"
+import { ScrollArea } from "@forge/ui/components/ScrollArea"
+import {Input} from "@forge/ui/components/Input"
+import {cn, getUpdateTimeLabel} from "@forge/ui/lib/utils"
+import {TextButtons} from "../components/TextButtons"
+import {defaultExtensions} from "../../lib/extensions"
 
 type Note = {
     id: string
@@ -46,62 +41,11 @@ type Note = {
     lastUpdated: Date
 }
 
-const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        const placeholderNotes = {
-            "note-1": {
-                title: "Sample Note",
-                content: { type: "paragraph", content: [{ type: "text", text: "This is a sample note." }] },
-                emoji: "📝",
-                lastUpdated: new Date()
-            },
-            "note-2": {
-                title: "Another Note",
-                content: { type: "paragraph", content: [{ type: "text", text: "This is another sample note." }] },
-                emoji: "📓",
-                lastUpdated: new Date()
-            }
-        }
+interface EditorWidgetProps extends WidgetProps {
+    onUpdateNotes: (notes: Note[]) => void
+}
 
-        return (
-            <WidgetTemplate id={id} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Notes"}>
-                    <Button variant={"widget"}>
-                        <Plus size={16}/>
-                    </Button>
-                </WidgetHeader>
-                <WidgetContent scroll>
-                    {Object.entries(placeholderNotes).map(([noteId, note]) => (
-                        <div key={noteId} className={"group w-full p-1 flex items-center justify-between text-primary rounded-md hover:bg-secondary"}>
-                            <div className="flex items-center gap-2">
-                                <div className={"text-2xl p-1 ml-1 rounded-md bg-white/5 text-primary flex items-center justify-center"}>
-                                    {note.emoji?.length > 0 ? note.emoji : <div className={"size-8 flex items-center justify-center"}><File size={24}/></div>}
-                                </div>
-                                <div className={"flex flex-col gap-1"}>
-                                    {note.title && note.title.trim().length > 0 ? note.title : "No title"}
-                                    <p className={"text-tertiary font-mono text-sm"}>
-                                        {getUpdateTimeLabel(note.lastUpdated)}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <Button className={"hidden group-hover:flex px-1 h-6 mx-2"}>
-                                <Trash size={14}/>
-                            </Button>
-                        </div>
-                    ))}
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
-
-    const {getWidget, refreshWidget} = useWidgetStore()
-    const {currentDashboard} = useDashboardStore()
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, "editor")
-    if (!widget) return
-
+const EditorWidget: React.FC<EditorWidgetProps> = ({widget, editMode, onWidgetDelete, onUpdateNotes}) => {
     const addTooltip = tooltip<HTMLButtonElement>({
         message: "Add a new note",
         anchor: "tc"
@@ -148,17 +92,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
     const handleSave = async (id: string, data: { title: string, content: JSONContent, emoji: string, lastUpdated: Date }) => {
         const existingNotes = widget.config?.notes ?? {}
-
-        await refreshWidget({
-            ...widget,
-            config: {
-                ...widget.config,
-                notes: {
-                    ...existingNotes,
-                    [id]: data,
-                }
-            }
-        })
+        onUpdateNotes([...existingNotes, { id, ...data }])
 
         setNotes((prev) =>
             prev.map((n) =>
@@ -171,18 +105,11 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
         setNotes((prev) => prev.filter((note) => note.id !== id))
         const updatedNotes = { ...widget.config?.notes }
         delete updatedNotes[id]
-
-        refreshWidget({
-            ...widget,
-            config: {
-                ...widget.config,
-                notes: updatedNotes
-            }
-        })
+        onUpdateNotes(updatedNotes)
     }
 
     return (
-        <WidgetTemplate id={id} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Notes"}>
                 <Button
                     variant={"widget"}
@@ -227,8 +154,8 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
     const [emoji, setEmoji] = useState(note.emoji)
     const [openNode, setOpenNode] = useState(false)
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
-    const [saved, setSaved] = useState(true)
-    const [isSaving, setIsSaving] = useState(false)
+    const [_, setSaved] = useState(true)
+    const [__, setIsSaving] = useState(false)
 
     useEffect(() => {
         setTitle(note.title)
@@ -249,7 +176,6 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
 
     const highlightCodeblocks = (content: string) => {
         const doc = new DOMParser().parseFromString(content, "text/html");
-        // biome-ignore lint/complexity/noForEach: <explanation>
         doc.querySelectorAll("pre code").forEach((el) => {
             // @ts-ignore
             // https://highlightjs.readthedocs.io/en/latest/api.html?highlight=highlightElement#highlightelement

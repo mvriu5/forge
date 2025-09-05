@@ -2,48 +2,18 @@
 
 import type React from "react"
 import {useEffect, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {Select, SelectTrigger, SelectContent, SelectItem, SelectValue} from "@/components/ui/Select"
-import {useSettingsStore} from "@/store/settingsStore"
-import {useWidgetStore} from "@/store/widgetStore"
-import {useDashboardStore} from "@/store/dashboardStore"
+import {Select, SelectTrigger, SelectContent, SelectItem, SelectValue} from "@forge/ui/components/Select"
+import {Settings} from "../../types"
+import {WidgetProps, WidgetTemplate} from "../base/WidgetTemplate"
+import { WidgetHeader } from "../base/WidgetHeader"
+import {WidgetContent} from "../base/WidgetContent"
 
-const ClockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        return (
-            <WidgetTemplate id={id} name={"clock"} editMode={editMode} isPlaceholder={isPlaceholder}>
-                <WidgetHeader title={"Clock"}>
-                    <Select value={"Berlin (MEZ/MESZ)"}>
-                        <SelectTrigger className="w-max h-6 shadow-none dark:shadow-none border-0 bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
-                            <SelectValue />
-                        </SelectTrigger>
-                    </Select>
-                </WidgetHeader>
-                <WidgetContent className={"flex flex-col items-center justify-center"}>
-                    <div className="text-5xl font-mono text-primary font-bold tracking-wider">
-                        13:04:22
-                    </div>
-                    <div className="text-tertiary">
-                        Tuesday, 22nd July 2025
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
+interface ClockWidgetProps extends WidgetProps {
+    settings: Settings
+    onUpdateTimezone: (timezone: string) => Promise<void>
+}
 
-    const {getWidget, refreshWidget} = useWidgetStore()
-
-    const {settings} = useSettingsStore()
-    if (!settings) return
-
-    const {currentDashboard} = useDashboardStore()
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, "clock")
-    if (!widget) return
-
+const ClockWidget: React.FC<ClockWidgetProps> = ({widget, editMode, onWidgetDelete, settings, onUpdateTimezone}) => {
     const timezones = [
         { value: "Europe/Berlin", label: "Berlin (MEZ/MESZ)" },
         { value: "Europe/London", label: "London (GMT/BST)" },
@@ -102,17 +72,11 @@ const ClockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
 
     const handleSave = async (timezone: string) => {
         setSelectedTimezone(timezone)
-        await refreshWidget({
-            ...widget,
-            config: {
-                ...widget.config,
-                "timezone": timezone
-            }
-        })
+        onUpdateTimezone(timezone)
     }
 
     return (
-        <WidgetTemplate id={id} name={"clock"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Clock"}>
                 <Select value={selectedTimezone} onValueChange={(value) => handleSave(value)}>
                     <SelectTrigger className="w-max h-6 shadow-none dark:shadow-none border-0 bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">

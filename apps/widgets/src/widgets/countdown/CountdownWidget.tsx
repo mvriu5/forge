@@ -1,24 +1,22 @@
 "use client"
 
 import React, {useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
-import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Plus, Trash} from "lucide-react"
-import {Button} from "@/components/ui/Button"
-import {tooltip} from "@/components/ui/TooltipProvider"
-import {useWidgetStore} from "@/store/widgetStore"
-import {useDashboardStore} from "@/store/dashboardStore"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {addDays} from "date-fns"
-import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
-import {DatePicker} from "@/components/ui/Datepicker"
 import {EmojiPicker} from "@ferrucc-io/emoji-picker"
-import {ScrollArea} from "@/components/ui/ScrollArea"
+import {WidgetProps, WidgetTemplate} from "../base/WidgetTemplate"
+import {tooltip} from "@forge/ui/components/TooltipProvider"
+import {WidgetHeader} from "../base/WidgetHeader"
+import { Button } from "@forge/ui/components/Button"
+import {Popover, PopoverContent, PopoverTrigger} from "@forge/ui/components/Popover"
+import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@forge/ui/components/Form"
+import {DatePicker} from "@forge/ui/components/Datepicker"
+import {ScrollArea} from "@forge/ui/components/ScrollArea"
+import {WidgetContent} from "../base/WidgetContent"
+import {WidgetEmpty} from "../base/WidgetEmpty"
 
 type Countdown = {
     title: string
@@ -26,16 +24,11 @@ type Countdown = {
     date: Date
 }
 
-const CountdownWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {}
+interface CountdownWidgetProps extends WidgetProps {
+    onUpdateCountdown: (countdown: Countdown | null) => Promise<void>
+}
 
-    const {getWidget, refreshWidget} = useWidgetStore()
-    const {currentDashboard} = useDashboardStore()
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, "countdown")
-    if (!widget) return
-
+const CountdownWidget: React.FC<CountdownWidgetProps> = ({widget, editMode, onWidgetDelete, onUpdateCountdown}) => {
     const [countdown, setCountdown] = useState<Countdown | null>(widget.config?.countdown ?? null)
 
     const addTooltip = tooltip<HTMLButtonElement>({
@@ -78,10 +71,7 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, i
 
     const handleDeleteCountdown = () => {
         setCountdown(null)
-        refreshWidget({
-            ...widget,
-            config: {}
-        })
+        onUpdateCountdown(null)
     }
 
     const handleAddCountdown = () => {
@@ -93,19 +83,13 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, i
             date: data.date
         }
 
-        refreshWidget({
-            ...widget,
-            config: {
-                countdown: newCountdown
-            }
-        })
-
+        onUpdateCountdown(newCountdown)
         setCountdown(newCountdown)
         form.reset()
     }
 
     return (
-        <WidgetTemplate id={id} name={"countdown"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Countdown"}>
                 {countdown ? (
                     <Button
@@ -127,10 +111,10 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, i
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent>
-                            <Form {...form}>
+                            <Form {...form as any}>
                                 <form onSubmit={form.handleSubmit(handleAddCountdown)} className="space-y-2">
                                     <FormField
-                                        control={form.control}
+                                        control={form.control as any}
                                         name="title"
                                         render={({ field }) => (
                                             <FormItem>
@@ -142,7 +126,7 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, i
                                     />
                                     {/*Datepicker & Emojipicker*/}
                                     <FormField
-                                        control={form.control}
+                                        control={form.control as any}
                                         name="date"
                                         render={({ field }) => (
                                             <FormItem className="flex flex-col">
@@ -158,7 +142,7 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, i
                                     />
 
                                     <FormField
-                                        control={form.control}
+                                        control={form.control as any}
                                         name="emoji"
                                         render={({ field }) => (
                                             <FormItem>

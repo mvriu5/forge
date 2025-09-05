@@ -1,68 +1,41 @@
 "use client"
 
-import React, {useCallback, useEffect, useMemo, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
-import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
-import {tooltip} from "@/components/ui/TooltipProvider"
-import {authClient} from "@/lib/auth-client"
-import {Blocks, CloudAlert, Filter, RefreshCw} from "lucide-react"
-import {Button} from "@/components/ui/Button"
-import {useToast} from "@/components/ui/ToastProvider"
+import React, {useCallback, useMemo, useState} from "react"
+import {Filter, RefreshCw} from "lucide-react"
 import {format, isSameDay} from "date-fns"
-import {Skeleton} from "@/components/ui/Skeleton"
-import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
-import {useSettingsStore} from "@/store/settingsStore"
-import {WidgetError} from "@/components/widgets/base/WidgetError"
-import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
-import {convertToRGBA} from "@/lib/colorConvert"
+import { WidgetProps, WidgetTemplate } from "../base/WidgetTemplate"
+import { tooltip } from "@forge/ui/components/TooltipProvider"
+import { WidgetError } from "../base/WidgetError"
+import {DropdownMenu, MenuItem } from "@forge/ui/components/Dropdown"
+import {Settings} from "../../types"
+import { WidgetHeader } from "../base/WidgetHeader"
+import { Button } from "@forge/ui/components/Button"
+import { WidgetContent } from "../base/WidgetContent"
+import { Skeleton } from "@forge/ui/components/Skeleton"
+import { WidgetEmpty } from "../base/WidgetEmpty"
+import {convertToRGBA} from "@forge/ui/lib/utils"
 
-const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        const event1: CalendarEvent = {
-            id: "evt-001",
-            summary: "Team-Meeting",
-            start: { dateTime: "2025-05-20T09:00:00+02:00" },
-            end: { dateTime: "2025-05-20T10:00:00+02:00" },
-            location: "Office"
-        }
+type GoogleHookReturn = {
+    calendars: any[] | null
+    events: any[] | null
+    isLoading: boolean
+    isFetching: boolean
+    isError: boolean
+    refetch: () => void
+    googleIntegration: any
+    getColor: (eventId: string) => string | null
+    selectedCalendars: string[]
+    setSelectedCalendars: React.Dispatch<React.SetStateAction<string[]>>
+    filterLoading: boolean
+}
 
-        const event2: CalendarEvent = {
-            id: "evt-002",
-            summary: "Customer Discussion",
-            start: { dateTime: "2025-05-21T14:30:00+02:00" },
-            end: { dateTime: "2025-05-21T15:30:00+02:00" },
-            location: "Zoom-Meeting"
-        }
+interface MeetingWidgetProps extends WidgetProps {
+    onIntegrate: () => void
+    hook: GoogleHookReturn
+    settings: Settings
+}
 
-        return (
-            <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Meetings"}>
-                    <Button variant={"widget"}>
-                        <Filter size={16} />
-                    </Button>
-                    <Button variant={"widget"}>
-                        <RefreshCw size={16} />
-                    </Button>
-                </WidgetHeader>
-
-                <WidgetContent scroll>
-                    <div className={"w-full flex flex-col gap-2 items-center"}>
-                        <p className="w-full text-tertiary text-xs mt-3 mb-1">
-                            {`Today, ${format(new Date(), "EEEE, d MMMM")}`}
-                        </p>
-                        <EventCard event={event1} color={"#ed6631"} hourFormat={"24"}/>
-                        <EventCard event={event2} color={"#398e3d"} hourFormat={"24"}/>
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
-
-    const { calendars, events, isLoading, isFetching, isError, refetch, googleIntegration, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
-    const {settings} = useSettingsStore()
-    const {addToast} = useToast()
+const MeetingsWidget: React.FC<MeetingWidgetProps> = ({widget, editMode, onWidgetDelete, onIntegrate, hook, settings}) => {
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
     const refreshTooltip = tooltip<HTMLButtonElement>({
@@ -75,55 +48,32 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
         anchor: "tc"
     })
 
-    const handleIntegrate = async () => {
-        const data = await authClient.signIn.social({
-            provider: "google",
-            callbackURL: "/dashboard",
-        }, {
-            onRequest: (ctx) => {
-            },
-            onSuccess: (ctx) => {
-                addToast({
-                    title: "Successfully integrated Google",
-                    icon: <Blocks size={24}/>
-                })
-            },
-            onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
-            }
-        })
-    }
-
-    if (!googleIntegration?.accessToken && !isLoading) {
+    if (!hook.googleIntegration?.accessToken && !hook.isLoading) {
         return (
-            <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Google account first!"}
                     actionLabel={"Integrate"}
-                    onAction={handleIntegrate}
+                    onAction={onIntegrate}
                 />
             </WidgetTemplate>
         )
     }
 
-    const validEvents = useMemo(() => events?.filter(e => e.start.dateTime && e.end.dateTime && new Date(e.start.dateTime) >= new Date(Date.now())) || [], [events])
+    const validEvents = useMemo(() => hook.events?.filter(e => e.start.dateTime && e.end.dateTime && new Date(e.start.dateTime) >= new Date(Date.now())) || [], [hook.events])
 
     const sortedEvents = useMemo(() => [...validEvents].sort((a, b) => {
         return new Date(a.start.dateTime).getTime() - new Date(b.start.dateTime).getTime()
     }), [validEvents])
 
-    const dropdownFilterItems: MenuItem[] = useMemo(() => Array.from(new Set(calendars?.map((cal: any) => ({
+    const dropdownFilterItems: MenuItem[] = useMemo(() => Array.from(new Set(hook.calendars?.map((cal: any) => ({
         type: "checkbox",
         icon: <div className={"size-3 rounded-sm"} style={{backgroundColor: cal.backgroundColor ?? "white"}}/>,
         key: cal.id,
         label: cal.summary.substring(0, 40),
-        checked: selectedCalendars.includes(cal.id),
-        onCheckedChange: () => setSelectedCalendars((prev) => (prev.includes(cal.id) ? prev.filter((l) => l !== cal.id) : [...prev, cal.id]))
-    })))), [calendars, selectedCalendars, setSelectedCalendars])
+        checked: hook.selectedCalendars.includes(cal.id),
+        onCheckedChange: () => hook.setSelectedCalendars((prev) => (prev.includes(cal.id) ? prev.filter((l) => l !== cal.id) : [...prev, cal.id]))
+    })))), [hook.calendars, hook.selectedCalendars, hook.setSelectedCalendars])
 
     const renderEvents = useCallback(() => {
         if (!sortedEvents || sortedEvents.length === 0) return
@@ -142,31 +92,31 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                         <p className="w-full text-tertiary text-xs mt-3 mb-1">
                             {format(eventDate, "EEEE, d MMMM")}
                         </p>
-                        <EventCard event={event} color={getColor(event.id)} hourFormat={settings?.config.hourFormat ?? "24"}/>
+                        <EventCard event={event} color={hook.getColor(event.id)} hourFormat={settings?.config.hourFormat ?? "24"}/>
                     </React.Fragment>
                 )
             }
 
-            return <EventCard key={event.id} event={event} color={getColor(event.id)} hourFormat={settings?.config.hourFormat ?? "24"}/>
+            return <EventCard key={event.id} event={event} color={hook.getColor(event.id)} hourFormat={settings?.config.hourFormat ?? "24"}/>
         })
-    }, [sortedEvents, getColor, settings?.config.hourFormat])
+    }, [sortedEvents, hook.getColor, settings?.config.hourFormat])
 
     const isInitialLoading = useMemo(() => {
         return (
-            (isLoading && !calendars) ||
-            (isLoading && !events) ||
-            (!calendars && !isError) ||
-            (calendars && calendars.length > 0 && !events && !isError) ||
-            (filterLoading)
+            (hook.isLoading && !hook.calendars) ||
+            (hook.isLoading && !hook.events) ||
+            (!hook.calendars && !hook.isError) ||
+            (hook.calendars && hook.calendars.length > 0 && !hook.events && !hook.isError) ||
+            (hook.filterLoading)
         )
-    }, [isLoading, calendars, events, isError, filterLoading])
+    }, [hook.isLoading, hook.calendars, hook.events, hook.isError, hook.filterLoading])
 
     const hasNoEvents = useMemo(() => {
-        return calendars && Array.isArray(events) && events.length === 0 && !isInitialLoading
-    }, [calendars, events, isInitialLoading])
+        return hook.calendars && Array.isArray(hook.events) && hook.events.length === 0 && !isInitialLoading
+    }, [hook.calendars, hook.events, isInitialLoading])
 
     return (
-        <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Meetings"}>
                 <DropdownMenu
                     asChild
@@ -179,7 +129,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                         data-state={dropdownOpen ? "open" : "closed"}
                         variant={"widget"}
                         className={"group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
-                        disabled={!calendars || calendars?.length === 0 || isLoading || isFetching}
+                        disabled={!hook.calendars || hook.calendars?.length === 0 || hook.isLoading || hook.isFetching}
                         {...filterTooltip}
                     >
                         <Filter size={16} />
@@ -188,8 +138,8 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
                 <Button
                     className={"group"}
                     variant={"widget"}
-                    onClick={refetch}
-                    data-loading={(isLoading || isFetching) ? "true" : "false"}
+                    onClick={hook.refetch}
+                    data-loading={(hook.isLoading || hook.isFetching) ? "true" : "false"}
                     {...refreshTooltip}
                 >
                     <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
@@ -217,7 +167,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
 }
 
 interface EventProps {
-    event: CalendarEvent
+    event: any
     color: string | null
     hourFormat: string
 }

@@ -32,7 +32,7 @@ interface BookmarkItem {
 }
 
 interface BookmarkWidgetProps extends WidgetProps {
-    onUpdateBookmarks: (bookmarks: BookmarkItem[]) => void
+    onUpdateBookmarks: (bookmarks: BookmarkItem[]) => Promise<void>
 }
 
 const BookmarkWidget: React.FC<BookmarkWidgetProps> = ({widget, editMode, onWidgetDelete, onUpdateBookmarks}) => {

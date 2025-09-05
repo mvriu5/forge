@@ -1,18 +1,10 @@
 "use client"
 
 import React, {useEffect, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
-import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
-import {Button} from "@/components/ui/Button"
 import {Forward, Plus, Trash} from "lucide-react"
-import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
-import {tooltip} from "@/components/ui/TooltipProvider"
-import {cn} from "@/lib/utils"
 import {
     closestCorners,
     DndContext,
@@ -32,14 +24,19 @@ import {
     verticalListSortingStrategy
 } from "@dnd-kit/sortable"
 import {CSS} from "@dnd-kit/utilities"
-import {Input} from "../ui/Input"
-import {useWidgetStore} from "@/store/widgetStore"
-import {useDashboardStore} from "@/store/dashboardStore"
-import {ScrollArea} from "@/components/ui/ScrollArea"
 import Compact from "@uiw/react-color-compact"
-import {convertToRGBA} from "@/lib/colorConvert"
-import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {restrictToFirstScrollableAncestor, restrictToHorizontalAxis, restrictToWindowEdges} from "@dnd-kit/modifiers"
+import { WidgetProps, WidgetTemplate } from "../base/WidgetTemplate"
+import { tooltip } from "@forge/ui/components/TooltipProvider"
+import { WidgetHeader } from "../base/WidgetHeader"
+import {Popover, PopoverContent, PopoverTrigger } from "@forge/ui/components/Popover"
+import { Button } from "@forge/ui/components/Button"
+import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@forge/ui/components/Form"
+import {WidgetContent} from "../base/WidgetContent.tsx"
+import { WidgetEmpty } from "../base/WidgetEmpty.tsx"
+import {ScrollArea} from "@forge/ui/components/ScrollArea"
+import {cn, convertToRGBA} from "@forge/ui/lib/utils"
+import {Input} from "@forge/ui/components/Input"
 
 export type Card = {
     id: string
@@ -53,60 +50,18 @@ type Column = {
     cards: Card[]
 }
 
-const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        const cards: Card[] = [
-            {id: "card-1", title: "Sample Task 1"},
-            {id: "card-2", title: "Sample Task 2"},
-            {id: "card-3", title: "Sample Task 3"},
-        ]
+interface KanbanWidgetProps extends WidgetProps {
+    onUpdateColumns: (columns: Column[]) => Promise<void>
+}
 
-        const columns: Column[] = [
-            {id: "column-1", title: "To Do", color: "#FF4C4C", cards},
-            {id: "column-2", title: "In Progress", color: "#FF914D", cards},
-            {id: "column-3", title: "Done", color: "#00BFFF", cards},
-        ]
-
-        return (
-            <WidgetTemplate id={id} name={"kanban"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <WidgetHeader title={"Kanban Board"}>
-                    <Button variant={"widget"}>
-                        <Plus size={16}/>
-                    </Button>
-                </WidgetHeader>
-                <WidgetContent>
-                    <div className="flex gap-4 overflow-x-auto">
-                        {columns.map((column) => (
-                            <KanbanColumn
-                                isPlaceholder
-                                key={column.id}
-                                column={column}
-                                onAddCardToColumn={() => {}}
-                                onDeleteColumn={() => {}}
-                                onDeleteCard={() => {}}
-                            />
-                        ))}
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
-
-    const {getWidget, refreshWidget} = useWidgetStore()
-
-    const {currentDashboard} = useDashboardStore()
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, "kanban")
-    if (!widget) return
-
+const KanbanWidget: React.FC<KanbanWidgetProps> = ({widget, editMode, onWidgetDelete, onUpdateColumns}) => {
     const [columns, setColumns] = useState<Column[]>(widget.config?.kanban ?? [])
     const [columnPopoverOpen, setColumnPopoverOpen] = useState(false)
     const [activeId, setActiveId] = useState<string | null>(null)
     const [hex, setHex] = useState("#ffffff")
 
     useEffect(() => {
-        updateWidgetConfig();
+        onUpdateColumns(columns)
     }, [columns]);
 
     const sensors = useSensors(
@@ -138,15 +93,6 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
             title: ""
         },
     })
-
-    const updateWidgetConfig = async () => {
-        await refreshWidget({
-            ...widget,
-            config: {
-                kanban: columns,
-            },
-        })
-    }
 
     const handleAddColumn = (column: Partial<Column>) => {
         if (column.title?.trim()) {
@@ -291,7 +237,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     }
 
     return (
-        <WidgetTemplate id={id} name={"kanban"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Kanban Board"}>
                 <Popover open={columnPopoverOpen} onOpenChange={setColumnPopoverOpen}>
                     <PopoverTrigger asChild>
@@ -300,10 +246,10 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className={"w-64"} align={"end"}>
-                        <Form {...form}>
+                        <Form {...form as any}>
                             <form onSubmit={form.handleSubmit(handleAddColumn)} className="space-y-2">
                                 <FormField
-                                    control={form.control}
+                                    control={form.control as any}
                                     name="title"
                                     render={({ field }) => (
                                         <FormItem>
@@ -347,8 +293,8 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                                         "#FFFF8F", // Zitronengelb
                                         "#D0AAFF"  // Lavendel
                                     ]}
-                                    onChange={(color) => {
-                                        setHex(color.hex);
+                                    onChange={(color: any) => {
+                                        setHex(color.hex)
                                     }}
                                 />
                                 <Button

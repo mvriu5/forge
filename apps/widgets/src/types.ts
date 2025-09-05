@@ -11,3 +11,12 @@ export type Widget = {
     createdAt: Date
     updatedAt: Date
 }
+
+export type Settings = {
+    id: string
+    userId: string
+    lastDashboardId: string
+    config: Record<string, any>
+    createdAt: Date
+    updatedAt: Date
+}

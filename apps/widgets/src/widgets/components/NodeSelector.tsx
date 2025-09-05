@@ -1,6 +1,3 @@
-import { Button } from "@/components/ui/Button"
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
-import { cn } from "@/lib/utils"
 import {
     Check,
     ChevronDown,
@@ -15,6 +12,9 @@ import {
     type LucideIcon,
 } from "lucide-react"
 import { EditorBubbleItem, useEditor } from "novel"
+import {Popover, PopoverContent, PopoverTrigger} from "@forge/ui/components/Popover"
+import {Button} from "@forge/ui/components/Button"
+import {cn} from "@forge/ui/lib/utils"
 
 
 export type SelectorItem = {
@@ -110,7 +110,7 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
                 {SelectorItems.map((item) => (
                     <EditorBubbleItem
                         key={item.name}
-                        onSelect={(editor) => {
+                        onSelect={(editor: any) => {
                             item.command(editor)
                             onOpenChange(false)
                         }}

@@ -1,68 +1,56 @@
 "use client"
 
 import React from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
-import {usePhantom} from "@/hooks/usePhantom"
-import {Button} from "@/components/ui/Button"
-import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {PhantomIcon} from "@/components/svg/PhantomIcon"
-import {CopyButton} from "@/components/CopyButton"
-import {Copy, Plug, TriangleAlert, Unplug} from "lucide-react"
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {Callout} from "@/components/ui/Callout"
-import { Skeleton } from "../ui/Skeleton"
-import {WidgetError} from "@/components/widgets/base/WidgetError"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {Copy, Plug, Unplug} from "lucide-react"
+import { WidgetProps, WidgetTemplate } from "../base/WidgetTemplate"
+import {WidgetHeader} from "../base/WidgetHeader.tsx"
+import { Button } from "@forge/ui/components/Button"
+import { WidgetError } from "../base/WidgetError.tsx"
+import { WidgetContent } from "../base/WidgetContent.tsx"
+import { Skeleton } from "@forge/ui/components/Skeleton"
+import {tooltip} from "@forge/ui/components/TooltipProvider"
+import {CopyButton} from "@forge/ui/components/CopyButton"
 
-const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        return (
-            <WidgetTemplate id={id} className={"flex flex-col gap-4 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Phantom"} className={"z-[1]"}>
-                    <Button
-                        variant={"widget"}
-                        onClick={() => wallet ? disconnect() : connect()}
-                    >
-                        <Unplug size={16}/>
-                    </Button>
-                </WidgetHeader>
+type PhantomHookReturn = {
+    provider: any | null
+    wallet: {
+        address: string
+        balance: {
+            value: number
+            currency: string
+        }
+    } | null
+    connect: () => Promise<void>
+    disconnect: () => Promise<void>
+    isLoading: boolean
+    isFetching: boolean
+    isError: boolean
+    refetch: () => Promise<void>
+}
 
-                <WidgetContent>
-                    <div className={"flex flex-col z-[1]"}>
-                        <div className={"flex flex-row items-center gap-2"}>
-                            <p className={"text-nowrap"}>Wallet address:</p>
-                            <p className={"text-xs text-tertiary truncate"}>GsX82Dc357Ca9aSSaN8ccKwh7Hwgwz1mL1pV27fjm6PebxWWSf</p>
-                            <CopyButton copyText={""} className={"bg-0 hover:bg-0 p-0 m-1"} copyIcon={<Copy size={16}/>}/>
-                        </div>
-                        <div className={"flex flex-row items-center gap-2"}>
-                            <p className={"text-nowrap"}>Current Balance:</p>
-                            <p className={"text-lg text-semibold text-primary"}>$100.27</p>
-                        </div>
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
+interface PhantomWidgetProps extends WidgetProps {
+    hook: PhantomHookReturn
+}
 
-    const {provider, wallet, connect, disconnect, isLoading, isFetching, isError, refetch} = usePhantom()
+const PhantomWidget: React.FC<PhantomWidgetProps> = ({widget, editMode, onWidgetDelete, hook}) => {
 
     const connectTooltip = tooltip<HTMLButtonElement>({
-        message: wallet ? "Disconnect your phantom wallet" : "Connect your phantom wallet",
+        message: hook.wallet ? "Disconnect your phantom wallet" : "Connect your phantom wallet",
         anchor: "tc"
     })
 
     return (
-        <WidgetTemplate id={id} className={"flex flex-col gap-4 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate widget={widget} className={"flex flex-col gap-4 overflow-hidden"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Phantom"} className={"z-[1]"}>
                 <Button
                     variant={"widget"}
-                    onClick={() => wallet ? disconnect() : connect()}
+                    onClick={() => hook.wallet ? hook.disconnect() : hook.connect()}
                     {...connectTooltip}
                 >
-                    {wallet ? <Unplug size={16}/> : <Plug size={16}/>}
+                    {hook.wallet ? <Unplug size={16}/> : <Plug size={16}/>}
                 </Button>
             </WidgetHeader>
-            {!wallet ? (
+            {!hook.wallet ? (
                 <WidgetError
                     message={"Connect your Phantom wallet to use this widget!"}
                 />
@@ -71,19 +59,19 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
                     <div className={"flex flex-col"}>
                         <div className={"flex flex-row items-center gap-2"}>
                             <p className={"text-nowrap"}>Wallet address:</p>
-                            {isLoading ? (
+                            {hook.isLoading ? (
                                 <Skeleton className={"w-56 h-6"}/>
                             ) : (
-                                <p className={"text-xs text-tertiary truncate"}>{wallet?.address}</p>
+                                <p className={"text-xs text-tertiary truncate"}>{hook.wallet?.address}</p>
                             )}
-                            <CopyButton copyText={wallet?.address ?? ""} className={"bg-0 hover:bg-0 p-0 m-1"} copyIcon={<Copy size={16}/>}/>
+                            <CopyButton copyText={hook.wallet?.address ?? ""} className={"bg-0 hover:bg-0 p-0 m-1"} copyIcon={<Copy size={16}/>}/>
                         </div>
                         <div className={"flex flex-row items-center gap-2"}>
                             <p className={"text-nowrap"}>Current Balance:</p>
-                            {isLoading ? (
+                            {hook.isLoading ? (
                                 <Skeleton className={"w-20 h-6"}/>
                             ) : (
-                                <p className={"text-lg text-semibold text-primary"}>{`$${wallet?.balance.value.toFixed(2)}`}</p>
+                                <p className={"text-lg text-semibold text-primary"}>{`$${hook.wallet?.balance.value.toFixed(2)}`}</p>
                             )}
                         </div>
                     </div>

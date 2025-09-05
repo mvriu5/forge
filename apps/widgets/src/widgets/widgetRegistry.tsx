@@ -1,7 +1,6 @@
 "use client"
 
-import type React from "react"
-import {BookmarkWidget} from "./bookmark/BookmarkWidget"
+import React, { Suspense } from "react"
 import {EditorWidget} from "./editor/EditorWidget"
 import {GithubWidget} from "./github/GithubWidget"
 import {StockWidget} from "./stock/StockWidget"
@@ -33,6 +32,10 @@ export interface WidgetElement {
     preview: WidgetPreview
     component: React.FC<any>
 }
+
+const LazyBookmarkWidget = React.lazy(() =>
+    import("./bookmark/BookmarkWidget").then(m => ({ default: m.BookmarkWidget }))
+);
 
 
 export const widgetRegistry: WidgetElement[] = [
@@ -109,7 +112,11 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: BookmarkWidget
+        component: (props: any) => (
+            <Suspense fallback={null}>
+                <LazyBookmarkWidget {...props} name="bookmark" />
+            </Suspense>
+        )
     },
     {
         preview: {

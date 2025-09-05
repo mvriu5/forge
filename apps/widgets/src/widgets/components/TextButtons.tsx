@@ -1,11 +1,11 @@
-import { cn } from "@/lib/utils";
-import { EditorBubbleItem, useEditor } from "novel";
-import {BoldIcon, ItalicIcon, StrikethroughIcon, CodeIcon, UnderlineIcon} from "lucide-react";
-import {SelectorItem} from "@/components/widgets/components/NodeSelector"
-import {Button} from "@/components/ui/Button"
+import {BoldIcon, ItalicIcon, StrikethroughIcon, CodeIcon} from "lucide-react"
+import {EditorBubbleItem, useEditor} from "novel"
+import { SelectorItem } from "./NodeSelector"
+import {Button} from "@forge/ui/components/Button"
+import {cn} from "@forge/ui/lib/utils"
 
 export const TextButtons = () => {
-    const { editor } = useEditor();
+    const { editor } = useEditor()
     if (!editor) return null;
     const items: SelectorItem[] = [
         {

@@ -8,8 +8,8 @@ import {
     ListOrdered,
     Text,
     TextQuote,
-} from "lucide-react";
-import {Command, createSuggestionItems, renderItems} from "novel";
+} from "lucide-react"
+import {Command, createSuggestionItems, renderItems} from "novel"
 
 export const suggestionItems = createSuggestionItems([
     {

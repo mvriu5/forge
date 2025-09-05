@@ -2,10 +2,8 @@
 
 import React, {useEffect, useState} from 'react'
 import {WidgetProps, WidgetTemplate} from '../base/WidgetTemplate'
-import {Blocks, ChevronLeft, ChevronRight, CloudAlert, Plus} from "lucide-react"
-import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
+import {ChevronLeft, ChevronRight, Plus} from "lucide-react"
 import { format } from 'date-fns'
-import {convertToRGBA} from "@/lib/colorConvert"
 import {
     DndContext,
     useDraggable,
@@ -17,18 +15,15 @@ import {
     type DragEndEvent,
 } from "@dnd-kit/core"
 import { restrictToVerticalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers"
-import {authClient} from "@/lib/auth-client"
 import {Calendar as CalendarIcon} from "lucide-react"
 import {WidgetHeader} from "../base/WidgetHeader"
 import { Button } from '@forge/ui/components/Button'
 import {WidgetContent} from "../base/WidgetContent"
-import {cn} from "@forge/ui/lib/utils"
+import {cn, convertToRGBA} from "@forge/ui/lib/utils"
 import {ScrollArea} from "@forge/ui/components/ScrollArea"
 import {WidgetError} from "../base/WidgetError"
 import {Popover, PopoverContent, PopoverTrigger} from "@forge/ui/components/Popover"
 import {Calendar} from "@forge/ui/components/Calendar"
-import {useToast} from "@forge/ui/components/ToastProvider"
-
 
 const weekdays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 const months = [
@@ -46,11 +41,27 @@ const months = [
     "December",
 ]
 
-const CalendarWidget: React.FC<WidgetProps> = ({widget, editMode, onWidgetDelete}) => {
-    const { calendars, events: appointments, isLoading, isFetching, isError, refetch, googleIntegration, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
-    const { addToast } = useToast()
+type GoogleHookReturn = {
+    calendars: any[]
+    events: any[]
+    isLoading: boolean
+    isFetching: boolean
+    isError: boolean
+    refetch: () => void
+    googleIntegration: any
+    getColor: (id: string) => string | null
+    selectedCalendars: string[]
+    setSelectedCalendars: React.Dispatch<React.SetStateAction<string[]>>
+    filterLoading: boolean
+}
 
-    const [events, setEvents] = useState<CalendarEvent[]>([])
+interface CalendarWidgetProps extends WidgetProps {
+    hook: GoogleHookReturn
+    onIntegrate: () => Promise<void>
+}
+
+const CalendarWidget: React.FC<CalendarWidgetProps> = ({widget, editMode, onWidgetDelete, hook, onIntegrate}) => {
+    const [events, setEvents] = useState<any[]>([])
     const [currentTime, setCurrentTime] = useState(new Date())
     const [currentWeekStart, setCurrentWeekStart] = useState(() => {
         const today = new Date()
@@ -59,7 +70,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({widget, editMode, onWidgetDelete
         monday.setDate(today.getDate() - dayOfWeek + 1)
         return monday
     })
-    const [_, setActiveDragEvent] = useState<CalendarEvent | null>(null)
+    const [_, setActiveDragEvent] = useState<any | null>(null)
     const [calendarPopoverOpen, setCalendarPopoverOpen] = useState(false)
 
     const sensors = useSensors(
@@ -71,8 +82,8 @@ const CalendarWidget: React.FC<WidgetProps> = ({widget, editMode, onWidgetDelete
     )
 
     useEffect(() => {
-        if (appointments && appointments.length > 0) {
-            setEvents(appointments.map((appointment: any) => ({
+        if (hook.events && hook.events.length > 0) {
+            setEvents(hook.events.map((appointment: any) => ({
                 id: appointment.id,
                 summary: appointment.summary,
                 location: appointment.location,
@@ -80,7 +91,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({widget, editMode, onWidgetDelete
                 end: appointment.end
             })))
         }
-    }, [appointments])
+    }, [hook.events])
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -89,36 +100,13 @@ const CalendarWidget: React.FC<WidgetProps> = ({widget, editMode, onWidgetDelete
         return () => clearInterval(timer)
     }, [])
 
-    const handleIntegrate = async () => {
-        await authClient.signIn.social({
-            provider: "google",
-            callbackURL: "/dashboard",
-        }, {
-            onRequest: () => {
-            },
-            onSuccess: () => {
-                addToast({
-                    title: "Successfully integrated Google",
-                    icon: <Blocks size={24}/>
-                })
-            },
-            onError: (ctx: any) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
-            }
-        })
-    }
-
-    if (!googleIntegration?.accessToken && !isLoading) {
+    if (!hook.googleIntegration?.accessToken && !hook.isLoading) {
         return (
             <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Google account first!"}
                     actionLabel={"Integrate"}
-                    onAction={handleIntegrate}
+                    onAction={onIntegrate}
                 />
             </WidgetTemplate>
         )
@@ -175,7 +163,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({widget, editMode, onWidgetDelete
         return hours * 60 + (minutes / 60) * 60
     }
 
-    const getAppointmentPosition = (event: CalendarEvent) => {
+    const getAppointmentPosition = (event: any) => {
         const startMinutes = timeToMinutes(event.start.dateTime)
         const endMinutes = timeToMinutes(event.end.dateTime)
         const duration = endMinutes - startMinutes
@@ -384,7 +372,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({widget, editMode, onWidgetDelete
                                                                 topPosition={topPosition}
                                                                 height={height}
                                                                 handleDragStart={handleDragStart}
-                                                                color={getColor(evt.id)}
+                                                                color={hook.getColor(evt.id)}
                                                             />
                                                         )
                                                     })}
@@ -403,7 +391,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({widget, editMode, onWidgetDelete
 }
 
 interface EventProps {
-    event: CalendarEvent
+    event: any
     topPosition: number
     height: number
     handleDragStart: (e: React.DragEvent, appointmentId: string) => void

@@ -1,159 +1,56 @@
 "use client"
 
 import type React from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
-import {Callout} from "@/components/ui/Callout"
-import {Blocks, Box, Captions, CloudAlert, Hourglass, RefreshCw, TriangleAlert, Users} from "lucide-react"
-import {Button} from "@/components/ui/Button"
-import {SortOption, useLinear} from "@/hooks/useLinear"
-import {authClient} from "@/lib/auth-client"
-import {useToast} from "@/components/ui/ToastProvider"
-import {ScrollArea} from "@/components/ui/ScrollArea"
-import {tooltip} from "@/components/ui/TooltipProvider"
-import {cn, hexToRgba} from "@/lib/utils"
-import {StatusBadge} from "@/components/widgets/components/StatusBadge"
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
-import {LinearIcon} from "@/components/svg/LinearIcon"
-import {Skeleton} from "@/components/ui/Skeleton"
-import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {WidgetError} from "@/components/widgets/base/WidgetError"
+import {Box, Captions, Hourglass, RefreshCw, Users} from "lucide-react"
+import {WidgetProps, WidgetTemplate} from "../base/WidgetTemplate"
+import {tooltip} from "@forge/ui/components/TooltipProvider"
+import {WidgetError} from "../base/WidgetError"
+import {WidgetHeader} from "../base/WidgetHeader"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@forge/ui/components/Select"
+import {Button} from "@forge/ui/components/Button"
+import {WidgetContent} from "../base/WidgetContent"
+import {Skeleton} from "@forge/ui/components/Skeleton"
+import {StatusBadge} from "../components/StatusBadge"
+import {cn, hexToRgba} from "@forge/ui/lib/utils"
 
-const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        const issues = [
-            {
-                id: "27f60088-dd2e-4b8f-9e79-7db941ae1327",
-                title: "Deprecated Feature Cleanup",
-                description: "Remove outdated legacy code and unused assets to streamline the codebase.",
-                stateName: "Canceled",
-                labels: [{ name: "Maintenance", color: "#ffd966" }],
-                priority: 1,
-                priorityName: "Low",
-                url: "https://linear.app/noque/issue/MA-216/deprecated-feature-cleanup",
-                project: "Maintenance",
-                team: "Backend Team",
-                createdAt: "Sat Apr 19 2025 19:50:40 GMT+0200 (CEST)",
-                updatedAt: "Sun Apr 20 2025 21:48:20 GMT+0200 (CEST)"
-            },
-            {
-                id: "41747d7e-47b8-42d8-9648-0fa0b04c9efa",
-                title: "Enable Emoji Support in Chat",
-                description: "Allow users to select and insert emojis in chat messages.",
-                stateName: "In Progress",
-                labels: [{ name: "User Interface", color: "#a4c2f4" }],
-                priority: 2,
-                priorityName: "Medium",
-                url: "https://linear.app/noque/issue/MA-214/enable-emoji-support-in-chat",
-                project: "Messaging UI",
-                team: "Front-End Team",
-                createdAt: "Sat Oct 05 2024 14:15:24 GMT+0200 (CEST)",
-                updatedAt: "Sat Oct 05 2024 14:15:24 GMT+0200 (CEST)"
-            },
-            {
-                id: "341bb5fa-4fae-4d41-bb24-35e6cc5b31e6",
-                title: "Responsive Toolbar Component",
-                description: "Develop a toolbar that adapts to desktop and mobile layouts.",
-                stateName: "Done",
-                labels: [{ name: "Component", color: "#bec2c8" }],
-                priority: 3,
-                priorityName: "High",
-                url: "https://linear.app/noque/issue/MA-206/responsive-toolbar-component",
-                project: "UI Components",
-                team: "Front-End Team",
-                createdAt: "Thu Sep 05 2024 20:33:20 GMT+0200 (CEST)",
-                updatedAt: "Sat Apr 19 2025 19:50:30 GMT+0200 (CEST)"
-            },
-            {
-                id: "dc144749-a13f-46e8-bc66-267fde577ba2",
-                title: "Responsive Scheduler Widget",
-                description: "Design and implement a scheduler widget optimized for all screen sizes.",
-                stateName: "Backlog",
-                labels: [{ name: "UX", color: "#e2aaff" }],
-                priority: 2,
-                priorityName: "Medium",
-                url: "https://linear.app/noque/issue/MA-202/responsive-scheduler-widget",
-                project: "Dashboard Widgets",
-                team: "UX Team",
-                createdAt: "Thu Sep 05 2024 20:27:52 GMT+0200 (CEST)",
-                updatedAt: "Sat Apr 19 2025 19:50:24 GMT+0200 (CEST)"
-            }
-        ]
+type LinearHookReturn = {
+    linearIntegration: any
+    data: any[] | null
+    isLoading: boolean
+    isFetching: boolean
+    isError: boolean
+    refetch: () => void
+    sortBy: "priority" | "created"
+    setSortBy: (option: "priority" | "created") => void
+}
 
-        return (
-            <WidgetTemplate id={id} name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Linear"}>
-                    <Select>
-                        <SelectTrigger className="w-max h-6 shadow-none dark:shadow-none border-0 bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-tertiary text-nowrap">Sort by:</span>
-                                <SelectValue placeholder="Sort" />
-                            </div>
-                        </SelectTrigger>
-                        <SelectContent className={"border-main/40"}>
-                            <SelectItem value="priority">Priority</SelectItem>
-                            <SelectItem value="created">Creation Date</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Button
-                        variant={"widget"}
-                    >
-                        <RefreshCw size={16} />
-                    </Button>
-                </WidgetHeader>
-                <WidgetContent scroll>
-                    <div className={"flex flex-col gap-2"}>
-                        {issues?.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
+interface LinearWidgetProps extends WidgetProps {
+    onIntegrate: () => Promise<void>
+    hook: LinearHookReturn
+}
 
-    const {linearIntegration, data, isLoading, isFetching, isError, refetch, sortBy, setSortBy} = useLinear()
-    const {addToast} = useToast()
-
+const LinearWidget: React.FC<LinearWidgetProps> = ({widget, editMode, onWidgetDelete, onIntegrate, hook}) => {
     const refreshTooltip = tooltip<HTMLButtonElement>({
         message: "Refresh your issues & pull requests",
         anchor: "bc",
     })
 
-    const handleIntegrate = async () => {
-        await authClient.signIn.social({provider: "linear", callbackURL: "/dashboard"}, {
-            onRequest: (ctx) => {
-            },
-            onSuccess: (ctx) => {
-                addToast({
-                    title: "Successfully integrated Linear",
-                    icon: <Blocks size={24}/>
-                })
-            },
-            onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
-            }
-        })
-    }
-
-    if (!linearIntegration?.accessToken && !isLoading) {
+    if (!hook.linearIntegration?.accessToken && !hook.isLoading) {
         return (
-            <WidgetTemplate id={id} name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Linear account first!"}
                     actionLabel={"Integrate"}
-                    onAction={handleIntegrate}
+                    onAction={onIntegrate}
                 />
             </WidgetTemplate>
         )
     }
 
     return (
-        <WidgetTemplate id={id} name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Linear"}>
-                <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                <Select value={hook.sortBy} onValueChange={(value) => hook.setSortBy(value as "priority" | "created")}>
                     <SelectTrigger className="w-max transition-all bg-tertiary border-0 shadow-none dark:shadow-none h-6 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
                         <div className="flex items-center gap-2">
                             <span className="text-sm text-tertiary text-nowrap">Sort by:</span>
@@ -168,15 +65,15 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                 <Button
                     variant={"widget"}
                     className={"group"}
-                    onClick={() => refetch()}
-                    data-loading={(isLoading || isFetching) ? "true" : "false"}
+                    onClick={() => hook.refetch()}
+                    data-loading={(hook.isLoading || hook.isFetching) ? "true" : "false"}
                     {...refreshTooltip}
                 >
                     <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
                 </Button>
             </WidgetHeader>
             <WidgetContent scroll>
-                {(isLoading || isFetching) ? (
+                {(hook.isLoading || hook.isFetching) ? (
                     <div className={"h-full flex flex-col gap-2"}>
                         <Skeleton className={"h-16"}/>
                         <Skeleton className={"h-16"}/>
@@ -186,7 +83,7 @@ const LinearWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     </div>
                 ) : (
                     <div className={"flex flex-col gap-2"}>
-                        {data?.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
+                        {hook.data?.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
                     </div>
                 )}
             </WidgetContent>

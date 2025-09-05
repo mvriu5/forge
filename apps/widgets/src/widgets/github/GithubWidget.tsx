@@ -3,97 +3,47 @@
 import React, {useState} from "react"
 import {WidgetProps, WidgetTemplate} from "../base/WidgetTemplate"
 import {
-    AlertCircle,
-    Blocks,
     CircleDashed,
-    CloudAlert,
     Filter,
-    FolderGit,
     FolderOpen,
     GitPullRequest,
     RefreshCw
 } from "lucide-react"
 import {formatDate} from "date-fns"
-import {authClient} from "@/lib/auth-client"
-import {Button} from "@/components/ui/Button"
-import {Badge} from "@/components/ui/Badge"
-import {Input} from "@/components/ui/Input"
-import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
-import {Tabs, TabsList, TabsTrigger} from "@/components/ui/Tabs"
-import {Skeleton} from "@/components/ui/Skeleton"
-import {useToast} from "@/components/ui/ToastProvider"
-import {tooltip} from "@/components/ui/TooltipProvider"
-import {useGithub} from "@/hooks/useGithub"
-import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {WidgetError} from "@/components/widgets/base/WidgetError"
+import {Button} from "@forge/ui/components/Button"
+import {Badge} from "@forge/ui/components/Badge"
+import {Input} from "@forge/ui/components/Input"
+import {DropdownMenu, MenuItem} from "@forge/ui/components/Dropdown"
+import {Tabs, TabsList, TabsTrigger} from "@forge/ui/components/Tabs"
+import {Skeleton} from "@forge/ui/components/Skeleton"
+import {tooltip} from "@forge/ui/components/TooltipProvider"
+import { WidgetError } from "../base/WidgetError"
+import {WidgetHeader} from "../base/WidgetHeader"
+import {WidgetContent} from "../base/WidgetContent"
 
-const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        const data = [
-            {
-                id: 1,
-                html_url: "",
-                repository_url: "/Forge",
-                title: "Fix Backend Tasks",
-                created_at: new Date(),
-                labels: []
-            },
-            {
-                id: 2,
-                html_url: "",
-                repository_url: "/Forge",
-                title: "Frontend UI rework",
-                created_at: new Date(),
-                labels: []
-            }
-        ]
+type GithubHookReturn = {
+    activeTab: string
+    setActiveTab: (tab: string) => void
+    searchQuery: string
+    setSearchQuery: (query: string) => void
+    selectedLabels: any[]
+    setSelectedLabels: (labels: any) => void
+    allLabels: any[]
+    filteredIssues: any[]
+    filteredPRs: any[]
+    isLoading: boolean
+    isFetching: boolean
+    isError: boolean
+    refetch: () => void
+    githubIntegration: any
+}
 
-        return (
-            <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Github"}>
-                    <Badge
-                        variant="brand"
-                        className="text-xs bg-brand/10 border-brand/40 font-mono"
-                        title={"2 open"}
-                    />
-                    <Button variant={"widget"}>
-                        <Filter size={16} />
-                    </Button>
-                    <Button variant={"widget"}>
-                        <RefreshCw size={16} />
-                    </Button>
-                </WidgetHeader>
-                <Input
-                    placeholder="Search..."
-                    className="bg-tertiary"
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Tabs defaultValue="issues">
-                    <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
-                        <TabsTrigger value="issues">
-                            <AlertCircle size={16} className="mr-2" />
-                            Issues
-                        </TabsTrigger>
-                        <TabsTrigger value="pull-requests">
-                            <GitPullRequest size={16} className="mr-2" />
-                            Pull Requests
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
-                <WidgetContent scroll>
-                    <div className={"flex flex-col gap-2"}>
-                        {data.map((issue) => (
-                            <IssueCard issue={issue} key={issue.id}/>
-                        ))}
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
+interface GithubWidgetProps extends WidgetProps {
+    hook: GithubHookReturn
+    onIntegrate: () => Promise<void>
+}
 
-    const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch, githubIntegration} = useGithub()
-    const {addToast} = useToast()
+const GithubWidget: React.FC<GithubWidgetProps> = ({widget, editMode, onWidgetDelete, hook, onIntegrate}) => {
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
     const filterTooltip = tooltip<HTMLButtonElement>({
@@ -106,56 +56,36 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
         anchor: "tc",
     })
 
-    const dropdownFilterItems: MenuItem[] = Array.from(new Set(allLabels.map((label) => ({
+    const dropdownFilterItems: MenuItem[] = Array.from(new Set(hook.allLabels.map((label: any) => ({
         type: "checkbox",
         icon: <div className={"size-3 rounded-sm"} style={{backgroundColor: `#${label.color}`}}/>,
         key: label.id,
         label: label.name,
-        checked: selectedLabels.includes(label),
-        onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]))
+        checked: hook.selectedLabels.includes(label),
+        onCheckedChange: () => hook.setSelectedLabels((prev: any) => (prev.includes(label) ? prev.filter((l: any) => l !== label) : [...prev, label]))
     }))))
 
-    const handleIntegrate = async () => {
-        const data = await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
-            onRequest: (ctx) => {
-            },
-            onSuccess: (ctx) => {
-                addToast({
-                    title: "Successfully integrated Github",
-                    icon: <Blocks size={24}/>
-                })
-            },
-            onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
-            }
-        })
-    }
-
-    if (!githubIntegration?.accessToken && !isLoading) {
+    if (!hook.githubIntegration?.accessToken && !hook.isLoading) {
         return (
-            <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Github account first!"}
                     actionLabel={"Integrate"}
-                    onAction={handleIntegrate}
+                    onAction={onIntegrate}
                 />
             </WidgetTemplate>
         )
     }
 
     return (
-        <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate widget={widget} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Github"}>
                 <Badge
                     variant="brand"
                     className="text-xs bg-brand/10 border-brand/40 font-mono"
-                    title={`${activeTab === "issues" ? filteredIssues.length : filteredPRs.length} open`}
+                    title={`${hook.activeTab === "issues" ? hook.filteredIssues.length : hook.filteredPRs.length} open`}
                 />
-                {activeTab === "issues" &&
+                {hook.activeTab === "issues" &&
                     <DropdownMenu
                         asChild
                         items={dropdownFilterItems}
@@ -167,7 +97,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                             data-state={dropdownOpen ? "open" : "closed"}
                             variant={"widget"}
                             className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
-                            disabled={allLabels.length === 0 || isLoading || isFetching}
+                            disabled={hook.allLabels.length === 0 || hook.isLoading || hook.isFetching}
                             {...filterTooltip}
                         >
                             <Filter size={16} />
@@ -176,8 +106,8 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                 }
                 <Button
                     variant={"widget"}
-                    onClick={() => refetch()}
-                    data-loading={(isLoading || isFetching) ? "true" : "false"}
+                    onClick={() => hook.refetch()}
+                    data-loading={(hook.isLoading || hook.isFetching) ? "true" : "false"}
                     {...refreshTooltip}
                 >
                     <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
@@ -187,11 +117,11 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                 <Input
                     placeholder="Search..."
                     className="bg-tertiary"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={hook.searchQuery}
+                    onChange={(e) => hook.setSearchQuery(e.target.value)}
                 />
             </div>
-            <Tabs defaultValue="issues" onValueChange={setActiveTab}>
+            <Tabs defaultValue="issues" onValueChange={hook.setActiveTab}>
                 <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
                     <TabsTrigger value="issues">
                         Issues
@@ -202,7 +132,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                 </TabsList>
             </Tabs>
             <WidgetContent scroll>
-                {(isLoading || isFetching) ? (
+                {(hook.isLoading || hook.isFetching) ? (
                     <div className="h-full flex flex-col gap-4 pt-2">
                         <Skeleton className={"h-16 w-full px-2"} />
                         <Skeleton className={"h-16 w-full px-2"} />
@@ -210,18 +140,18 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
                     </div>
                 ) : (
                     <div className={"flex flex-col gap-2"}>
-                        {activeTab === "issues" && filteredIssues.map((issue) => (
+                        {hook.activeTab === "issues" && hook.filteredIssues.map((issue: any) => (
                             <IssueCard issue={issue} key={issue.id}/>
                         ))}
-                        {activeTab === "pull-requests" && filteredPRs.map((pr) => (
+                        {hook.activeTab === "pull-requests" && hook.filteredPRs.map((pr: any) => (
                             <PulLRequestCard pr={pr} key={pr.id}/>
                         ))}
-                        {activeTab === "issues" && filteredIssues.length === 0 &&
+                        {hook.activeTab === "issues" && hook.filteredIssues.length === 0 &&
                             <div className={"mt-4 flex justify-center items-center text-sm text-tertiary"}>
                                 No results found
                             </div>
                         }
-                        {activeTab === "pull-requests" && filteredPRs.length === 0 &&
+                        {hook.activeTab === "pull-requests" && hook.filteredPRs.length === 0 &&
                             <div className={"mt-4 flex justify-center items-center text-sm text-tertiary"}>
                                 No results found
                             </div>

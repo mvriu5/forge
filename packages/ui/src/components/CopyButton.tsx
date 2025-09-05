@@ -1,11 +1,11 @@
 "use client"
 
-import {AnimatePresence, motion} from "framer-motion"
+import {AnimatePresence, motion} from "motion/react"
 import {Check, Clipboard, Share2} from "lucide-react"
 import React, {HTMLAttributes, ReactNode, useEffect, useState} from "react"
-import {Button} from "@/components/ui/Button"
-import {useToast} from "@/components/ui/ToastProvider"
-import {cn} from "@/lib/utils"
+import {useToast} from "@forge/ui/components/ToastProvider"
+import {Button} from "@forge/ui/components/Button"
+import {cn} from "@forge/ui/lib/utils"
 
 interface CopyButtonProps extends HTMLAttributes<HTMLDivElement> {
     copyText: string
@@ -13,7 +13,7 @@ interface CopyButtonProps extends HTMLAttributes<HTMLDivElement> {
     tooltip?: any
 }
 
-const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, copyIcon, className, ...props }) => {
+const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, copyIcon, className }) => {
     const [isChecked, setIsChecked] = useState(false)
     const {addToast} = useToast()
 
