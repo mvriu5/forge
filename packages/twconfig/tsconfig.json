@@ -1,0 +1,16 @@
+{
+  "extends": "@forge/tsconfig/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["node", "react", "react-dom"],
+    "paths": {
+      "@forge/ui/*": ["./src/*"]
+    },
+    "noEmit": true,
+    "esModuleInterop": true
+  },
+  "include": ["."],
+  "exclude": ["node_modules"]
+}

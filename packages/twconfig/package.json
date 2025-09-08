@@ -1,0 +1,14 @@
+{
+  "name": "@forge/twconfig",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "check-types": "tsc"
+  },
+  "exports": {
+    "./*": "./src/tailwind.config.ts"
+  },
+  "dependencies": {
+    "tailwindcss": "^4.0.7"
+  }
+}

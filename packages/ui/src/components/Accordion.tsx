@@ -6,7 +6,6 @@ import { ChevronDown } from "lucide-react"
 import { cn } from "../lib/utils"
 import type {ComponentPropsWithRef} from "react"
 
-
 const AccordionItem = ({ title, children, className, ...props }: ComponentPropsWithRef<typeof Accordion.Item & {title: string}>) => {
     return (
         <>
