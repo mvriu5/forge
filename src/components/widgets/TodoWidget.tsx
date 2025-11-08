@@ -7,29 +7,22 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Checkbox} from "@/components/ui/Checkbox"
 import {cn} from "@/lib/utils"
 import {Button} from "@/components/ui/Button"
-import {Eraser, Forward, GripVertical, Trash} from "lucide-react"
+import {Eraser, Forward, Trash} from "lucide-react"
 import {Input} from "@/components/ui/Input"
-import {useWidgetStore} from "@/store/widgetStore"
-import {useDashboardStore} from "@/store/dashboardStore"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {
-    DndContext,
     closestCenter,
-    KeyboardSensor,
-    PointerSensor,
+    DndContext,
+    type DragEndEvent,
+    MouseSensor,
+    TouchSensor,
     useSensor,
     useSensors,
-    type DragEndEvent, MouseSensor, TouchSensor,
 } from "@dnd-kit/core"
-import {
-    SortableContext,
-    sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
-    useSortable,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
-import { arrayMove } from "@dnd-kit/sortable"
+import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} from "@dnd-kit/sortable"
+import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
+import {useWidgets} from "@/hooks/data/useWidgets"
 
 interface TodoProps {
     id: string
@@ -37,45 +30,9 @@ interface TodoProps {
     text: string
 }
 
-const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        return (
-            <WidgetTemplate id={id} name={"todo"} isPlaceholder={isPlaceholder} editMode={editMode}>
-                <WidgetHeader title={"Todo's"}>
-                    <Button variant={"widget"}>
-                        <Eraser size={16} />
-                    </Button>
-                </WidgetHeader>
-                <WidgetContent scroll>
-                    <Todo
-                        id={""}
-                        text={"Clean apartment"}
-                        checked={false}
-                        onDelete={() => {}}
-                        onCheckChange={() => {}}
-                    />
-                </WidgetContent>
-                <div className={"flex items-center gap-2"}>
-                    <Input
-                        className={"shadow-none dark:shadow-none bg-0 border-0 focus:border-0 focus:bg-0 focus:outline-0"}
-                        placeholder={"Type your todo..."}
-                        disabled={true}
-                    />
-                    <Button className={"px-2 border-0 hover:bg-inverted/10 shadow-none dark:shadow-none"}>
-                        <Forward size={16}/>
-                    </Button>
-                </div>
-            </WidgetTemplate>
-        )
-    }
-
-    const {getWidget, refreshWidget} = useWidgetStore()
-
-    const {currentDashboard} = useDashboardStore()
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, "todo")
-    if (!widget) return
+const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
+    if (!widget) return null
+    const {updateWidget} = useWidgets(widget.userId)
 
     const [todos, setTodos] = useState<TodoProps[]>(widget.config?.todos ?? [])
     const inputRef = useRef<HTMLInputElement>(null)
@@ -101,7 +58,7 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
     }
 
     const handleSave = async (updatedTodos: TodoProps[] = todos) => {
-        await refreshWidget({
+        await updateWidget({
             ...widget,
             config: {
                 todos: updatedTodos,
@@ -113,14 +70,14 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
         const updatedTodos = todos.filter((_, i) => i !== indexToDelete)
         setTodos(updatedTodos)
         handleSave(updatedTodos)
-    }, [todos, handleSave])
+    }, [todos])
 
     const handleCheckChange = useCallback((indexToUpdate: number, checked: boolean) => {
         const updatedTodos = [...todos]
         updatedTodos[indexToUpdate].checked = checked
         setTodos(updatedTodos)
         handleSave(updatedTodos)
-    }, [todos, handleSave])
+    }, [todos])
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -148,7 +105,7 @@ const TodoWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlac
                     return newOrder
                 })
             }
-        }, [handleSave])
+        }, [])
 
     return (
         <WidgetTemplate id={id} name={"todo"} editMode={editMode} onWidgetDelete={onWidgetDelete}>

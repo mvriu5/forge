@@ -8,7 +8,6 @@ import {cn} from "@/lib/utils"
 import {ChartCandlestick, CheckIcon, TrendingDown, TrendingUp, TriangleAlert} from "lucide-react"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
-import {useWidgetStore} from "@/store/widgetStore"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {Callout} from "@/components/ui/Callout"
 import {StockChart} from "@/components/widgets/components/StockChart"
@@ -18,51 +17,20 @@ import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandL
 import {AssetOption, ChartDataPoint} from "@/actions/twelvedata"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {useDashboardStore} from "@/store/dashboardStore"
 import {WidgetEmpty} from "./base/WidgetEmpty"
 import {Spinner} from "@/components/ui/Spinner"
+import {useWidgets} from "@/hooks/data/useWidgets"
 
-const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        return (
-            <WidgetTemplate id={id} name={"stock"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Stock Overview"}>
-                    <Button variant={"widget"}>
-                        <ChartCandlestick size={16}/>
-                    </Button>
-                    <Select>
-                        <SelectTrigger className={"w-max bg-tertiary border-0 shadow-none dark:shadow-none h-6"}>
-                            <SelectValue placeholder="Timespan"/>
-                        </SelectTrigger>
-                        <SelectContent align={"end"} className={"border-main/40"}>
-                            <SelectItem value="1">24 hours</SelectItem>
-                            <SelectItem value="7">7 days</SelectItem>
-                            <SelectItem value="30">30 days</SelectItem>
-                            <SelectItem value="90">90 days</SelectItem>
-                            <SelectItem value="365">1 year</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </WidgetHeader>
-                <WidgetContent scroll>
-                    <Stock selectedStock={{value: "GOOGL", label: "Google", type: "stock"}} selectedTimespan={"90"} isPlaceholder={true}/>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
-
-    const {getWidget, refreshWidget} = useWidgetStore()
-    const {currentDashboard} = useDashboardStore()
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, "stock")
-    if (!widget) return
+const StockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
+    if (!widget) return null
+    const {updateWidget} = useWidgets(widget.userId)
 
     const [selectedStocks, setSelectedStocks] = useState<AssetOption[]>(widget.config?.stocks ?? [])
     const [timespan, setTimespan] = useState<string>(widget.config?.timespan ?? "365")
     const [open, setOpen] = useState(false)
 
     const handleSave = async (updatedConfig: Partial<{ stocks: AssetOption[], timespan: string }>) => {
-        await refreshWidget({
+        await updateWidget({
             ...widget,
             config: {
                 ...widget.config,
@@ -87,7 +55,7 @@ const StockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
     }, [selectedStocks, assetList])
 
     return (
-        <WidgetTemplate id={id} name={"stock"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} widget={widget} name={"stock"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Stock Overview"}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>

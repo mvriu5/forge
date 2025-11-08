@@ -1,27 +1,26 @@
 "use client"
 
-import React, {useEffect} from "react"
-import {useState} from "react"
+import React, {useEffect, useState} from "react"
 import {
-    EditorRoot,
-    EditorContent,
+    EditorBubble,
     EditorCommand,
     EditorCommandEmpty,
+    EditorCommandItem,
     EditorCommandList,
-    EditorCommandItem, handleCommandNavigation,
-    EditorBubble,
-    EditorInstance, JSONContent
+    EditorContent,
+    EditorInstance,
+    EditorRoot,
+    handleCommandNavigation,
+    JSONContent
 } from "novel"
 import {defaultExtensions} from "@/lib/extensions"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {slashCommand, suggestionItems} from "@/components/widgets/components/SlashCommand"
 import {ScrollArea} from "@/components/ui/ScrollArea"
-import {NodeSelector } from "./components/NodeSelector"
+import {NodeSelector} from "./components/NodeSelector"
 import {TextButtons} from "@/components/widgets/components/TextButtons"
 import GlobalDragHandle from "tiptap-extension-global-drag-handle"
 import AutoJoiner from "tiptap-extension-auto-joiner"
-import {useWidgetStore} from "@/store/widgetStore"
-import { useDashboardStore } from "@/store/dashboardStore"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "../ui/Dialog"
@@ -35,8 +34,7 @@ import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {cn, getUpdateTimeLabel} from "@/lib/utils"
-import {createPortal} from "react-dom"
-import {handleSmoothScroll} from "next/dist/shared/lib/router/utils/handle-smooth-scroll"
+import {useWidgets} from "@/hooks/data/useWidgets"
 
 type Note = {
     id: string
@@ -46,61 +44,9 @@ type Note = {
     lastUpdated: Date
 }
 
-const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        const placeholderNotes = {
-            "note-1": {
-                title: "Sample Note",
-                content: { type: "paragraph", content: [{ type: "text", text: "This is a sample note." }] },
-                emoji: "📝",
-                lastUpdated: new Date()
-            },
-            "note-2": {
-                title: "Another Note",
-                content: { type: "paragraph", content: [{ type: "text", text: "This is another sample note." }] },
-                emoji: "📓",
-                lastUpdated: new Date()
-            }
-        }
-
-        return (
-            <WidgetTemplate id={id} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Notes"}>
-                    <Button variant={"widget"}>
-                        <Plus size={16}/>
-                    </Button>
-                </WidgetHeader>
-                <WidgetContent scroll>
-                    {Object.entries(placeholderNotes).map(([noteId, note]) => (
-                        <div key={noteId} className={"group w-full p-1 flex items-center justify-between text-primary rounded-md hover:bg-secondary"}>
-                            <div className="flex items-center gap-2">
-                                <div className={"text-2xl p-1 ml-1 rounded-md bg-white/5 text-primary flex items-center justify-center"}>
-                                    {note.emoji?.length > 0 ? note.emoji : <div className={"size-8 flex items-center justify-center"}><File size={24}/></div>}
-                                </div>
-                                <div className={"flex flex-col gap-1"}>
-                                    {note.title && note.title.trim().length > 0 ? note.title : "No title"}
-                                    <p className={"text-tertiary font-mono text-sm"}>
-                                        {getUpdateTimeLabel(note.lastUpdated)}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <Button className={"hidden group-hover:flex px-1 h-6 mx-2"}>
-                                <Trash size={14}/>
-                            </Button>
-                        </div>
-                    ))}
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
-
-    const {getWidget, refreshWidget} = useWidgetStore()
-    const {currentDashboard} = useDashboardStore()
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, "editor")
-    if (!widget) return
+const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
+    if (!widget) return null
+    const {updateWidget} = useWidgets(widget.userId)
 
     const addTooltip = tooltip<HTMLButtonElement>({
         message: "Add a new note",
@@ -149,7 +95,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     const handleSave = async (id: string, data: { title: string, content: JSONContent, emoji: string, lastUpdated: Date }) => {
         const existingNotes = widget.config?.notes ?? {}
 
-        await refreshWidget({
+        await updateWidget({
             ...widget,
             config: {
                 ...widget.config,
@@ -172,7 +118,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
         const updatedNotes = { ...widget.config?.notes }
         delete updatedNotes[id]
 
-        refreshWidget({
+        void updateWidget({
             ...widget,
             config: {
                 ...widget.config,
@@ -182,7 +128,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     }
 
     return (
-        <WidgetTemplate id={id} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} widget={widget} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Notes"}>
                 <Button
                     variant={"widget"}

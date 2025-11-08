@@ -1,13 +1,11 @@
 "use client"
 
-import React, {useRef, useState} from "react"
+import React, {useMemo, useRef, useState} from "react"
 import {
     Blocks,
     Check,
     CircleUserRound,
     CloudAlert,
-    Eye,
-    EyeOff,
     Github,
     LayoutDashboard,
     Pencil,
@@ -19,12 +17,10 @@ import {
     X
 } from "lucide-react"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
-import {useSessionStore} from "@/store/sessionStore"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {GoogleIcon} from "@/components/svg/GoogleIcon"
-import {useIntegrationStore} from "@/store/integrationStore"
 import {cn} from "@/lib/utils"
 import {authClient} from "@/lib/auth-client"
 import type {PutBlobResult} from "@vercel/blob"
@@ -36,20 +32,19 @@ import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/co
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {Input} from "@/components/ui/Input"
 import {LinearIcon} from "@/components/svg/LinearIcon"
-import {useDashboardStore} from "@/store/dashboardStore"
 import {ScrollArea} from "@/components/ui/ScrollArea"
-import {CopyButton} from "@/components/CopyButton"
-import {Dashboard} from "@/database"
+import {Dashboard, Settings} from "@/database"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {RadioGroup} from "@/components/ui/RadioGroup"
-import {useSettingsStore} from "@/store/settingsStore"
 import {RadioGroupBox} from "@/components/ui/RadioGroupBox"
-import {Settings} from "@/database"
 import {Spinner} from "@/components/ui/Spinner"
-
+import {useSession} from "@/hooks/data/useSession"
+import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
+import {useDashboards} from "@/hooks/data/useDashboards"
+import {useSettings} from "@/hooks/data/useSettings"
 
 function SettingsDialog() {
-    const {session} = useSessionStore()
+    const {session} = useSession()
     const [open, setOpen] = useState(false)
     const [tab, setTab] = useState("profile")
 
@@ -134,7 +129,11 @@ interface IntegrationProps {
 }
 
 const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
-    const {addIntegration, removeIntegration, githubIntegration, googleIntegration, linearIntegration} = useIntegrationStore()
+    const userId = session?.user?.id
+    const {integrations, removeIntegration, refetchIntegrations} = useIntegrations(userId)
+    const githubIntegration = useMemo(() => getIntegrationByProvider(integrations, "github"), [integrations])
+    const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
+    const linearIntegration = useMemo(() => getIntegrationByProvider(integrations, "linear"), [integrations])
     const {addToast} = useToast()
 
     const integrationList = [
@@ -146,13 +145,13 @@ const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
                 const data = await authClient.signIn.social({provider: "github"}, {
                     onRequest: (ctx) => {
                     },
-                    onSuccess: (ctx) => {
+                    onSuccess: async (ctx) => {
                         setOpen(false)
                         addToast({
                             title: "Successfully integrated Github",
                             icon: <Blocks size={24}/>
                         })
-                        if (session?.user) addIntegration(session.user.id)
+                        if (userId) await refetchIntegrations()
                     },
                     onError: (ctx) => {
                         addToast({
@@ -173,13 +172,13 @@ const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
                 const data = await authClient.signIn.social({provider: "google"}, {
                     onRequest: (ctx) => {
                     },
-                    onSuccess: (ctx) => {
+                    onSuccess: async (ctx) => {
                         setOpen(false)
                         addToast({
                             title: "Successfully integrated Google",
                             icon: <Blocks size={24}/>
                         })
-                        if (session?.user) addIntegration(session.user.id)
+                        if (userId) await refetchIntegrations()
                     },
                     onError: (ctx) => {
                         addToast({
@@ -200,11 +199,12 @@ const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
                 await authClient.signIn.social({provider: "linear"}, {
                     onRequest: (ctx) => {
                     },
-                    onSuccess: (ctx) => {
+                    onSuccess: async (ctx) => {
                         addToast({
                             title: "Successfully integrated Linear",
                             icon: <Blocks size={24}/>
                         })
+                        if (userId) await refetchIntegrations()
                     },
                     onError: (ctx) => {
                         addToast({
@@ -261,7 +261,7 @@ interface ProfileProps {
 }
 
 const ProfileSection = ({session, onClose}: ProfileProps) => {
-    const {updateUser} = useSessionStore()
+    const {updateUser} = useSession()
     const {addToast} = useToast()
     const [uploading, setUploading] = useState(false)
     const [avatarUrl, setAvatarUrl] = useState<string | undefined>(session?.user?.image)
@@ -462,7 +462,9 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
 }
 
 const DashboardSection = () => {
-    const {dashboards, refreshDashboard, removeDashboard} = useDashboardStore()
+    const {session} = useSession()
+    const userId = session?.user?.id
+    const {dashboards = [], updateDashboard, removeDashboard} = useDashboards(userId)
 
     return (
         <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>
@@ -471,8 +473,8 @@ const DashboardSection = () => {
                     <DashboardItem
                         key={dashboard.id}
                         dashboard={dashboard}
-                        dashboards={dashboards}
-                        refreshDashboard={refreshDashboard}
+                        dashboards={dashboards ?? []}
+                        onUpdate={updateDashboard}
                         removeDashboard={removeDashboard}
                     />
                 ))}
@@ -484,11 +486,11 @@ const DashboardSection = () => {
 interface DashboardItemProps {
     dashboard: Dashboard
     dashboards: Dashboard[]
-    refreshDashboard: (d: Dashboard) => Promise<any>
-    removeDashboard: (d: Dashboard) => Promise<any>
+    onUpdate: (d: Dashboard) => Promise<any>
+    removeDashboard: (id: string) => Promise<any>
 }
 
-const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard}: DashboardItemProps) => {
+const DashboardItem = ({dashboard, dashboards, onUpdate, removeDashboard}: DashboardItemProps) => {
     const {addToast} = useToast()
     const [editDialogOpen, setEditDialogOpen] = useState(false)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -528,7 +530,7 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
     })
 
     const handleUpdate = async (values: z.infer<typeof formSchema>) => {
-        await refreshDashboard({ ...dashboard, name: values.name })
+        await onUpdate({ ...dashboard, name: values.name })
         addToast({
             title: "Successfully updated dashboard!",
             icon: <LayoutDashboard size={24} className="text-brand" />
@@ -538,7 +540,7 @@ const DashboardItem = ({dashboard, dashboards, refreshDashboard, removeDashboard
 
     const handleDelete = async () => {
         setDeleteLoading(true)
-        await removeDashboard(dashboard)
+        await removeDashboard(dashboard.id)
         addToast({
             title: "Successfully deleted dashboard",
             icon: <LayoutDashboard size={24} className="text-brand" />
@@ -669,10 +671,18 @@ interface SettingsProps {
 }
 
 const SettingsSection = ({onClose}: SettingsProps) => {
-    const {settings, updateSettings} = useSettingsStore()
+    const {session} = useSession()
+    const userId = session?.user?.id
+    const {settings, updateSettings, updateSettingsStatus} = useSettings(userId)
     const {addToast} = useToast()
 
-    if (!settings) return
+    if (!settings) {
+        return (
+            <div className={"w-full h-full flex items-center justify-center"}>
+                <Spinner/>
+            </div>
+        )
+    }
 
     const formSchema = z.object({
         hourFormat: z.enum(["12", "24"])
@@ -755,9 +765,9 @@ const SettingsSection = ({onClose}: SettingsProps) => {
                         variant={"brand"}
                         className={"w-max"}
                         type={"submit"}
-                        disabled={form.formState.isSubmitting}
+                        disabled={form.formState.isSubmitting || updateSettingsStatus === "pending"}
                     >
-                        {(form.formState.isSubmitting) && <Spinner/>}
+                        {(form.formState.isSubmitting || updateSettingsStatus === "pending") && <Spinner/>}
                         Save
                     </Button>
                 </div>

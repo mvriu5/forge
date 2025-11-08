@@ -1,10 +1,15 @@
-import {useIntegrationStore} from "@/store/integrationStore"
 import {useMemo, useState} from "react"
 import {useQuery} from "@tanstack/react-query"
 import {fetchOpenIssuesAndPullsFromAllRepos} from "@/actions/github"
+import {useSession} from "@/hooks/data/useSession"
+import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 
 export const useGithub = () => {
-    const { githubIntegration } = useIntegrationStore()
+    const {session} = useSession()
+    const userId = session?.user?.id
+    const {integrations} = useIntegrations(userId)
+    const githubIntegration = useMemo(() => getIntegrationByProvider(integrations, "github"), [integrations])
+
     const [searchQuery, setSearchQuery] = useState<string>("")
     const [selectedLabels, setSelectedLabels] = useState<string[]>([])
     const [activeTab, setActiveTab] = useState<string>("issues")

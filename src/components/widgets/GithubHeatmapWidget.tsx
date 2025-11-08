@@ -8,38 +8,19 @@ import { WidgetContent } from "@/components/widgets/base/WidgetContent"
 import {Heatmap} from "@/components/ui/Heatmap"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
-import {useIntegrationStore} from "@/store/integrationStore"
 import {authClient} from "@/lib/auth-client"
 import {Blocks, CloudAlert} from "lucide-react"
 import {useToast} from "@/components/ui/ToastProvider"
-import {useBreakpoint} from "@/hooks/useBreakpoint"
+import {useBreakpoint} from "@/hooks/media/useBreakpoint"
+import { useSession } from "@/hooks/data/useSession"
+import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 
-const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        return (
-            <WidgetTemplate id={id} name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder>
-                <WidgetHeader title={"Github Heatmap"}/>
-                <WidgetContent className={"h-full items-center"}>
-                    <div
-                        className="grid mt-6"
-                        style={{
-                            gridTemplateColumns: "repeat(53, 10px)",
-                            gridTemplateRows: "repeat(7, 10px)",
-                            gap: "2px",
-                        }}
-                    >
-                        {Array.from({ length: 371 }, (_, i) =>
-                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                            <div key={i} className={"bg-green-500 size-2.5 rounded-xs"}/>
-                        )}
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
-
+const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
+    const {session} = useSession()
+    const userId = session?.user?.id
+    const {integrations, refetchIntegrations} = useIntegrations(userId)
+    const githubIntegration = getIntegrationByProvider(integrations, "github")
     const {data, isLoading, isFetching, isError} = useGithubHeatmap()
-    const {githubIntegration} = useIntegrationStore()
     const {addToast} = useToast()
     const {tailwindBreakpoint} = useBreakpoint()
 
@@ -57,6 +38,7 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelet
     const handleIntegrate = async () => {
         const data = await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
             onRequest: (ctx) => {
+                void refetchIntegrations()
             },
             onSuccess: (ctx) => {
                 addToast({
@@ -76,7 +58,7 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelet
 
     if (!githubIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} widget={widget} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Github account first!"}
                     actionLabel={"Integrate"}
@@ -87,7 +69,7 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelet
     }
 
     return (
-        <WidgetTemplate id={id} name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} widget={widget} name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Github Heatmap"}/>
             <WidgetContent className={"h-full items-center"}>
                 {(isLoading || isFetching) ? (

@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react"
-import { useWidgetStore } from "@/store/widgetStore"
+import {useState, useEffect, useMemo} from "react"
 import { Widget } from "@/database"
-import {useDashboardStore} from "@/store/dashboardStore"
 
-export const useGrid = (activeWidget: Widget | null) => {
-    const {currentDashboard} = useDashboardStore()
+export const useGrid = (activeWidget: Widget | null, widgets: Widget[] | undefined) => {
+    const filteredWidgets = useMemo(() => {
+        if (!widgets) return []
+        return widgets
+    }, [widgets])
 
     const [gridCells, setGridCells] = useState<{
         x: number,
@@ -16,9 +17,8 @@ export const useGrid = (activeWidget: Widget | null) => {
 
     const getOccupiedCells = () => {
         const occupiedCells: Record<string, boolean> = {}
-        const widgets = useWidgetStore.getState().widgets?.filter((w) => w.dashboardId === currentDashboard?.id)
 
-        widgets?.map((widget) => {
+        filteredWidgets?.map((widget) => {
             if (activeWidget && widget.id === activeWidget.id) return
             const { width, height, positionX, positionY } = widget
 
@@ -48,7 +48,7 @@ export const useGrid = (activeWidget: Widget | null) => {
     }
 
     useEffect(() => {
-        if (!currentDashboard || !activeWidget) {
+        if (!activeWidget) {
             setGridCells([])
             return
         }
@@ -64,7 +64,7 @@ export const useGrid = (activeWidget: Widget | null) => {
         }
 
         setGridCells(cells)
-    }, [activeWidget, currentDashboard])
+    }, [activeWidget, filteredWidgets])
 
     return gridCells
 }

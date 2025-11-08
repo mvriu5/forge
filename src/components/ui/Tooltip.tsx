@@ -3,7 +3,7 @@
 import {type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState} from "react"
 import {KeyboardShortcut} from "@/components/ui/KeyboardShortcut"
 import {cn} from "@/lib/utils"
-import {useHoverSupported} from "@/hooks/useHoverSupported"
+import {useHoverSupported} from "@/hooks/media/useHoverSupported"
 
 interface TooltipProps {
     id?: number

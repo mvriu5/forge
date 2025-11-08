@@ -33,13 +33,12 @@ import {
 } from "@dnd-kit/sortable"
 import {CSS} from "@dnd-kit/utilities"
 import {Input} from "../ui/Input"
-import {useWidgetStore} from "@/store/widgetStore"
-import {useDashboardStore} from "@/store/dashboardStore"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import Compact from "@uiw/react-color-compact"
 import {convertToRGBA} from "@/lib/colorConvert"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {restrictToFirstScrollableAncestor, restrictToHorizontalAxis, restrictToWindowEdges} from "@dnd-kit/modifiers"
+import {useWidgets} from "@/hooks/data/useWidgets"
 
 export type Card = {
     id: string
@@ -53,52 +52,9 @@ type Column = {
     cards: Card[]
 }
 
-const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        const cards: Card[] = [
-            {id: "card-1", title: "Sample Task 1"},
-            {id: "card-2", title: "Sample Task 2"},
-            {id: "card-3", title: "Sample Task 3"},
-        ]
-
-        const columns: Column[] = [
-            {id: "column-1", title: "To Do", color: "#FF4C4C", cards},
-            {id: "column-2", title: "In Progress", color: "#FF914D", cards},
-            {id: "column-3", title: "Done", color: "#00BFFF", cards},
-        ]
-
-        return (
-            <WidgetTemplate id={id} name={"kanban"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <WidgetHeader title={"Kanban Board"}>
-                    <Button variant={"widget"}>
-                        <Plus size={16}/>
-                    </Button>
-                </WidgetHeader>
-                <WidgetContent>
-                    <div className="flex gap-4 overflow-x-auto">
-                        {columns.map((column) => (
-                            <KanbanColumn
-                                isPlaceholder
-                                key={column.id}
-                                column={column}
-                                onAddCardToColumn={() => {}}
-                                onDeleteColumn={() => {}}
-                                onDeleteCard={() => {}}
-                            />
-                        ))}
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
-
-    const {getWidget, refreshWidget} = useWidgetStore()
-
-    const {currentDashboard} = useDashboardStore()
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, "kanban")
-    if (!widget) return
+const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
+    if (!widget) return null
+    const {updateWidget} = useWidgets(widget.userId)
 
     const [columns, setColumns] = useState<Column[]>(widget.config?.kanban ?? [])
     const [columnPopoverOpen, setColumnPopoverOpen] = useState(false)
@@ -140,7 +96,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     })
 
     const updateWidgetConfig = async () => {
-        await refreshWidget({
+        await updateWidget({
             ...widget,
             config: {
                 kanban: columns,
@@ -291,7 +247,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     }
 
     return (
-        <WidgetTemplate id={id} name={"kanban"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} widget={widget} name={"kanban"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Kanban Board"}>
                 <Popover open={columnPopoverOpen} onOpenChange={setColumnPopoverOpen}>
                     <PopoverTrigger asChild>

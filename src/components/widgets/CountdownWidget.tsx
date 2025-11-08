@@ -7,8 +7,6 @@ import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Plus, Trash} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {tooltip} from "@/components/ui/TooltipProvider"
-import {useWidgetStore} from "@/store/widgetStore"
-import {useDashboardStore} from "@/store/dashboardStore"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
@@ -19,6 +17,7 @@ import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {DatePicker} from "@/components/ui/Datepicker"
 import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {ScrollArea} from "@/components/ui/ScrollArea"
+import {useWidgets} from "@/hooks/data/useWidgets"
 
 type Countdown = {
     title: string
@@ -26,15 +25,9 @@ type Countdown = {
     date: Date
 }
 
-const CountdownWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {}
-
-    const {getWidget, refreshWidget} = useWidgetStore()
-    const {currentDashboard} = useDashboardStore()
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, "countdown")
-    if (!widget) return
+const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
+    if (!widget) return null
+    const {updateWidget} = useWidgets(widget.userId)
 
     const [countdown, setCountdown] = useState<Countdown | null>(widget.config?.countdown ?? null)
 
@@ -76,15 +69,15 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, i
         return `${days}d ${hours}h ${minutes}m `
     }
 
-    const handleDeleteCountdown = () => {
+    const handleDeleteCountdown = async () => {
         setCountdown(null)
-        refreshWidget({
+        await updateWidget({
             ...widget,
             config: {}
         })
     }
 
-    const handleAddCountdown = () => {
+    const handleAddCountdown = async () => {
         const data = form.getValues()
 
         const newCountdown: Countdown = {
@@ -93,7 +86,7 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, i
             date: data.date
         }
 
-        refreshWidget({
+        await updateWidget({
             ...widget,
             config: {
                 countdown: newCountdown
@@ -105,7 +98,7 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, i
     }
 
     return (
-        <WidgetTemplate id={id} name={"countdown"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} widget={widget} name={"countdown"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Countdown"}>
                 {countdown ? (
                     <Button

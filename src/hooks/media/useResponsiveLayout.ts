@@ -3,7 +3,7 @@
 import { useMemo } from "react"
 import { transformLayout, type Breakpoint, getGridClasses, getContainerHeight } from "@/lib/transformLayout"
 import { Widget } from "@/database"
-import { useBreakpoint } from "@/hooks/useBreakpoint"
+import { useBreakpoint } from "@/hooks/media/useBreakpoint"
 
 
 const layoutCache = new Map<string, Widget[]>()

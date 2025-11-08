@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useCallback, useEffect, useMemo, useState} from "react"
+import React, {useCallback, useMemo, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
@@ -13,55 +13,21 @@ import {useToast} from "@/components/ui/ToastProvider"
 import {format, isSameDay} from "date-fns"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
-import {useSettingsStore} from "@/store/settingsStore"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {convertToRGBA} from "@/lib/colorConvert"
+import {useSession} from "@/hooks/data/useSession"
+import {useSettings} from "@/hooks/data/useSettings"
+import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 
-const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        const event1: CalendarEvent = {
-            id: "evt-001",
-            summary: "Team-Meeting",
-            start: { dateTime: "2025-05-20T09:00:00+02:00" },
-            end: { dateTime: "2025-05-20T10:00:00+02:00" },
-            location: "Office"
-        }
-
-        const event2: CalendarEvent = {
-            id: "evt-002",
-            summary: "Customer Discussion",
-            start: { dateTime: "2025-05-21T14:30:00+02:00" },
-            end: { dateTime: "2025-05-21T15:30:00+02:00" },
-            location: "Zoom-Meeting"
-        }
-
-        return (
-            <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Meetings"}>
-                    <Button variant={"widget"}>
-                        <Filter size={16} />
-                    </Button>
-                    <Button variant={"widget"}>
-                        <RefreshCw size={16} />
-                    </Button>
-                </WidgetHeader>
-
-                <WidgetContent scroll>
-                    <div className={"w-full flex flex-col gap-2 items-center"}>
-                        <p className="w-full text-tertiary text-xs mt-3 mb-1">
-                            {`Today, ${format(new Date(), "EEEE, d MMMM")}`}
-                        </p>
-                        <EventCard event={event1} color={"#ed6631"} hourFormat={"24"}/>
-                        <EventCard event={event2} color={"#398e3d"} hourFormat={"24"}/>
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
-
-    const { calendars, events, isLoading, isFetching, isError, refetch, googleIntegration, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
-    const {settings} = useSettingsStore()
+const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
+    const {session} = useSession()
+    const userId = session?.user?.id
+    const {settings} = useSettings(userId)
+    if (!settings) return null
+    const {integrations, refetchIntegrations} = useIntegrations(userId)
+    const googleIntegration = getIntegrationByProvider(integrations, "google")
+    const { calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
     const {addToast} = useToast()
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -76,11 +42,9 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     })
 
     const handleIntegrate = async () => {
-        const data = await authClient.signIn.social({
-            provider: "google",
-            callbackURL: "/dashboard",
-        }, {
+        const data = await authClient.signIn.social({provider: "google", callbackURL: "/dashboard"}, {
             onRequest: (ctx) => {
+                void refetchIntegrations()
             },
             onSuccess: (ctx) => {
                 addToast({
@@ -100,7 +64,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
 
     if (!googleIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} widget={widget} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Google account first!"}
                     actionLabel={"Integrate"}
@@ -166,7 +130,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     }, [calendars, events, isInitialLoading])
 
     return (
-        <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} widget={widget} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Meetings"}>
                 <DropdownMenu
                     asChild

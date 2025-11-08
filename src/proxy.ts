@@ -5,7 +5,7 @@ const authRoutes = ["/signin", "/signup"]
 const passwordRoutes = ["/reset", "/forgot"]
 const landingRoutes = ["/", "/privacy", "/terms", "/sitemap.xml", "/pricing", "/widgets"]
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const { pathname, searchParams } = request.nextUrl
     const session = getSessionCookie(request)
 

@@ -1,11 +1,20 @@
-import { useCallback } from "react"
-import { useWidgetStore } from "@/store/widgetStore"
-import { DragStartEvent, DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors, DragOverEvent } from "@dnd-kit/core"
-import {useDashboardStore} from "@/store/dashboardStore"
+import {useCallback, useMemo} from "react"
+import {
+    DragEndEvent,
+    DragOverEvent,
+    DragStartEvent,
+    MouseSensor,
+    TouchSensor,
+    useSensor,
+    useSensors
+} from "@dnd-kit/core"
+import { Widget } from "@/database"
 
-export const useDragAndDrop = (editMode: boolean, setActiveWidget: (widget: any) => void) => {
-    const { updateWidgetPosition } = useWidgetStore()
-    const { currentDashboard } = useDashboardStore()
+export const useDragAndDrop = (editMode: boolean, widgets: Widget[] | undefined, currentDashboardId: string | null, updateWidgetPosition: (id: string, x: number, y: number) => void, setActiveWidget: (widget: Widget | null) => void) => {
+    const relevantWidgets = useMemo(() => {
+        if (!widgets || !currentDashboardId) return []
+        return widgets.filter((widget) => widget.dashboardId === currentDashboardId)
+    }, [widgets, currentDashboardId])
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -22,11 +31,9 @@ export const useDragAndDrop = (editMode: boolean, setActiveWidget: (widget: any)
     )
 
     const findFreePosition = useCallback((width: number, height: number, excludeId?: string, excludePosition?: { x: number; y: number; width: number; height: number }) => {
-        const widgets = useWidgetStore.getState().widgets?.filter((w) => w.dashboardId === currentDashboard?.id) || []
         const occupiedCells: Record<string, boolean> = {}
 
-        // Mark all occupied cells
-        widgets.forEach((widget) => {
+        relevantWidgets.map((widget) => {
             if (excludeId && widget.id === excludeId) return
 
             for (let i = 0; i < widget.width; i++) {
@@ -36,7 +43,6 @@ export const useDragAndDrop = (editMode: boolean, setActiveWidget: (widget: any)
             }
         })
 
-        // Mark the position we're trying to place the widget at as occupied
         if (excludePosition) {
             for (let i = 0; i < excludePosition.width; i++) {
                 for (let j = 0; j < excludePosition.height; j++) {
@@ -45,7 +51,6 @@ export const useDragAndDrop = (editMode: boolean, setActiveWidget: (widget: any)
             }
         }
 
-        // Find first free position
         for (let y = 0; y <= 4 - height; y++) {
             for (let x = 0; x <= 4 - width; x++) {
                 let canPlace = true
@@ -58,19 +63,15 @@ export const useDragAndDrop = (editMode: boolean, setActiveWidget: (widget: any)
                     }
                 }
 
-                if (canPlace) {
-                    return { x, y }
-                }
+                if (canPlace) return { x, y }
             }
         }
 
-        return { x: 0, y: 0 } // Fallback
-    }, [currentDashboard?.id])
+        return { x: 0, y: 0 }
+    }, [relevantWidgets])
 
     const getConflictingWidgets = useCallback((newWidget: { width: number; height: number }, x: number, y: number, excludeId: string) => {
-        const widgets = useWidgetStore.getState().widgets?.filter((w) => w.dashboardId === currentDashboard?.id) || []
-
-        return widgets.filter((widget) => {
+        return relevantWidgets.filter((widget: { id: string; positionX: number; width: any; positionY: number; height: any }) => {
             if (widget.id === excludeId) return false
 
             return !(
@@ -80,12 +81,12 @@ export const useDragAndDrop = (editMode: boolean, setActiveWidget: (widget: any)
                 widget.positionY + widget.height <= y
             )
         })
-    }, [currentDashboard?.id])
+    }, [relevantWidgets])
 
     const moveConflictingWidgets = useCallback((newWidget: { width: number; height: number }, x: number, y: number, excludeId: string) => {
         const conflictingWidgets = getConflictingWidgets(newWidget, x, y, excludeId)
 
-        conflictingWidgets.forEach((widget) => {
+        conflictingWidgets.map((widget) => {
             const freePosition = findFreePosition(widget.width, widget.height, widget.id, {
                 x,
                 y,
@@ -100,9 +101,9 @@ export const useDragAndDrop = (editMode: boolean, setActiveWidget: (widget: any)
     const handleDragStart = useCallback((event: DragStartEvent) => {
         if (!editMode) return
         const { active } = event
-        const activeWidgetData = useWidgetStore.getState().widgets?.find((w) => w.id === active.id)
+        const activeWidgetData = relevantWidgets.find((w) => w.id === active.id)
         if (activeWidgetData) setActiveWidget(activeWidgetData)
-    }, [editMode, setActiveWidget])
+    }, [editMode, setActiveWidget, relevantWidgets])
 
     const handleDragOver = useCallback((event: DragOverEvent) => {
         if (!editMode) return
@@ -110,11 +111,10 @@ export const useDragAndDrop = (editMode: boolean, setActiveWidget: (widget: any)
 
         if (over && active.id !== over.id) {
             const { x, y } = over.data.current as { x: number; y: number }
-            const activeWidgetData = useWidgetStore.getState().widgets?.find((w) => w.id === active.id)
-
+            const activeWidgetData = relevantWidgets.find((w) => w.id === active.id)
             if (activeWidgetData) moveConflictingWidgets(activeWidgetData, x, y, active.id as string)
         }
-    }, [editMode, moveConflictingWidgets])
+    }, [editMode, moveConflictingWidgets, relevantWidgets])
 
     const handleDragEnd = useCallback((event: DragEndEvent) => {
         if (!editMode) return

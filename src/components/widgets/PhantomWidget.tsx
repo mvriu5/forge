@@ -14,36 +14,7 @@ import { Skeleton } from "../ui/Skeleton"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {tooltip} from "@/components/ui/TooltipProvider"
 
-const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        return (
-            <WidgetTemplate id={id} className={"flex flex-col gap-4 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Phantom"} className={"z-[1]"}>
-                    <Button
-                        variant={"widget"}
-                        onClick={() => wallet ? disconnect() : connect()}
-                    >
-                        <Unplug size={16}/>
-                    </Button>
-                </WidgetHeader>
-
-                <WidgetContent>
-                    <div className={"flex flex-col z-[1]"}>
-                        <div className={"flex flex-row items-center gap-2"}>
-                            <p className={"text-nowrap"}>Wallet address:</p>
-                            <p className={"text-xs text-tertiary truncate"}>GsX82Dc357Ca9aSSaN8ccKwh7Hwgwz1mL1pV27fjm6PebxWWSf</p>
-                            <CopyButton copyText={""} className={"bg-0 hover:bg-0 p-0 m-1"} copyIcon={<Copy size={16}/>}/>
-                        </div>
-                        <div className={"flex flex-row items-center gap-2"}>
-                            <p className={"text-nowrap"}>Current Balance:</p>
-                            <p className={"text-lg text-semibold text-primary"}>$100.27</p>
-                        </div>
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
-
+const PhantomWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const {provider, wallet, connect, disconnect, isLoading, isFetching, isError, refetch} = usePhantom()
 
     const connectTooltip = tooltip<HTMLButtonElement>({
@@ -52,7 +23,7 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
     })
 
     return (
-        <WidgetTemplate id={id} className={"flex flex-col gap-4 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} widget={widget} className={"flex flex-col gap-4 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Phantom"} className={"z-[1]"}>
                 <Button
                     variant={"widget"}
@@ -89,7 +60,6 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isP
                     </div>
                 </WidgetContent>
             )}
-
         </WidgetTemplate>
     )
 }

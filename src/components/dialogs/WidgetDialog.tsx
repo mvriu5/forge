@@ -1,40 +1,51 @@
 "use client"
 
 import {Button} from "@/components/ui/Button"
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter} from "@/components/ui/Dialog"
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/Dialog"
 import {Input} from "@/components/ui/Input"
 import {CloudAlert, Grid2x2Plus} from "lucide-react"
-import React, { useState } from "react"
+import React, {useMemo, useState} from "react"
 import {cn} from "@/lib/utils"
 import Image from "next/image"
-import {useWidgetStore} from "@/store/widgetStore"
-import {useSessionStore} from "@/store/sessionStore"
 import {getAllWidgetPreviews, type WidgetPreview} from "@/lib/widgetRegistry"
-import { tooltip } from "@/components/ui/TooltipProvider"
-import {ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup"
-import { ScrollArea } from "@/components/ui/ScrollArea"
-import {useDashboardStore} from "@/store/dashboardStore"
+import {tooltip} from "@/components/ui/TooltipProvider"
+import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
+import {ScrollArea} from "@/components/ui/ScrollArea"
 import {useHotkeys} from "react-hotkeys-hook"
 import {useToast} from "@/components/ui/ToastProvider"
 import {Spinner} from "@/components/ui/Spinner"
+import {Dashboard} from "@/database"
+import {useWidgets} from "@/hooks/data/useWidgets"
 
-function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
-    const {widgets, addWidget} = useWidgetStore()
-    const {currentDashboard} = useDashboardStore()
-    const {session} = useSessionStore()
+interface WidgetDialogProps {
+    editMode: boolean
+    title?: string
+    currentDashboard?: Dashboard | null
+    userId?: string
+}
+
+function WidgetDialog({editMode, title, currentDashboard, userId}: WidgetDialogProps) {
+    const {widgets, addWidget, addWidgetStatus} = useWidgets(userId)
     const {addToast} = useToast()
     const [selectedWidget, setSelectedWidget] = useState<WidgetPreview | null>(null)
-    const [allWidgets] = useState<WidgetPreview[]>(getAllWidgetPreviews())
+    const [allWidgets] = useState<WidgetPreview[]>(() => getAllWidgetPreviews())
     const [query, setQuery] = useState<string>("")
     const [tagValue, setTagValue] = useState<string>("")
     const [dialogOpen, setDialogOpen] = useState(false)
-    const [addLoading, setAddLoading] = useState<boolean>(false)
 
     useHotkeys("mod+s", (event) => {
         event.preventDefault()
         if (!title) return
         if (!dialogOpen) setDialogOpen(true)
-    }, [dialogOpen])
+    }, [dialogOpen, title])
 
     const widgetTooltip = tooltip<HTMLButtonElement>({
         message: "Add a new widget",
@@ -43,25 +54,27 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
         offset: 12
     })
 
-    const filteredWidgets = allWidgets.filter((widget) => {
-        const matchesSearch = widget.title.toLowerCase().includes(query.toLowerCase())
-        const matchesTags = tagValue === "" || widget.tags?.some((tag: any) => tag === tagValue)
-        return matchesSearch && matchesTags
-    })
+    const filteredWidgets = useMemo(() => {
+        return allWidgets.filter((widget) => {
+            const matchesSearch = widget.title.toLowerCase().includes(query.toLowerCase())
+            const matchesTags = tagValue === "" || widget.tags?.some((tag: any) => tag === tagValue)
+            return matchesSearch && matchesTags
+        })
+    }, [allWidgets, query, tagValue])
 
     const handleSelect = (widgetPreview: WidgetPreview) => {
-        if (widgets?.find((w) => w.widgetType === widgetPreview?.widgetType && w.dashboardId === currentDashboard?.id)) return
-        if (selectedWidget) setSelectedWidget(null)
+        if (!currentDashboard) return
+        if (widgets?.find((w) => w.widgetType === widgetPreview?.widgetType && w.dashboardId === currentDashboard.id)) return
+        if (selectedWidget && selectedWidget.widgetType === widgetPreview.widgetType) setSelectedWidget(null)
         else setSelectedWidget(widgetPreview)
     }
 
     const handleAddWidget = async () => {
-        if (!selectedWidget || !session?.user || !currentDashboard) return
-        setAddLoading(true)
+        if (!selectedWidget || !userId || !currentDashboard) return
 
         try {
-            await addWidget(session.user.id, {
-                userId: session.user.id,
+            await addWidget({
+                userId,
                 dashboardId: currentDashboard.id,
                 widgetType: selectedWidget.widgetType,
                 height: selectedWidget.sizes.desktop.height,
@@ -80,12 +93,13 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                         : "Unknown error",
                 icon: <CloudAlert size={24} className={"text-error"}/>
             })
-        } finally {
-            setDialogOpen(false)
-            setSelectedWidget(null)
-            setAddLoading(false)
         }
+
+        setDialogOpen(false)
+        setSelectedWidget(null)
     }
+
+    const isAddDisabled = !selectedWidget || !userId || !currentDashboard || addWidgetStatus === "pending"
 
     return (
         <Dialog open={dialogOpen} onOpenChange={() => {
@@ -93,7 +107,7 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
             if (selectedWidget) setSelectedWidget(null)
         }}>
             <DialogTrigger asChild>
-                <Button className={"px-1.5 gap-2"} {...widgetTooltip} variant={"brand"} disabled={editMode}>
+                <Button className={"px-1.5 gap-2"} {...widgetTooltip} variant={"brand"} disabled={editMode || !currentDashboard || !userId}>
                     <Grid2x2Plus size={16}/>
                     {title}
                 </Button>
@@ -169,10 +183,10 @@ function WidgetDialog({editMode, title}: {editMode: boolean, title?: string}) {
                 <DialogFooter className={"pr-4"}>
                     <Button
                         variant={"brand"}
-                        disabled={!selectedWidget}
+                        disabled={isAddDisabled}
                         onClick={handleAddWidget}
                     >
-                        {addLoading && <Spinner/>}
+                        {addWidgetStatus === "pending" && <Spinner/>}
                         Add widget
                     </Button>
                 </DialogFooter>

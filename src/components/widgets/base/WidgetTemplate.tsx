@@ -1,46 +1,38 @@
-import type {HTMLAttributes} from "react"
-import React from "react"
-import {cn} from "@/lib/utils"
-import {useDraggable} from "@dnd-kit/core"
-import {CSS} from "@dnd-kit/utilities"
-import {useWidgetStore} from "@/store/widgetStore"
-import {Trash} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {tooltip} from "@/components/ui/TooltipProvider"
-import {useDashboardStore} from "@/store/dashboardStore"
+import {useBreakpoint} from "@/hooks/media/useBreakpoint"
+import {cn} from "@/lib/utils"
 import {getWidgetPreview} from "@/lib/widgetRegistry"
-import {useBreakpoint} from "@/hooks/useBreakpoint"
+import {useDraggable} from "@dnd-kit/core"
+import {CSS} from "@dnd-kit/utilities"
+import {Trash} from "lucide-react"
+import type {HTMLAttributes} from "react"
+import React from "react"
+import {Widget} from "@/database"
 
 interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
     id?: string
     children: React.ReactNode
     name: string
+    widget?: Widget
     editMode: boolean
     onWidgetDelete?: (id: string) => void
-    isPlaceholder?: boolean
 }
 
-const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, editMode, onWidgetDelete, isPlaceholder = false}) => {
-    const {getWidget} = useWidgetStore()
-    const {currentDashboard} = useDashboardStore()
+const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, widget, editMode, onWidgetDelete}) => {
     const {breakpoint} = useBreakpoint()
 
-    const widget = id
-        ? useWidgetStore(state => state.widgets?.find(w => w.id === id))
-        : currentDashboard
-            ? getWidget(currentDashboard.id, name)
-            : null
+    const activeWidget = widget
+    if (!activeWidget) return null
 
-    if (!widget) return
-
-    const widgetConfig = getWidgetPreview(widget.widgetType)
+    const widgetConfig = getWidgetPreview(activeWidget?.widgetType ?? name)
     if (!widgetConfig) return
 
     const responsiveSize = widgetConfig.preview.sizes[breakpoint]
 
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-        id: widget.id,
-        data: {widget}
+        id: activeWidget?.id ?? name,
+        data: {widget: activeWidget}
     })
 
     const deleteTooltip = tooltip<HTMLButtonElement>({
@@ -49,15 +41,15 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
         offset: 8
     })
 
-    const style = {
+    const style = activeWidget ? {
         transform: CSS.Transform.toString(transform),
         transition: isDragging ? "none" : "transform 200ms ease",
-        gridColumnStart: widget.positionX + 1,
-        gridRowStart: widget.positionY + 1,
-        gridColumnEnd: widget.positionX + 1 + responsiveSize.width,
-        gridRowEnd: widget.positionY + 1 + responsiveSize.height,
+        gridColumnStart: activeWidget.positionX + 1,
+        gridRowStart: activeWidget.positionY + 1,
+        gridColumnEnd: activeWidget.positionX + 1 + responsiveSize.width,
+        gridRowEnd: activeWidget.positionY + 1 + responsiveSize.height,
         zIndex: isDragging ? 30 : 20,
-    }
+    } : undefined
 
     return (
         <div
@@ -65,7 +57,6 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
                 `h-full flex flex-col gap-2 rounded-md bg-tertiary border border-main/40 p-2 overflow-hidden col-span-[${responsiveSize.width}] row-span-[${responsiveSize.height}]`,
                 editMode && "relative cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
                 editMode && isDragging && "opacity-70 animate-none border-2 border-dashed border-main/60",
-                isPlaceholder && "pointer-events-none",
                 className
             )}
             ref={editMode ? setNodeRef : undefined}
@@ -79,7 +70,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, e
                         if (deleteTooltip.onMouseLeave) {
                             deleteTooltip?.onMouseLeave()
                         }
-                        onWidgetDelete?.(widget?.id)
+                        if (activeWidget) onWidgetDelete?.(activeWidget.id)
                     }}
                     {...deleteTooltip}
                 >

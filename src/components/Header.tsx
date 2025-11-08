@@ -8,12 +8,11 @@ import {tooltip} from "@/components/ui/TooltipProvider"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import React, {useState} from "react"
-import {useDashboardStore} from "@/store/dashboardStore"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 import {Skeleton} from "./ui/Skeleton"
 import Link from "next/link"
-import {useSettingsStore} from "@/store/settingsStore"
 import {Spinner} from "@/components/ui/Spinner"
+import {Dashboard, Settings} from "@/database"
 
 interface HeaderProps {
     editMode: boolean
@@ -23,12 +22,14 @@ interface HeaderProps {
     onEdit: () => void
     widgetsEmpty: boolean
     isLoading: boolean
+    dashboards: Dashboard[]
+    currentDashboard: Dashboard | null
+    settings: Settings | null
+    onDashboardChange: (dashboardId: string) => Promise<void>
+    userId?: string
 }
 
-function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false}: HeaderProps) {
-    const {dashboards, currentDashboard} = useDashboardStore()
-    const {settings, updateSettings} = useSettingsStore()
-
+function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, dashboards, currentDashboard, settings, onDashboardChange, userId}: HeaderProps) {
     const [dialogOpen, setDialogOpen] = useState(false)
 
     const layoutTooltip = tooltip<HTMLButtonElement>({
@@ -38,21 +39,10 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
         offset: 12
     })
 
-    const onChangeDashboard = async (value: string) => {
-        const dashboard = dashboards?.find(d => d.name === value)
-        if (!dashboard) return
-        if (!settings) return
-
-        useDashboardStore.setState({currentDashboard: dashboard})
-        const newSettings = {
-            id: settings.id,
-            userId: settings.userId,
-            lastDashboardId: dashboard.id,
-            config: settings,
-            createdAt: settings.createdAt,
-            updatedAt: settings.updatedAt
-        }
-        await updateSettings(newSettings)
+    const handleSelectDashboard = async (value: string) => {
+        const dashboard = dashboards.find(d => d.name === value)
+        if (!dashboard || !settings) return
+        await onDashboardChange(dashboard.id)
     }
 
     return (
@@ -77,15 +67,15 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
                     </div>
                     :
                     <div className={"flex gap-2"}>
-                        <WidgetDialog editMode={editMode}/>
+                        <WidgetDialog editMode={editMode} currentDashboard={currentDashboard} userId={userId}/>
                         <Button className={"size-8 bg-secondary border-main/60 hidden xl:flex"} {...layoutTooltip} onClick={onEdit} disabled={editMode || widgetsEmpty}>
                             <LayoutTemplate size={16}/>
                         </Button>
                         <div className={"flex"}>
                             <Select
                                 value={currentDashboard?.name ?? ""}
-                                onValueChange={onChangeDashboard}
-                                disabled={!dashboards || dashboards.length === 0 || editMode}
+                                onValueChange={handleSelectDashboard}
+                                disabled={dashboards.length === 0 || editMode}
                             >
                                 <SelectTrigger className={"max-w-[280px] bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary flex lg:rounded-r-none gap-0.5"} disabled={editMode}>
                                     <div className={"w-full flex items-center gap-1 overflow-hidden text-xs"}>
@@ -97,7 +87,7 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
                                     </div>
                                 </SelectTrigger>
                                 <SelectContent align={"end"} className={"border-main/40"}>
-                                    {dashboards?.map(dashboard => (
+                                    {dashboards.map(dashboard => (
                                         <SelectItem key={dashboard.id} value={dashboard.name}>{dashboard.name}</SelectItem>
                                     ))}
                                 </SelectContent>

@@ -27,72 +27,15 @@ import {useGithub} from "@/hooks/useGithub"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
+import {useSession} from "@/hooks/data/useSession"
+import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 
-const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        const data = [
-            {
-                id: 1,
-                html_url: "",
-                repository_url: "/Forge",
-                title: "Fix Backend Tasks",
-                created_at: new Date(),
-                labels: []
-            },
-            {
-                id: 2,
-                html_url: "",
-                repository_url: "/Forge",
-                title: "Frontend UI rework",
-                created_at: new Date(),
-                labels: []
-            }
-        ]
-
-        return (
-            <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete} isPlaceholder={true}>
-                <WidgetHeader title={"Github"}>
-                    <Badge
-                        variant="brand"
-                        className="text-xs bg-brand/10 border-brand/40 font-mono"
-                        title={"2 open"}
-                    />
-                    <Button variant={"widget"}>
-                        <Filter size={16} />
-                    </Button>
-                    <Button variant={"widget"}>
-                        <RefreshCw size={16} />
-                    </Button>
-                </WidgetHeader>
-                <Input
-                    placeholder="Search..."
-                    className="bg-tertiary"
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <Tabs defaultValue="issues">
-                    <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
-                        <TabsTrigger value="issues">
-                            <AlertCircle size={16} className="mr-2" />
-                            Issues
-                        </TabsTrigger>
-                        <TabsTrigger value="pull-requests">
-                            <GitPullRequest size={16} className="mr-2" />
-                            Pull Requests
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
-                <WidgetContent scroll>
-                    <div className={"flex flex-col gap-2"}>
-                        {data.map((issue) => (
-                            <IssueCard issue={issue} key={issue.id}/>
-                        ))}
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
-
-    const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch, githubIntegration} = useGithub()
+const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
+    const {session} = useSession()
+    const userId = session?.user?.id
+    const {integrations, refetchIntegrations} = useIntegrations(userId)
+    const githubIntegration = getIntegrationByProvider(integrations, "github")
+    const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch} = useGithub()
     const {addToast} = useToast()
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -118,6 +61,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     const handleIntegrate = async () => {
         const data = await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
             onRequest: (ctx) => {
+                void refetchIntegrations()
             },
             onSuccess: (ctx) => {
                 addToast({
@@ -137,7 +81,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
 
     if (!githubIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} widget={widget} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Github account first!"}
                     actionLabel={"Integrate"}
@@ -148,7 +92,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPl
     }
 
     return (
-        <WidgetTemplate id={id} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} widget={widget} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Github"}>
                 <Badge
                     variant="brand"

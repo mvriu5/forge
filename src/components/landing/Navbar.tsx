@@ -7,8 +7,8 @@ import {Github, Menu, X as Close} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {X} from "@/components/svg/BookmarkIcons"
 import {ForgeLogo} from "../svg/ForgeLogo"
-import {useMediaQuery} from "@/hooks/useMediaQuery"
-import {useOutsideClick} from "@/hooks/useOutsideClick"
+import {useMediaQuery} from "@/hooks/media/useMediaQuery"
+import {useOutsideClick} from "@/hooks/media/useOutsideClick"
 
 
 function Navbar() {

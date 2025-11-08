@@ -1,30 +1,25 @@
 "use client"
 
 import {LogOut, MessageCircleQuestion, Sun} from "lucide-react"
-import React, {useEffect, useState} from "react"
+import React, {useState} from "react"
 import {authClient} from "@/lib/auth-client"
 import {useRouter} from "next/navigation"
-import {useSessionStore} from "@/store/sessionStore"
 import {SettingsDialog} from "@/components/dialogs/SettingsDialog"
 import {cn} from "@/lib/utils"
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/Popover"
-import { Skeleton } from "@/components/ui/Skeleton";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar"
+import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
+import {Skeleton} from "@/components/ui/Skeleton";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {useTheme} from "next-themes"
 import {Spinner} from "@/components/ui/Spinner"
+import {useSession} from "@/hooks/data/useSession"
 
 function ProfilePopover({editMode}: {editMode: boolean}) {
-    const {session, setSession} = useSessionStore()
+    const {session, isLoading, setSession} = useSession()
     const router = useRouter()
     const {theme, setTheme} = useTheme()
 
     const [open, setOpen] = useState(false)
-    const [loading, setLoading] = useState(true)
     const [signOutLoading, setSignOutLoading] = useState(false)
-
-    useEffect(() => {
-        if (session) setLoading(false)
-    }, [session])
 
     const onSignout = async () => {
         setSignOutLoading(true)
@@ -44,7 +39,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger
-                disabled={loading || editMode}
+                disabled={isLoading || editMode}
                 data-state={editMode ? "disabled" : "enabled"}
                 className={"group"}
             >
@@ -56,14 +51,14 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                         "md:group-data-[state=disabled]:hover:bg-secondary shadow-xs dark:shadow-md"
                     )}
                 >
-                    {loading ?
+                    {isLoading ?
                         <Skeleton className={"size-6 rounded-full"}/> :
                         <Avatar className={"size-6 border border-main/20"}>
                             <AvatarImage src={session?.user?.image ?? undefined} />
                             <AvatarFallback/>
                         </Avatar>
                     }
-                    {loading ?
+                    {isLoading ?
                         <Skeleton className={"hidden md:flex h-4 w-12"}/> :
                         <p className={"hidden md:flex"}>{session?.user?.name}</p>
                     }

@@ -47,9 +47,7 @@ const months = [
     "December",
 ]
 
-const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {}
-
+const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const { calendars, events: appointments, isLoading, isFetching, isError, refetch, googleIntegration, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
     const { addToast } = useToast()
 
@@ -117,7 +115,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
 
     if (!googleIntegration?.accessToken && !isLoading) {
         return (
-            <WidgetTemplate id={id} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            <WidgetTemplate id={id} widget={widget} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Google account first!"}
                     actionLabel={"Integrate"}
@@ -270,7 +268,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, is
     })
 
     return (
-        <WidgetTemplate id={id} name={"calendar"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} widget={widget} name={"calendar"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Calendar"}>
                 <Popover open={calendarPopoverOpen} onOpenChange={setCalendarPopoverOpen}>
                     <PopoverTrigger asChild className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary mx-2"}>

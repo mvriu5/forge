@@ -1,14 +1,19 @@
 "use client"
 
-import {useIntegrationStore} from "@/store/integrationStore"
 import {useQuery} from "@tanstack/react-query"
 import {fetchLinearIssues, LinearIssue} from "@/actions/linear"
-import {useState} from "react"
+import {useMemo, useState} from "react"
+import {useSession} from "@/hooks/data/useSession"
+import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 
 type SortOption = "priority" | "created"
 
 const useLinear = () => {
-    const { linearIntegration } = useIntegrationStore()
+    const {session} = useSession()
+    const userId = session?.user?.id
+    const {integrations} = useIntegrations(userId)
+    const linearIntegration = useMemo(() => getIntegrationByProvider(integrations, "linear"), [integrations])
+
     const [sortBy, setSortBy] = useState<SortOption>("priority")
 
     const {data, isLoading, isFetching, isError, refetch} = useQuery<LinearIssue[]>({

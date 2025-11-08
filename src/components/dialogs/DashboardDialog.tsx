@@ -9,12 +9,10 @@ import {LayoutDashboard, SquarePen} from "lucide-react"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Button} from "@/components/ui/Button"
 import {useToast} from "@/components/ui/ToastProvider"
-import {useDashboardStore} from "@/store/dashboardStore"
-import {useSessionStore} from "@/store/sessionStore"
-import {RadioGroup} from "@/components/ui/RadioGroup"
 import {tooltip} from "@/components/ui/TooltipProvider"
-import {RadioGroupBox} from "@/components/ui/RadioGroupBox"
 import {Spinner} from "@/components/ui/Spinner"
+import {useDashboards} from "@/hooks/data/useDashboards"
+import {useSession} from "@/hooks/data/useSession"
 
 interface DashboardDialogProps {
     open: boolean
@@ -24,15 +22,16 @@ interface DashboardDialogProps {
 }
 
 function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardDialogProps) {
-    const {dashboards, addDashboard} = useDashboardStore()
-    const {session} = useSessionStore()
+    const {session} = useSession()
+    const userId = session?.user?.id
+    const {dashboards, addDashboard, addDashboardStatus} = useDashboards(userId)
     const {addToast} = useToast()
 
     const formSchema = z.object({
         name: z.string()
             .min(3, {message: "Please enter more than 3 characters."})
             .max(12, {message: "Please enter less than 12 characters."})
-            .refine((name) => !dashboards?.some(d => d.name === name), { message: "A dashboard with this name already exists." })
+            .refine((name) => !(dashboards ?? []).some((d: { name: string }) => d.name === name), { message: "A dashboard with this name already exists." })
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -49,10 +48,10 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
     })
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!session || !session.user) return
+        if (!userId) return
 
-        await addDashboard(session.user.id, {
-            userId: session.user.id,
+        await addDashboard({
+            userId,
             name: values.name,
             createdAt: new Date(Date.now()),
             updatedAt: new Date(Date.now())
@@ -126,9 +125,9 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
                                     variant={"brand"}
                                     className={"w-max"}
                                     type={"submit"}
-                                    disabled={form.formState.isSubmitting}
+                                    disabled={form.formState.isSubmitting || addDashboardStatus === "pending" || !userId}
                                 >
-                                    {(form.formState.isSubmitting) && <Spinner/>}
+                                    {(form.formState.isSubmitting || addDashboardStatus === "pending") && <Spinner/>}
                                     Create
                                 </Button>
                             </div>

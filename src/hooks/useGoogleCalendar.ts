@@ -1,7 +1,8 @@
-import {useIntegrationStore} from "@/store/integrationStore"
 import {useQuery, useQueryClient} from "@tanstack/react-query"
 import {fetchCalendarEvents, fetchCalendarList, refreshToken} from "@/actions/google"
 import {useCallback, useEffect, useMemo, useState} from "react"
+import {useSession} from "@/hooks/data/useSession"
+import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 
 export interface CalendarEvent {
     id: string
@@ -12,7 +13,11 @@ export interface CalendarEvent {
 }
 
 export const useGoogleCalendar = () => {
-    const {googleIntegration, updateIntegration} = useIntegrationStore()
+    const {session} = useSession()
+    const userId = session?.user?.id
+    const {integrations, updateIntegration} = useIntegrations(userId)
+    const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
+
     const [selectedCalendars, setSelectedCalendars] = useState<string[]>([])
     const [filterLoading, setFilterLoading] = useState<boolean>(false)
     const queryClient = useQueryClient()
@@ -45,18 +50,23 @@ export const useGoogleCalendar = () => {
     useEffect(() => {
         if (!googleIntegration || !newToken) return
 
-        updateIntegration(googleIntegration.provider ?? "google", googleIntegration.userId!, {
-            id: googleIntegration.id,
-            accountId: googleIntegration.accountId,
-            userId: googleIntegration.userId,
-            provider: googleIntegration.provider,
-            accessToken: newToken.access_token,
-            refreshToken: googleIntegration.refreshToken,
-            idToken: newToken.id_token,
-            accessTokenExpiration: new Date(Date.now() + newToken.expires_in * 1000),
-            refreshTokenExpiration: googleIntegration.refreshTokenExpiration,
-            createdAt: googleIntegration.createdAt
+        void updateIntegration({
+            provider: googleIntegration.provider ?? "google",
+            userId: googleIntegration.userId!,
+            data: {
+                id: googleIntegration.id,
+                accountId: googleIntegration.accountId,
+                userId: googleIntegration.userId,
+                provider: googleIntegration.provider,
+                accessToken: newToken.access_token,
+                refreshToken: googleIntegration.refreshToken,
+                idToken: newToken.id_token,
+                accessTokenExpiration: new Date(Date.now() + newToken.expires_in * 1000),
+                refreshTokenExpiration: googleIntegration.refreshTokenExpiration,
+                createdAt: googleIntegration.createdAt
+            }
         })
+
 
         queryClient.invalidateQueries({ queryKey: ["googleCalendarList"] })
         queryClient.invalidateQueries({ queryKey: ["googleCalendarEvents"] })

@@ -5,44 +5,17 @@ import {useEffect, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {Select, SelectTrigger, SelectContent, SelectItem, SelectValue} from "@/components/ui/Select"
-import {useSettingsStore} from "@/store/settingsStore"
-import {useWidgetStore} from "@/store/widgetStore"
-import {useDashboardStore} from "@/store/dashboardStore"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
+import {useSession} from "@/hooks/data/useSession"
+import {useSettings} from "@/hooks/data/useSettings"
+import {useWidgets} from "@/hooks/data/useWidgets"
 
-const ClockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPlaceholder}) => {
-    if (isPlaceholder) {
-        return (
-            <WidgetTemplate id={id} name={"clock"} editMode={editMode} isPlaceholder={isPlaceholder}>
-                <WidgetHeader title={"Clock"}>
-                    <Select value={"Berlin (MEZ/MESZ)"}>
-                        <SelectTrigger className="w-max h-6 shadow-none dark:shadow-none border-0 bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
-                            <SelectValue />
-                        </SelectTrigger>
-                    </Select>
-                </WidgetHeader>
-                <WidgetContent className={"flex flex-col items-center justify-center"}>
-                    <div className="text-5xl font-mono text-primary font-bold tracking-wider">
-                        13:04:22
-                    </div>
-                    <div className="text-tertiary">
-                        Tuesday, 22nd July 2025
-                    </div>
-                </WidgetContent>
-            </WidgetTemplate>
-        )
-    }
-
-    const {getWidget, refreshWidget} = useWidgetStore()
-
-    const {settings} = useSettingsStore()
-    if (!settings) return
-
-    const {currentDashboard} = useDashboardStore()
-    if (!currentDashboard) return
-
-    const widget = getWidget(currentDashboard.id, "clock")
-    if (!widget) return
+const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
+    const {session} = useSession()
+    const userId = session?.user?.id
+    const {settings} = useSettings(userId)
+    if (!settings || !widget) return null
+    const {updateWidget} = useWidgets(widget.userId)
 
     const timezones = [
         { value: "Europe/Berlin", label: "Berlin (MEZ/MESZ)" },
@@ -102,7 +75,7 @@ const ClockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
 
     const handleSave = async (timezone: string) => {
         setSelectedTimezone(timezone)
-        await refreshWidget({
+        await updateWidget({
             ...widget,
             config: {
                 ...widget.config,
@@ -112,7 +85,7 @@ const ClockWidget: React.FC<WidgetProps> = ({id, editMode, onWidgetDelete, isPla
     }
 
     return (
-        <WidgetTemplate id={id} name={"clock"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} widget={widget} name={"clock"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Clock"}>
                 <Select value={selectedTimezone} onValueChange={(value) => handleSave(value)}>
                     <SelectTrigger className="w-max h-6 shadow-none dark:shadow-none border-0 bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
