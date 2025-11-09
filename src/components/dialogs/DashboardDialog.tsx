@@ -68,8 +68,8 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
     return (
         <Dialog
             open={open}
-            onOpenChange={() => {
-                onOpenChange(!open)
+            onOpenChange={(prev) => {
+                onOpenChange(!prev)
                 if (!open) form.reset()
             }}
         >

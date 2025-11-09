@@ -1,12 +1,13 @@
 "use client"
 
 import {Navbar} from "@/components/landing/Navbar"
-import React from "react"
+import React, {useMemo} from "react"
 import {Footer} from "@/components/landing/Footer"
 import {getAllWidgetPreviews, WidgetPreview} from "@/lib/widgetRegistry"
 import Image from "next/image"
 
 export default function Widgets() {
+    const allWidgets = useMemo(() => getAllWidgetPreviews(), [])
     return (
         <div className={"dark flex gap-32 bg-primary w-full h-full 2xl:px-48 xl:px-32 lg:px-24 md:px-12 px-4"}>
             <Navbar/>
@@ -17,7 +18,7 @@ export default function Widgets() {
                 </div>
 
                 <div className={"flex flex-col gap-16"}>
-                    {getAllWidgetPreviews().map((widget: WidgetPreview) => (
+                    {allWidgets.map((widget: WidgetPreview) => (
                         <WidgetItem key={widget.widgetType} widget={widget}/>
                     ))}
                 </div>

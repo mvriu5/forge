@@ -51,7 +51,7 @@ function SettingsDialog() {
     return (
         <Dialog
             open={open}
-            onOpenChange={() => setOpen(!open)}
+            onOpenChange={(prev) => setOpen(!prev)}
         >
             <DialogTrigger asChild onClick={() => setTab("profile")}>
                 <button

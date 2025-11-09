@@ -102,8 +102,8 @@ function WidgetDialog({editMode, title, currentDashboard, userId}: WidgetDialogP
     const isAddDisabled = !selectedWidget || !userId || !currentDashboard || addWidgetStatus === "pending"
 
     return (
-        <Dialog open={dialogOpen} onOpenChange={() => {
-            setDialogOpen(!dialogOpen)
+        <Dialog open={dialogOpen} onOpenChange={(prev) => {
+            setDialogOpen(!prev)
             if (selectedWidget) setSelectedWidget(null)
         }}>
             <DialogTrigger asChild>
