@@ -1,6 +1,26 @@
-import { fetchReverseGeocoding, fetchWeatherData } from "@/actions/weather";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react"
+
+const GEOCODING_QUERY_KEY = (coords: { lat: number, lon: number } | null) => ["reverse-geocoding", coords] as const
+const WEATHER_QUERY_KEY = (coords: { lat: number, lon: number} | null) => ["weather", coords] as const
+
+const USER_AGENT_HEADER = {"User-Agent": "Forge (tryforge.io)"}
+
+const fetchReverseGeocoding = async (lat: number, lon: number) => {
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`, {
+        headers: USER_AGENT_HEADER,
+    })
+
+    if (!res.ok) throw new Error("Reverse-Geocoding Fehler")
+    return res.json()
+}
+
+const fetchWeatherData = async (lat: number, lon: number) => {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode`)
+
+    if (!res.ok) throw new Error("Wetterdaten-Fehler")
+    return res.json()
+}
 
 export const useWeather = () => {
     const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null)
@@ -20,8 +40,8 @@ export const useWeather = () => {
     const isGeoLoading = coords === null && !geolocationError
 
     const { data: locationData } = useQuery({
-        queryKey: ["reverse-geocoding", coords],
-        queryFn: async () => await fetchReverseGeocoding(coords!.lat, coords!.lon),
+        queryKey: GEOCODING_QUERY_KEY(coords),
+        queryFn: () => fetchReverseGeocoding(coords!.lat, coords!.lon),
         enabled: !!coords,
         refetchOnWindowFocus: false,
         refetchOnMount: false
@@ -30,8 +50,8 @@ export const useWeather = () => {
     const location = locationData?.address?.town ?? null
 
     const { data: weatherData, isLoading: isWeatherLoading, isError } = useQuery({
-        queryKey: ["weather", coords],
-        queryFn: async () => await fetchWeatherData(coords!.lat, coords!.lon),
+        queryKey: WEATHER_QUERY_KEY(coords),
+        queryFn: () => fetchWeatherData(coords!.lat, coords!.lon),
         enabled: !!coords,
         staleTime: 15 * 60 * 1000, // 15 minutes
         refetchInterval: 15 * 60 * 1000, // 15 minutes

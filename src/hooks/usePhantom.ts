@@ -1,8 +1,33 @@
 "use client"
 
 import {useQuery} from "@tanstack/react-query"
-import {Balance, fetchHeliusBalance} from "@/actions/helius"
 import {useCallback, useEffect, useState} from "react"
+
+const HELIUS_QUERY_KEY = (address: string | undefined) => ["heliusBalance", address] as const
+
+type Balance = {value: number}
+
+async function fetchHeliusBalance(account: string): Promise<Balance> {
+    const apiKey = process.env.HELIUS_API_KEY
+    const url = `https://mainnet.helius-rpc.com/?api-key=${apiKey}`
+
+    const res = await fetch(url, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: "test",
+            method: "getBalance",
+            params: [account],
+        }),
+        next: {revalidate: 3600},
+    })
+
+    if (!res.ok) throw new Error(`Hélius-Fehler: ${res.status} ${res.statusText}`)
+
+    const data = await res.json()
+    return data.result as Balance
+}
 
 interface Wallet {
     address: string
@@ -64,11 +89,11 @@ const usePhantom = () => {
     }, [provider])
 
     const {data, isLoading, isFetching, isError, refetch,} = useQuery<Balance>({
-        queryKey: ["heliusBalance", wallet?.address],
-        queryFn: async () => await fetchHeliusBalance(wallet!.address),
+        queryKey: HELIUS_QUERY_KEY(wallet?.address),
+        queryFn: () => fetchHeliusBalance(wallet!.address),
         enabled: !!wallet?.address,
-        staleTime: 5 * 60 * 1000, //5 minutes
-        refetchInterval: 5 * 60 * 1000 //5 minutes
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        refetchInterval: 5 * 60 * 1000 // 5 minutes
     })
 
     useEffect(() => {

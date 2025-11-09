@@ -3,7 +3,7 @@
 import {Area, AreaChart, XAxis, YAxis} from "recharts"
 import {ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
 import React, {useMemo} from "react"
-import {ChartDataPoint} from "@/actions/twelvedata"
+import type {ChartDataPoint} from "@/hooks/useStock"
 import {Bookmark, Box, Captions, Hourglass, Link, TrendingDown, Users} from "lucide-react"
 import {cn, hexToRgba} from "@/lib/utils"
 import {SelectorItems} from "@/components/widgets/components/NodeSelector"

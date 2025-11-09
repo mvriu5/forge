@@ -3,7 +3,7 @@
 import React, {memo} from "react"
 import {Area, AreaChart, XAxis, YAxis} from "recharts"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent} from "@/components/ui/Chart"
-import {ChartDataPoint} from "@/actions/twelvedata"
+import type {ChartDataPoint} from "@/hooks/useStock"
 import {useTheme} from "next-themes"
 
 interface StockChartProps {

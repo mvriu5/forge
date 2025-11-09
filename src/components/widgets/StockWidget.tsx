@@ -14,12 +14,11 @@ import {StockChart} from "@/components/widgets/components/StockChart"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Button} from "@/components/ui/Button"
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/Command"
-import {AssetOption, ChartDataPoint} from "@/actions/twelvedata"
+import type {AssetOption, ChartDataPoint} from "@/hooks/useStock"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetEmpty} from "./base/WidgetEmpty"
 import {Spinner} from "@/components/ui/Spinner"
-import {useWidgets} from "@/hooks/data/useWidgets"
 import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
 
 const StockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {

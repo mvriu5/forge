@@ -1,4 +1,4 @@
-import {AssetOption} from "@/actions/twelvedata"
+import type {AssetOption} from "@/hooks/useStock"
 
 
 export function getPopularAssets(): AssetOption[] {

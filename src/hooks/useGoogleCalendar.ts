@@ -1,8 +1,62 @@
 import {useQuery, useQueryClient} from "@tanstack/react-query"
-import {fetchCalendarEvents, fetchCalendarList, refreshToken} from "@/actions/google"
 import {useCallback, useEffect, useMemo, useState} from "react"
 import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
+
+const GOOGLE_REFRESH_QUERY_KEY = (refreshToken: string | null) => ["googleRefreshToken", refreshToken] as const
+const GOOGLE_CALENDAR_QUERY_KEY = (accessToken: string | null) => ["googleCalendarList", accessToken] as const
+const GOOGLE_EVENT_QUERY_KEY = (accessToken: string | null, calendars: string[]) => ["googleCalendarEvents", accessToken, calendars] as const
+
+async function fetchCalendarList(accessToken: string) {
+    const res = await fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList", {
+        headers: {Authorization: `Bearer ${accessToken}`},
+    })
+
+    if (!res.ok) throw new Error("Failed to fetch calendar list")
+
+    const data = await res.json()
+    return data.items
+}
+
+async function fetchCalendarEvents(accessToken: string, calendarId: string) {
+    const params = new URLSearchParams({
+        maxResults: "1000",
+        orderBy: "updated",
+    })
+
+    const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`, {
+        headers: {Authorization: `Bearer ${accessToken}`},
+    })
+
+    if (!res.ok) return []
+
+    const data = await res.json()
+    return data.items
+}
+
+async function refreshToken(refreshToken: string | null) {
+    if (!refreshToken) return null
+    const res = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+        body: new URLSearchParams({
+            client_id: process.env.GOOGLE_CLIENT_ID!,
+            client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+            refresh_token: refreshToken,
+            grant_type: "refresh_token",
+        }),
+    })
+
+    if (!res.ok) throw new Error("Failed to refresh Google access token")
+
+    const data = await res.json()
+
+    return {
+        access_token: data.access_token,
+        expires_in: data.expires_in || 3600,
+        id_token: data.id_token || null,
+    }
+}
 
 export interface CalendarEvent {
     id: string
@@ -31,11 +85,8 @@ export const useGoogleCalendar = () => {
     }, [googleIntegration?.accessTokenExpiration])
 
     const {data: newToken, isLoading: tokenRefreshing, error: tokenError} = useQuery({
-        queryKey: ["googleRefreshToken", googleIntegration?.refreshToken],
-        queryFn: async () => {
-            if (!googleIntegration?.refreshToken) throw new Error("No refresh token available")
-            return await refreshToken(googleIntegration.refreshToken)
-        },
+        queryKey: GOOGLE_REFRESH_QUERY_KEY(googleIntegration?.refreshToken ?? null),
+        queryFn: () => refreshToken(googleIntegration?.refreshToken ?? null),
         enabled: Boolean(googleIntegration?.refreshToken) && isTokenExpired,
         staleTime: 5 * 60 * 1000,
         gcTime: 15 * 60 * 1000,
@@ -68,8 +119,8 @@ export const useGoogleCalendar = () => {
         })
 
 
-        queryClient.invalidateQueries({ queryKey: ["googleCalendarList"] })
-        queryClient.invalidateQueries({ queryKey: ["googleCalendarEvents"] })
+        void queryClient.invalidateQueries({ queryKey: ["googleCalendarList"] })
+        void queryClient.invalidateQueries({ queryKey: ["googleCalendarEvents"] })
     }, [newToken])
 
     const currentAccessToken = useMemo(() => {
@@ -77,11 +128,8 @@ export const useGoogleCalendar = () => {
     }, [newToken?.access_token, googleIntegration?.accessToken])
 
     const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError} = useQuery({
-        queryKey: ["googleCalendarList", currentAccessToken],
-        queryFn: async () => {
-            if (!currentAccessToken) throw new Error("No access token available")
-            return await fetchCalendarList(currentAccessToken)
-        },
+        queryKey: GOOGLE_CALENDAR_QUERY_KEY(currentAccessToken),
+        queryFn: () => fetchCalendarList(currentAccessToken),
         enabled: Boolean(currentAccessToken) && !tokenRefreshing,
         staleTime: 15 * 60 * 1000,
         gcTime: 30 * 60 * 1000,
@@ -89,7 +137,7 @@ export const useGoogleCalendar = () => {
         refetchOnMount: false,
         retry: (failureCount, error) => {
             if (error?.message?.includes("401")) {
-                queryClient.invalidateQueries({ queryKey: ["googleRefreshToken"] })
+                void queryClient.invalidateQueries({ queryKey: ["googleRefreshToken"] })
                 return false
             }
             return failureCount < 3
@@ -103,17 +151,10 @@ export const useGoogleCalendar = () => {
     }, [calendars, selectedCalendars])
 
     const {data: events, isLoading: eventsLoading, isFetching: eventsFetching, isError: eventsError, refetch} = useQuery({
-        queryKey: ["googleCalendarEvents", currentAccessToken, selectedCalendars],
+        queryKey: GOOGLE_EVENT_QUERY_KEY(currentAccessToken, selectedCalendars),
         queryFn: async () => {
-            if (!calendars || calendars.length === 0) return []
-            if (!currentAccessToken) throw new Error("No access token available")
-
             const selectedCalendarObjects = calendars.filter((cal: any) => selectedCalendars.includes(cal.id))
-
-            const calendarPromises = selectedCalendarObjects.map((calendar: any) =>
-                fetchCalendarEvents(currentAccessToken, calendar.id),
-            )
-
+            const calendarPromises = selectedCalendarObjects.map((calendar: any) => fetchCalendarEvents(currentAccessToken, calendar.id))
             const results = await Promise.all(calendarPromises)
             return results.flat()
         },
@@ -122,7 +163,7 @@ export const useGoogleCalendar = () => {
         gcTime: 15 * 60 * 1000,
         retry: (failureCount, error) => {
             if (error?.message?.includes("401")) {
-                queryClient.invalidateQueries({ queryKey: ["googleRefreshToken"] })
+                void queryClient.invalidateQueries({ queryKey: ["googleRefreshToken"] })
                 return false
             }
             return failureCount < 3
