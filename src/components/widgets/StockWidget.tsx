@@ -20,16 +20,16 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetEmpty} from "./base/WidgetEmpty"
 import {Spinner} from "@/components/ui/Spinner"
 import {useWidgets} from "@/hooks/data/useWidgets"
+import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
 
 const StockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    if (!widget) return null
-    const {updateWidget} = useWidgets(widget.userId)
-
-    const [selectedStocks, setSelectedStocks] = useState<AssetOption[]>(widget.config?.stocks ?? [])
-    const [timespan, setTimespan] = useState<string>(widget.config?.timespan ?? "365")
+    const {updateWidget} = useWidgetActions()
+    const [selectedStocks, setSelectedStocks] = useState<AssetOption[]>(widget?.config?.stocks ?? [])
+    const [timespan, setTimespan] = useState<string>(widget?.config?.timespan ?? "365")
     const [open, setOpen] = useState(false)
 
     const handleSave = async (updatedConfig: Partial<{ stocks: AssetOption[], timespan: string }>) => {
+        if (!widget) return
         await updateWidget({
             ...widget,
             config: {

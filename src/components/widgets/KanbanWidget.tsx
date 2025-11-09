@@ -39,6 +39,7 @@ import {convertToRGBA} from "@/lib/colorConvert"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {restrictToFirstScrollableAncestor, restrictToHorizontalAxis, restrictToWindowEdges} from "@dnd-kit/modifiers"
 import {useWidgets} from "@/hooks/data/useWidgets"
+import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
 
 export type Card = {
     id: string
@@ -53,17 +54,15 @@ type Column = {
 }
 
 const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    if (!widget) return null
-    const {updateWidget} = useWidgets(widget.userId)
-
-    const [columns, setColumns] = useState<Column[]>(widget.config?.kanban ?? [])
+    const {updateWidget} = useWidgetActions()
+    const [columns, setColumns] = useState<Column[]>(widget?.config?.kanban ?? [])
     const [columnPopoverOpen, setColumnPopoverOpen] = useState(false)
     const [activeId, setActiveId] = useState<string | null>(null)
     const [hex, setHex] = useState("#ffffff")
 
     useEffect(() => {
-        updateWidgetConfig();
-    }, [columns]);
+        void updateWidgetConfig()
+    }, [columns])
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -96,6 +95,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
     })
 
     const updateWidgetConfig = async () => {
+        if (!widget) return
         await updateWidget({
             ...widget,
             config: {

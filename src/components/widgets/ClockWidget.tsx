@@ -9,13 +9,13 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {useSession} from "@/hooks/data/useSession"
 import {useSettings} from "@/hooks/data/useSettings"
 import {useWidgets} from "@/hooks/data/useWidgets"
+import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
 
 const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const {session} = useSession()
     const userId = session?.user?.id
     const {settings} = useSettings(userId)
-    if (!settings || !widget) return null
-    const {updateWidget} = useWidgets(widget.userId)
+    const {updateWidget} = useWidgetActions()
 
     const timezones = [
         { value: "Europe/Berlin", label: "Berlin (MEZ/MESZ)" },
@@ -29,7 +29,7 @@ const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelet
         { value: "UTC", label: "UTC " },
     ]
     const [currentTime, setCurrentTime] = useState(new Date())
-    const [selectedTimezone, setSelectedTimezone] = useState(widget.config?.timezone ?? "Europe/Berlin")
+    const [selectedTimezone, setSelectedTimezone] = useState(widget?.config?.timezone ?? "Europe/Berlin")
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -42,7 +42,7 @@ const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelet
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
-            hour12: settings.config?.hourFormat === "12",
+            hour12: settings?.config?.hourFormat === "12",
         }).format(date)
     }
 
@@ -74,6 +74,7 @@ const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelet
     }
 
     const handleSave = async (timezone: string) => {
+        if (!widget) return
         setSelectedTimezone(timezone)
         await updateWidget({
             ...widget,

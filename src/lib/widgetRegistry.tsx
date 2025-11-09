@@ -1,20 +1,7 @@
 "use client"
 
 import type React from "react"
-import {EditorWidget} from "@/components/widgets/EditorWidget"
-import {GithubWidget} from "@/components/widgets/GithubWidget"
-import {WeatherWidget} from "@/components/widgets/WeatherWidget"
-import {StockWidget} from "@/components/widgets/StockWidget"
-import {BookmarkWidget} from "@/components/widgets/BookmarkWidget"
-import {LinearWidget} from "@/components/widgets/LinearWidget"
-import {PhantomWidget} from "@/components/widgets/PhantomWidget"
-import {MeetingsWidget} from "@/components/widgets/MeetingsWidget"
-import {GithubHeatmapWidget} from "@/components/widgets/GithubHeatmapWidget"
-import {ClockWidget} from "@/components/widgets/ClockWidget"
-import {TodoWidget} from "@/components/widgets/TodoWidget"
-import {KanbanWidget} from "@/components/widgets/KanbanWidget"
-import {CalendarWidget} from "@/components/widgets/CalendarWidget"
-import {CountdownWidget} from "@/components/widgets/CountdownWidget"
+import dynamic from "next/dynamic"
 
 export interface WidgetPreview {
     widgetType: string
@@ -31,9 +18,11 @@ export interface WidgetPreview {
 
 export interface WidgetElement {
     preview: WidgetPreview
-    component: React.FC<any>
+    component: React.ComponentType<any>
 }
 
+const dynamicWidget = (loader: () => Promise<React.ComponentType<any>>) =>
+    dynamic(loader, { ssr: false })
 
 export const widgetRegistry: WidgetElement[] = [
     {
@@ -49,7 +38,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: EditorWidget,
+        component: dynamicWidget(async () => (await import("@/components/widgets/EditorWidget")).EditorWidget),
     },
     {
         preview: {
@@ -64,7 +53,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: GithubWidget,
+        component: dynamicWidget(async () => (await import("@/components/widgets/GithubWidget")).GithubWidget),
     },
     {
         preview: {
@@ -79,7 +68,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: StockWidget,
+        component: dynamicWidget(async () => (await import("@/components/widgets/StockWidget")).StockWidget),
     },
     {
         preview: {
@@ -94,7 +83,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: WeatherWidget
+        component: dynamicWidget(async () => (await import("@/components/widgets/WeatherWidget")).WeatherWidget),
     },
     {
         preview: {
@@ -109,7 +98,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: BookmarkWidget
+        component: dynamicWidget(async () => (await import("@/components/widgets/BookmarkWidget")).BookmarkWidget)
     },
     {
         preview: {
@@ -124,7 +113,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: LinearWidget
+        component: dynamicWidget(async () => (await import("@/components/widgets/LinearWidget")).LinearWidget),
     },
     {
         preview: {
@@ -139,7 +128,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: PhantomWidget
+        component: dynamicWidget(async () => (await import("@/components/widgets/PhantomWidget")).PhantomWidget),
     },
     {
         preview: {
@@ -154,7 +143,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: MeetingsWidget
+        component: dynamicWidget(async () => (await import("@/components/widgets/MeetingsWidget")).MeetingsWidget),
     },
     {
         preview: {
@@ -169,7 +158,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: GithubHeatmapWidget
+        component: dynamicWidget(async () => (await import("@/components/widgets/GithubHeatmapWidget")).GithubHeatmapWidget),
     },
     {
         preview: {
@@ -184,7 +173,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: ClockWidget
+        component: dynamicWidget(async () => (await import("@/components/widgets/ClockWidget")).ClockWidget),
     },
     {
         preview: {
@@ -199,7 +188,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: TodoWidget
+        component: dynamicWidget(async () => (await import("@/components/widgets/TodoWidget")).TodoWidget),
     },
     {
         preview: {
@@ -214,7 +203,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 1 }
             }
         },
-        component: KanbanWidget
+        component: dynamicWidget(async () => (await import("@/components/widgets/KanbanWidget")).KanbanWidget),
     },
     {
         preview: {
@@ -229,7 +218,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 2 }
             }
         },
-        component: CalendarWidget
+        component: dynamicWidget(async () => (await import("@/components/widgets/CalendarWidget")).CalendarWidget),
     },
     {
         preview: {
@@ -244,7 +233,7 @@ export const widgetRegistry: WidgetElement[] = [
                 mobile: { width: 1, height: 2 }
             }
         },
-        component: CountdownWidget
+        component: dynamicWidget(async () => (await import("@/components/widgets/CountdownWidget")).CountdownWidget),
     }
 ]
 

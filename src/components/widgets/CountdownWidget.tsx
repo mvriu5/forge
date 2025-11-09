@@ -18,6 +18,7 @@ import {DatePicker} from "@/components/ui/Datepicker"
 import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {useWidgets} from "@/hooks/data/useWidgets"
+import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
 
 type Countdown = {
     title: string
@@ -26,10 +27,8 @@ type Countdown = {
 }
 
 const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    if (!widget) return null
-    const {updateWidget} = useWidgets(widget.userId)
-
-    const [countdown, setCountdown] = useState<Countdown | null>(widget.config?.countdown ?? null)
+    const {updateWidget} = useWidgetActions()
+    const [countdown, setCountdown] = useState<Countdown | null>(widget?.config?.countdown ?? null)
 
     const addTooltip = tooltip<HTMLButtonElement>({
         message: countdown ? "Delete the current countdown" : "Add a new countdown",
@@ -70,6 +69,7 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetD
     }
 
     const handleDeleteCountdown = async () => {
+        if(!widget) return
         setCountdown(null)
         await updateWidget({
             ...widget,
@@ -78,6 +78,7 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetD
     }
 
     const handleAddCountdown = async () => {
+        if (!widget) return
         const data = form.getValues()
 
         const newCountdown: Countdown = {

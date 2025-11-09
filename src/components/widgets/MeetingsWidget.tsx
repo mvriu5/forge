@@ -24,7 +24,6 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
     const {session} = useSession()
     const userId = session?.user?.id
     const {settings} = useSettings(userId)
-    if (!settings) return null
     const {integrations, refetchIntegrations} = useIntegrations(userId)
     const googleIntegration = getIntegrationByProvider(integrations, "google")
     const { calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()

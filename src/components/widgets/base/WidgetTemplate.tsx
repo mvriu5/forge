@@ -22,17 +22,15 @@ interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
 const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, widget, editMode, onWidgetDelete}) => {
     const {breakpoint} = useBreakpoint()
 
-    const activeWidget = widget
-    if (!activeWidget) return null
-
-    const widgetConfig = getWidgetPreview(activeWidget?.widgetType ?? name)
+    const widgetConfig = getWidgetPreview(widget?.widgetType ?? name)
     if (!widgetConfig) return
 
     const responsiveSize = widgetConfig.preview.sizes[breakpoint]
 
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-        id: activeWidget?.id ?? name,
-        data: {widget: activeWidget}
+        id: widget?.id ?? name,
+        data: {widget},
+        disabled: !editMode || !widget
     })
 
     const deleteTooltip = tooltip<HTMLButtonElement>({
@@ -41,13 +39,13 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, w
         offset: 8
     })
 
-    const style = activeWidget ? {
-        transform: CSS.Transform.toString(transform),
+    const style = widget ? {
+        transform: transform ? CSS.Transform.toString(transform) : undefined,
         transition: isDragging ? "none" : "transform 200ms ease",
-        gridColumnStart: activeWidget.positionX + 1,
-        gridRowStart: activeWidget.positionY + 1,
-        gridColumnEnd: activeWidget.positionX + 1 + responsiveSize.width,
-        gridRowEnd: activeWidget.positionY + 1 + responsiveSize.height,
+        gridColumnStart: widget.positionX + 1,
+        gridRowStart: widget.positionY + 1,
+        gridColumnEnd: widget.positionX + 1 + responsiveSize.width,
+        gridRowEnd: widget.positionY + 1 + responsiveSize.height,
         zIndex: isDragging ? 30 : 20,
     } : undefined
 
@@ -63,14 +61,14 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, w
             style={style}
             {...(editMode ? {...attributes, ...listeners} : {})}
         >
-            {editMode && (
+            {editMode && widget && (
                 <Button
                     className="absolute z-50 size-8 bg-error/20 hover:bg-error/30 text-error hover:text-error border-error/40 bottom-2 backdrop-blur-lg"
                     onClick={() => {
                         if (deleteTooltip.onMouseLeave) {
                             deleteTooltip?.onMouseLeave()
                         }
-                        if (activeWidget) onWidgetDelete?.(activeWidget.id)
+                        onWidgetDelete?.(widget.id)
                     }}
                     {...deleteTooltip}
                 >

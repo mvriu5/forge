@@ -20,12 +20,12 @@ import {useWeather} from "@/hooks/useWeather"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {useSettings} from "@/hooks/data/useSettings"
+import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
 
 const WeatherWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    if (!widget) return null
     const {currentWeather, nextWeather, location, isLoading, isError, geolocationError} = useWeather()
-    const {settings} = useSettings(widget.userId)
-    if (!settings) return null
+    const {settings} = useSettings(widget?.userId)
+    const {updateWidget} = useWidgetActions()
 
     const getWeatherIcon = useCallback((code: number, size = 16) => {
         switch (code) {

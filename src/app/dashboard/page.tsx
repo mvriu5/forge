@@ -21,13 +21,14 @@ import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSettings} from "@/hooks/data/useSettings"
+import {WidgetActionProvider} from "@/components/widgets/base/WidgetActionContext"
 
 export default function Dashboard() {
     const { session, refetchSession, isLoading: sessionLoading } = useSession()
     const userId = session?.user?.id
 
     const {dashboards, isLoading: dashboardsLoading} = useDashboards(userId)
-    const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidgetPosition, setWidgets} = useWidgets(userId)
+    const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidgetPosition, setWidgets, updateWidget} = useWidgets(userId)
     const {settings, isLoading: settingsLoading, updateSettings} = useSettings(userId)
     const { addToast } = useToast()
 
@@ -124,6 +125,8 @@ export default function Dashboard() {
 
     const widgetsEmpty = currentWidgets.length === 0
 
+    const widgetActionsValue = useMemo(() => ({ updateWidget }), [updateWidget])
+
     const { transformedWidgets, gridClasses, containerHeight, isDesktop } = useResponsiveLayout(currentWidgets)
 
     return (
@@ -170,37 +173,39 @@ export default function Dashboard() {
                             </div>
                         </div>
                     ) : (
-                        <DndContext
-                            sensors={sensors}
-                            onDragStart={handleDragStart}
-                            onDragEnd={handleDragEnd}
-                            onDragOver={handleDragOver}
-                        >
-                            <div className={cn("relative w-full", containerHeight, gridClasses)}>
-                                {isDesktop && gridCells?.map((cell) => (
-                                    <GridCell
-                                        key={`${cell.x},${cell.y}`}
-                                        x={cell.x}
-                                        y={cell.y}
-                                        width={cell.width}
-                                        height={cell.height}
-                                        isDroppable={cell.isDroppable}
-                                    />
-                                ))}
-
-                                {transformedWidgets
-                                    ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
-                                    .map((widget) => (
-                                        <MemoizedWidget
-                                            key={widget.id}
-                                            widget={widget}
-                                            editMode={editMode}
-                                            onDelete={handleEditModeDelete}
-                                            isDragging={activeWidget?.id === widget.id}
+                        <WidgetActionProvider value={widgetActionsValue}>
+                            <DndContext
+                                sensors={sensors}
+                                onDragStart={handleDragStart}
+                                onDragEnd={handleDragEnd}
+                                onDragOver={handleDragOver}
+                            >
+                                <div className={cn("relative w-full", containerHeight, gridClasses)}>
+                                    {isDesktop && gridCells?.map((cell) => (
+                                        <GridCell
+                                            key={`${cell.x},${cell.y}`}
+                                            x={cell.x}
+                                            y={cell.y}
+                                            width={cell.width}
+                                            height={cell.height}
+                                            isDroppable={cell.isDroppable}
                                         />
                                     ))}
-                            </div>
-                        </DndContext>
+
+                                    {transformedWidgets
+                                        ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
+                                        .map((widget) => (
+                                            <MemoizedWidget
+                                                key={widget.id}
+                                                widget={widget}
+                                                editMode={editMode}
+                                                onDelete={handleEditModeDelete}
+                                                isDragging={activeWidget?.id === widget.id}
+                                            />
+                                        ))}
+                                </div>
+                            </DndContext>
+                        </WidgetActionProvider>
                     )}
                 </>
             )}

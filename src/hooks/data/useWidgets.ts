@@ -106,7 +106,6 @@ export function useWidgets(userId: string | undefined) {
         queryKey: WIDGETS_QUERY_KEY(userId),
         queryFn: () => fetchWidgets(userId!),
         enabled: !!userId,
-        initialData: [] as Widget[],
     })
 
     const addWidgetMutation = useMutation({

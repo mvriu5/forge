@@ -35,6 +35,7 @@ import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {cn, getUpdateTimeLabel} from "@/lib/utils"
 import {useWidgets} from "@/hooks/data/useWidgets"
+import { useWidgetActions } from "./base/WidgetActionContext"
 
 type Note = {
     id: string
@@ -45,8 +46,7 @@ type Note = {
 }
 
 const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    if (!widget) return null
-    const {updateWidget} = useWidgets(widget.userId)
+    const {updateWidget} = useWidgetActions()
 
     const addTooltip = tooltip<HTMLButtonElement>({
         message: "Add a new note",
@@ -55,7 +55,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
 
     const [openNoteId, setOpenNoteId] = useState<string | null>(null)
     const [notes, setNotes] = useState<Note[]>(() => {
-        const cfg: Note[] = widget.config?.notes
+        const cfg: Note[] = widget?.config?.notes
         if (!cfg) return []
         return Object.entries(cfg).map(([id, { title, content, emoji, lastUpdated }]) => ({
             id,
@@ -67,7 +67,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
     })
 
     useEffect(() => {
-        const cfg = widget.config?.notes as Note[]
+        const cfg = widget?.config?.notes as Note[]
         if (!cfg) return
         setNotes(
             Object.entries(cfg).map(([id, { title, content, emoji, lastUpdated }]) => ({
@@ -78,7 +78,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                 lastUpdated: new Date(lastUpdated)
             }))
         )
-    }, [widget.config?.notes])
+    }, [widget?.config?.notes])
 
     const createNewNote = () => {
         const newNote: Note = {
@@ -93,7 +93,8 @@ const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
     }
 
     const handleSave = async (id: string, data: { title: string, content: JSONContent, emoji: string, lastUpdated: Date }) => {
-        const existingNotes = widget.config?.notes ?? {}
+        if (!widget) return
+        const existingNotes = widget?.config?.notes ?? {}
 
         await updateWidget({
             ...widget,
@@ -114,8 +115,9 @@ const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
     }
 
     const handleDelete = (id: string) => {
+        if (!widget) return
         setNotes((prev) => prev.filter((note) => note.id !== id))
-        const updatedNotes = { ...widget.config?.notes }
+        const updatedNotes = { ...widget?.config?.notes }
         delete updatedNotes[id]
 
         void updateWidget({
@@ -163,7 +165,7 @@ interface NoteDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     note: Note
-    widget: Widget
+    widget?: Widget
     onSave: (id: string, data: { title: string, content: JSONContent, emoji: string, lastUpdated: Date }) => void
     onDelete: (id: string) => void
 }

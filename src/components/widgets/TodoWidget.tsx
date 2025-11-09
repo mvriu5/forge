@@ -23,6 +23,7 @@ import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} f
 import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
 import {useWidgets} from "@/hooks/data/useWidgets"
+import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
 
 interface TodoProps {
     id: string
@@ -31,10 +32,8 @@ interface TodoProps {
 }
 
 const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    if (!widget) return null
-    const {updateWidget} = useWidgets(widget.userId)
-
-    const [todos, setTodos] = useState<TodoProps[]>(widget.config?.todos ?? [])
+    const {updateWidget} = useWidgetActions()
+    const [todos, setTodos] = useState<TodoProps[]>(widget?.config?.todos ?? [])
     const inputRef = useRef<HTMLInputElement>(null)
 
     const clearTodosTooltip = tooltip<HTMLButtonElement>({
@@ -52,12 +51,13 @@ const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete
             }
             const updatedTodos = [...todos, newTodo]
             setTodos(updatedTodos)
-            handleSave(updatedTodos)
+            void handleSave(updatedTodos)
             input.value = ""
         }
     }
 
     const handleSave = async (updatedTodos: TodoProps[] = todos) => {
+        if (!widget) return
         await updateWidget({
             ...widget,
             config: {
