@@ -1,4 +1,4 @@
-import {betterAuth} from "better-auth"
+import {betterAuth} from "better-auth/minimal"
 import {drizzleAdapter} from "better-auth/adapters/drizzle"
 import {db} from "@/database"
 import {schema} from "@/db/schema"
@@ -6,7 +6,6 @@ import {Resend} from 'resend'
 import {VerificationEmail} from "@/components/emails/VerificationEmail"
 import {ReactNode} from "react"
 import {ResetPasswordEmail} from "@/components/emails/ResetPasswordEmail"
-import {nextCookies} from "better-auth/next-js"
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -81,7 +80,6 @@ export const auth = betterAuth({
             secure: true
         }
     },
-    plugins: [nextCookies()]
 })
 
 export type Session = typeof auth.$Infer.Session

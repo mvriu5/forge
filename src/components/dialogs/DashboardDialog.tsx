@@ -13,6 +13,7 @@ import {tooltip} from "@/components/ui/TooltipProvider"
 import {Spinner} from "@/components/ui/Spinner"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useSession} from "@/hooks/data/useSession"
+import {useSettings} from "@/hooks/data/useSettings"
 
 interface DashboardDialogProps {
     open: boolean
@@ -22,9 +23,8 @@ interface DashboardDialogProps {
 }
 
 function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardDialogProps) {
-    const {session} = useSession()
-    const userId = session?.user?.id
-    const {dashboards, addDashboard, addDashboardStatus} = useDashboards(userId)
+    const {userId} = useSession()
+    const {dashboards, addDashboard, addDashboardStatus} = useDashboards(userId, null)
     const {addToast} = useToast()
 
     const formSchema = z.object({
@@ -73,13 +73,14 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
                 if (!open) form.reset()
             }}
         >
-            <DialogTrigger asChild>
-                {showOnClose &&
-                    <Button className={"hidden lg:flex rounded-l-none border-l-0 px-2"} disabled={!dashboards || dashboards.length === 0 || editMode} {...dashboardTooltip}>
+            {showOnClose &&
+                <DialogTrigger asChild>
+                    <Button className={"hidden lg:flex rounded-l-none border-l-0 px-2"}
+                            disabled={!dashboards || dashboards.length === 0 || editMode} {...dashboardTooltip}>
                         <SquarePen size={16} />
                     </Button>
-                }
-            </DialogTrigger>
+                </DialogTrigger>
+            }
             <DialogContent
                 className={"md:min-w-[300px] p-4"}
                 onPointerDownOutside={(e) => !showOnClose && e.preventDefault()}

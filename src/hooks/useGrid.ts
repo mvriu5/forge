@@ -2,10 +2,7 @@ import {useState, useEffect, useMemo} from "react"
 import { Widget } from "@/database"
 
 export const useGrid = (activeWidget: Widget | null, widgets: Widget[] | undefined) => {
-    const filteredWidgets = useMemo(() => {
-        if (!widgets) return []
-        return widgets
-    }, [widgets])
+    const filteredWidgets = useMemo(() => widgets ?? [], [widgets])
 
     const [gridCells, setGridCells] = useState<{
         x: number,

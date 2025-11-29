@@ -24,44 +24,27 @@ import {useSettings} from "@/hooks/data/useSettings"
 import {WidgetActionProvider} from "@/components/widgets/base/WidgetActionContext"
 
 export default function Dashboard() {
-    const { session, refetchSession, isLoading: sessionLoading } = useSession()
-    const userId = session?.user?.id
-
-    const {dashboards, isLoading: dashboardsLoading} = useDashboards(userId)
-    const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidgetPosition, setWidgets, updateWidget} = useWidgets(userId)
+    const {userId, refetchSession, isLoading: sessionLoading} = useSession()
     const {settings, isLoading: settingsLoading, updateSettings} = useSettings(userId)
-    const { addToast } = useToast()
+    const {dashboards, currentDashboard, isLoading: dashboardsLoading} = useDashboards(userId, settings)
+    const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidgetPosition, setWidgets, updateWidget} = useWidgets(userId)
+    const {addToast} = useToast()
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
     const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
     const [editMode, setEditMode] = useState<boolean>(false)
     const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
     const [dialogOpen, setDialogOpen] = useState(false)
-    const dataLoading = sessionLoading || dashboardsLoading || widgetsLoading || settingsLoading
 
-    const currentDashboard = useMemo(() => {
-        if (!dashboards || dashboards.length === 0) return null
-        if (settings?.lastDashboardId) {
-            return dashboards.find((dashboard) => dashboard.id === settings.lastDashboardId) ?? dashboards[0]
-        }
-        return dashboards[0]
-    }, [dashboards, settings?.lastDashboardId])
-
-    const currentWidgets = useMemo(
-        () => widgets.filter((widget) => widget.dashboardId === currentDashboard?.id),
-        [widgets, currentDashboard?.id]
-    )
-
-    const cachedWidgetsRef = useRef<Widget[] | null>(null)
+    const currentWidgets = useMemo(() => (
+        widgets.filter((w) => w.dashboardId === currentDashboard?.id)
+    ), [widgets, currentDashboard?.id])
 
     const gridCells = useGrid(activeWidget, currentWidgets)
-    const { sensors, handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop(
-        editMode,
-        widgets,
-        currentDashboard?.id ?? null,
-        updateWidgetPosition,
-        setActiveWidget,
-    )
+    const { sensors, handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop(editMode, widgets, currentDashboard?.id ?? null, updateWidgetPosition, setActiveWidget)
+    const { transformedWidgets, gridClasses, containerHeight, isDesktop } = useResponsiveLayout(currentWidgets)
+
+    const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
     useHotkeys("mod+e", (event) => {
         event.preventDefault()
@@ -70,16 +53,14 @@ export default function Dashboard() {
     }, [editMode, currentWidgets])
 
     useEffect(() => {
-        refetchSession()
+        void refetchSession()
     }, [refetchSession])
-
 
     useEffect(() => {
         if (!userId) return
         if (dashboardsLoading) return
         if (dashboards && dashboards.length === 0) setDialogOpen(true)
     }, [userId, dashboards, dashboardsLoading])
-
 
     const handleEditModeEnter = useCallback(() => {
         setEditMode(true)
@@ -123,14 +104,12 @@ export default function Dashboard() {
         if (widget) setWidgetsToRemove((prev) => [...prev, widget])
     }, [widgets])
 
-    const widgetsEmpty = currentWidgets.length === 0
+    const dataLoading = sessionLoading || dashboardsLoading || widgetsLoading || settingsLoading
 
     const widgetActionsValue = useMemo(() => ({ updateWidget }), [updateWidget])
 
-    const { transformedWidgets, gridClasses, containerHeight, isDesktop } = useResponsiveLayout(currentWidgets)
-
     return (
-        <div className={cn("flex flex-col w-full h-full overflow-hidden", isDesktop && "max-h-screen max-w-screen")}>
+        <div className={cn("flex flex-col w-full h-full overflow-hidden", /*isDesktop && "max-h-screen max-w-screen"*/)}>
             <Header
                 onEdit={handleEditModeEnter}
                 editMode={editMode}
@@ -138,7 +117,7 @@ export default function Dashboard() {
                 handleEditModeSave={handleEditModeSave}
                 handleEditModeCancel={handleEditModeCancel}
                 isLoading={dataLoading}
-                widgetsEmpty={widgetsEmpty && currentDashboard !== null}
+                widgetsEmpty={currentWidgets.length === 0 && currentDashboard !== null}
                 dashboards={dashboards ?? []}
                 currentDashboard={currentDashboard}
                 settings={settings}
@@ -157,7 +136,7 @@ export default function Dashboard() {
                 </div>
             ) : (
                 <>
-                    {widgetsEmpty && currentDashboard ? (
+                    {currentWidgets.length === 0 && currentDashboard ? (
                         <div className={"w-full h-screen flex items-center justify-center"}>
                             <div className={"flex flex-col gap-4 items-center justify-center p-4 md:p-12 border border-main border-dashed rounded-md shadow-md dark:shadow-xl"}>
                                 <EmptyAddSVG/>
@@ -227,9 +206,6 @@ interface WidgetProps {
 
 const WidgetComponent = ({ widget, onDelete, editMode, isDragging }: WidgetProps) => {
     const WidgetContent = getWidgetComponent(widget.widgetType)
-    const preview = getWidgetPreview(widget.widgetType)
-
-    if (!WidgetContent || !preview) return null
 
     return (
         <WidgetContent

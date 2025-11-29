@@ -1,5 +1,7 @@
 import {NextRequest, NextResponse} from "next/server"
-import {getSessionCookie} from "better-auth/cookies"
+import { auth } from "./lib/auth"
+import { headers } from "next/headers"
+//import {getSessionCookie} from "better-auth/cookies"
 
 const authRoutes = ["/signin", "/signup"]
 const passwordRoutes = ["/reset", "/forgot"]
@@ -7,7 +9,11 @@ const landingRoutes = ["/", "/privacy", "/terms", "/sitemap.xml", "/pricing", "/
 
 export async function proxy(request: NextRequest) {
     const { pathname, searchParams } = request.nextUrl
-    const session = getSessionCookie(request)
+    //const session = getSessionCookie(request)
+
+    const session = await auth.api.getSession({
+        headers: await headers()
+    })
 
     const isAuthRoute     = authRoutes.includes(pathname)
     const isPasswordRoute = passwordRoutes.includes(pathname)

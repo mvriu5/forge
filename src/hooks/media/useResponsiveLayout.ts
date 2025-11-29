@@ -5,7 +5,6 @@ import { transformLayout, type Breakpoint, getGridClasses, getContainerHeight } 
 import { Widget } from "@/database"
 import { useBreakpoint } from "@/hooks/media/useBreakpoint"
 
-
 const layoutCache = new Map<string, Widget[]>()
 
 const getCacheKey = (widgets: Widget[], breakpoint: Breakpoint): string => {
@@ -21,9 +20,7 @@ export const useResponsiveLayout = (originalWidgets: Widget[]) => {
 
         const cacheKey = getCacheKey(originalWidgets, breakpoint)
 
-        if (layoutCache.has(cacheKey)) {
-            return layoutCache.get(cacheKey)!
-        }
+        if (layoutCache.has(cacheKey)) return layoutCache.get(cacheKey)!
 
         const transformed = transformLayout(originalWidgets, breakpoint)
         layoutCache.set(cacheKey, transformed)

@@ -35,6 +35,7 @@ interface WidgetDialogProps {
 function WidgetDialog({editMode, title, currentDashboard, userId}: WidgetDialogProps) {
     const {widgets, addWidget, addWidgetStatus} = useWidgets(userId)
     const {addToast} = useToast()
+
     const [selectedWidget, setSelectedWidget] = useState<WidgetPreview | null>(null)
     const [allWidgets] = useState<WidgetPreview[]>(() => getAllWidgetPreviews())
     const [query, setQuery] = useState<string>("")
@@ -102,10 +103,13 @@ function WidgetDialog({editMode, title, currentDashboard, userId}: WidgetDialogP
     const isAddDisabled = !selectedWidget || !userId || !currentDashboard || addWidgetStatus === "pending"
 
     return (
-        <Dialog open={dialogOpen} onOpenChange={(prev) => {
-            setDialogOpen(!prev)
-            if (selectedWidget) setSelectedWidget(null)
-        }}>
+        <Dialog
+            open={dialogOpen}
+            onOpenChange={(prev) => {
+                setDialogOpen(!prev)
+                if (selectedWidget) setSelectedWidget(null)
+            }}
+        >
             <DialogTrigger asChild>
                 <Button className={"px-1.5 gap-2"} {...widgetTooltip} variant={"brand"} disabled={editMode || !currentDashboard || !userId}>
                     <Grid2x2Plus size={16}/>

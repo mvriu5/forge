@@ -32,7 +32,7 @@ function ForgotPasswordCard() {
     })
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        await authClient.forgetPassword({email: values.email, redirectTo: "/reset"}, {
+        await authClient.requestPasswordReset({email: values.email, redirectTo: "/reset"}, {
             onRequest: (ctx) => {
                 setLoading(true)
             },

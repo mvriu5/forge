@@ -38,6 +38,7 @@ export function useSession() {
     }
 
     return {
+        userId: sessionQuery.data?.user.id,
         session: sessionQuery.data ?? null,
         isLoading: sessionQuery.isLoading,
         refetchSession: sessionQuery.refetch,

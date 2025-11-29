@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React, {ComponentType, JSX, ReactNode} from "react"
 import dynamic from "next/dynamic"
 
 export interface WidgetPreview {
@@ -237,13 +237,10 @@ export const widgetRegistry: WidgetElement[] = [
     }
 ]
 
-
 export const getWidgetComponent = (name: string) => {
-    const WidgetComponent = widgetRegistry.find((widget) => widget.preview.widgetType === name)?.component
-    if (!WidgetComponent) return null
+    const WidgetComponent = widgetRegistry.find((widget) => widget.preview.widgetType === name)!.component
     return (props: any) => <WidgetComponent {...props} name={name} />
 }
-
 
 export const getWidgetPreview = (name: string) => {
     return widgetRegistry.find((widget) => widget.preview.widgetType === name);
