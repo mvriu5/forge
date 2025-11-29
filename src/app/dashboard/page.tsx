@@ -4,7 +4,7 @@ import {Header} from "@/components/Header"
 import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from "react"
 import {getWidgetComponent, getWidgetPreview} from "@/lib/widgetRegistry"
 import {DndContext} from "@dnd-kit/core"
-import type {Widget} from "@/database"
+import type {Widget, Dashboard} from "@/database"
 import {EmptyAddSVG} from "@/components/svg/EmptyAddSVG"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
 import {Blocks, CloudAlert} from "lucide-react"
@@ -22,15 +22,18 @@ import {useDashboards} from "@/hooks/data/useDashboards"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSettings} from "@/hooks/data/useSettings"
 import {WidgetActionProvider} from "@/components/widgets/base/WidgetActionContext"
+import {parseAsString, useQueryState} from "nuqs"
 
 export default function Dashboard() {
     const { session, refetchSession, isLoading: sessionLoading } = useSession()
     const userId = session?.user?.id
 
-    const {dashboards, isLoading: dashboardsLoading} = useDashboards(userId)
-    const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidgetPosition, setWidgets, updateWidget} = useWidgets(userId)
     const {settings, isLoading: settingsLoading, updateSettings} = useSettings(userId)
-    const { addToast } = useToast()
+    const {dashboards, currentDashboard, isLoading: dashboardsLoading} = useDashboards(userId, settings)
+    const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidgetPosition, setWidgets, updateWidget} = useWidgets(userId)
+    const {addToast} = useToast()
+
+    const [dashboard, setDashboard] = useQueryState("dashboard")
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
     const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
@@ -39,29 +42,11 @@ export default function Dashboard() {
     const [dialogOpen, setDialogOpen] = useState(false)
     const dataLoading = sessionLoading || dashboardsLoading || widgetsLoading || settingsLoading
 
-    const currentDashboard = useMemo(() => {
-        if (!dashboards || dashboards.length === 0) return null
-        if (settings?.lastDashboardId) {
-            return dashboards.find((dashboard) => dashboard.id === settings.lastDashboardId) ?? dashboards[0]
-        }
-        return dashboards[0]
-    }, [dashboards, settings?.lastDashboardId])
-
-    const currentWidgets = useMemo(
-        () => widgets.filter((widget) => widget.dashboardId === currentDashboard?.id),
-        [widgets, currentDashboard?.id]
-    )
-
+    const currentWidgets = useMemo(() => widgets.filter((widget) => widget.dashboardId === currentDashboard?.id), [widgets, currentDashboard?.id])
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
     const gridCells = useGrid(activeWidget, currentWidgets)
-    const { sensors, handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop(
-        editMode,
-        widgets,
-        currentDashboard?.id ?? null,
-        updateWidgetPosition,
-        setActiveWidget,
-    )
+    const { sensors, handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop(editMode, widgets, currentDashboard?.id ?? null, updateWidgetPosition, setActiveWidget)
 
     useHotkeys("mod+e", (event) => {
         event.preventDefault()
@@ -70,8 +55,15 @@ export default function Dashboard() {
     }, [editMode, currentWidgets])
 
     useEffect(() => {
-        refetchSession()
-    }, [refetchSession])
+        if (!userId) return
+        void refetchSession()
+    }, [userId])
+
+    useEffect(() => {
+        if (!dashboard && currentDashboard?.name) {
+            void setDashboard(currentDashboard.name)
+        }
+    }, [dashboard, currentDashboard?.name, setDashboard])
 
 
     useEffect(() => {
@@ -123,7 +115,7 @@ export default function Dashboard() {
         if (widget) setWidgetsToRemove((prev) => [...prev, widget])
     }, [widgets])
 
-    const widgetsEmpty = currentWidgets.length === 0
+    const widgetsEmpty = currentWidgets.length === 0 && currentDashboard !== null
 
     const widgetActionsValue = useMemo(() => ({ updateWidget }), [updateWidget])
 
@@ -138,10 +130,7 @@ export default function Dashboard() {
                 handleEditModeSave={handleEditModeSave}
                 handleEditModeCancel={handleEditModeCancel}
                 isLoading={dataLoading}
-                widgetsEmpty={widgetsEmpty && currentDashboard !== null}
-                dashboards={dashboards ?? []}
-                currentDashboard={currentDashboard}
-                settings={settings}
+                widgetsEmpty={widgetsEmpty}
                 onDashboardChange={async (dashboardId) => {
                     if (!settings) return
                     await updateSettings({
@@ -149,7 +138,6 @@ export default function Dashboard() {
                         lastDashboardId: dashboardId,
                     })
                 }}
-                userId={userId}
             />
             {dataLoading ? (
                 <div className={"h-screen w-screen flex items-center justify-center"}>
@@ -167,8 +155,6 @@ export default function Dashboard() {
                                 <WidgetDialog
                                     editMode={false}
                                     title={"Widget-Store"}
-                                    currentDashboard={currentDashboard}
-                                    userId={userId}
                                 />
                             </div>
                         </div>

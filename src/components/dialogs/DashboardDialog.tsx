@@ -13,6 +13,7 @@ import {tooltip} from "@/components/ui/TooltipProvider"
 import {Spinner} from "@/components/ui/Spinner"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useSession} from "@/hooks/data/useSession"
+import {useSettings} from "@/hooks/data/useSettings"
 
 interface DashboardDialogProps {
     open: boolean
@@ -24,7 +25,9 @@ interface DashboardDialogProps {
 function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardDialogProps) {
     const {session} = useSession()
     const userId = session?.user?.id
-    const {dashboards, addDashboard, addDashboardStatus} = useDashboards(userId)
+
+    const {settings} = useSettings(userId)
+    const {dashboards, addDashboard, addDashboardStatus} = useDashboards(userId, settings)
     const {addToast} = useToast()
 
     const formSchema = z.object({

@@ -24,17 +24,24 @@ import {useToast} from "@/components/ui/ToastProvider"
 import {Spinner} from "@/components/ui/Spinner"
 import {Dashboard} from "@/database"
 import {useWidgets} from "@/hooks/data/useWidgets"
+import {useSession} from "@/hooks/data/useSession"
+import {useDashboards} from "@/hooks/data/useDashboards"
+import {useSettings} from "@/hooks/data/useSettings"
 
 interface WidgetDialogProps {
     editMode: boolean
     title?: string
-    currentDashboard?: Dashboard | null
-    userId?: string
 }
 
-function WidgetDialog({editMode, title, currentDashboard, userId}: WidgetDialogProps) {
+function WidgetDialog({editMode, title}: WidgetDialogProps) {
+    const { session } = useSession()
+    const userId = session?.user?.id
+
+    const {settings} = useSettings(userId)
+    const {currentDashboard} = useDashboards(userId, settings)
     const {widgets, addWidget, addWidgetStatus} = useWidgets(userId)
     const {addToast} = useToast()
+
     const [selectedWidget, setSelectedWidget] = useState<WidgetPreview | null>(null)
     const [allWidgets] = useState<WidgetPreview[]>(() => getAllWidgetPreviews())
     const [query, setQuery] = useState<string>("")

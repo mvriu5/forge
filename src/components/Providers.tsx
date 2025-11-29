@@ -6,6 +6,7 @@ import {TooltipProvider} from "@/components/ui/TooltipProvider"
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
 import {ThemeProvider} from "@/components/ThemeProvider"
 import { DevTool } from "./DevTool"
+import {NuqsAdapter} from "nuqs/adapters/next"
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -19,17 +20,19 @@ const queryClient = new QueryClient({
 function Providers({children}: {children: ReactNode}) {
     return (
         <QueryClientProvider client={queryClient}>
-            <ThemeProvider
-                attribute="class"
-                defaultTheme="dark"
-                disableTransitionOnChange
-            >
-                <TooltipProvider>
-                    <ToastProvider>
-                        {children}
-                    </ToastProvider>
-                </TooltipProvider>
-            </ThemeProvider>
+            <NuqsAdapter>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="dark"
+                    disableTransitionOnChange
+                >
+                    <TooltipProvider>
+                        <ToastProvider>
+                            {children}
+                        </ToastProvider>
+                    </TooltipProvider>
+                </ThemeProvider>
+            </NuqsAdapter>
         </QueryClientProvider>
     )
 }

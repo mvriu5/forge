@@ -1,5 +1,6 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
-import type {Dashboard, DashboardInsert} from "@/database"
+import type {Dashboard, DashboardInsert, Settings} from "@/database"
+import {useMemo} from "react"
 
 const DASHBOARD_QUERY_KEY = (userId: string | undefined) => ["dashboards", userId] as const
 
@@ -51,7 +52,7 @@ async function deleteDashboardRequest(id: string): Promise<void> {
     }
 }
 
-export function useDashboards(userId: string | undefined) {
+export function useDashboards(userId: string | undefined, settings: Settings | null) {
     const queryClient = useQueryClient()
 
     const dashboardsQuery = useQuery({
@@ -90,8 +91,17 @@ export function useDashboards(userId: string | undefined) {
         }
     })
 
+    const currentDashboard = useMemo(() => {
+        if (!dashboardsQuery.data || dashboardsQuery.data.length === 0) return null
+        if (settings?.lastDashboardId) {
+            return dashboardsQuery.data.find((dashboard) => dashboard.id === settings.lastDashboardId) ?? dashboardsQuery.data[0]
+        }
+        return dashboardsQuery.data[0]
+    }, [dashboardsQuery.data, settings?.lastDashboardId])
+
     return {
         dashboards: dashboardsQuery.data ?? null,
+        currentDashboard,
         isLoading: dashboardsQuery.isLoading,
         refetchDashboards: dashboardsQuery.refetch,
         addDashboard: (input: DashboardInsert) => addDashboardMutation.mutateAsync(input),

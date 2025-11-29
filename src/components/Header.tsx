@@ -13,6 +13,9 @@ import {Skeleton} from "./ui/Skeleton"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
 import {Dashboard, Settings} from "@/database"
+import {useSession} from "@/hooks/data/useSession"
+import {useSettings} from "@/hooks/data/useSettings"
+import {useDashboards} from "@/hooks/data/useDashboards"
 
 interface HeaderProps {
     editMode: boolean
@@ -22,15 +25,18 @@ interface HeaderProps {
     onEdit: () => void
     widgetsEmpty: boolean
     isLoading: boolean
-    dashboards: Dashboard[]
-    currentDashboard: Dashboard | null
-    settings: Settings | null
     onDashboardChange: (dashboardId: string) => Promise<void>
-    userId?: string
 }
 
-function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, dashboards, currentDashboard, settings, onDashboardChange, userId}: HeaderProps) {
+function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, onDashboardChange}: HeaderProps) {
+    const {session} = useSession()
+    const userId = session?.user?.id
+
+    const {settings} = useSettings(userId)
+    const {dashboards, currentDashboard} = useDashboards(userId, settings)
+
     const [dialogOpen, setDialogOpen] = useState(false)
+    const [dashboard, setDashboard] = useState("dashboard")
 
     const layoutTooltip = tooltip<HTMLButtonElement>({
         message: "Change your dashboard layout",
@@ -40,9 +46,10 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
     })
 
     const handleSelectDashboard = async (value: string) => {
-        const dashboard = dashboards.find(d => d.name === value)
-        if (!dashboard || !settings) return
-        await onDashboardChange(dashboard.id)
+        const newDashboard = dashboards?.find(d => d.name === value)
+        setDashboard(newDashboard?.name ?? "")
+        if (!newDashboard || !settings) return
+        await onDashboardChange(newDashboard.id)
     }
 
     return (
@@ -67,7 +74,7 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
                     </div>
                     :
                     <div className={"flex gap-2"}>
-                        <WidgetDialog editMode={editMode} currentDashboard={currentDashboard} userId={userId}/>
+                        <WidgetDialog editMode={editMode}/>
                         <Button className={"size-8 bg-secondary border-main/60 hidden xl:flex"} {...layoutTooltip} onClick={onEdit} disabled={editMode || widgetsEmpty}>
                             <LayoutTemplate size={16}/>
                         </Button>
@@ -75,7 +82,7 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
                             <Select
                                 value={currentDashboard?.name ?? ""}
                                 onValueChange={handleSelectDashboard}
-                                disabled={dashboards.length === 0 || editMode}
+                                disabled={dashboards?.length === 0 || editMode}
                             >
                                 <SelectTrigger className={"max-w-[280px] bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary flex lg:rounded-r-none gap-0.5"} disabled={editMode}>
                                     <div className={"w-full flex items-center gap-1 overflow-hidden text-xs"}>
@@ -87,7 +94,7 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
                                     </div>
                                 </SelectTrigger>
                                 <SelectContent align={"end"} className={"border-main/40"}>
-                                    {dashboards.map(dashboard => (
+                                    {dashboards?.map(dashboard => (
                                         <SelectItem key={dashboard.id} value={dashboard.name}>{dashboard.name}</SelectItem>
                                     ))}
                                 </SelectContent>
