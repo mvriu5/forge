@@ -67,8 +67,7 @@ export interface CalendarEvent {
 }
 
 export const useGoogleCalendar = () => {
-    const {session} = useSession()
-    const userId = session?.user?.id
+    const {userId} = useSession()
     const {integrations, updateIntegration} = useIntegrations(userId)
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
 

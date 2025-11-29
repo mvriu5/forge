@@ -44,7 +44,7 @@ import {useDashboards} from "@/hooks/data/useDashboards"
 import {useSettings} from "@/hooks/data/useSettings"
 
 function SettingsDialog() {
-    const {session} = useSession()
+    const {userId} = useSession()
     const [open, setOpen] = useState(false)
     const [tab, setTab] = useState("profile")
 
@@ -104,13 +104,13 @@ function SettingsDialog() {
 
                     <div className={"flex flex-col w-full h-full p-4 gap-4"}>
                         {tab === "profile" &&
-                            <ProfileSection session={session} onClose={() => setOpen(false)}/>
+                            <ProfileSection onClose={() => setOpen(false)}/>
                         }
                         {tab === "integrations" &&
-                            <IntegrationSection session={session} setOpen={setOpen}/>
+                            <IntegrationSection userId={userId} setOpen={setOpen}/>
                         }
                         {tab === "dashboards" &&
-                            <DashboardSection/>
+                            <DashboardSection userId={userId}/>
                         }
                         {tab === "settings" &&
                             <SettingsSection onClose={() => setOpen(false)}/>
@@ -125,11 +125,10 @@ function SettingsDialog() {
 
 interface IntegrationProps {
     setOpen: (open: boolean) => void
-    session: any
+    userId: string | undefined
 }
 
-const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
-    const userId = session?.user?.id
+const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
     const {integrations, removeIntegration, refetchIntegrations} = useIntegrations(userId)
     const githubIntegration = useMemo(() => getIntegrationByProvider(integrations, "github"), [integrations])
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
@@ -256,15 +255,14 @@ const IntegrationSection = ({setOpen, session}: IntegrationProps) => {
 }
 
 interface ProfileProps {
-    session: any,
     onClose: () => void
 }
 
-const ProfileSection = ({session, onClose}: ProfileProps) => {
-    const {updateUser} = useSession()
+const ProfileSection = ({onClose}: ProfileProps) => {
+    const {session, updateUser} = useSession()
     const {addToast} = useToast()
     const [uploading, setUploading] = useState(false)
-    const [avatarUrl, setAvatarUrl] = useState<string | undefined>(session?.user?.image)
+    const [avatarUrl, setAvatarUrl] = useState<string | undefined>(session?.user?.image ?? "")
     const [blob, setBlob] = useState<PutBlobResult | undefined>(undefined)
 
     const inputFileRef = useRef<HTMLInputElement>(null)
@@ -461,10 +459,12 @@ const ProfileSection = ({session, onClose}: ProfileProps) => {
     )
 }
 
-const DashboardSection = () => {
-    const {session} = useSession()
-    const userId = session?.user?.id
-    const {dashboards = [], updateDashboard, removeDashboard} = useDashboards(userId)
+interface DashboardProps {
+    userId: string | undefined,
+}
+
+const DashboardSection = ({userId}: DashboardProps) => {
+    const {dashboards = [], updateDashboard, removeDashboard} = useDashboards(userId, null)
 
     return (
         <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>

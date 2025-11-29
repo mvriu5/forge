@@ -21,8 +21,7 @@ import {useSettings} from "@/hooks/data/useSettings"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 
 const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {session} = useSession()
-    const userId = session?.user?.id
+    const {userId} = useSession()
     const {settings} = useSettings(userId)
     const {integrations, refetchIntegrations} = useIntegrations(userId)
     const googleIntegration = getIntegrationByProvider(integrations, "google")
@@ -59,18 +58,6 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
                 })
             }
         })
-    }
-
-    if (!googleIntegration?.accessToken && !isLoading) {
-        return (
-            <WidgetTemplate id={id} widget={widget} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <WidgetError
-                    message={"If you want to use this widget, you need to integrate your Google account first!"}
-                    actionLabel={"Integrate"}
-                    onAction={handleIntegrate}
-                />
-            </WidgetTemplate>
-        )
     }
 
     const validEvents = useMemo(() => events?.filter(e => e.start.dateTime && e.end.dateTime && new Date(e.start.dateTime) >= new Date(Date.now())) || [], [events])
@@ -128,52 +115,63 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
         return calendars && Array.isArray(events) && events.length === 0 && !isInitialLoading
     }, [calendars, events, isInitialLoading])
 
+    const hasError = !googleIntegration?.accessToken && !isLoading
+
     return (
         <WidgetTemplate id={id} widget={widget} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Meetings"}>
-                <DropdownMenu
-                    asChild
-                    items={dropdownFilterItems}
-                    align={"end"}
-                    open={dropdownOpen}
-                    onOpenChange={setDropdownOpen}
-                >
-                    <Button
-                        data-state={dropdownOpen ? "open" : "closed"}
-                        variant={"widget"}
-                        className={"group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
-                        disabled={!calendars || calendars?.length === 0 || isLoading || isFetching}
-                        {...filterTooltip}
-                    >
-                        <Filter size={16} />
-                    </Button>
-                </DropdownMenu>
-                <Button
-                    className={"group"}
-                    variant={"widget"}
-                    onClick={refetch}
-                    data-loading={(isLoading || isFetching) ? "true" : "false"}
-                    {...refreshTooltip}
-                >
-                    <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
-                </Button>
-            </WidgetHeader>
-
-            {isInitialLoading ? (
-                <WidgetContent scroll>
-                    <div className="flex flex-col justify-between gap-4 pt-2">
-                        <Skeleton className={"h-15 w-full px-2"} />
-                        <Skeleton className={"h-15 w-full px-2"} />
-                        <Skeleton className={"h-15 w-full px-2"} />
-                        <Skeleton className={"h-15 w-full px-2"} />
-                    </div>
-                </WidgetContent>
-            ) : hasNoEvents ? (
-                <WidgetEmpty message={"No upcoming meetings"} />
-            ) : (
-                <WidgetContent scroll>
-                    <div className={"w-full flex flex-col gap-2 items-center"}>{renderEvents()}</div>
-                </WidgetContent>
+            {hasError ? (
+                    <WidgetError
+                        message={"If you want to use this widget, you need to integrate your Google account first!"}
+                        actionLabel={"Integrate"}
+                        onAction={handleIntegrate}
+                    />
+                ) : (
+                    <>
+                        <WidgetHeader title={"Meetings"}>
+                            <DropdownMenu
+                                asChild
+                                items={dropdownFilterItems}
+                                align={"end"}
+                                open={dropdownOpen}
+                                onOpenChange={setDropdownOpen}
+                            >
+                                <Button
+                                    data-state={dropdownOpen ? "open" : "closed"}
+                                    variant={"widget"}
+                                    className={"group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
+                                    disabled={!calendars || calendars?.length === 0 || isLoading || isFetching}
+                                    {...filterTooltip}
+                                >
+                                    <Filter size={16} />
+                                </Button>
+                            </DropdownMenu>
+                            <Button
+                                className={"group"}
+                                variant={"widget"}
+                                onClick={refetch}
+                                data-loading={(isLoading || isFetching) ? "true" : "false"}
+                                {...refreshTooltip}
+                            >
+                                <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
+                            </Button>
+                        </WidgetHeader>
+                        {isInitialLoading ? (
+                            <WidgetContent scroll>
+                                <div className="flex flex-col justify-between gap-4 pt-2">
+                                    <Skeleton className={"h-15 w-full px-2"} />
+                                    <Skeleton className={"h-15 w-full px-2"} />
+                                    <Skeleton className={"h-15 w-full px-2"} />
+                                    <Skeleton className={"h-15 w-full px-2"} />
+                                </div>
+                            </WidgetContent>
+                        ) : hasNoEvents ? (
+                            <WidgetEmpty message={"No upcoming meetings"} />
+                        ) : (
+                            <WidgetContent scroll>
+                                <div className={"w-full flex flex-col gap-2 items-center"}>{renderEvents()}</div>
+                            </WidgetContent>
+                        )}
+                    </>
             )}
         </WidgetTemplate>
     )

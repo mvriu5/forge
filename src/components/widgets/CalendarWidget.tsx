@@ -4,31 +4,29 @@ import React, {useEffect, useState} from 'react'
 import {WidgetProps, WidgetTemplate} from './base/WidgetTemplate'
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Button} from "@/components/ui/Button"
-import {Blocks, ChevronLeft, ChevronRight, CloudAlert, Plus} from "lucide-react"
+import {Blocks, Calendar as CalendarIcon, ChevronLeft, ChevronRight, CloudAlert, Plus} from "lucide-react"
 import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {cn} from "@/lib/utils"
 import {ScrollArea} from "@/components/ui/ScrollArea"
-import { format } from 'date-fns'
+import {format} from 'date-fns'
 import {convertToRGBA} from "@/lib/colorConvert"
 import {
+    closestCenter,
     DndContext,
-    DragOverlay,
+    type DragEndEvent,
+    PointerSensor,
     useDraggable,
     useDroppable,
-    closestCenter,
-    PointerSensor,
     useSensor,
     useSensors,
-    type DragEndEvent,
 } from "@dnd-kit/core"
-import { restrictToVerticalAxis, restrictToWindowEdges } from "@dnd-kit/modifiers"
+import {restrictToVerticalAxis, restrictToWindowEdges} from "@dnd-kit/modifiers"
 import {authClient} from "@/lib/auth-client"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {useToast} from "@/components/ui/ToastProvider"
-import { Popover, PopoverTrigger, PopoverContent } from '../ui/Popover'
+import {Popover, PopoverContent, PopoverTrigger} from '../ui/Popover'
 import {Calendar} from "@/components/ui/Calendar"
-import {Calendar as CalendarIcon} from "lucide-react"
 
 const weekdays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 const months = [
@@ -110,18 +108,6 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
                 })
             }
         })
-    }
-
-    if (!googleIntegration?.accessToken && !isLoading) {
-        return (
-            <WidgetTemplate id={id} widget={widget} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <WidgetError
-                    message={"If you want to use this widget, you need to integrate your Google account first!"}
-                    actionLabel={"Integrate"}
-                    onAction={handleIntegrate}
-                />
-            </WidgetTemplate>
-        )
     }
 
     const hours = Array.from({ length: 25 }, (_, i) => i )
@@ -266,138 +252,150 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
         return useDroppable({id: dateString}).setNodeRef
     })
 
+    const hasError = !googleIntegration?.accessToken && !isLoading
+
     return (
         <WidgetTemplate id={id} widget={widget} name={"calendar"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Calendar"}>
-                <Popover open={calendarPopoverOpen} onOpenChange={setCalendarPopoverOpen}>
-                    <PopoverTrigger asChild className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary mx-2"}>
-                        <Button variant={"widget"}>
-                            <CalendarIcon size={16} />
+            {hasError ? (
+                <WidgetError
+                    message={"If you want to use this widget, you need to integrate your Google account first!"}
+                    actionLabel={"Integrate"}
+                    onAction={handleIntegrate}
+                />
+            ) : (
+                <>
+                    <WidgetHeader title={"Calendar"}>
+                        <Popover open={calendarPopoverOpen} onOpenChange={setCalendarPopoverOpen}>
+                            <PopoverTrigger asChild className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary mx-2"}>
+                                <Button variant={"widget"}>
+                                    <CalendarIcon size={16} />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent align={"end"} className={"p-0 w-62"}>
+                                <Calendar
+                                    onDayClick={(date) => {
+                                        navigateToWeek(date)
+                                        setCalendarPopoverOpen(false)
+                                    }}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                        <Button variant="widget" onClick={() => navigateWeek("prev")} className={"-mx-2"}>
+                            <ChevronLeft size={16} />
                         </Button>
-                    </PopoverTrigger>
-                    <PopoverContent align={"end"} className={"p-0 w-62"}>
-                        <Calendar
-                            onDayClick={(date) => {
-                                navigateToWeek(date)
-                                setCalendarPopoverOpen(false)
-                            }}
-                        />
-                    </PopoverContent>
-                </Popover>
-                <Button variant="widget" onClick={() => navigateWeek("prev")} className={"-mx-2"}>
-                    <ChevronLeft size={16} />
-                </Button>
-                <Button variant="widget" onClick={() => navigateWeek("next")}>
-                    <ChevronRight size={16} />
-                </Button>
-                <Button variant={"widget"}>
-                    <Plus size={16} />
-                </Button>
-            </WidgetHeader>
-            <WidgetContent className={"border border-main/40 bg-secondary rounded-md gap-0 p-0"}>
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
-                >
-                    {/* Calendar Grid */}
-                    <div className="grid grid-cols-8 border-b border-main bg-primary rounded-t-md">
-                        <div className="filler"/>
-                        {days.map((day) => {
-                            const { day: dayNum, weekday, dateString } = formatDate(day)
-                            const isToday = dateString === today
+                        <Button variant="widget" onClick={() => navigateWeek("next")}>
+                            <ChevronRight size={16} />
+                        </Button>
+                        <Button variant={"widget"}>
+                            <Plus size={16} />
+                        </Button>
+                    </WidgetHeader>
+                    <WidgetContent className={"border border-main/40 bg-secondary rounded-md gap-0 p-0"}>
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragStart={handleDragStart}
+                            onDragEnd={handleDragEnd}
+                            modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
+                        >
+                            {/* Calendar Grid */}
+                            <div className="grid grid-cols-8 border-b border-main bg-primary rounded-t-md">
+                                <div className="filler"/>
+                                {days.map((day) => {
+                                    const { day: dayNum, weekday, dateString } = formatDate(day)
+                                    const isToday = dateString === today
 
-                            return (
-                                <div key={day.toString()} className={cn("flex items-center justify-center gap-2 py-1 text-center border-l border-main first:border-l-0")}>
-                                    <div className="text-sm text-primary font-normal">{weekday}</div>
-                                    <div
-                                        className={cn(
-                                            "text-sm font-mono",
-                                            isToday
-                                                ? "bg-brand/70 dark:bg-brand text-primary rounded-full size-6 flex items-center justify-center"
-                                                : "text-secondary"
-                                        )}
-                                    >
-                                        {dayNum}
-                                    </div>
-                                </div>
-                            )
-                        })}
-                    </div>
-                    <ScrollArea className={"h-[475px]"}>
-                        <div className="relative calendar-drop-zone">
-                            {/* Current time indicator */}
-                            {currentTimePosition !== null && (
-                                <div
-                                    className="absolute left-4 right-0 z-20 pointer-events-none"
-                                    style={{ top: `${currentTimePosition}px` }}
-                                >
-                                    <div className="flex items-center">
-                                        <div className="bg-error text-white text-xs px-2 py-1 rounded font-normal mr-2">
-                                            {currentTime.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+                                    return (
+                                        <div key={day.toString()} className={cn("flex items-center justify-center gap-2 py-1 text-center border-l border-main first:border-l-0")}>
+                                            <div className="text-sm text-primary font-normal">{weekday}</div>
+                                            <div
+                                                className={cn(
+                                                    "text-sm font-mono",
+                                                    isToday
+                                                        ? "bg-brand/70 dark:bg-brand text-primary rounded-full size-6 flex items-center justify-center"
+                                                        : "text-secondary"
+                                                )}
+                                            >
+                                                {dayNum}
+                                            </div>
                                         </div>
-                                        <div className="flex-1 h-0.5 bg-error"/>
-                                    </div>
-                                </div>
-                            )}
-
-                            {hours.map((hour) => (
-                                <div key={hour} className="relative">
-                                    <div className="grid grid-cols-8 border-b border-main last:border-b-0 min-h-[60px]">
-                                        <div className={cn("-mt-2.5 px-2 text-sm text-secondary font-mono flex items-start justify-end")}>
-                                            {hour.toString().padStart(2, "0")}:00
-                                        </div>
-
-                                        {days.map((day, dayIndex) => {
-                                            const { dateString } = formatDate(day)
-                                            const isToday = dateString === today
-
-                                            const setDroppableRef = droppableRefs[dayIndex]
-
-                                            return (
-                                                <div
-                                                    key={day.toString()}
-                                                    ref={setDroppableRef}
-                                                    className={`border-l border-main first:border-l-0 relative ${isToday ? "bg-brand/10 dark:bg-brand/5" : ""}`}
-                                                >
-                                                    {/* 15-Minuten-Hilfslinien */}
-                                                    <div className="absolute inset-0 pointer-events-none">
-                                                        <div className="absolute top-[0px] left-0 right-0 h-px bg-main/50 dark:bg-main"/>
-                                                    </div>
-
-                                                    {getEventsForDate(dateString).map((evt) => {
-                                                        const { top, height } = getAppointmentPosition(evt)
-
-                                                        const appointmentStartMinutes = timeToMinutes(evt.start.dateTime)
-                                                        const appointmentHour = Math.floor(appointmentStartMinutes / 60)
-                                                        if (appointmentHour !== hour)  return null
-
-                                                        const minutesInHour = appointmentStartMinutes % 60
-                                                        const topPosition = (minutesInHour / 60) * 60
-
-                                                        return (
-                                                            <EventCard
-                                                                key={evt.id}
-                                                                event={evt}
-                                                                topPosition={topPosition}
-                                                                height={height}
-                                                                handleDragStart={handleDragStart}
-                                                                color={getColor(evt.id)}
-                                                            />
-                                                        )
-                                                    })}
+                                    )
+                                })}
+                            </div>
+                            <ScrollArea className={"h-[475px]"}>
+                                <div className="relative calendar-drop-zone">
+                                    {/* Current time indicator */}
+                                    {currentTimePosition !== null && (
+                                        <div
+                                            className="absolute left-4 right-0 z-20 pointer-events-none"
+                                            style={{ top: `${currentTimePosition}px` }}
+                                        >
+                                            <div className="flex items-center">
+                                                <div className="bg-error text-white text-xs px-2 py-1 rounded font-normal mr-2">
+                                                    {currentTime.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
                                                 </div>
-                                            )
-                                        })}
-                                    </div>
+                                                <div className="flex-1 h-0.5 bg-error"/>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {hours.map((hour) => (
+                                        <div key={hour} className="relative">
+                                            <div className="grid grid-cols-8 border-b border-main last:border-b-0 min-h-[60px]">
+                                                <div className={cn("-mt-2.5 px-2 text-sm text-secondary font-mono flex items-start justify-end")}>
+                                                    {hour.toString().padStart(2, "0")}:00
+                                                </div>
+
+                                                {days.map((day, dayIndex) => {
+                                                    const { dateString } = formatDate(day)
+                                                    const isToday = dateString === today
+
+                                                    const setDroppableRef = droppableRefs[dayIndex]
+
+                                                    return (
+                                                        <div
+                                                            key={day.toString()}
+                                                            ref={setDroppableRef}
+                                                            className={`border-l border-main first:border-l-0 relative ${isToday ? "bg-brand/10 dark:bg-brand/5" : ""}`}
+                                                        >
+                                                            {/* 15-Minuten-Hilfslinien */}
+                                                            <div className="absolute inset-0 pointer-events-none">
+                                                                <div className="absolute top-[0px] left-0 right-0 h-px bg-main/50 dark:bg-main"/>
+                                                            </div>
+
+                                                            {getEventsForDate(dateString).map((evt) => {
+                                                                const { top, height } = getAppointmentPosition(evt)
+
+                                                                const appointmentStartMinutes = timeToMinutes(evt.start.dateTime)
+                                                                const appointmentHour = Math.floor(appointmentStartMinutes / 60)
+                                                                if (appointmentHour !== hour)  return null
+
+                                                                const minutesInHour = appointmentStartMinutes % 60
+                                                                const topPosition = (minutesInHour / 60) * 60
+
+                                                                return (
+                                                                    <EventCard
+                                                                        key={evt.id}
+                                                                        event={evt}
+                                                                        topPosition={topPosition}
+                                                                        height={height}
+                                                                        handleDragStart={handleDragStart}
+                                                                        color={getColor(evt.id)}
+                                                                    />
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                    </ScrollArea>
-                </DndContext>
-            </WidgetContent>
+                            </ScrollArea>
+                        </DndContext>
+                    </WidgetContent>
+                </>
+            )}
         </WidgetTemplate>
     )
 }

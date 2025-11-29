@@ -22,8 +22,7 @@ import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 
 const LinearWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {session} = useSession()
-    const userId = session?.user?.id
+    const {userId} = useSession()
     const {integrations, refetchIntegrations} = useIntegrations(userId)
     const linearIntegration = getIntegrationByProvider(integrations, "linear")
     const {data, isLoading, isFetching, isError, refetch, sortBy, setSortBy} = useLinear()
@@ -55,58 +54,58 @@ const LinearWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
         })
     }
 
-    if (!linearIntegration?.accessToken && !isLoading) {
-        return (
-            <WidgetTemplate id={id} widget={widget} name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+    const hasError = !linearIntegration?.accessToken && !isLoading
+
+    return (
+        <WidgetTemplate id={id} widget={widget} name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            {hasError ? (
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Linear account first!"}
                     actionLabel={"Integrate"}
                     onAction={handleIntegrate}
                 />
-            </WidgetTemplate>
-        )
-    }
-
-    return (
-        <WidgetTemplate id={id} widget={widget} name={"linear"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Linear"}>
-                <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                    <SelectTrigger className="w-max transition-all bg-tertiary border-0 shadow-none dark:shadow-none h-6 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-tertiary text-nowrap">Sort by:</span>
-                            <SelectValue placeholder="Sort" />
-                        </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="priority">Priority</SelectItem>
-                        <SelectItem value="created">Creation Date</SelectItem>
-                    </SelectContent>
-                </Select>
-                <Button
-                    variant={"widget"}
-                    className={"group"}
-                    onClick={() => refetch()}
-                    data-loading={(isLoading || isFetching) ? "true" : "false"}
-                    {...refreshTooltip}
-                >
-                    <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
-                </Button>
-            </WidgetHeader>
-            <WidgetContent scroll>
-                {(isLoading || isFetching) ? (
-                    <div className={"h-full flex flex-col gap-2"}>
-                        <Skeleton className={"h-16"}/>
-                        <Skeleton className={"h-16"}/>
-                        <Skeleton className={"h-16"}/>
-                        <Skeleton className={"h-16"}/>
-                        <Skeleton className={"h-16"}/>
-                    </div>
-                ) : (
-                    <div className={"flex flex-col gap-2"}>
-                        {data?.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
-                    </div>
-                )}
-            </WidgetContent>
+            ) : (
+                <>
+                    <WidgetHeader title={"Linear"}>
+                        <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                            <SelectTrigger className="w-max transition-all bg-tertiary border-0 shadow-none dark:shadow-none h-6 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-tertiary text-nowrap">Sort by:</span>
+                                    <SelectValue placeholder="Sort" />
+                                </div>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="priority">Priority</SelectItem>
+                                <SelectItem value="created">Creation Date</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Button
+                            variant={"widget"}
+                            className={"group"}
+                            onClick={() => refetch()}
+                            data-loading={(isLoading || isFetching) ? "true" : "false"}
+                            {...refreshTooltip}
+                        >
+                            <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
+                        </Button>
+                    </WidgetHeader>
+                    <WidgetContent scroll>
+                        {(isLoading || isFetching) ? (
+                            <div className={"h-full flex flex-col gap-2"}>
+                                <Skeleton className={"h-16"}/>
+                                <Skeleton className={"h-16"}/>
+                                <Skeleton className={"h-16"}/>
+                                <Skeleton className={"h-16"}/>
+                                <Skeleton className={"h-16"}/>
+                            </div>
+                        ) : (
+                            <div className={"flex flex-col gap-2"}>
+                                {data?.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
+                            </div>
+                        )}
+                    </WidgetContent>
+                </>
+            )}
         </WidgetTemplate>
     )
 }

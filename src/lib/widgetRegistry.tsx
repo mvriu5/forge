@@ -243,7 +243,7 @@ export const getWidgetComponent = (name: string) => {
 }
 
 export const getWidgetPreview = (name: string) => {
-    return widgetRegistry.find((widget) => widget.preview.widgetType === name);
+    return widgetRegistry.find((widget) => widget.preview.widgetType === name)!;
 }
 
 export const getAllWidgetPreviews = () => {

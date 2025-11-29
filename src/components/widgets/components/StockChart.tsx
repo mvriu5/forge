@@ -16,6 +16,7 @@ interface StockChartProps {
 
 const StockChart = memo(function StockChart({data, yAxisDomain, priceChangePercent, gradientId, chartConfig}: StockChartProps) {
     const {theme} = useTheme()
+
     return (
         <ChartContainer className="max-h-28 h-full w-full" config={chartConfig}>
             <AreaChart data={data} margin={{ top: 5 }}>

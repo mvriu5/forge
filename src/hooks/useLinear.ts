@@ -63,8 +63,7 @@ async function fetchLinearIssues(accessToken: string): Promise<LinearIssue[]> {
 }
 
 const useLinear = () => {
-    const {session} = useSession()
-    const userId = session?.user?.id
+    const {userId} = useSession()
     const {integrations} = useIntegrations(userId)
     const linearIntegration = useMemo(() => getIntegrationByProvider(integrations, "linear"), [integrations])
 

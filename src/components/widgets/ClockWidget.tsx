@@ -12,8 +12,7 @@ import {useWidgets} from "@/hooks/data/useWidgets"
 import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
 
 const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {session} = useSession()
-    const userId = session?.user?.id
+    const {userId} = useSession()
     const {settings} = useSettings(userId)
     const {updateWidget} = useWidgetActions()
 

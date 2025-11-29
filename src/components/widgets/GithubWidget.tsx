@@ -31,8 +31,7 @@ import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 
 const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {session} = useSession()
-    const userId = session?.user?.id
+    const {userId} = useSession()
     const {integrations, refetchIntegrations} = useIntegrations(userId)
     const githubIntegration = getIntegrationByProvider(integrations, "github")
     const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch} = useGithub()
@@ -79,100 +78,101 @@ const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
         })
     }
 
-    if (!githubIntegration?.accessToken && !isLoading) {
-        return (
-            <WidgetTemplate id={id} widget={widget} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+    const hasError = !githubIntegration?.accessToken && !isLoading
+
+    return (
+        <WidgetTemplate id={id} widget={widget} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+            {hasError ? (
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Github account first!"}
                     actionLabel={"Integrate"}
                     onAction={handleIntegrate}
                 />
-            </WidgetTemplate>
-        )
-    }
-
-    return (
-        <WidgetTemplate id={id} widget={widget} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Github"}>
-                <Badge
-                    variant="brand"
-                    className="text-xs bg-brand/10 border-brand/40 font-mono"
-                    title={`${activeTab === "issues" ? filteredIssues.length : filteredPRs.length} open`}
-                />
-                {activeTab === "issues" &&
-                    <DropdownMenu
-                        asChild
-                        items={dropdownFilterItems}
-                        align={"end"}
-                        open={dropdownOpen}
-                        onOpenChange={setDropdownOpen}
-                    >
+            ) : (
+                <>
+                    <WidgetHeader title={"Github"}>
+                        <Badge
+                            variant="brand"
+                            className="text-xs bg-brand/10 border-brand/40 font-mono"
+                            title={`${activeTab === "issues" ? filteredIssues.length : filteredPRs.length} open`}
+                        />
+                        {activeTab === "issues" &&
+                            <DropdownMenu
+                                asChild
+                                items={dropdownFilterItems}
+                                align={"end"}
+                                open={dropdownOpen}
+                                onOpenChange={setDropdownOpen}
+                            >
+                                <Button
+                                    data-state={dropdownOpen ? "open" : "closed"}
+                                    variant={"widget"}
+                                    className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
+                                    disabled={allLabels.length === 0 || isLoading || isFetching}
+                                    {...filterTooltip}
+                                >
+                                    <Filter size={16} />
+                                </Button>
+                            </DropdownMenu>
+                        }
                         <Button
-                            data-state={dropdownOpen ? "open" : "closed"}
                             variant={"widget"}
-                            className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
-                            disabled={allLabels.length === 0 || isLoading || isFetching}
-                            {...filterTooltip}
+                            onClick={() => refetch()}
+                            data-loading={(isLoading || isFetching) ? "true" : "false"}
+                            {...refreshTooltip}
                         >
-                            <Filter size={16} />
+                            <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
                         </Button>
-                    </DropdownMenu>
-                }
-                <Button
-                    variant={"widget"}
-                    onClick={() => refetch()}
-                    data-loading={(isLoading || isFetching) ? "true" : "false"}
-                    {...refreshTooltip}
-                >
-                    <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
-                </Button>
-            </WidgetHeader>
-            <div className="flex items-center gap-2">
-                <Input
-                    placeholder="Search..."
-                    className="bg-tertiary"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </div>
-            <Tabs defaultValue="issues" onValueChange={setActiveTab}>
-                <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
-                    <TabsTrigger value="issues">
-                        Issues
-                    </TabsTrigger>
-                    <TabsTrigger value="pull-requests">
-                        Pull Requests
-                    </TabsTrigger>
-                </TabsList>
-            </Tabs>
-            <WidgetContent scroll>
-                {(isLoading || isFetching) ? (
-                    <div className="h-full flex flex-col gap-4 pt-2">
-                        <Skeleton className={"h-16 w-full px-2"} />
-                        <Skeleton className={"h-16 w-full px-2"} />
-                        <Skeleton className={"h-16 w-full px-2"} />
+                    </WidgetHeader>
+                    <div className="flex items-center gap-2">
+                        <Input
+                            placeholder="Search..."
+                            className="bg-tertiary"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                     </div>
-                ) : (
-                    <div className={"flex flex-col gap-2"}>
-                        {activeTab === "issues" && filteredIssues.map((issue) => (
-                            <IssueCard issue={issue} key={issue.id}/>
-                        ))}
-                        {activeTab === "pull-requests" && filteredPRs.map((pr) => (
-                            <PulLRequestCard pr={pr} key={pr.id}/>
-                        ))}
-                        {activeTab === "issues" && filteredIssues.length === 0 &&
-                            <div className={"mt-4 flex justify-center items-center text-sm text-tertiary"}>
-                                No results found
+                    <Tabs defaultValue="issues" onValueChange={setActiveTab}>
+                        <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
+                            <TabsTrigger value="issues">
+                                Issues
+                            </TabsTrigger>
+                            <TabsTrigger value="pull-requests">
+                                Pull Requests
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                    <WidgetContent scroll>
+                        {(isLoading || isFetching) ? (
+                            <div className="h-full flex flex-col gap-4 pt-2">
+                                <Skeleton className={"h-16 w-full px-2"} />
+                                <Skeleton className={"h-16 w-full px-2"} />
+                                <Skeleton className={"h-16 w-full px-2"} />
                             </div>
-                        }
-                        {activeTab === "pull-requests" && filteredPRs.length === 0 &&
-                            <div className={"mt-4 flex justify-center items-center text-sm text-tertiary"}>
-                                No results found
+                        ) : (
+                            <div className={"flex flex-col gap-2"}>
+                                {activeTab === "issues" && filteredIssues.map((issue) => (
+                                    <IssueCard issue={issue} key={issue.id}/>
+                                ))}
+                                {activeTab === "pull-requests" && filteredPRs.map((pr) => (
+                                    <PulLRequestCard pr={pr} key={pr.id}/>
+                                ))}
+                                {activeTab === "issues" && filteredIssues.length === 0 &&
+                                    <div className={"mt-4 flex justify-center items-center text-sm text-tertiary"}>
+                                        No results found
+                                    </div>
+                                }
+                                {activeTab === "pull-requests" && filteredPRs.length === 0 &&
+                                    <div className={"mt-4 flex justify-center items-center text-sm text-tertiary"}>
+                                        No results found
+                                    </div>
+                                }
                             </div>
-                        }
-                    </div>
-                )}
-            </WidgetContent>
+                        )}
+                    </WidgetContent>
+                </>
+            )}
+
         </WidgetTemplate>
     )
 }

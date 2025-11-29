@@ -21,14 +21,11 @@ interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
 
 const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, widget, editMode, onWidgetDelete}) => {
     const {breakpoint} = useBreakpoint()
-
     const widgetConfig = getWidgetPreview(widget?.widgetType ?? name)
-    if (!widgetConfig) return
-
     const responsiveSize = widgetConfig.preview.sizes[breakpoint]
 
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-        id: widget?.id ?? name,
+        id: widget?.id ?? id ?? name,
         data: {widget},
         disabled: !editMode || !widget
     })

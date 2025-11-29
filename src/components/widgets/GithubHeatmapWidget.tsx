@@ -16,8 +16,7 @@ import { useSession } from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 
 const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {session} = useSession()
-    const userId = session?.user?.id
+    const {userId} = useSession()
     const {integrations, refetchIntegrations} = useIntegrations(userId)
     const githubIntegration = getIntegrationByProvider(integrations, "github")
     const {data, isLoading, isFetching, isError} = useGithubHeatmap()
@@ -56,44 +55,44 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWid
         })
     }
 
-    if (!githubIntegration?.accessToken && !isLoading) {
-        return (
-            <WidgetTemplate id={id} widget={widget} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-                <WidgetError
-                    message={"If you want to use this widget, you need to integrate your Github account first!"}
-                    actionLabel={"Integrate"}
-                    onAction={handleIntegrate}
-                />
-            </WidgetTemplate>
-        )
-    }
+    const hasError = !githubIntegration?.accessToken && !isLoading
 
     return (
         <WidgetTemplate id={id} widget={widget} name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Github Heatmap"}/>
-            <WidgetContent className={"h-full items-center"}>
-                {(isLoading || isFetching) ? (
-                    <div
-                        className="grid mt-6"
-                        style={{
-                            gridTemplateColumns: "repeat(53, 10px)",
-                            gridTemplateRows: "repeat(7, 10px)",
-                            gap: "2px",
-                        }}
-                    >
-                        {Array.from({ length: 371 }, (_, i) =>
-                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                            <Skeleton key={i} className={"size-2.5 rounded-xs"}/>
+            {hasError ? (
+                <WidgetError
+                    message={"Please integrate your Github account to view your heatmap."}
+                    actionLabel={"Integrate Github"}
+                    onAction={handleIntegrate}
+                />
+            ) : (
+                <>
+                    <WidgetHeader title={"Github Heatmap"}/>
+                    <WidgetContent className={"h-full items-center"}>
+                        {(isLoading || isFetching) ? (
+                            <div
+                                className="grid mt-6"
+                                style={{
+                                    gridTemplateColumns: "repeat(53, 10px)",
+                                    gridTemplateRows: "repeat(7, 10px)",
+                                    gap: "2px",
+                                }}
+                            >
+                                {Array.from({ length: 371 }, (_, i) =>
+                                    // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                                    <Skeleton key={i} className={"size-2.5 rounded-xs"}/>
+                                )}
+                            </div>
+                        ) : (
+                            <Heatmap
+                                data={contributions}
+                                cellSize={cellSize[tailwindBreakpoint]}
+                                gap={2}
+                            />
                         )}
-                    </div>
-                ) : (
-                    <Heatmap
-                        data={contributions}
-                        cellSize={cellSize[tailwindBreakpoint]}
-                        gap={2}
-                    />
-                )}
-            </WidgetContent>
+                    </WidgetContent>
+                </>
+            )}
         </WidgetTemplate>
     )
 }

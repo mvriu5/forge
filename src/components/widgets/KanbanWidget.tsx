@@ -140,8 +140,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
         if (id.startsWith("column-")) {
             return columns.find((col) => col.id === id)
         }
-        const column = columns.find((col) => col.cards.some((card) => card.id === id))
-        return column
+        return columns.find((col) => col.cards.some((card) => card.id === id))
     }
 
     const onDragStart = (event: DragStartEvent) => {
@@ -174,20 +173,15 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                     return prevColumns
                 }
 
-                // Remove card from source column
                 const [movedCard] = newColumns[activeColumnIndex].cards.splice(activeCardIndex, 1)
 
-                // Add card to destination column
                 let newCardIndex: number
                 if (over.id.toString().startsWith("card-")) {
-                    // Find the index of the card we are hovering over in the destination column
                     newCardIndex = newColumns[overColumnIndex].cards.findIndex((card) => card.id === over.id)
                     if (newCardIndex === -1) {
-                        // Fallback if over card not found (shouldn't happen if collision detection is good)
                         newCardIndex = newColumns[overColumnIndex].cards.length
                     }
                 } else {
-                    // over.id is a column, drop at the end
                     newCardIndex = newColumns[overColumnIndex].cards.length
                 }
 
@@ -216,7 +210,6 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
         const isDraggingColumn = active.id.toString().startsWith("column-")
         const isDraggingCard = active.id.toString().startsWith("card-")
 
-        // Reordering columns
         if (isDraggingColumn && activeContainer.id !== overContainer.id) {
             const oldIndex = columns.findIndex((col) => col.id === active.id)
             const newIndex = columns.findIndex((col) => col.id === over.id)
@@ -225,7 +218,6 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                 setColumns((prev) => arrayMove(prev, oldIndex, newIndex))
             }
         }
-        // Reordering cards within the same column
         else if (isDraggingCard && activeContainer.id === overContainer.id) {
             setColumns((prevColumns) => {
                 const newColumns = [...prevColumns]

@@ -71,8 +71,7 @@ async function getContributions(accessToken: string | null, username: string | u
 }
 
 export const useGithubHeatmap = () => {
-    const {session} = useSession()
-    const userId = session?.user?.id
+    const {userId, session} = useSession()
     const {integrations} = useIntegrations(userId)
     const githubIntegration = getIntegrationByProvider(integrations, "github")
 

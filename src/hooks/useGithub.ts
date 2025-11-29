@@ -100,8 +100,7 @@ async function fetchOpenIssuesAndPullsFromAllRepos(accessToken: string): Promise
 
 
 export const useGithub = () => {
-    const {session} = useSession()
-    const userId = session?.user?.id
+    const {userId} = useSession()
     const {integrations} = useIntegrations(userId)
     const githubIntegration = useMemo(() => getIntegrationByProvider(integrations, "github"), [integrations])
 

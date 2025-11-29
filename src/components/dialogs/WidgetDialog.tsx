@@ -34,9 +34,7 @@ interface WidgetDialogProps {
 }
 
 function WidgetDialog({editMode, title}: WidgetDialogProps) {
-    const { session } = useSession()
-    const userId = session?.user?.id
-
+    const { userId } = useSession()
     const {settings} = useSettings(userId)
     const {currentDashboard} = useDashboards(userId, settings)
     const {widgets, addWidget, addWidgetStatus} = useWidgets(userId)

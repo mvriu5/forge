@@ -23,6 +23,8 @@ import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
 
 const StockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const {updateWidget} = useWidgetActions()
+    const { query, setQuery, assetList, assetListLoading, assetListError } = useStock()
+
     const [selectedStocks, setSelectedStocks] = useState<AssetOption[]>(widget?.config?.stocks ?? [])
     const [timespan, setTimespan] = useState<string>(widget?.config?.timespan ?? "365")
     const [open, setOpen] = useState(false)
@@ -37,8 +39,6 @@ const StockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelet
             }
         })
     }
-
-    const { query, setQuery, assetList, assetListLoading, assetListError } = useStock()
 
     const stockList = useMemo(() => {
         if (!assetList) return selectedStocks;

@@ -69,14 +69,14 @@ const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete
     const handleDelete = useCallback((indexToDelete: number) => {
         const updatedTodos = todos.filter((_, i) => i !== indexToDelete)
         setTodos(updatedTodos)
-        handleSave(updatedTodos)
+        void handleSave(updatedTodos)
     }, [todos])
 
     const handleCheckChange = useCallback((indexToUpdate: number, checked: boolean) => {
         const updatedTodos = [...todos]
         updatedTodos[indexToUpdate].checked = checked
         setTodos(updatedTodos)
-        handleSave(updatedTodos)
+        void handleSave(updatedTodos)
     }, [todos])
 
     const sensors = useSensors(
@@ -101,7 +101,7 @@ const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete
                     const oldIndex = items.findIndex((item) => item.id === active.id)
                     const newIndex = items.findIndex((item) => item.id === over?.id)
                     const newOrder = arrayMove(items, oldIndex, newIndex)
-                    handleSave(newOrder)
+                    void handleSave(newOrder)
                     return newOrder
                 })
             }
@@ -114,7 +114,7 @@ const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete
                     variant={"widget"}
                     onClick={() => {
                         setTodos([])
-                        handleSave([])
+                        void handleSave([])
                     }}
                     {...clearTodosTooltip}
                 >
