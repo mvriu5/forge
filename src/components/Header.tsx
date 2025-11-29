@@ -25,18 +25,13 @@ interface HeaderProps {
     onEdit: () => void
     widgetsEmpty: boolean
     isLoading: boolean
-    onDashboardChange: (dashboardId: string) => Promise<void>
+    dashboards: Dashboard[] | null
+    selectedDashboard: Dashboard | null
+    onDashboardChange: (dashboard: Dashboard | null) => Promise<void> | void
 }
 
-function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, onDashboardChange}: HeaderProps) {
-    const {session} = useSession()
-    const userId = session?.user?.id
-
-    const {settings} = useSettings(userId)
-    const {dashboards, currentDashboard} = useDashboards(userId, settings)
-
+function Header({dashboards, selectedDashboard, onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, onDashboardChange}: HeaderProps) {    const {session} = useSession()
     const [dialogOpen, setDialogOpen] = useState(false)
-    const [dashboard, setDashboard] = useState("dashboard")
 
     const layoutTooltip = tooltip<HTMLButtonElement>({
         message: "Change your dashboard layout",
@@ -46,10 +41,8 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
     })
 
     const handleSelectDashboard = async (value: string) => {
-        const newDashboard = dashboards?.find(d => d.name === value)
-        setDashboard(newDashboard?.name ?? "")
-        if (!newDashboard || !settings) return
-        await onDashboardChange(newDashboard.id)
+        const newDashboard = dashboards?.find(d => d.name === value) ?? null
+        await onDashboardChange(newDashboard)
     }
 
     return (
@@ -80,7 +73,7 @@ function Header({onEdit, editMode, editModeLoading = false, handleEditModeSave, 
                         </Button>
                         <div className={"flex"}>
                             <Select
-                                value={currentDashboard?.name ?? ""}
+                                value={selectedDashboard?.name ?? ""}
                                 onValueChange={handleSelectDashboard}
                                 disabled={dashboards?.length === 0 || editMode}
                             >

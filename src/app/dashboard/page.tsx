@@ -33,7 +33,7 @@ export default function Dashboard() {
     const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidgetPosition, setWidgets, updateWidget} = useWidgets(userId)
     const {addToast} = useToast()
 
-    const [dashboard, setDashboard] = useQueryState("dashboard")
+    const [dashboard, setDashboard] = useQueryState("dashboard", parseAsString.withDefault(""))
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
     const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
@@ -42,11 +42,18 @@ export default function Dashboard() {
     const [dialogOpen, setDialogOpen] = useState(false)
     const dataLoading = sessionLoading || dashboardsLoading || widgetsLoading || settingsLoading
 
-    const currentWidgets = useMemo(() => widgets.filter((widget) => widget.dashboardId === currentDashboard?.id), [widgets, currentDashboard?.id])
+    const selectedDashboard = useMemo(() => {
+        if (dashboard && dashboards?.length) return dashboards.find((item) => item.name === dashboard) ?? currentDashboard
+
+        return currentDashboard
+    }, [currentDashboard, dashboard, dashboards])
+
+    const currentWidgets = useMemo(() => widgets.filter((widget) => widget.dashboardId === selectedDashboard?.id), [widgets, selectedDashboard?.id],)
+
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
     const gridCells = useGrid(activeWidget, currentWidgets)
-    const { sensors, handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop(editMode, widgets, currentDashboard?.id ?? null, updateWidgetPosition, setActiveWidget)
+    const { sensors, handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop(editMode, widgets, selectedDashboard?.id ?? null, updateWidgetPosition, setActiveWidget)
 
     useHotkeys("mod+e", (event) => {
         event.preventDefault()
@@ -60,11 +67,37 @@ export default function Dashboard() {
     }, [userId])
 
     useEffect(() => {
-        if (!dashboard && currentDashboard?.name) {
-            void setDashboard(currentDashboard.name)
-        }
-    }, [dashboard, currentDashboard?.name, setDashboard])
+        if (!selectedDashboard?.name) return
+        if (dashboard === selectedDashboard.name) return
+        void setDashboard(selectedDashboard.name)
+    }, [dashboard, selectedDashboard?.name, setDashboard])
 
+    useEffect(() => {
+        if (!dashboard || !dashboards || !settings) return
+        const dashboardFromQuery = dashboards.find((item) => item.name === dashboard)
+
+        if (dashboardFromQuery && settings.lastDashboardId !== dashboardFromQuery.id) {
+            void updateSettings({
+                ...settings,
+                lastDashboardId: dashboardFromQuery.id,
+            })
+        }
+    }, [dashboard, dashboards, settings, updateSettings])
+
+    const handleDashboardChange = useCallback(async (nextDashboard: Dashboard | null) => {
+        if (!nextDashboard || !settings) return
+
+        if (dashboard !== nextDashboard.name) {
+            await setDashboard(nextDashboard.name)
+        }
+
+        if (settings.lastDashboardId !== nextDashboard.id) {
+            await updateSettings({
+                ...settings,
+                lastDashboardId: nextDashboard.id,
+            })
+        }
+    }, [dashboard, setDashboard, settings, updateSettings])
 
     useEffect(() => {
         if (!userId) return
@@ -115,7 +148,7 @@ export default function Dashboard() {
         if (widget) setWidgetsToRemove((prev) => [...prev, widget])
     }, [widgets])
 
-    const widgetsEmpty = currentWidgets.length === 0 && currentDashboard !== null
+    const widgetsEmpty = currentWidgets.length === 0 && selectedDashboard !== null
 
     const widgetActionsValue = useMemo(() => ({ updateWidget }), [updateWidget])
 
@@ -124,6 +157,8 @@ export default function Dashboard() {
     return (
         <div className={cn("flex flex-col w-full h-full overflow-hidden", isDesktop && "max-h-screen max-w-screen")}>
             <Header
+                dashboards={dashboards}
+                selectedDashboard={selectedDashboard}
                 onEdit={handleEditModeEnter}
                 editMode={editMode}
                 editModeLoading={editModeLoading}
@@ -131,13 +166,7 @@ export default function Dashboard() {
                 handleEditModeCancel={handleEditModeCancel}
                 isLoading={dataLoading}
                 widgetsEmpty={widgetsEmpty}
-                onDashboardChange={async (dashboardId) => {
-                    if (!settings) return
-                    await updateSettings({
-                        ...settings,
-                        lastDashboardId: dashboardId,
-                    })
-                }}
+                onDashboardChange={handleDashboardChange}
             />
             {dataLoading ? (
                 <div className={"h-screen w-screen flex items-center justify-center"}>
@@ -145,7 +174,7 @@ export default function Dashboard() {
                 </div>
             ) : (
                 <>
-                    {widgetsEmpty && currentDashboard ? (
+                    {widgetsEmpty && selectedDashboard ? (
                         <div className={"w-full h-screen flex items-center justify-center"}>
                             <div className={"flex flex-col gap-4 items-center justify-center p-4 md:p-12 border border-main border-dashed rounded-md shadow-md dark:shadow-xl"}>
                                 <EmptyAddSVG/>
