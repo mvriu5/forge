@@ -2,7 +2,7 @@
 
 import {Header} from "@/components/Header"
 import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from "react"
-import {getWidgetComponent, getWidgetPreview} from "@/lib/widgetRegistry"
+import {getWidgetComponent} from "@/lib/widgetRegistry"
 import {DndContext} from "@dnd-kit/core"
 import type {Widget} from "@/database"
 import {EmptyAddSVG} from "@/components/svg/EmptyAddSVG"
@@ -21,12 +21,11 @@ import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSettings} from "@/hooks/data/useSettings"
-import {WidgetActionProvider} from "@/components/widgets/base/WidgetActionContext"
 
 export default function Dashboard() {
     const {userId, refetchSession, isLoading: sessionLoading} = useSession()
     const {settings, isLoading: settingsLoading, updateSettings} = useSettings(userId)
-    const {dashboards, currentDashboard, isLoading: dashboardsLoading} = useDashboards(userId, settings)
+    const {dashboards, currentDashboard, isLoading: dashboardsLoading, addDashboard, addDashboardStatus} = useDashboards(userId, settings)
     const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidgetPosition, setWidgets, updateWidget} = useWidgets(userId)
     const {addToast} = useToast()
 
@@ -67,7 +66,7 @@ export default function Dashboard() {
         cachedWidgetsRef.current = widgets
     }, [widgets])
 
-    const handleEditModeSave = useCallback(async () => {
+    /*const handleEditModeSave = useCallback(async () => {
         try {
             setEditModeLoading(true)
             if (widgetsToRemove.length > 0) {
@@ -90,10 +89,10 @@ export default function Dashboard() {
             setWidgetsToRemove([])
             cachedWidgetsRef.current = null
         }
-    }, [removeWidget, saveWidgetsLayout, addToast, widgetsToRemove])
+    }, [removeWidget, saveWidgetsLayout, addToast, widgetsToRemove])*/
 
     const handleEditModeCancel = useCallback(() => {
-        if (cachedWidgetsRef.current) setWidgets(cachedWidgetsRef.current)
+        setWidgets(cachedWidgetsRef.current)
         setEditMode(false)
         setWidgetsToRemove([])
         cachedWidgetsRef.current = null
@@ -106,15 +105,13 @@ export default function Dashboard() {
 
     const dataLoading = sessionLoading || dashboardsLoading || widgetsLoading || settingsLoading
 
-    const widgetActionsValue = useMemo(() => ({ updateWidget }), [updateWidget])
-
     return (
-        <div className={cn("flex flex-col w-full h-full overflow-hidden", /*isDesktop && "max-h-screen max-w-screen"*/)}>
+        <div className={cn("flex flex-col w-full h-full overflow-hidden", isDesktop && "max-h-screen max-w-screen")}>
             <Header
                 onEdit={handleEditModeEnter}
                 editMode={editMode}
                 editModeLoading={editModeLoading}
-                handleEditModeSave={handleEditModeSave}
+                handleEditModeSave={/*handleEditModeSave*/ () => {}}
                 handleEditModeCancel={handleEditModeCancel}
                 isLoading={dataLoading}
                 widgetsEmpty={currentWidgets.length === 0 && currentDashboard !== null}
@@ -127,6 +124,9 @@ export default function Dashboard() {
                         lastDashboardId: dashboardId,
                     })
                 }}
+                addDashboard={addDashboard}
+                addDashboardStatus={addDashboardStatus}
+                userId={userId}
             />
             {dataLoading ? (
                 <div className={"h-screen w-screen flex items-center justify-center"}>
@@ -148,39 +148,37 @@ export default function Dashboard() {
                             </div>
                         </div>
                     ) : (
-                        <WidgetActionProvider value={widgetActionsValue}>
-                            <DndContext
-                                sensors={sensors}
-                                onDragStart={handleDragStart}
-                                onDragEnd={handleDragEnd}
-                                onDragOver={handleDragOver}
-                            >
-                                <div className={cn("relative w-full", containerHeight, gridClasses)}>
-                                    {isDesktop && gridCells?.map((cell) => (
-                                        <GridCell
-                                            key={`${cell.x},${cell.y}`}
-                                            x={cell.x}
-                                            y={cell.y}
-                                            width={cell.width}
-                                            height={cell.height}
-                                            isDroppable={cell.isDroppable}
+                        <DndContext
+                            sensors={sensors}
+                            onDragStart={handleDragStart}
+                            onDragEnd={handleDragEnd}
+                            onDragOver={handleDragOver}
+                        >
+                            <div className={cn("relative w-full", containerHeight, gridClasses)}>
+                                {isDesktop && gridCells?.map((cell) => (
+                                    <GridCell
+                                        key={`${cell.x},${cell.y}`}
+                                        x={cell.x}
+                                        y={cell.y}
+                                        width={cell.width}
+                                        height={cell.height}
+                                        isDroppable={cell.isDroppable}
+                                    />
+                                ))}
+
+                                {transformedWidgets
+                                    ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
+                                    .map((widget) => (
+                                        <MemoizedWidget
+                                            key={widget.id}
+                                            widget={widget}
+                                            editMode={editMode}
+                                            onDelete={handleEditModeDelete}
+                                            isDragging={activeWidget?.id === widget.id}
                                         />
                                     ))}
-
-                                    {transformedWidgets
-                                        ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
-                                        .map((widget) => (
-                                            <MemoizedWidget
-                                                key={widget.id}
-                                                widget={widget}
-                                                editMode={editMode}
-                                                onDelete={handleEditModeDelete}
-                                                isDragging={activeWidget?.id === widget.id}
-                                            />
-                                        ))}
-                                </div>
-                            </DndContext>
-                        </WidgetActionProvider>
+                            </div>
+                        </DndContext>
                     )}
                 </>
             )}
@@ -188,6 +186,10 @@ export default function Dashboard() {
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}
                 showOnClose={false}
+                dashboards={dashboards}
+                addDashboard={addDashboard}
+                addDashboardStatus={addDashboardStatus}
+                userId={userId}
             />
         </div>
     )

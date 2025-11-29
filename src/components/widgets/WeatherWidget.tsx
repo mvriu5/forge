@@ -20,7 +20,6 @@ import {useWeather} from "@/hooks/useWeather"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {useSettings} from "@/hooks/data/useSettings"
-import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
 import {useSession} from "@/hooks/data/useSession"
 
 const WeatherWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
@@ -46,17 +45,16 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDel
         }
     }, [])
 
-    const hasNoError = !isError && !geolocationError
+    const hasError = isError || geolocationError
+    const errorMessage = isError
+        ? "An error occurred, while getting the weather data. Try again later."
+        : "Please enable your geolocation info."
 
     return (
         <WidgetTemplate id={id} widget={widget} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            {isError ? (
-                <WidgetError message={"An error occurred, while getting the weather data. Try again later."}/>
+            {hasError ? (
+                <WidgetError message={errorMessage}/>
             ) : (
-                <WidgetError message={"Please enable your geolocation info."}/>
-            )}
-
-            {hasNoError && (
                 <>
                     <WidgetHeader title={"Weather"}>
                         <div

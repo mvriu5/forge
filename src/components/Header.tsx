@@ -12,14 +12,11 @@ import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 import {Skeleton} from "./ui/Skeleton"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
-import {Dashboard, Settings} from "@/database"
-import {useSession} from "@/hooks/data/useSession"
-import {useSettings} from "@/hooks/data/useSettings"
-import {useDashboards} from "@/hooks/data/useDashboards"
+import {Dashboard, DashboardInsert} from "@/database"
 
 interface HeaderProps {
     editMode: boolean
-    editModeLoading: boolean
+    editModeLoading?: boolean
     handleEditModeCancel: () => void
     handleEditModeSave: () => void
     onEdit: () => void
@@ -28,9 +25,12 @@ interface HeaderProps {
     dashboards: Dashboard[] | null
     currentDashboard: Dashboard | null
     onDashboardChange: (dashboardId: string | null) => Promise<void> | void
+    addDashboard: (input: DashboardInsert) => Promise<Dashboard>
+    addDashboardStatus: "idle" | "pending" | "error" | "success"
+    userId?: string
 }
 
-function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, onDashboardChange}: HeaderProps) {    const {session} = useSession()
+function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, onDashboardChange, addDashboard, addDashboardStatus, userId}: HeaderProps) {
     const [dialogOpen, setDialogOpen] = useState(false)
 
     const layoutTooltip = tooltip<HTMLButtonElement>({
@@ -93,7 +93,16 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <DashboardDialog open={dialogOpen} onOpenChange={setDialogOpen} showOnClose={true} editMode={editMode}/>
+                            <DashboardDialog
+                                open={dialogOpen}
+                                onOpenChange={setDialogOpen}
+                                showOnClose={true}
+                                editMode={editMode}
+                                dashboards={dashboards}
+                                userId={userId}
+                                addDashboard={addDashboard}
+                                addDashboardStatus={addDashboardStatus}
+                            />
                         </div>
                     </div>
                 }

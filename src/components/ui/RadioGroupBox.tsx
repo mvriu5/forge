@@ -10,7 +10,6 @@ interface RadioGroupItemProps extends ComponentPropsWithRef<"label"> {
 }
 
 const RadioGroupBox = ({title, value, id, compareField, children, ...props}: RadioGroupItemProps) => {
-
     return (
         <label
             htmlFor={id}

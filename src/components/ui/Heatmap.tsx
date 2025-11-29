@@ -14,8 +14,6 @@ interface HeatmapProps {
 }
 
 function Heatmap({data, startDate, endDate, cellSize = 12, gap = 2, className}: HeatmapProps) {
-    if (!data) return null
-
     const gridData = useMemo(() => {
         let start: Date
         let end: Date
@@ -23,8 +21,8 @@ function Heatmap({data, startDate, endDate, cellSize = 12, gap = 2, className}: 
         if (startDate && endDate) {
             start = new Date(startDate)
             end = new Date(endDate)
-        } else if (data.length > 0) {
-            const dates = data.map((d) => new Date(d.date)).sort((a, b) => a.getTime() - b.getTime())
+        } else if (data && data?.length > 0) {
+            const dates = data?.map((d) => new Date(d.date)).sort((a, b) => a.getTime() - b.getTime())
             start = dates[0]
             end = dates[dates.length - 1]
         } else {
@@ -34,7 +32,7 @@ function Heatmap({data, startDate, endDate, cellSize = 12, gap = 2, className}: 
         }
 
         const dataMap = new Map<string, number>()
-        data.map((item) => dataMap.set(item.date, item.count))
+        data?.map((item) => dataMap.set(item.date, item.count))
 
         const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
         const weeks = Math.ceil(totalDays / 7)
@@ -101,6 +99,7 @@ function Heatmap({data, startDate, endDate, cellSize = 12, gap = 2, className}: 
     }, [data, startDate, endDate])
 
     const maxValue = useMemo(() => {
+        if (!data || data.length === 0) return 1
         return Math.max(...data.map((item) => item.count), 1)
     }, [data])
 

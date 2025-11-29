@@ -35,7 +35,7 @@ import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {cn, getUpdateTimeLabel} from "@/lib/utils"
 import {useWidgets} from "@/hooks/data/useWidgets"
-import { useWidgetActions } from "./base/WidgetActionContext"
+import {useSession} from "@/hooks/data/useSession"
 
 type Note = {
     id: string
@@ -46,7 +46,8 @@ type Note = {
 }
 
 const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {updateWidget} = useWidgetActions()
+    const {userId} = useSession()
+    const {updateWidget} = useWidgets(userId)
 
     const addTooltip = tooltip<HTMLButtonElement>({
         message: "Add a new note",

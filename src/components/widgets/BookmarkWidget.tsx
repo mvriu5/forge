@@ -24,7 +24,8 @@ import {
 import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} from "@dnd-kit/sortable"
 import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
-import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
+import {useWidgets} from "@/hooks/data/useWidgets"
+import {useSession} from "@/hooks/data/useSession"
 
 interface BookmarkItem {
     id: string
@@ -33,7 +34,8 @@ interface BookmarkItem {
 }
 
 const BookmarkWidget: React.FC<WidgetProps> = ({widget, id, editMode, onWidgetDelete}) => {
-    const {updateWidget} = useWidgetActions()
+    const {userId} = useSession()
+    const {updateWidget} = useWidgets(userId)
     const [bookmarks, setBookmarks] = useState<BookmarkItem[]>(widget?.config?.bookmarks ?? [])
     const [open, setOpen] = useState<boolean>(false)
 

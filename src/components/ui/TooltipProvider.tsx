@@ -91,8 +91,6 @@ const TooltipProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         return { tooltip, lastTooltipTimestamp }
     }, [tooltip, lastTooltipTimestamp])
 
-
-
     return (
         <TooltipContext.Provider value={actionsContextValue}>
             <TooltipStateContext.Provider value={stateContextValue}>

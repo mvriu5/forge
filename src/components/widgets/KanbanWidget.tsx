@@ -39,7 +39,7 @@ import {convertToRGBA} from "@/lib/colorConvert"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {restrictToFirstScrollableAncestor, restrictToHorizontalAxis, restrictToWindowEdges} from "@dnd-kit/modifiers"
 import {useWidgets} from "@/hooks/data/useWidgets"
-import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
+import {useSession} from "@/hooks/data/useSession"
 
 export type Card = {
     id: string
@@ -54,7 +54,8 @@ type Column = {
 }
 
 const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {updateWidget} = useWidgetActions()
+    const {userId} = useSession()
+    const {updateWidget} = useWidgets(userId)
     const [columns, setColumns] = useState<Column[]>(widget?.config?.kanban ?? [])
     const [columnPopoverOpen, setColumnPopoverOpen] = useState(false)
     const [activeId, setActiveId] = useState<string | null>(null)

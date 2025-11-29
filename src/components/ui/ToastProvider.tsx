@@ -28,7 +28,6 @@ const ToastPortal = ({ children }: {children: ReactNode}) => {
     }, [])
 
     if (!portalElement) return null
-
     return createPortal(children, portalElement)
 }
 

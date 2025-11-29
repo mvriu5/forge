@@ -18,7 +18,7 @@ import {DatePicker} from "@/components/ui/Datepicker"
 import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {useWidgets} from "@/hooks/data/useWidgets"
-import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
+import {useSession} from "@/hooks/data/useSession"
 
 type Countdown = {
     title: string
@@ -27,7 +27,8 @@ type Countdown = {
 }
 
 const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {updateWidget} = useWidgetActions()
+    const {userId} = useSession()
+    const {updateWidget} = useWidgets(userId)
     const [countdown, setCountdown] = useState<Countdown | null>(widget?.config?.countdown ?? null)
 
     const addTooltip = tooltip<HTMLButtonElement>({

@@ -98,7 +98,7 @@ export function useDashboards(userId: string | undefined, settings: Settings | n
             return dashboardsQuery.data.find((d) => d.id === settings.lastDashboardId) ?? dashboardsQuery.data[0]
         }
         return dashboardsQuery.data[0]
-    }, [dashboardsQuery.data, settings?.lastDashboardId])
+    }, [dashboardsQuery.data, settings])
 
     return {
         dashboards: dashboardsQuery.data ?? null,

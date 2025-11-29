@@ -193,10 +193,6 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
         }
     }, [calculatePosition, delay, lastTooltipTimestamp])
 
-    if (!canHover) return
-    if (!isVisible) return
-    if (!message && !customTooltip) return
-
     const arrowStyles = showArrow ? getArrowClasses(adjustedAnchor) : 0
 
     if (customTooltip) {
@@ -210,6 +206,7 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
                 }}
                 ref={tooltipRef}
                 id={`tooltip-${id}`}
+                hidden={!canHover || !isVisible || (!message && !customTooltip)}
             >
                 {customTooltip}
                 {arrowStyles && <div className={cn(arrowStyles.arrow, arrowStyles.position)} />}
@@ -227,6 +224,7 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
             }}
             ref={tooltipRef}
             id={`tooltip-${id}`}
+            hidden={!canHover || !isVisible || (!message && !customTooltip)}
         >
             <div className={"flex gap-2 items-center text-xs text-white/80 dark:text-black/80"}>
                 {icon}

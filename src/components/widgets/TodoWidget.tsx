@@ -23,7 +23,7 @@ import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} f
 import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
 import {useWidgets} from "@/hooks/data/useWidgets"
-import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
+import {useSession} from "@/hooks/data/useSession"
 
 interface TodoProps {
     id: string
@@ -32,7 +32,8 @@ interface TodoProps {
 }
 
 const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {updateWidget} = useWidgetActions()
+    const {userId} = useSession()
+    const {updateWidget} = useWidgets(userId)
     const [todos, setTodos] = useState<TodoProps[]>(widget?.config?.todos ?? [])
     const inputRef = useRef<HTMLInputElement>(null)
 

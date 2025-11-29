@@ -9,12 +9,11 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {useSession} from "@/hooks/data/useSession"
 import {useSettings} from "@/hooks/data/useSettings"
 import {useWidgets} from "@/hooks/data/useWidgets"
-import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
 
 const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const {userId} = useSession()
     const {settings} = useSettings(userId)
-    const {updateWidget} = useWidgetActions()
+    const {updateWidget} = useWidgets(userId)
 
     const timezones = [
         { value: "Europe/Berlin", label: "Berlin (MEZ/MESZ)" },

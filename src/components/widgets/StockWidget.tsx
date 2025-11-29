@@ -2,6 +2,7 @@
 
 import React, {useMemo, useState} from "react"
 import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import type {AssetOption, ChartDataPoint} from "@/hooks/useStock"
 import {useStock} from "@/hooks/useStock"
 import {ChartConfig} from "@/components/ui/Chart"
 import {cn} from "@/lib/utils"
@@ -14,15 +15,16 @@ import {StockChart} from "@/components/widgets/components/StockChart"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Button} from "@/components/ui/Button"
 import {Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList} from "@/components/ui/Command"
-import type {AssetOption, ChartDataPoint} from "@/hooks/useStock"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetEmpty} from "./base/WidgetEmpty"
 import {Spinner} from "@/components/ui/Spinner"
-import {useWidgetActions} from "@/components/widgets/base/WidgetActionContext"
+import {useWidgets} from "@/hooks/data/useWidgets"
+import {useSession} from "@/hooks/data/useSession"
 
 const StockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {updateWidget} = useWidgetActions()
+    const {userId} = useSession()
+    const {updateWidget} = useWidgets(userId)
     const { query, setQuery, assetList, assetListLoading, assetListError } = useStock()
 
     const [selectedStocks, setSelectedStocks] = useState<AssetOption[]>(widget?.config?.stocks ?? [])

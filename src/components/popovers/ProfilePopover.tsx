@@ -12,6 +12,7 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {useTheme} from "next-themes"
 import {Spinner} from "@/components/ui/Spinner"
 import {useSession} from "@/hooks/data/useSession"
+import Link from "next/link"
 
 function ProfilePopover({editMode}: {editMode: boolean}) {
     const {session, isLoading, setSession} = useSession()
@@ -72,14 +73,15 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                     Logged in as:
                     <span className={"inline break-words text-secondary font-sans"}>{session?.user?.name}</span>
                 </p>
-                <button
-                    type={"button"}
-                    onClick={() => window.open("https://github.com/mvriu5/forge/issues")}
-                    className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-secondary hover:text-primary ring-0 outline-0"}
-                >
-                    <MessageCircleQuestion size={16} className={"text-tertiary"}/>
-                    <p>Issue</p>
-                </button>
+                <Link href={"https://github.com/mvriu5/forge/issues"}>
+                    <button
+                        type={"button"}
+                        className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-secondary hover:text-primary ring-0 outline-0"}
+                    >
+                        <MessageCircleQuestion size={16} className={"text-tertiary"}/>
+                        <p>Issue</p>
+                    </button>
+                </Link>
                 <SettingsDialog/>
                 <button
                     type={"button"}

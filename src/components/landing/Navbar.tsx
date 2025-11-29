@@ -16,6 +16,7 @@ function Navbar() {
     const [open, setOpen] = useState(false)
     const menuRef = useOutsideClick(() => setOpen(false))
 
+
     const menuItems = (
         <div className="flex flex-col items-start gap-2">
             <Link href="/" className={"text-lg text-secondary font-semibold hover:text-brand"}>Home</Link>

@@ -1,7 +1,7 @@
 "use client"
 
 import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
-import React from "react"
+import React, {useCallback, useEffect} from "react"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
@@ -11,28 +11,27 @@ import {Button} from "@/components/ui/Button"
 import {useToast} from "@/components/ui/ToastProvider"
 import {tooltip} from "@/components/ui/TooltipProvider"
 import {Spinner} from "@/components/ui/Spinner"
-import {useDashboards} from "@/hooks/data/useDashboards"
-import {useSession} from "@/hooks/data/useSession"
-import {useSettings} from "@/hooks/data/useSettings"
+import {Dashboard, DashboardInsert} from "@/database"
 
 interface DashboardDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     showOnClose: boolean
     editMode?: boolean
+    dashboards: Dashboard[] | null
+    userId?: string
+    addDashboard: (input: DashboardInsert) => Promise<Dashboard>
+    addDashboardStatus: "idle" | "pending" | "error" | "success"
 }
 
-function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardDialogProps) {
-    const {userId} = useSession()
-    const {dashboards, addDashboard, addDashboardStatus} = useDashboards(userId, null)
-    const {addToast} = useToast()
+const formSchema = z.object({
+    name: z.string()
+        .min(3, {message: "Please enter more than 3 characters."})
+        .max(12, {message: "Please enter less than 12 characters."})
+})
 
-    const formSchema = z.object({
-        name: z.string()
-            .min(3, {message: "Please enter more than 3 characters."})
-            .max(12, {message: "Please enter less than 12 characters."})
-            .refine((name) => !(dashboards ?? []).some((d: { name: string }) => d.name === name), { message: "A dashboard with this name already exists." })
-    })
+function DashboardDialog({open, onOpenChange, showOnClose, editMode = false, dashboards, userId, addDashboard, addDashboardStatus}: DashboardDialogProps) {
+    const {addToast} = useToast()
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -41,14 +40,28 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
         }
     })
 
+    useEffect(() => {
+        if (!open) form.reset()
+    }, [open, form])
+
     const dashboardTooltip = tooltip<HTMLButtonElement>({
         message: "Create a new dashboard",
         anchor: "bc",
         offset: 12
     })
 
+    const isDuplicateName = useCallback((name: string) => (dashboards ?? []).some((dashboard) => dashboard.name === name), [dashboards])
+
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!userId) return
+        if (!userId) {
+            form.setError("name", {type: "validate", message: "You need to be signed in to create a dashboard."})
+            return
+        }
+
+        if (isDuplicateName(values.name)) {
+            form.setError("name", {type: "validate", message: "A dashboard with this name already exists."})
+            return
+        }
 
         await addDashboard({
             userId,
@@ -69,14 +82,16 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
         <Dialog
             open={open}
             onOpenChange={(prev) => {
-                onOpenChange(!prev)
+                onOpenChange(prev)
                 if (!open) form.reset()
             }}
         >
             {showOnClose &&
                 <DialogTrigger asChild>
-                    <Button className={"hidden lg:flex rounded-l-none border-l-0 px-2"}
-                            disabled={!dashboards || dashboards.length === 0 || editMode} {...dashboardTooltip}>
+                    <Button
+                        className={"hidden lg:flex rounded-l-none border-l-0 px-2"}
+                        disabled={!dashboards || dashboards.length === 0 || editMode} {...dashboardTooltip}
+                    >
                         <SquarePen size={16} />
                     </Button>
                 </DialogTrigger>
@@ -94,7 +109,9 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode}: DashboardD
 
                 <div className={"flex flex-col gap-4"}>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between gap-4 h-full">
+                        <form
+                            onSubmit={form.handleSubmit(onSubmit)}
+                            className="flex flex-col justify-between gap-4 h-full">
                             <div className="flex flex-col justify-center gap-4">
                                 <FormField
                                     control={form.control}

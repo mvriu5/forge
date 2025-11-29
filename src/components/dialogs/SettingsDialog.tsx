@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useMemo, useRef, useState} from "react"
+import React, {useCallback, useMemo, useRef, useState} from "react"
 import {
     Blocks,
     Check,
@@ -515,13 +515,12 @@ const DashboardItem = ({dashboard, dashboards, onUpdate, removeDashboard}: Dashb
         delay: 800
     })
 
-
     const formSchema = z.object({
         name: z.string()
-            .min(3, { message: "Bitte mindestens 3 Zeichen." })
-            .max(12, { message: "Maximal 12 Zeichen." })
-            .refine((name) => !dashboards.some(d => d.name === name && d.id !== dashboard.id), { message: "Ein Dashboard mit diesem Namen existiert bereits." })
+            .min(3, {message: "Please enter more than 3 characters."})
+            .max(12, {message: "Please enter less than 12 characters."})
     })
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -529,7 +528,14 @@ const DashboardItem = ({dashboard, dashboards, onUpdate, removeDashboard}: Dashb
         }
     })
 
+    const isDuplicateName = useCallback((name: string) => (dashboards ?? []).some((dashboard) => dashboard.name === name), [dashboards])
+
     const handleUpdate = async (values: z.infer<typeof formSchema>) => {
+        if (isDuplicateName(values.name)) {
+            form.setError("name", {type: "validate", message: "A dashboard with this name already exists."})
+            return
+        }
+
         await onUpdate({ ...dashboard, name: values.name })
         addToast({
             title: "Successfully updated dashboard!",
@@ -671,18 +677,9 @@ interface SettingsProps {
 }
 
 const SettingsSection = ({onClose}: SettingsProps) => {
-    const {session} = useSession()
-    const userId = session?.user?.id
+    const {userId} = useSession()
     const {settings, updateSettings, updateSettingsStatus} = useSettings(userId)
     const {addToast} = useToast()
-
-    if (!settings) {
-        return (
-            <div className={"w-full h-full flex items-center justify-center"}>
-                <Spinner/>
-            </div>
-        )
-    }
 
     const formSchema = z.object({
         hourFormat: z.enum(["12", "24"])
@@ -699,6 +696,8 @@ const SettingsSection = ({onClose}: SettingsProps) => {
         const newConfig = {
             hourFormat: values.hourFormat
         }
+
+        if (!settings) return
 
         const newSettings: Settings = {
             id: settings.id,
@@ -722,55 +721,63 @@ const SettingsSection = ({onClose}: SettingsProps) => {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between gap-4 h-full">
-                <div className="w-full flex items-center gap-4">
-                    <FormField
-                        control={form.control}
-                        name="hourFormat"
-                        render={({ field }) => (
-                            <FormItem className={"w-full"}>
-                                <FormLabel>Hour format</FormLabel>
-                                <RadioGroup
-                                    {...field}
-                                    onValueChange={field.onChange}
-                                    value={field.value}
-                                    className="grid-cols-2 "
-                                >
-                                    <RadioGroupBox
-                                        title={"12h"}
-                                        value={"12"}
-                                        id={"12h-format"}
-                                        compareField={field.value}
-                                    />
-                                    <RadioGroupBox
-                                        title={"24h"}
-                                        value={"24"}
-                                        id={"24h-format"}
-                                        compareField={field.value}
-                                    />
-                                </RadioGroup>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-                <div className={"w-full flex gap-2 justify-end"}>
-                    <Button
-                        type={"button"}
-                        className={"w-max"}
-                        onClick={onClose}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        variant={"brand"}
-                        className={"w-max"}
-                        type={"submit"}
-                        disabled={form.formState.isSubmitting || updateSettingsStatus === "pending"}
-                    >
-                        {(form.formState.isSubmitting || updateSettingsStatus === "pending") && <Spinner/>}
-                        Save
-                    </Button>
-                </div>
+                {!settings ? (
+                    <div className={"w-full h-full flex items-center justify-center"}>
+                        <Spinner/>
+                    </div>
+                ) : (
+                    <>
+                        <div className="w-full flex items-center gap-4">
+                            <FormField
+                                control={form.control}
+                                name="hourFormat"
+                                render={({ field }) => (
+                                    <FormItem className={"w-full"}>
+                                        <FormLabel>Hour format</FormLabel>
+                                        <RadioGroup
+                                            {...field}
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                            className="grid-cols-2 "
+                                        >
+                                            <RadioGroupBox
+                                                title={"12h"}
+                                                value={"12"}
+                                                id={"12h-format"}
+                                                compareField={field.value}
+                                            />
+                                            <RadioGroupBox
+                                                title={"24h"}
+                                                value={"24"}
+                                                id={"24h-format"}
+                                                compareField={field.value}
+                                            />
+                                        </RadioGroup>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <div className={"w-full flex gap-2 justify-end"}>
+                            <Button
+                                type={"button"}
+                                className={"w-max"}
+                                onClick={onClose}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant={"brand"}
+                                className={"w-max"}
+                                type={"submit"}
+                                disabled={form.formState.isSubmitting || updateSettingsStatus === "pending"}
+                            >
+                                {(form.formState.isSubmitting || updateSettingsStatus === "pending") && <Spinner/>}
+                                Save
+                            </Button>
+                        </div>
+                    </>
+                )}
             </form>
         </Form>
     )

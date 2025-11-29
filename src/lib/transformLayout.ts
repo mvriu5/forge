@@ -14,22 +14,19 @@ const placeWidgetsInGrid = (widgets: Widget[], breakpoint: Breakpoint, maxCols: 
     const grid: (Widget | null)[][] = []
     const placedWidgets: Widget[] = []
 
-    // Initialisiere Grid mit genügend Zeilen
     for (let i = 0; i < Math.ceil(widgets.length * 2); i++) {
         grid[i] = new Array(maxCols).fill(null)
     }
 
-    widgets.forEach((widget) => {
+    widgets.map((widget) => {
         const widgetConfig = getWidgetPreview(widget.widgetType)
         if (!widgetConfig || !widgetConfig.preview.sizes) return
 
         const responsiveSize = widgetConfig.preview.sizes[breakpoint]
-        if (!responsiveSize) return
 
         const widgetWidth = responsiveSize.width
         const widgetHeight = responsiveSize.height
 
-        // Finde die erste freie Position für dieses Widget
         let placed = false
         for (let row = 0; row < grid.length && !placed; row++) {
             for (let col = 0; col <= maxCols - widgetWidth && !placed; col++) {
@@ -66,7 +63,6 @@ const placeWidgetsInGrid = (widgets: Widget[], breakpoint: Breakpoint, maxCols: 
             }
         }
 
-        // Fallback: Wenn kein Platz gefunden wurde
         if (!placed) {
             placedWidgets.push({
                 ...widget,
@@ -82,8 +78,6 @@ const placeWidgetsInGrid = (widgets: Widget[], breakpoint: Breakpoint, maxCols: 
 }
 
 export const transformLayout = (widgets: Widget[], breakpoint: Breakpoint): Widget[] => {
-    if (!widgets || widgets.length === 0) return []
-
     const sortedWidgets = sortWidgetsByPosition(widgets)
 
     if (breakpoint === "mobile") {
@@ -92,7 +86,6 @@ export const transformLayout = (widgets: Widget[], breakpoint: Breakpoint): Widg
             if (!widgetConfig || !widgetConfig.preview.sizes) return widget
 
             const responsiveSize = widgetConfig.preview.sizes[breakpoint]
-            if (!responsiveSize) return widget
 
             return {
                 ...widget,
@@ -110,10 +103,7 @@ export const transformLayout = (widgets: Widget[], breakpoint: Breakpoint): Widg
 
     return sortedWidgets.map((widget) => {
         const widgetConfig = getWidgetPreview(widget.widgetType)
-        if (!widgetConfig || !widgetConfig.preview.sizes) return widget
-
         const responsiveSize = widgetConfig.preview.sizes[breakpoint]
-        if (!responsiveSize) return widget
 
         return {
             ...widget,

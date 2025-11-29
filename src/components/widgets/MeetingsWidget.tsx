@@ -27,6 +27,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
     const googleIntegration = getIntegrationByProvider(integrations, "google")
     const { calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
     const {addToast} = useToast()
+
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
     const refreshTooltip = tooltip<HTMLButtonElement>({

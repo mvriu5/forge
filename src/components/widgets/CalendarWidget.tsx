@@ -244,13 +244,29 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
     }
 
     const days = getWeekDays()
+    const dayIds = days.map((day) => formatDate(day).dateString)
     const today = new Date().toISOString().split("T")[0]
     const currentTimePosition = getCurrentTimePosition()
 
-    const droppableRefs = days.map((day) => {
-        const { dateString } = formatDate(day)
-        return useDroppable({id: dateString}).setNodeRef
-    })
+    const safeDayIds = dayIds.length === 7 ? dayIds : Array(7).fill("")
+
+    const { setNodeRef: setNodeRef0 } = useDroppable({ id: safeDayIds[0] })
+    const { setNodeRef: setNodeRef1 } = useDroppable({ id: safeDayIds[1] })
+    const { setNodeRef: setNodeRef2 } = useDroppable({ id: safeDayIds[2] })
+    const { setNodeRef: setNodeRef3 } = useDroppable({ id: safeDayIds[3] })
+    const { setNodeRef: setNodeRef4 } = useDroppable({ id: safeDayIds[4] })
+    const { setNodeRef: setNodeRef5 } = useDroppable({ id: safeDayIds[5] })
+    const { setNodeRef: setNodeRef6 } = useDroppable({ id: safeDayIds[6] })
+
+    const droppableRefs = [
+        setNodeRef0,
+        setNodeRef1,
+        setNodeRef2,
+        setNodeRef3,
+        setNodeRef4,
+        setNodeRef5,
+        setNodeRef6,
+    ]
 
     const hasError = !googleIntegration?.accessToken && !isLoading
 

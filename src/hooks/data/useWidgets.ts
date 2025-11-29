@@ -184,7 +184,7 @@ export function useWidgets(userId: string | undefined) {
         return widgets?.find((widget) => widget.widgetType === widgetName && widget.dashboardId === dashboardId)
     }
 
-    const setWidgets = (updater: Widget[] | ((widgets: Widget[]) => Widget[])) => {
+    const setWidgets = (updater: Widget[] | null | ((widgets: Widget[] | null) => Widget[])) => {
         if (!userId) return
         queryClient.setQueryData(WIDGETS_QUERY_KEY(userId), (previous: Widget[] | undefined) => {
             const current = previous ?? []
