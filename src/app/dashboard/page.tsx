@@ -120,7 +120,6 @@ export default function Dashboard() {
                 widgetsEmpty={currentWidgets.length === 0 && currentDashboard !== null}
                 dashboards={dashboards ?? []}
                 currentDashboard={currentDashboard}
-                settings={settings}
                 onDashboardChange={async (dashboardId) => {
                     if (!settings) return
                     await updateSettings({
@@ -128,7 +127,6 @@ export default function Dashboard() {
                         lastDashboardId: dashboardId,
                     })
                 }}
-                userId={userId}
             />
             {dataLoading ? (
                 <div className={"h-screen w-screen flex items-center justify-center"}>
@@ -146,8 +144,6 @@ export default function Dashboard() {
                                 <WidgetDialog
                                     editMode={false}
                                     title={"Widget-Store"}
-                                    currentDashboard={currentDashboard}
-                                    userId={userId}
                                 />
                             </div>
                         </div>
