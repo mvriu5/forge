@@ -9,11 +9,11 @@ import {zodResolver} from "@hookform/resolvers/zod"
 import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
-import {CloudAlert, Github} from "lucide-react";
-import {GoogleIcon} from "@/components/svg/GoogleIcon"
+import {CloudAlert} from "lucide-react";
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
+import {Github, Google} from "@/components/svg/Icons"
 
 function SignInCard() {
     const router = useRouter()
@@ -161,7 +161,7 @@ function SignInCard() {
                                 variant={"default"}
                                 onClick={onGithubSignin}
                             >
-                                <Github size={18}/>
+                                <Github width={18} height={18}/>
                             </Button>
                             <Button
                                 type={"button"}
@@ -169,7 +169,7 @@ function SignInCard() {
                                 variant={"default"}
                                 onClick={onGoogleSignin}
                             >
-                                <GoogleIcon className={"group-hover:fill-primary"}/>
+                                <Google width={18} height={18}/>
                             </Button>
                         </div>
                     </div>

@@ -6,7 +6,7 @@ import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Button} from "@/components/ui/Button"
-import {Forward, Plus, Trash} from "lucide-react"
+import {Forward, Import, Plus, Trash} from "lucide-react"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
@@ -40,6 +40,7 @@ import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {restrictToFirstScrollableAncestor, restrictToHorizontalAxis, restrictToWindowEdges} from "@dnd-kit/modifiers"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSession} from "@/hooks/data/useSession"
+import {Asana, Atlassian, Linear, Trello} from "@/components/svg/Icons"
 
 export type Card = {
     id: string
@@ -58,6 +59,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
     const {updateWidget} = useWidgets(userId)
     const [columns, setColumns] = useState<Column[]>(widget?.config?.kanban ?? [])
     const [columnPopoverOpen, setColumnPopoverOpen] = useState(false)
+    const [importPopoverOpen, setImportPopoverOpen] = useState(false)
     const [activeId, setActiveId] = useState<string | null>(null)
     const [hex, setHex] = useState("#ffffff")
 
@@ -78,6 +80,11 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
             }
         })
     )
+
+    const importTooltip = useTooltip<HTMLButtonElement>({
+        message: "Import from your favorite app",
+        anchor: "tc"
+    })
 
     const addColumnTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new category",
@@ -242,6 +249,31 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
     return (
         <WidgetTemplate id={id} widget={widget} name={"kanban"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Kanban Board"}>
+                <Popover open={importPopoverOpen} onOpenChange={setImportPopoverOpen}>
+                    <PopoverTrigger asChild>
+                        <Button variant={"widget"} className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"} {...importTooltip}>
+                            <Import size={16}/>
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className={"w-64"} align={"end"}>
+                        <Button variant={"ghost"} className={"justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
+                            <Linear width={14} height={14}/>
+                            Import from Linear
+                        </Button>
+                        <Button variant={"ghost"} className={"justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
+                            <Asana width={14} height={14}/>
+                            Import from Asana
+                        </Button>
+                        <Button variant={"ghost"} className={"justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
+                            <Atlassian width={14} height={14}/>
+                            Import from Jira
+                        </Button>
+                        <Button variant={"ghost"} className={"justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
+                            <Trello width={14} height={14}/>
+                            Import from Trello
+                        </Button>
+                    </PopoverContent>
+                </Popover>
                 <Popover open={columnPopoverOpen} onOpenChange={setColumnPopoverOpen}>
                     <PopoverTrigger asChild>
                         <Button variant={"widget"} className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"} {...addColumnTooltip}>
@@ -315,7 +347,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
             </WidgetHeader>
             <WidgetContent>
                 {columns.length === 0 ? (
-                    <WidgetEmpty message={"No categories yet. Add a category to get started."}/>
+                    <WidgetEmpty message={"No categories yet. Add a category or import from another app to get started."}/>
                 ) : (
                     <DndContext
                         sensors={sensors}

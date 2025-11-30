@@ -6,7 +6,6 @@ import {
     Check,
     CircleUserRound,
     CloudAlert,
-    Github,
     LayoutDashboard,
     Pencil,
     Settings as SettingsIcon,
@@ -20,7 +19,6 @@ import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
-import {GoogleIcon} from "@/components/svg/GoogleIcon"
 import {cn} from "@/lib/utils"
 import {authClient} from "@/lib/auth-client"
 import type {PutBlobResult} from "@vercel/blob"
@@ -31,7 +29,7 @@ import {useToast} from "@/components/ui/ToastProvider"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {Input} from "@/components/ui/Input"
-import {LinearIcon} from "@/components/svg/LinearIcon"
+import {Github, Google, Linear} from "@/components/svg/Icons"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {Dashboard, Settings} from "@/database"
 import {useTooltip} from "@/components/ui/TooltipProvider"
@@ -165,7 +163,7 @@ const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
         },
         {
             name: "Google",
-            icon: GoogleIcon,
+            icon: Google,
             active: !!googleIntegration,
             onConnect: async () => {
                 const data = await authClient.signIn.social({provider: "google"}, {
@@ -192,7 +190,7 @@ const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
         },
         {
             name: "Linear",
-            icon: LinearIcon,
+            icon: Linear,
             active: !!linearIntegration,
             onConnect: async () => {
                 await authClient.signIn.social({provider: "linear"}, {
