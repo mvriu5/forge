@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@babel/runtime": "^7.28.4",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
@@ -44,7 +45,6 @@
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.67.0",
     "react-hotkeys-hook": "^5.2.1",
-    "recharts": "^3.5.1",
     "resend": "^6.5.2",
     "spinners-react": "^1.0.11",
     "tailwind-merge": "^3.4.0",

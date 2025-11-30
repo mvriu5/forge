@@ -55,21 +55,6 @@ export const widgetRegistry: WidgetElement[] = [
         },
         component: dynamicWidget(async () => (await import("@/components/widgets/GithubWidget")).GithubWidget),
     },
-    /*{
-        preview: {
-            widgetType: "stock",
-            previewImage: '/github_preview.svg',
-            title: 'Stock Overview',
-            description: 'Track your stock data',
-            tags: ["finance"],
-            sizes: {
-                desktop: { width: 1, height: 2 },
-                tablet: { width: 1, height: 1 },
-                mobile: { width: 1, height: 1 }
-            }
-        },
-        component: dynamicWidget(async () => (await import("@/components/widgets/StockWidget")).StockWidget),
-    },*/
     {
         preview: {
             widgetType: "weather",
