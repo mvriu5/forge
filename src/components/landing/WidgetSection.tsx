@@ -11,7 +11,7 @@ import {Button} from "@/components/ui/Button"
 import {getLogoFromLink} from "@/components/svg/BookmarkIcons"
 import {LinearIcon} from "@/components/svg/LinearIcon"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {StatusBadge} from "@/components/widgets/components/StatusBadge"
 
 function WidgetSection() {
@@ -330,7 +330,7 @@ const BentoLinear = () => {
 
 const IssueCard = ({issue, className}: {issue: any, className?: string}) => {
 
-    const descriptionTooltip = tooltip<HTMLDivElement>({
+    const descriptionTooltip = useTooltip<HTMLDivElement>({
         message: issue.description
     })
 

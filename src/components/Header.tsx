@@ -4,7 +4,7 @@ import {Button} from "@/components/ui/Button"
 import {LayoutTemplate, Save, Undo2} from "lucide-react"
 import {ProfilePopover} from "@/components/popovers/ProfilePopover"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import React, {useState} from "react"
@@ -33,7 +33,7 @@ interface HeaderProps {
 function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, onDashboardChange, addDashboard, addDashboardStatus, userId}: HeaderProps) {
     const [dialogOpen, setDialogOpen] = useState(false)
 
-    const layoutTooltip = tooltip<HTMLButtonElement>({
+    const layoutTooltip = useTooltip<HTMLButtonElement>({
         message: "Change your dashboard layout",
         shortcut: "E",
         anchor: "bc",

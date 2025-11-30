@@ -6,7 +6,7 @@ import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Plus, Trash} from "lucide-react"
 import {Button} from "@/components/ui/Button"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
@@ -31,7 +31,7 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetD
     const {updateWidget} = useWidgets(userId)
     const [countdown, setCountdown] = useState<Countdown | null>(widget?.config?.countdown ?? null)
 
-    const addTooltip = tooltip<HTMLButtonElement>({
+    const addTooltip = useTooltip<HTMLButtonElement>({
         message: countdown ? "Delete the current countdown" : "Add a new countdown",
         anchor: "tc"
     })
@@ -200,7 +200,7 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetD
                         </div>
                         <div className={"flex flex-col gap-2 "}>
                             <p className={"text-2xl text-secondary font-medium"}>{countdown.title}</p>
-                            <p className={"text-5xl text-primary font-semibold"}>{formatCountdown()}</p>
+                            <p className={"text-3xl text-primary font-semibold"}>{formatCountdown()}</p>
                         </div>
                     </WidgetContent>
 

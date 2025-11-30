@@ -29,7 +29,7 @@ import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {Input} from "@/components/ui/Input"
 import {File, Plus, Trash} from "lucide-react"
 import {Button} from "@/components/ui/Button"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
@@ -49,7 +49,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
     const {userId} = useSession()
     const {updateWidget} = useWidgets(userId)
 
-    const addTooltip = tooltip<HTMLButtonElement>({
+    const addTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new note",
         anchor: "tc"
     })

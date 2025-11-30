@@ -34,7 +34,7 @@ import {Input} from "@/components/ui/Input"
 import {LinearIcon} from "@/components/svg/LinearIcon"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {Dashboard, Settings} from "@/database"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {RadioGroup} from "@/components/ui/RadioGroup"
 import {RadioGroupBox} from "@/components/ui/RadioGroupBox"
 import {Spinner} from "@/components/ui/Spinner"
@@ -51,7 +51,7 @@ function SettingsDialog() {
     return (
         <Dialog
             open={open}
-            onOpenChange={(prev) => setOpen(!prev)}
+            onOpenChange={(prev) => setOpen(prev)}
         >
             <DialogTrigger asChild onClick={() => setTab("profile")}>
                 <button
@@ -496,20 +496,20 @@ const DashboardItem = ({dashboard, dashboards, onUpdate, removeDashboard}: Dashb
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [deleteLoading, setDeleteLoading] = useState(false)
 
-    const editTooltip = tooltip<HTMLButtonElement>({
+    const editTooltip = useTooltip<HTMLButtonElement>({
         message: "Edit this dashboard",
         anchor: "bc",
         delay: 800
     })
 
-    const copyTooltip = tooltip<HTMLButtonElement>({
+    const copyTooltip = useTooltip<HTMLButtonElement>({
         message: "Copy your dashboard link & share with your friends",
         anchor: "bc",
         delay: 800
     })
 
 
-    const deleteTooltip = tooltip<HTMLButtonElement>({
+    const deleteTooltip = useTooltip<HTMLButtonElement>({
         message: "Delete this dashboard",
         anchor: "bc",
         delay: 800

@@ -11,7 +11,7 @@ import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/co
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {cn} from "@/lib/utils"
 import {
     closestCorners,
@@ -79,7 +79,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
         })
     )
 
-    const addColumnTooltip = tooltip<HTMLButtonElement>({
+    const addColumnTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new category",
         anchor: "tc"
     })
@@ -365,7 +365,7 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard, 
         },
     })
 
-    const deleteColumnTooltip = tooltip<HTMLButtonElement>({
+    const deleteColumnTooltip = useTooltip<HTMLButtonElement>({
         message: "Delete column",
         anchor: "tc"
     })

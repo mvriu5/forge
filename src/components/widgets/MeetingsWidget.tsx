@@ -5,7 +5,7 @@ import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTempl
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {authClient} from "@/lib/auth-client"
 import {Blocks, CloudAlert, Filter, RefreshCw} from "lucide-react"
 import {Button} from "@/components/ui/Button"
@@ -30,12 +30,12 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
 
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
-    const refreshTooltip = tooltip<HTMLButtonElement>({
+    const refreshTooltip = useTooltip<HTMLButtonElement>({
         message: "Refresh your issues & pull requests",
         anchor: "tc"
     })
 
-    const filterTooltip = tooltip<HTMLButtonElement>({
+    const filterTooltip = useTooltip<HTMLButtonElement>({
         message: "Filter your calendars",
         anchor: "tc"
     })

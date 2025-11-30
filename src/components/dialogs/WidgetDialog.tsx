@@ -16,7 +16,7 @@ import React, {useMemo, useState} from "react"
 import {cn} from "@/lib/utils"
 import Image from "next/image"
 import {getAllWidgetPreviews, type WidgetPreview} from "@/lib/widgetRegistry"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {useHotkeys} from "react-hotkeys-hook"
@@ -40,7 +40,7 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
     const {widgets, addWidget, addWidgetStatus} = useWidgets(userId)
     const {addToast} = useToast()
 
-    const [selectedWidget, setSelectedWidget] = useState<WidgetPreview | null>(null)
+    const [selectedWidgets, setSelectedWidgets] = useState<WidgetPreview[]>([])
     const [allWidgets] = useState<WidgetPreview[]>(() => getAllWidgetPreviews())
     const [query, setQuery] = useState<string>("")
     const [tagValue, setTagValue] = useState<string>("")
@@ -52,7 +52,7 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
         if (!dialogOpen) setDialogOpen(true)
     }, [dialogOpen, title])
 
-    const widgetTooltip = tooltip<HTMLButtonElement>({
+    const widgetTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new widget",
         shortcut: "S",
         anchor: "bc",
@@ -70,25 +70,31 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
     const handleSelect = (widgetPreview: WidgetPreview) => {
         if (!currentDashboard) return
         if (widgets?.find((w) => w.widgetType === widgetPreview?.widgetType && w.dashboardId === currentDashboard.id)) return
-        if (selectedWidget && selectedWidget.widgetType === widgetPreview.widgetType) setSelectedWidget(null)
-        else setSelectedWidget(widgetPreview)
+
+        setSelectedWidgets(prev => {
+            const exists = prev.some(w => w.widgetType === widgetPreview.widgetType);
+            if (exists) return prev.filter(w => w.widgetType !== widgetPreview.widgetType);
+            return [...prev, widgetPreview];
+        })
     }
 
     const handleAddWidget = async () => {
-        if (!selectedWidget || !userId || !currentDashboard) return
+        if (selectedWidgets.length <= 0 || !userId || !currentDashboard) return
 
         try {
-            await addWidget({
-                userId,
-                dashboardId: currentDashboard.id,
-                widgetType: selectedWidget.widgetType,
-                height: selectedWidget.sizes.desktop.height,
-                width: selectedWidget.sizes.desktop.width,
-                positionX: 0,
-                positionY: 0,
-                createdAt: new Date(),
-                updatedAt: new Date()
-            })
+            for (const widget of selectedWidgets) {
+                await addWidget({
+                    userId,
+                    dashboardId: currentDashboard.id,
+                    widgetType: widget.widgetType,
+                    height: widget.sizes.desktop.height,
+                    width: widget.sizes.desktop.width,
+                    positionX: 0,
+                    positionY: 0,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                })
+            }
         } catch (err) {
             addToast({
                 title: "Error adding widget",
@@ -101,17 +107,17 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
         }
 
         setDialogOpen(false)
-        setSelectedWidget(null)
+        setSelectedWidgets([])
     }
 
-    const isAddDisabled = !selectedWidget || !userId || !currentDashboard || addWidgetStatus === "pending"
+    const isAddDisabled =  selectedWidgets.length <= 0 || !userId || !currentDashboard || addWidgetStatus === "pending"
 
     return (
         <Dialog
             open={dialogOpen}
             onOpenChange={(prev) => {
-                setDialogOpen(!prev)
-                if (selectedWidget) setSelectedWidget(null)
+                setDialogOpen(prev)
+                if (selectedWidgets) setSelectedWidgets([])
             }}
         >
             <DialogTrigger asChild>
@@ -161,7 +167,7 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                             <div
                                 key={widget.widgetType}
                                 data-used={widgets?.find((w) => w.widgetType === widget.widgetType && w.dashboardId === currentDashboard?.id) ? "true" : "false"}
-                                data-selected={widget.widgetType === selectedWidget?.widgetType ? "true" : "false"}
+                                data-selected={selectedWidgets.some((w) => w.widgetType === widget.widgetType) ? "true" : "false"}
                                 className={cn(
                                     "relative group cursor-default col-span-1 flex flex-col p-2 m-1 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
                                     "data-[selected=true]:border-brand/30 data-[used=true]:border-success/30",
@@ -195,7 +201,7 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                         onClick={handleAddWidget}
                     >
                         {addWidgetStatus === "pending" && <Spinner/>}
-                        Add widget
+                        {selectedWidgets.length > 1 ? "Add widgets" : "Add widget"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

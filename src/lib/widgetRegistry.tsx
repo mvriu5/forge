@@ -1,6 +1,6 @@
 "use client"
 
-import React, {ComponentType, JSX, ReactNode} from "react"
+import React from "react"
 import dynamic from "next/dynamic"
 
 export interface WidgetPreview {
@@ -55,10 +55,10 @@ export const widgetRegistry: WidgetElement[] = [
         },
         component: dynamicWidget(async () => (await import("@/components/widgets/GithubWidget")).GithubWidget),
     },
-    {
+    /*{
         preview: {
             widgetType: "stock",
-            previewImage: '/stock_preview.png',
+            previewImage: '/github_preview.svg',
             title: 'Stock Overview',
             description: 'Track your stock data',
             tags: ["finance"],
@@ -69,11 +69,11 @@ export const widgetRegistry: WidgetElement[] = [
             }
         },
         component: dynamicWidget(async () => (await import("@/components/widgets/StockWidget")).StockWidget),
-    },
+    },*/
     {
         preview: {
             widgetType: "weather",
-            previewImage: '/weather_preview.png',
+            previewImage: '/github_preview.svg',
             title: 'Weather',
             description: 'See the weather in your location',
             tags: ["weather"],
@@ -102,23 +102,8 @@ export const widgetRegistry: WidgetElement[] = [
     },
     {
         preview: {
-            widgetType: "linear",
-            previewImage: '/linear_preview.png',
-            title: 'Linear Tasks',
-            description: 'See all your assigned linear tasks',
-            tags: ["productivity"],
-            sizes: {
-                desktop: { width: 1, height: 2 },
-                tablet: { width: 1, height: 2 },
-                mobile: { width: 1, height: 1 }
-            }
-        },
-        component: dynamicWidget(async () => (await import("@/components/widgets/LinearWidget")).LinearWidget),
-    },
-    {
-        preview: {
             widgetType: "phantom",
-            previewImage: '/phantom_preview.png',
+            previewImage: '/github_preview.svg',
             title: 'Phantom Wallet',
             description: 'See your phantom wallet balance',
             tags: ["finance"],
@@ -148,7 +133,7 @@ export const widgetRegistry: WidgetElement[] = [
     {
         preview: {
             widgetType: "github-heatmap",
-            previewImage: '/github_heatmap_preview.png',
+            previewImage: '/github_preview.svg',
             title: 'Github Heatmap',
             description: 'Overview of your next meetings',
             tags: ["productivity", "github"],
@@ -163,7 +148,7 @@ export const widgetRegistry: WidgetElement[] = [
     {
         preview: {
             widgetType: "clock",
-            previewImage: '/clock_preview.png',
+            previewImage: '/github_preview.svg',
             title: 'Clock',
             description: 'Beautiful clock to display your current time',
             tags: ["productivity"],
@@ -178,7 +163,7 @@ export const widgetRegistry: WidgetElement[] = [
     {
         preview: {
             widgetType: "todo",
-            previewImage: '/todo_preview.png',
+            previewImage: '/github_preview.svg',
             title: 'Todo List',
             description: 'All your tasks in one place',
             tags: ["productivity"],
@@ -193,7 +178,7 @@ export const widgetRegistry: WidgetElement[] = [
     {
         preview: {
             widgetType: "kanban",
-            previewImage: '/kanban_preview.png',
+            previewImage: '/github_preview.svg',
             title: 'Kanban Board',
             description: 'Organize your tasks in a kanban board',
             tags: ["productivity"],
@@ -205,10 +190,10 @@ export const widgetRegistry: WidgetElement[] = [
         },
         component: dynamicWidget(async () => (await import("@/components/widgets/KanbanWidget")).KanbanWidget),
     },
-    {
+    /*{
         preview: {
             widgetType: "calendar",
-            previewImage: '/calendar_preview.png',
+            previewImage: '/github_preview.svg',
             title: 'Calendar',
             description: 'See your calendar events',
             tags: ["productivity"],
@@ -219,11 +204,11 @@ export const widgetRegistry: WidgetElement[] = [
             }
         },
         component: dynamicWidget(async () => (await import("@/components/widgets/CalendarWidget")).CalendarWidget),
-    },
+    },*/
     {
         preview: {
             widgetType: "countdown",
-            previewImage: '/countdown_preview.png',
+            previewImage: '/github_preview.svg',
             title: 'Countdown',
             description: 'See how much time is left to a special event',
             tags: [],

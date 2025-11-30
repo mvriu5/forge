@@ -13,10 +13,10 @@ interface TooltipContextType {
 
 const TooltipContext = createContext<TooltipContextType | undefined>(undefined)
 
-const useTooltip = () => {
+const useTooltipContext = () => {
     const context = useContext(TooltipContext)
     if (context === undefined) {
-        throw new Error("useTooltip muss innerhalb eines TooltipProviders verwendet werden")
+        throw new Error("useTooltipContext muss innerhalb eines TooltipProviders verwendet werden")
     }
     return context
 }
@@ -101,8 +101,8 @@ const TooltipProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     )
 }
 
-function tooltip<T extends HTMLElement>(props: Omit<TooltipProps, "rect">) {
-    const { addTooltip, removeTooltip } = useTooltip()
+function useTooltip<T extends HTMLElement>(props: Omit<TooltipProps, "rect">) {
+    const { addTooltip, removeTooltip } = useTooltipContext()
     const targetRef = useRef<T | null>(null)
 
     const onMouseEnter = useCallback((e: React.MouseEvent<T>) => {
@@ -130,5 +130,5 @@ function tooltip<T extends HTMLElement>(props: Omit<TooltipProps, "rect">) {
 
 export {
     TooltipProvider,
-    tooltip
+    useTooltip
 }

@@ -2,7 +2,7 @@
 
 import {cn} from "@/lib/utils"
 import {useMemo} from "react"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 
 interface HeatmapProps {
     data: { date: string, count: number }[] | undefined
@@ -109,7 +109,7 @@ function Heatmap({data, startDate, endDate, cellSize = 12, gap = 2, className}: 
     }
 
     const getTooltip = (cell: {date: string, value: number}) => {
-         return tooltip<HTMLDivElement>({
+         return useTooltip<HTMLDivElement>({
             message: `${cell.value} commits on ${new Date(cell.date).toLocaleDateString("en")}`,
             anchor: "tc",
         })

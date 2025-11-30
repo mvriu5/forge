@@ -10,12 +10,12 @@ import {Copy, Plug, Unplug} from "lucide-react"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Skeleton} from "../ui/Skeleton"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 
 const PhantomWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const {provider, wallet, connect, disconnect, isLoading, isFetching, isError, refetch} = usePhantom()
 
-    const connectTooltip = tooltip<HTMLButtonElement>({
+    const connectTooltip = useTooltip<HTMLButtonElement>({
         message: wallet ? "Disconnect your phantom wallet" : "Connect your phantom wallet",
         anchor: "tc"
     })

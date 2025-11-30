@@ -9,7 +9,7 @@ import {cn} from "@/lib/utils"
 import {Button} from "@/components/ui/Button"
 import {Eraser, Forward, Trash} from "lucide-react"
 import {Input} from "@/components/ui/Input"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {
     closestCenter,
     DndContext,
@@ -37,7 +37,7 @@ const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete
     const [todos, setTodos] = useState<TodoProps[]>(widget?.config?.todos ?? [])
     const inputRef = useRef<HTMLInputElement>(null)
 
-    const clearTodosTooltip = tooltip<HTMLButtonElement>({
+    const clearTodosTooltip = useTooltip<HTMLButtonElement>({
         message: "Clear all todos",
         anchor: "tc"
     })
@@ -109,7 +109,7 @@ const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete
         }, [])
 
     return (
-        <WidgetTemplate id={id} name={"todo"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetTemplate id={id} widget={widget} name={"todo"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Todos"}>
                 <Button
                     variant={"widget"}

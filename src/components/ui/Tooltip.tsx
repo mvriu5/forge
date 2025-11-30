@@ -87,11 +87,9 @@ const flipAnchor = (anchor: string, tooltipRect: DOMRect, targetRect: DOMRect): 
         pos.y < 0 ||
         pos.y + tooltipRect.height > viewportHeight
 
-    // 1️⃣ Check original position
     let pos = computePos(anchor)
     if (!wouldOverflow(pos)) return anchor
 
-    // 2️⃣ Try prioritized alternatives
     const alternatives: Record<string, string[]> = {
         tl: ["tr", "lt", "bl", "rt"],
         tc: ["lc", "rc", "bc"],
@@ -112,7 +110,6 @@ const flipAnchor = (anchor: string, tooltipRect: DOMRect, targetRect: DOMRect): 
         if (!wouldOverflow(pos)) return alt
     }
 
-    // 3️⃣ Fallback: clamp original
     return anchor
 }
 
@@ -159,14 +156,13 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
         const clampedY = Math.max(0, Math.min(pos.y, maxY))
 
         setPosition({ x: clampedX, y: clampedY })
-    }, [anchor, offset, rect.bottom, rect.height, rect.left, rect.right, rect.top, rect.width])
+    }, [anchor, offset, rect])
 
     useLayoutEffect(() => {
         if (isVisible) {
             calculatePosition()
         }
     }, [isVisible, calculatePosition])
-
 
     useEffect(() => {
         const currentTimestamp = Date.now()

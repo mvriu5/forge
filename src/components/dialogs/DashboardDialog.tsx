@@ -9,7 +9,7 @@ import {LayoutDashboard, SquarePen} from "lucide-react"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Button} from "@/components/ui/Button"
 import {useToast} from "@/components/ui/ToastProvider"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {Spinner} from "@/components/ui/Spinner"
 import {Dashboard, DashboardInsert} from "@/database"
 
@@ -44,7 +44,7 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode = false, das
         if (!open) form.reset()
     }, [open, form])
 
-    const dashboardTooltip = tooltip<HTMLButtonElement>({
+    const dashboardTooltip = useTooltip<HTMLButtonElement>({
         message: "Create a new dashboard",
         anchor: "bc",
         offset: 12

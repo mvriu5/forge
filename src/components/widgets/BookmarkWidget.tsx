@@ -3,7 +3,7 @@ import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTempl
 import {getLogoFromLink} from "@/components/svg/BookmarkIcons"
 import {Button} from "@/components//ui/Button"
 import {Link, Plus, Trash} from "lucide-react"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {z} from "zod"
@@ -39,7 +39,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({widget, id, editMode, onWidgetDe
     const [bookmarks, setBookmarks] = useState<BookmarkItem[]>(widget?.config?.bookmarks ?? [])
     const [open, setOpen] = useState<boolean>(false)
 
-    const addTooltip = tooltip<HTMLButtonElement>({
+    const addTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new bookmark",
         anchor: "tc"
     })
@@ -197,7 +197,7 @@ const BookmarkItem = ({id, title, link, onDelete}: BookmarkItem & {onDelete: (ti
         opacity: isDragging ? 0.8 : 1
     }
 
-    const linkTooltip = tooltip<HTMLDivElement>({
+    const linkTooltip = useTooltip<HTMLDivElement>({
         message: link
     })
 

@@ -1,5 +1,5 @@
 import {Button} from "@/components/ui/Button"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {useBreakpoint} from "@/hooks/media/useBreakpoint"
 import {cn} from "@/lib/utils"
 import {getWidgetPreview} from "@/lib/widgetRegistry"
@@ -30,7 +30,7 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, w
         disabled: !editMode || !widget
     })
 
-    const deleteTooltip = tooltip<HTMLButtonElement>({
+    const deleteTooltip = useTooltip<HTMLButtonElement>({
         message: "Delete this widget",
         anchor: "tc",
         offset: 8
@@ -46,6 +46,14 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, w
         zIndex: isDragging ? 30 : 20,
     } : undefined
 
+    const draggableProps = editMode ? {
+        ref: setNodeRef,
+        ...attributes,
+        ...listeners
+    } : {
+        ref: setNodeRef
+    }
+
     return (
         <div
             className={cn(
@@ -54,9 +62,8 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, w
                 editMode && isDragging && "opacity-70 animate-none border-2 border-dashed border-main/60",
                 className
             )}
-            ref={editMode ? setNodeRef : undefined}
             style={style}
-            {...(editMode ? {...attributes, ...listeners} : {})}
+            {...draggableProps}
         >
             {editMode && widget && (
                 <Button

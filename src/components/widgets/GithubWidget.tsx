@@ -22,7 +22,7 @@ import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/Tabs"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {useToast} from "@/components/ui/ToastProvider"
-import {tooltip} from "@/components/ui/TooltipProvider"
+import {useTooltip} from "@/components/ui/TooltipProvider"
 import {useGithub} from "@/hooks/useGithub"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
@@ -38,12 +38,12 @@ const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
     const {addToast} = useToast()
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
-    const filterTooltip = tooltip<HTMLButtonElement>({
+    const filterTooltip = useTooltip<HTMLButtonElement>({
         message: "Filter your issues",
         anchor: "tc",
     })
 
-    const refreshTooltip = tooltip<HTMLButtonElement>({
+    const refreshTooltip = useTooltip<HTMLButtonElement>({
         message: "Refresh your issues & pull requests",
         anchor: "tc",
     })

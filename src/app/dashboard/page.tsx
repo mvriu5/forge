@@ -7,7 +7,6 @@ import {DndContext} from "@dnd-kit/core"
 import type {Widget} from "@/database"
 import {EmptyAddSVG} from "@/components/svg/EmptyAddSVG"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
-import {Blocks, CloudAlert} from "lucide-react"
 import {useToast} from "@/components/ui/ToastProvider"
 import {useGrid} from "@/hooks/useGrid"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
@@ -21,6 +20,7 @@ import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSettings} from "@/hooks/data/useSettings"
+import {Blocks, CloudAlert} from "lucide-react"
 
 export default function Dashboard() {
     const {userId, refetchSession, isLoading: sessionLoading} = useSession()
@@ -53,7 +53,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         void refetchSession()
-    }, [refetchSession])
+    }, [userId])
 
     useEffect(() => {
         if (!userId) return
@@ -66,7 +66,7 @@ export default function Dashboard() {
         cachedWidgetsRef.current = widgets
     }, [widgets])
 
-    /*const handleEditModeSave = useCallback(async () => {
+    const handleEditModeSave = useCallback(async () => {
         try {
             setEditModeLoading(true)
             if (widgetsToRemove.length > 0) {
@@ -89,7 +89,7 @@ export default function Dashboard() {
             setWidgetsToRemove([])
             cachedWidgetsRef.current = null
         }
-    }, [removeWidget, saveWidgetsLayout, addToast, widgetsToRemove])*/
+    }, [removeWidget, saveWidgetsLayout, addToast, widgetsToRemove])
 
     const handleEditModeCancel = useCallback(() => {
         setWidgets(cachedWidgetsRef.current)
@@ -111,7 +111,7 @@ export default function Dashboard() {
                 onEdit={handleEditModeEnter}
                 editMode={editMode}
                 editModeLoading={editModeLoading}
-                handleEditModeSave={/*handleEditModeSave*/ () => {}}
+                handleEditModeSave={handleEditModeSave}
                 handleEditModeCancel={handleEditModeCancel}
                 isLoading={dataLoading}
                 widgetsEmpty={currentWidgets.length === 0 && currentDashboard !== null}
@@ -203,7 +203,7 @@ interface WidgetProps {
 }
 
 const WidgetComponent = ({ widget, onDelete, editMode, isDragging }: WidgetProps) => {
-    const WidgetContent = getWidgetComponent(widget.widgetType)
+    const WidgetContent = useMemo(() => getWidgetComponent(widget.widgetType), [widget.widgetType])
 
     return (
         <WidgetContent
