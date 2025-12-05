@@ -4,8 +4,8 @@ const TITLE = "Forge"
 const DESCRIPTION = ""
 
 export const siteConfig: Metadata = {
-    title: "Forge - Dashboard",
-    description: "Create your own custom dashboards with a variety of widgets. Just drag and drop your widget and you are good to go!",
+    title: "Forge",
+    description: "Productivity needs to feel illegal",
     icons: { icon: "/icon.png" },
     applicationName: "Forge",
     creator: "mvriu5",
