@@ -12,57 +12,98 @@ export default function Terms() {
             <h1 className="text-brand text-2xl font-bold mb-2">Terms of Service</h1>
 
             <div className="max-w-none">
-                <p className="text-tertiary">Last Updated: May 10, 2025</p>
+                <p className="text-tertiary">Last Updated: December 06, 2025</p>
 
-                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">1. Acceptance</h2>
+                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">1. Scope</h2>
                 <p>
-                    By using our service, you agree to these Terms. If you disagree with any part, please do not use our service.
+                    These Terms &amp; Conditions (&quot;Terms&quot;) govern the use of the Forge service (&quot;Service&quot;). By
+                    accessing or using the Service, you agree to be bound by these Terms. If you do not agree, you must stop
+                    using the Service.
                 </p>
 
-                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">2. Account & Authentication</h2>
-                <p>We use OAuth 2.0 for all authentication. This means:</p>
+                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">2. Service Provider</h2>
+                <p>
+                    The Service is operated by the individual identified in the legal notice (&quot;Imprint&quot;) available on our
+                    website. The information in the Imprint forms part of these Terms.
+                </p>
+
+                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">3. Accounts &amp; Authentication</h2>
+                <p>Authentication is performed exclusively through OAuth 2.0 with third-party providers such as Google or GitHub. This means:</p>
                 <ul className="list-disc pl-6 space-y-1">
-                    <li>You authorize us to access limited information from your OAuth provider</li>
-                    <li>You can revoke this access at any time through your provider's settings</li>
-                    <li>You are responsible for maintaining the security of your OAuth provider accounts</li>
-                    <li>You must notify us immediately of any unauthorized access</li>
+                    <li>
+                        By signing in, you authorize us to retrieve basic information required to operate the Service.
+                    </li>
+                    <li>
+                        You may revoke this authorization at any time through your OAuth provider&apos;s account settings.
+                    </li>
+                    <li>
+                        You are responsible for securing your OAuth accounts and for all activities performed through them.
+                    </li>
+                    <li>
+                        You must notify us immediately if you believe there has been unauthorized access to your account.
+                    </li>
                 </ul>
 
-                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">3. User Conduct</h2>
+                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">4. Acceptable Use</h2>
                 <p>You agree not to:</p>
                 <ul className="list-disc pl-6 space-y-1">
-                    <li>Use our service for any illegal purpose</li>
-                    <li>Attempt to gain unauthorized access to any part of our service</li>
-                    <li>Interfere with or disrupt the service or servers</li>
-                    <li>Impersonate others or provide false information</li>
+                    <li>Use the Service for unlawful purposes</li>
+                    <li>Attempt to bypass security mechanisms</li>
+                    <li>Interfere with or disrupt the Service or its infrastructure</li>
+                    <li>Impersonate other persons or provide false information</li>
                 </ul>
 
-                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">4. Intellectual Property</h2>
+                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">5. Third-Party Integrations</h2>
                 <p>
-                    Our service and its original content remain our exclusive property. You may not duplicate, copy, or reuse any
-                    portion of our service without express permission.
+                    The Service may integrate with external services such as Google or GitHub. Use of these integrations is
+                    additionally governed by the respective providers&apos; terms and privacy policies. We have no control over
+                    third-party services and are not responsible for their availability or data processing.
                 </p>
 
-                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">5. Termination</h2>
+                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">6. Intellectual Property</h2>
                 <p>
-                    We may terminate or suspend your access immediately, without prior notice, for conduct that we believe
-                    violates these Terms or is harmful to other users or us.
+                    Unless otherwise stated, the Service and all original content are our intellectual property. You may not copy,
+                    reproduce, or reuse any component of the Service without prior written permission unless permitted by applicable
+                    open-source licenses.
                 </p>
 
-                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">6. Limitation of Liability</h2>
+                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">7. Availability</h2>
                 <p>
-                    We are not liable for any indirect, incidental, special, or consequential damages resulting from your use of
-                    or inability to use our service.
+                    The Service is provided &quot;as is&quot; and without any guarantee of uninterrupted availability or error-free
+                    operation. We may modify, suspend, or discontinue parts of the Service at any time.
                 </p>
 
-                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">7. Changes to Terms</h2>
+                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">8. Liability</h2>
                 <p>
-                    We may modify these Terms at any time. We'll provide notice of significant changes. Your continued use of our
-                    service constitutes acceptance of the updated Terms.
+                    (1) We are liable without limitation for intent and gross negligence.
+                    <br />
+                    (2) For cases of slight negligence, liability is limited to damages arising from the breach of essential
+                    contractual obligations (material obligations).
+                    <br />
+                    (3) We are not liable for indirect, incidental, or consequential damages.
+                    <br />
+                    (4) Liability under mandatory statutory provisions (e.g., product liability laws) remains unaffected.
                 </p>
 
-                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">8. Contact</h2>
-                <p>For questions about these Terms, please contact us at hello@tryforge.io.</p>
+                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">9. Termination</h2>
+                <p>
+                    We may suspend or terminate your access to the Service at any time, without prior notice, if you violate these
+                    Terms or otherwise misuse the Service.
+                </p>
+
+                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">10. Changes to These Terms</h2>
+                <p>
+                    We may update or modify these Terms from time to time. Substantial changes will be announced in an appropriate
+                    manner. Your continued use of the Service after updates constitutes acceptance of the revised Terms.
+                </p>
+
+                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">11. Governing Law</h2>
+                <p>
+                    These Terms are governed by the laws of the Federal Republic of Germany, excluding its conflict-of-law rules.
+                </p>
+
+                <h2 className="text-primary text-lg font-semibold mt-6 mb-3">12. Contact</h2>
+                <p>For questions regarding these Terms, please contact us at hello@tryforge.io.</p>
             </div>
         </div>
     )
