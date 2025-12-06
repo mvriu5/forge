@@ -13,47 +13,19 @@ import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
 import {toast} from "sonner"
+import {useSession} from "@/hooks/data/useSession"
+import {useAuth} from "@/hooks/useAuth"
+import {useIntegrations} from "@/hooks/data/useIntegrations"
 
 function ResetPasswordCard() {
-    const router = useRouter()
-    const [loading, setLoading] = useState(false)
+    const {resetSchema, isLoading, handlePasswordReset} = useAuth()
 
-    const formSchema = z.object({
-        password: z.string().min(8, {message: "Password must be at least 8 characters."}),
-    })
-
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof resetSchema>>({
+        resolver: zodResolver(resetSchema),
         defaultValues: {
             password: ""
         }
     })
-
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const token = new URLSearchParams(window.location.search).get("token");
-
-        if (!token) {
-            router.push("/signin")
-            return
-        }
-
-        await authClient.resetPassword({
-            newPassword: values.password,
-            token,
-        }, {
-            onRequest: (ctx) => {
-                setLoading(true)
-            },
-            onSuccess: (ctx) => {
-                router.push("/signin")
-            },
-            onError: (ctx) => {
-                toast.error("Something went wrong", {description: ctx.error.message})
-                setLoading(false)
-            }
-        })
-
-    }
 
     return (
         <div className={"w-80 h-max rounded-md border border-main/30 bg-linear-to-br from-primary from-30% to-tertiary shadow-[0_10px_10px_rgba(0,0,0,0.2)] p-8 flex flex-col gap-8 z-50"}>
@@ -68,7 +40,7 @@ function ResetPasswordCard() {
             </div>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(handlePasswordReset)} className="space-y-4">
                     <FormField
                         control={form.control}
                         name="password"
@@ -84,9 +56,9 @@ function ResetPasswordCard() {
                         type="submit"
                         variant={"brand"}
                         className={"w-full"}
-                        disabled={loading}
+                        disabled={isLoading}
                     >
-                        {loading && <Spinner/>}
+                        {isLoading && <Spinner/>}
                         Reset Password
                     </Button>
                 </form>

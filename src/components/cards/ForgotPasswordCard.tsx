@@ -3,60 +3,37 @@
 import {z} from "zod";
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
-import {useRouter} from "next/navigation"
-import {authClient} from "@/lib/auth-client"
-import {useState} from "react";
-import {ArrowLeft, CloudAlert, Mailbox} from "lucide-react"
-import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form";
+import {ArrowLeft} from "lucide-react"
+import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form";
 import {Button} from "@/components/ui/Button"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import Link from "next/link";
 import {Spinner} from "@/components/ui/Spinner"
-import {toast} from "sonner"
+import {useAuth} from "@/hooks/useAuth"
 
 function ForgotPasswordCard() {
-    const router = useRouter()
-    const [loading, setLoading] = useState(false)
+    const {forgotSchema, isLoading, handlePasswordForgot} = useAuth()
 
-    const formSchema = z.object({
-        email: z.email({message: "Please enter a valid email address."})
-    })
-
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof forgotSchema>>({
+        resolver: zodResolver(forgotSchema),
         defaultValues: {
             email: ""
         }
     })
 
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        await authClient.requestPasswordReset({email: values.email, redirectTo: "/reset"}, {
-            onRequest: (ctx) => {
-                setLoading(true)
-            },
-            onSuccess: (ctx) => {
-                toast.success("Reset E-Mail was sent.", {description: "Please check your mails."})
-                setLoading(false)
-            },
-            onError: (ctx) => {
-                toast.error("Something went wrong", {description: ctx.error.message})
-                setLoading(false)
-            }
-        })
-    }
-
     return (
         <div className={"w-80 h-max rounded-md border border-main/30 bg-linear-to-br from-primary from-30% to-tertiary shadow-[0_10px_10px_rgba(0,0,0,0.2)] p-8 pt-4 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
-                <Button
-                    type={"button"}
-                    variant="ghost"
-                    onClick={() => router.replace("/signin")}
-                    className={"bg-transparent text-tertiary hover:bg-transparent hover:text-secondary font-mono font-normal w-max text-sm px-0 gap-2"}
-                >
-                    <ArrowLeft size={16} />
-                    Go back
-                </Button>
+                <Link href="/signin">
+                    <Button
+                        type={"button"}
+                        variant="ghost"
+                        className={"bg-transparent text-tertiary hover:bg-transparent hover:text-secondary font-mono font-normal w-max text-sm px-0 gap-2"}
+                    >
+                        <ArrowLeft size={16} />
+                        Go back
+                    </Button>
+                </Link>
                 <div className={"flex gap-2 items-center"}>
                     <Link href={"/"} className={"cursor-default"}>
                         <ForgeLogo/>
@@ -67,7 +44,7 @@ function ForgotPasswordCard() {
             </div>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(handlePasswordForgot)} className="space-y-4">
                     <FormField
                         control={form.control}
                         name="email"
@@ -83,9 +60,9 @@ function ForgotPasswordCard() {
                         type="submit"
                         variant={"brand"}
                         className={"w-full"}
-                        disabled={loading}
+                        disabled={isLoading}
                     >
-                        {loading && <Spinner/>}
+                        {isLoading && <Spinner/>}
                         Send email
                     </Button>
                 </form>

@@ -1,6 +1,5 @@
 import {TextAnimate} from "./TextAnimate"
 import Image from "next/image"
-import {Grab, Layers, LayoutTemplate, Share2} from "lucide-react"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import {Badge} from "@/components/ui/Badge"
 import {Input} from "@/components/ui/Input"

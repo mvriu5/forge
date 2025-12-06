@@ -5,13 +5,11 @@ import {
     Blocks,
     Check,
     CircleUserRound,
-    CloudAlert,
     LayoutDashboard,
     Pencil,
     Settings as SettingsIcon,
     Trash,
     User,
-    UserRoundCheck,
     Wrench,
     X
 } from "lucide-react"
@@ -127,7 +125,7 @@ interface IntegrationProps {
 }
 
 const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
-    const {integrations, removeIntegration, refetchIntegrations} = useIntegrations(userId)
+    const {integrations, removeIntegration, handleIntegrate} = useIntegrations(userId)
     const githubIntegration = useMemo(() => getIntegrationByProvider(integrations, "github"), [integrations])
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
     const linearIntegration = useMemo(() => getIntegrationByProvider(integrations, "linear"), [integrations])
@@ -138,18 +136,8 @@ const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
             icon: Github,
             active: !!githubIntegration,
             onConnect: async () => {
-                const data = await authClient.signIn.social({provider: "github"}, {
-                    onRequest: (ctx) => {
-                    },
-                    onSuccess: async (ctx) => {
-                        setOpen(false)
-                        toast.success("Successfully integrated Github")
-                        if (userId) await refetchIntegrations()
-                    },
-                    onError: (ctx) => {
-                        toast.error("Something went wrong", {description: ctx.error.message})
-                    }
-                })
+                void handleIntegrate("github", false)
+                setOpen(false)
             },
             onDisconnect: () => removeIntegration("github")
         },
@@ -158,19 +146,8 @@ const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
             icon: Google,
             active: !!googleIntegration,
             onConnect: async () => {
-                const data = await authClient.signIn.social({provider: "google"}, {
-                    onRequest: (ctx) => {
-                    },
-                    onSuccess: async (ctx) => {
-                        setOpen(false)
-                        toast.success("Successfully integrated Google")
-                        if (userId) await refetchIntegrations()
-                    },
-                    onError: (ctx) => {
-                        toast.error("Something went wrong", {description: ctx.error.message})
-
-                    }
-                })
+                void handleIntegrate("google", false)
+                setOpen(false)
             },
             onDisconnect: () => removeIntegration("google")
         },
@@ -179,17 +156,8 @@ const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
             icon: Linear,
             active: !!linearIntegration,
             onConnect: async () => {
-                await authClient.signIn.social({provider: "linear"}, {
-                    onRequest: (ctx) => {
-                    },
-                    onSuccess: async (ctx) => {
-                        toast.success("Successfully integrated Linear")
-                        if (userId) await refetchIntegrations()
-                    },
-                    onError: (ctx) => {
-                        toast.error("Something went wrong", {description: ctx.error.message})
-                    }
-                })
+                void handleIntegrate("linear", false)
+                setOpen(false)
             },
             onDisconnect: () => removeIntegration("linear")
         }

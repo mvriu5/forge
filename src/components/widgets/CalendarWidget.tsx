@@ -4,7 +4,7 @@ import React, {useEffect, useState} from 'react'
 import {WidgetProps, WidgetTemplate} from './base/WidgetTemplate'
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Button} from "@/components/ui/Button"
-import {Blocks, Calendar as CalendarIcon, ChevronLeft, ChevronRight, CloudAlert, Plus} from "lucide-react"
+import {Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus} from "lucide-react"
 import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {cn} from "@/lib/utils"
@@ -22,11 +22,11 @@ import {
     useSensors,
 } from "@dnd-kit/core"
 import {restrictToVerticalAxis, restrictToWindowEdges} from "@dnd-kit/modifiers"
-import {authClient} from "@/lib/auth-client"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {Popover, PopoverContent, PopoverTrigger} from '../ui/Popover'
 import {Calendar} from "@/components/ui/Calendar"
-import {toast} from "sonner"
+import {useSession} from "@/hooks/data/useSession"
+import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 
 const weekdays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 const months = [
@@ -45,7 +45,10 @@ const months = [
 ]
 
 const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const { calendars, events: appointments, isLoading, isFetching, isError, refetch, googleIntegration, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
+    const {userId} = useSession()
+    const {integrations, handleIntegrate} = useIntegrations(userId)
+    const googleIntegration = getIntegrationByProvider(integrations, "google")
+    const { events: appointments, isLoading, getColor} = useGoogleCalendar()
 
     const [events, setEvents] = useState<CalendarEvent[]>([])
     const [currentTime, setCurrentTime] = useState(new Date())
@@ -85,22 +88,6 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
         }, 60000)
         return () => clearInterval(timer)
     }, [])
-
-    const handleIntegrate = async () => {
-        const data = await authClient.signIn.social({
-            provider: "google",
-            callbackURL: "/dashboard",
-        }, {
-            onRequest: (ctx) => {
-            },
-            onSuccess: (ctx) => {
-                toast.success("Successfully integrated Google", {icon: <Blocks size={16}/>, className: "text-brand" })
-            },
-            onError: (ctx) => {
-                toast.error("Something went wrong", {description: ctx.error.message})
-            }
-        })
-    }
 
     const hours = Array.from({ length: 25 }, (_, i) => i )
 
@@ -231,7 +218,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
     const navigateToWeek = (date: Date) => {
         const dayOfWeek = date.getDay()
         const monday = new Date(date)
-        monday.setDate(date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)) // Adjust for Monday start
+        monday.setDate(date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1))
         setCurrentWeekStart(monday)
     }
 
@@ -268,7 +255,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Google account first!"}
                     actionLabel={"Integrate"}
-                    onAction={handleIntegrate}
+                    onAction={() => handleIntegrate("google")}
                 />
             ) : (
                 <>
@@ -372,7 +359,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
                                                             </div>
 
                                                             {getEventsForDate(dateString).map((evt) => {
-                                                                const { top, height } = getAppointmentPosition(evt)
+                                                                const { height } = getAppointmentPosition(evt)
 
                                                                 const appointmentStartMinutes = timeToMinutes(evt.start.dateTime)
                                                                 const appointmentHour = Math.floor(appointmentStartMinutes / 60)
@@ -416,7 +403,7 @@ interface EventProps {
     color: string | null
 }
 
-const EventCard: React.FC<EventProps> = ({event, topPosition, height, handleDragStart, color}) => {
+const EventCard: React.FC<EventProps> = ({event, topPosition, height, color}) => {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: event.id,
         data: { event, initialTop: topPosition },

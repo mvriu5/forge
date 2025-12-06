@@ -6,8 +6,7 @@ import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
 import {useTooltip} from "@/components/ui/TooltipProvider"
-import {authClient} from "@/lib/auth-client"
-import {Blocks, CloudAlert, Filter, RefreshCw} from "lucide-react"
+import {Filter, RefreshCw} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {format, isSameDay} from "date-fns"
 import {Skeleton} from "@/components/ui/Skeleton"
@@ -18,12 +17,11 @@ import {convertToRGBA} from "@/lib/colorConvert"
 import {useSession} from "@/hooks/data/useSession"
 import {useSettings} from "@/hooks/data/useSettings"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import {toast} from "sonner"
 
 const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const {userId} = useSession()
     const {settings} = useSettings(userId)
-    const {integrations, refetchIntegrations} = useIntegrations(userId)
+    const {integrations, handleIntegrate} = useIntegrations(userId)
     const googleIntegration = getIntegrationByProvider(integrations, "google")
     const { calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
 
@@ -38,20 +36,6 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
         message: "Filter your calendars",
         anchor: "tc"
     })
-
-    const handleIntegrate = async () => {
-        const data = await authClient.signIn.social({provider: "google", callbackURL: "/dashboard"}, {
-            onRequest: (ctx) => {
-                void refetchIntegrations()
-            },
-            onSuccess: (ctx) => {
-                toast.success("Successfully integrated Google")
-            },
-            onError: (ctx) => {
-                toast.error("Something went wrong", {description: ctx.error.message})
-            }
-        })
-    }
 
     const validEvents = useMemo(() => events?.filter(e => e.start.dateTime && e.end.dateTime && new Date(e.start.dateTime) >= new Date(Date.now())) || [], [events])
 
@@ -116,7 +100,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
                     <WidgetError
                         message={"If you want to use this widget, you need to integrate your Google account first!"}
                         actionLabel={"Integrate"}
-                        onAction={handleIntegrate}
+                        onAction={() => handleIntegrate("google")}
                     />
                 ) : (
                     <>

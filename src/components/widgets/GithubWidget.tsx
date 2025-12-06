@@ -2,7 +2,7 @@
 
 import React, {useState} from "react"
 import {WidgetProps, WidgetTemplate} from "./base/WidgetTemplate"
-import {Blocks, CircleDashed, CloudAlert, Filter, FolderOpen, GitPullRequest, RefreshCw} from "lucide-react"
+import {CircleDashed, Filter, FolderOpen, GitPullRequest, RefreshCw} from "lucide-react"
 import {formatDate} from "date-fns"
 import {authClient} from "@/lib/auth-client"
 import {Button} from "@/components/ui/Button"
@@ -18,11 +18,10 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import {toast} from "sonner"
 
 const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const {userId} = useSession()
-    const {integrations, refetchIntegrations} = useIntegrations(userId)
+    const {integrations, handleIntegrate} = useIntegrations(userId)
     const githubIntegration = getIntegrationByProvider(integrations, "github")
     const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch} = useGithub()
     const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -46,20 +45,6 @@ const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
         onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]))
     }))))
 
-    const handleIntegrate = async () => {
-        const data = await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
-            onRequest: (ctx) => {
-                void refetchIntegrations()
-            },
-            onSuccess: (ctx) => {
-                toast.success("Successfully integrated Github")
-            },
-            onError: (ctx) => {
-                toast.error("Something went wrong", {description: ctx.error.message})
-            }
-        })
-    }
-
     const hasError = !githubIntegration?.accessToken && !isLoading
 
     return (
@@ -68,7 +53,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Github account first!"}
                     actionLabel={"Integrate"}
-                    onAction={handleIntegrate}
+                    onAction={() => handleIntegrate("github")}
                 />
             ) : (
                 <>

@@ -13,73 +13,23 @@ import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
 import {Github, Google} from "@/components/svg/Icons"
 import {toast} from "sonner"
+import {useAuth} from "@/hooks/useAuth"
+import {useIntegrations} from "@/hooks/data/useIntegrations"
+import {useSession} from "@/hooks/data/useSession"
 
 function SignUpCard() {
-    const router = useRouter()
-    const [loading, setLoading] = useState(false)
+    const {userId} = useSession()
+    const {signupSchema, isLoading, handleEmailSignUp} = useAuth()
+    const {handleIntegrate} = useIntegrations(userId)
 
-    const formSchema = z.object({
-        name: z.string().min(3, {message: "Name must be at least 3 characters."}),
-        email: z.email({message: "Please enter a valid email address."}),
-        password: z.string().min(8, {message: "Password must be at least 8 characters."})
-    })
-
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof signupSchema>>({
+        resolver: zodResolver(signupSchema),
         defaultValues: {
             name: "",
             email: "",
             password: ""
         }
     })
-
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        await authClient.signUp.email({
-            email: values.email,
-            password: values.password,
-            name: values.name,
-            callbackURL: "/dashboard"
-        }, {
-            onRequest: (ctx) => {
-                setLoading(true)
-            },
-            onSuccess: (ctx) => {
-                setLoading(false)
-                toast.success("We sent you an email!", {
-                    description: "Verify your email to continue.",
-                    duration: 1000 * 60 * 5 // 5 minutes
-                })
-            },
-            onError: (ctx) => {
-                setLoading(false)
-                toast.error("Something went wrong", {description: ctx.error.message})
-            }
-        })
-    }
-
-    const onGithubSignin = async () => {
-        await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
-            onRequest: (ctx) => {
-            },
-            onSuccess: (ctx) => {
-            },
-            onError: (ctx) => {
-                toast.error("Something went wrong", {description: ctx.error.message})
-            }
-        })
-    }
-
-    const onGoogleSignin = async () => {
-        await authClient.signIn.social({provider: "google", callbackURL: "/dashboard"}, {
-            onRequest: (ctx) => {
-            },
-            onSuccess: (ctx) => {
-            },
-            onError: (ctx) => {
-                toast.error("Something went wrong", {description: ctx.error.message})
-            }
-        })
-    }
 
     return (
         <div className={"w-80 h-max rounded-md border border-main/40 bg-linear-to-br from-primary from-30% to-tertiary shadow-[0_10px_10px_rgba(0,0,0,0.2)] p-8 flex flex-col gap-8 z-50"}>
@@ -94,7 +44,7 @@ function SignUpCard() {
             </div>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className={"w-full flex flex-col"}>
+                <form onSubmit={form.handleSubmit(handleEmailSignUp)} className={"w-full flex flex-col"}>
                     <div className={"w-full flex flex-col gap-4"}>
                         <FormField
                             control={form.control}
@@ -135,9 +85,9 @@ function SignUpCard() {
                             type="submit"
                             variant={"brand"}
                             className={"w-full"}
-                            disabled={loading}
+                            disabled={isLoading}
                         >
-                            {loading && <Spinner/>}
+                            {isLoading && <Spinner/>}
                             Sign up
                         </Button>
                         <div className={"w-full flex gap-2"}>
@@ -145,7 +95,7 @@ function SignUpCard() {
                                 type={"button"}
                                 className={"w-full"}
                                 variant={"default"}
-                                onClick={onGithubSignin}
+                                onClick={() => handleIntegrate(("github"))}
                             >
                                 <Github width={18} height={18}/>
                             </Button>
@@ -153,7 +103,7 @@ function SignUpCard() {
                                 type={"button"}
                                 className={"group w-full"}
                                 variant={"default"}
-                                onClick={onGoogleSignin}
+                                onClick={() => handleIntegrate("google")}
                             >
                                 <Google width={18} height={18}/>
                             </Button>
@@ -161,14 +111,15 @@ function SignUpCard() {
                     </div>
                     <div className={"w-full flex items-center gap-2 -mb-8 mt-8 bg-tertiary border border-main/20 shadow-md rounded-t-lg px-2"}>
                         <p className={"text-tertiary text-sm"}>Already have an account?</p>
-                        <Button
-                            type={"button"}
-                            variant="ghost"
-                            onClick={() => router.replace("/signin")}
-                            className={"bg-transparent hover:bg-transparent hover:text-primary font-mono font-normal w-max hover:underline text-sm px-0"}
-                        >
-                            Sign In
-                        </Button>
+                        <Link href={"/signin"}>
+                            <Button
+                                type={"button"}
+                                variant="ghost"
+                                className={"bg-transparent hover:bg-transparent hover:text-primary font-mono font-normal w-max hover:underline text-sm px-0"}
+                            >
+                                Sign In
+                            </Button>
+                        </Link>
                     </div>
                 </form>
             </Form>
