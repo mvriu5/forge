@@ -9,7 +9,6 @@ import {useTooltip} from "@/components/ui/TooltipProvider"
 import {authClient} from "@/lib/auth-client"
 import {Blocks, CloudAlert, Filter, RefreshCw} from "lucide-react"
 import {Button} from "@/components/ui/Button"
-import {useToast} from "@/components/ui/ToastProvider"
 import {format, isSameDay} from "date-fns"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
@@ -19,6 +18,7 @@ import {convertToRGBA} from "@/lib/colorConvert"
 import {useSession} from "@/hooks/data/useSession"
 import {useSettings} from "@/hooks/data/useSettings"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
+import {toast} from "sonner"
 
 const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const {userId} = useSession()
@@ -26,7 +26,6 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
     const {integrations, refetchIntegrations} = useIntegrations(userId)
     const googleIntegration = getIntegrationByProvider(integrations, "google")
     const { calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
-    const {addToast} = useToast()
 
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -46,17 +45,10 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
                 void refetchIntegrations()
             },
             onSuccess: (ctx) => {
-                addToast({
-                    title: "Successfully integrated Google",
-                    icon: <Blocks size={24}/>
-                })
+                toast.success("Successfully integrated Google")
             },
             onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
+                toast.error("Something went wrong", {description: ctx.error.message})
             }
         })
     }

@@ -4,8 +4,8 @@ import {AnimatePresence, motion} from "framer-motion"
 import {Check, Clipboard, Share2} from "lucide-react"
 import React, {HTMLAttributes, ReactNode, useEffect, useState} from "react"
 import {Button} from "@/components/ui/Button"
-import {useToast} from "@/components/ui/ToastProvider"
 import {cn} from "@/lib/utils"
+import {toast} from "sonner"
 
 interface CopyButtonProps extends HTMLAttributes<HTMLDivElement> {
     copyText: string
@@ -15,7 +15,6 @@ interface CopyButtonProps extends HTMLAttributes<HTMLDivElement> {
 
 const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, copyIcon, className, ...props }) => {
     const [isChecked, setIsChecked] = useState(false)
-    const {addToast} = useToast()
 
     useEffect(() => {
         const timer = setTimeout(() => setIsChecked(false), 5000)
@@ -30,13 +29,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, copyIcon, cl
             onClick={() => {
                 setIsChecked(true)
                 navigator.clipboard.writeText(copyText).then()
-                addToast({
-                     title: "Successfully copied to clipboard",
-                     icon: <Clipboard size={24} className={"text-brand"}/>,
-                     classNames: {
-                         motionClassname: "z-[100]",
-                     }
-                })
+                toast.success("Successfully copied to clipboard")
             }}
         >
             <AnimatePresence mode={"wait"}>

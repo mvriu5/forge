@@ -1,27 +1,26 @@
 "use client"
 
-import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form";
-import { useToast } from "@/components/ui/ToastProvider";
+import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form"
 import {Button} from "@/components/ui/Button"
-import {z} from "zod";
+import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
-import {useState} from "react";
-import {CloudAlert} from "lucide-react";
+import {useState} from "react"
+import {CloudAlert} from "lucide-react"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
 import {Github, Google} from "@/components/svg/Icons"
+import {toast} from "sonner"
 
 function SignInCard() {
     const router = useRouter()
-    const { addToast } = useToast()
     const [loading, setLoading] = useState(false)
 
     const formSchema = z.object({
-        email: z.string().email({message: "Please enter a valid email address."}),
+        email: z.email({message: "Please enter a valid email address."}),
         password: z.string()
     })
 
@@ -44,21 +43,11 @@ function SignInCard() {
             },
             onError: (ctx) => {
                 if (ctx.error.status === 403) {
-                    addToast({
-                        title: "Verify your email first!",
-                        icon: <CloudAlert size={24} className={"text-error"}/>
-                    })
+                    toast.error("Verify your email first!")
                 } else if (ctx.error.status === 401) {
-                    addToast({
-                        title: "Wrong credentials",
-                        icon: <CloudAlert size={24} className={"text-error"}/>
-                    })
+                    toast.error("Wrong credentials")
                 } else {
-                    addToast({
-                        title: "An error occurred",
-                        subtitle: ctx.error.message,
-                        icon: <CloudAlert size={24} className={"text-error"}/>
-                    })
+                    toast.error("Something went wrong", {description: ctx.error.message})
                 }
                 setLoading(false)
             }
@@ -72,11 +61,7 @@ function SignInCard() {
             onSuccess: (ctx) => {
             },
             onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
+                toast.error("Something went wrong", {description: ctx.error.message})
             }
         })
     }
@@ -88,11 +73,7 @@ function SignInCard() {
             onSuccess: (ctx) => {
             },
             onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
+                toast.error("Something went wrong", {description: ctx.error.message})
             }
         })
     }

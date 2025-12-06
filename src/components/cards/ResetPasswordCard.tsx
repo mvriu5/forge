@@ -1,22 +1,21 @@
 "use client"
 
-import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form";
-import { useToast } from "@/components/ui/ToastProvider";
+import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form"
 import {Button} from "@/components/ui/Button"
 import {z} from "zod";
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
-import {useState} from "react";
+import {useState} from "react"
 import {CloudAlert} from "lucide-react"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
+import {toast} from "sonner"
 
 function ResetPasswordCard() {
     const router = useRouter()
-    const { addToast } = useToast()
     const [loading, setLoading] = useState(false)
 
     const formSchema = z.object({
@@ -49,11 +48,7 @@ function ResetPasswordCard() {
                 router.push("/signin")
             },
             onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24} className={"text-error"}/>
-                })
+                toast.error("Something went wrong", {description: ctx.error.message})
                 setLoading(false)
             }
         })

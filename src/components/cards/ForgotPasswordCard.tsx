@@ -8,20 +8,18 @@ import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
 import {ArrowLeft, CloudAlert, Mailbox} from "lucide-react"
 import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form";
-import { useToast } from "@/components/ui/ToastProvider";
 import {Button} from "@/components/ui/Button"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import Link from "next/link";
 import {Spinner} from "@/components/ui/Spinner"
+import {toast} from "sonner"
 
 function ForgotPasswordCard() {
-    const {addToast} = useToast()
     const router = useRouter()
-
     const [loading, setLoading] = useState(false)
 
     const formSchema = z.object({
-        email: z.string().email({message: "Please enter a valid email address."})
+        email: z.email({message: "Please enter a valid email address."})
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -37,19 +35,11 @@ function ForgotPasswordCard() {
                 setLoading(true)
             },
             onSuccess: (ctx) => {
-                addToast({
-                    title: "Reset E-Mail was sent.",
-                    subtitle: "Please check your mails.",
-                    icon: <Mailbox size={24} className={"text-brand"}/>
-                })
+                toast.success("Reset E-Mail was sent.", {description: "Please check your mails."})
                 setLoading(false)
             },
             onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24} className={"text-error"}/>
-                })
+                toast.error("Something went wrong", {description: ctx.error.message})
                 setLoading(false)
             }
         })

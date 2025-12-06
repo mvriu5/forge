@@ -11,7 +11,7 @@ import {
     DialogTrigger
 } from "@/components/ui/Dialog"
 import {Input} from "@/components/ui/Input"
-import {CloudAlert, Grid2x2Plus} from "lucide-react"
+import {Grid2x2Plus} from "lucide-react"
 import React, {useMemo, useState} from "react"
 import {cn} from "@/lib/utils"
 import Image from "next/image"
@@ -20,13 +20,12 @@ import {useTooltip} from "@/components/ui/TooltipProvider"
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {useHotkeys} from "react-hotkeys-hook"
-import {useToast} from "@/components/ui/ToastProvider"
 import {Spinner} from "@/components/ui/Spinner"
-import {Dashboard} from "@/database"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useSettings} from "@/hooks/data/useSettings"
+import {toast} from "sonner"
 
 interface WidgetDialogProps {
     editMode: boolean
@@ -34,11 +33,10 @@ interface WidgetDialogProps {
 }
 
 function WidgetDialog({editMode, title}: WidgetDialogProps) {
-    const { userId } = useSession()
+    const {userId} = useSession()
     const {settings} = useSettings(userId)
     const {currentDashboard} = useDashboards(userId, settings)
     const {widgets, addWidget, addWidgetStatus} = useWidgets(userId)
-    const {addToast} = useToast()
 
     const [selectedWidgets, setSelectedWidgets] = useState<WidgetPreview[]>([])
     const [allWidgets] = useState<WidgetPreview[]>(() => getAllWidgetPreviews())
@@ -96,14 +94,7 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                 })
             }
         } catch (err) {
-            addToast({
-                title: "Error adding widget",
-                subtitle:
-                    err instanceof Error
-                        ? err.message
-                        : "Unknown error",
-                icon: <CloudAlert size={24} className={"text-error"}/>
-            })
+            toast.error("Something went wrong")
         }
 
         setDialogOpen(false)

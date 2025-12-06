@@ -7,7 +7,6 @@ import {DndContext} from "@dnd-kit/core"
 import type {Widget} from "@/database"
 import {EmptyAddSVG} from "@/components/svg/EmptyAddSVG"
 import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
-import {useToast} from "@/components/ui/ToastProvider"
 import {useGrid} from "@/hooks/useGrid"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
@@ -20,14 +19,13 @@ import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSettings} from "@/hooks/data/useSettings"
-import {Blocks, CloudAlert} from "lucide-react"
+import {toast} from "sonner"
 
 export default function Dashboard() {
     const {userId, refetchSession, isLoading: sessionLoading} = useSession()
     const {settings, isLoading: settingsLoading, updateSettings} = useSettings(userId)
     const {dashboards, currentDashboard, isLoading: dashboardsLoading, addDashboard, addDashboardStatus} = useDashboards(userId, settings)
     const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidgetPosition, setWidgets, updateWidget} = useWidgets(userId)
-    const {addToast} = useToast()
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
     const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
@@ -73,23 +71,16 @@ export default function Dashboard() {
                 await Promise.all(widgetsToRemove.map((widget) => removeWidget(widget.id)))
             }
             await saveWidgetsLayout()
-
-            addToast({
-                title: "Successfully updated your layout",
-                icon: <Blocks size={24} className={"text-brand"}/>
-            })
+            toast.success("Successfully updated your layout")
         } catch (error) {
-            addToast({
-                title: "An error occurred",
-                icon: <CloudAlert size={24} className={"text-error"}/>
-            })
+            toast.error("Something went wrong")
         } finally {
             setEditMode(false)
             setEditModeLoading(false)
             setWidgetsToRemove([])
             cachedWidgetsRef.current = null
         }
-    }, [removeWidget, saveWidgetsLayout, addToast, widgetsToRemove])
+    }, [removeWidget, saveWidgetsLayout, widgetsToRemove])
 
     const handleEditModeCancel = useCallback(() => {
         setWidgets(cachedWidgetsRef.current)

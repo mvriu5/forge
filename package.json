@@ -46,6 +46,7 @@
     "react-hook-form": "^7.67.0",
     "react-hotkeys-hook": "^5.2.1",
     "resend": "^6.5.2",
+    "sonner": "^2.0.7",
     "spinners-react": "^1.0.11",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",

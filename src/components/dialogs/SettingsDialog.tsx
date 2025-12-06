@@ -25,7 +25,6 @@ import type {PutBlobResult} from "@vercel/blob"
 import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
 import {Button} from "@/components/ui/Button"
-import {useToast} from "@/components/ui/ToastProvider"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {Input} from "@/components/ui/Input"
@@ -40,6 +39,7 @@ import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useSettings} from "@/hooks/data/useSettings"
+import {toast} from "sonner"
 
 function SettingsDialog() {
     const {userId} = useSession()
@@ -131,7 +131,6 @@ const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
     const githubIntegration = useMemo(() => getIntegrationByProvider(integrations, "github"), [integrations])
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
     const linearIntegration = useMemo(() => getIntegrationByProvider(integrations, "linear"), [integrations])
-    const {addToast} = useToast()
 
     const integrationList = [
         {
@@ -144,18 +143,11 @@ const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
                     },
                     onSuccess: async (ctx) => {
                         setOpen(false)
-                        addToast({
-                            title: "Successfully integrated Github",
-                            icon: <Blocks size={24}/>
-                        })
+                        toast.success("Successfully integrated Github")
                         if (userId) await refetchIntegrations()
                     },
                     onError: (ctx) => {
-                        addToast({
-                            title: "An error occurred",
-                            subtitle: ctx.error.message,
-                            icon: <CloudAlert size={24}/>
-                        })
+                        toast.error("Something went wrong", {description: ctx.error.message})
                     }
                 })
             },
@@ -171,18 +163,12 @@ const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
                     },
                     onSuccess: async (ctx) => {
                         setOpen(false)
-                        addToast({
-                            title: "Successfully integrated Google",
-                            icon: <Blocks size={24}/>
-                        })
+                        toast.success("Successfully integrated Google")
                         if (userId) await refetchIntegrations()
                     },
                     onError: (ctx) => {
-                        addToast({
-                            title: "An error occurred",
-                            subtitle: ctx.error.message,
-                            icon: <CloudAlert size={24}/>
-                        })
+                        toast.error("Something went wrong", {description: ctx.error.message})
+
                     }
                 })
             },
@@ -197,18 +183,11 @@ const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
                     onRequest: (ctx) => {
                     },
                     onSuccess: async (ctx) => {
-                        addToast({
-                            title: "Successfully integrated Linear",
-                            icon: <Blocks size={24}/>
-                        })
+                        toast.success("Successfully integrated Linear")
                         if (userId) await refetchIntegrations()
                     },
                     onError: (ctx) => {
-                        addToast({
-                            title: "An error occurred",
-                            subtitle: ctx.error.message,
-                            icon: <CloudAlert size={24}/>
-                        })
+                        toast.error("Something went wrong", {description: ctx.error.message})
                     }
                 })
             },
@@ -258,7 +237,6 @@ interface ProfileProps {
 
 const ProfileSection = ({onClose}: ProfileProps) => {
     const {session, updateUser} = useSession()
-    const {addToast} = useToast()
     const [uploading, setUploading] = useState(false)
     const [avatarUrl, setAvatarUrl] = useState<string | undefined>(session?.user?.image ?? "")
     const [blob, setBlob] = useState<PutBlobResult | undefined>(undefined)
@@ -279,7 +257,6 @@ const ProfileSection = ({onClose}: ProfileProps) => {
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
             const file = inputFileRef.current?.files ? inputFileRef.current.files[0] : null
-
             let imageUrl = session?.user?.image || null
 
             if (file) {
@@ -289,22 +266,14 @@ const ProfileSection = ({onClose}: ProfileProps) => {
 
             await authClient.updateUser({
                 image: imageUrl,
-                name: values.name,
+                name: values.name
             })
 
             updateUser({ image: imageUrl, name: values.name })
-
-            addToast({
-                title: "Successfully updated your profile",
-                icon: <UserRoundCheck size={24} className={"text-brand"}/>
-            })
-
+            toast.success("Successfully updated your profile")
             onClose()
         } catch (error) {
-            addToast({
-                title: "An error occurred while uploading your avatar",
-                icon: <CloudAlert size={24} className={"text-error"}/>
-            })
+            toast.error("Something went wrong")
         }
     }
 
@@ -315,18 +284,15 @@ const ProfileSection = ({onClose}: ProfileProps) => {
 
             const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
                 method: "POST",
-                body: inputFileRef.current!.files![0],
+                body: inputFileRef.current!.files![0]
             })
 
-            const data = (await response.json()) as PutBlobResult;
+            const data = (await response.json()) as PutBlobResult
             setBlob(data)
             return data
 
         } catch (error) {
-            addToast({
-                title: "An error occurred while uploading your avatar",
-                icon: <CloudAlert size={24} className={"text-error"}/>
-            })
+            toast.error("Something went wrong")
             return null
         } finally {
             setUploading(false)
@@ -346,22 +312,12 @@ const ProfileSection = ({onClose}: ProfileProps) => {
                 method: "DELETE"
             })
 
-            await authClient.updateUser({
-                image: null
-            })
-
+            await authClient.updateUser({image: null})
             updateUser({ image: null })
-
             onClose()
-            addToast({
-                title: "Successfully removed your avatar",
-                icon: <UserRoundCheck size={24} className={"text-brand"}/>
-            })
+            toast.success("Successfully removed your avatar")
         } catch (error) {
-            addToast({
-                title: "An error occurred while removing your avatar",
-                icon: <CloudAlert size={24} className={"text-error"}/>
-            })
+            toast.error("Something went wrong")
         }
     }
 
@@ -489,7 +445,6 @@ interface DashboardItemProps {
 }
 
 const DashboardItem = ({dashboard, dashboards, onUpdate, removeDashboard}: DashboardItemProps) => {
-    const {addToast} = useToast()
     const [editDialogOpen, setEditDialogOpen] = useState(false)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [deleteLoading, setDeleteLoading] = useState(false)
@@ -499,13 +454,6 @@ const DashboardItem = ({dashboard, dashboards, onUpdate, removeDashboard}: Dashb
         anchor: "bc",
         delay: 800
     })
-
-    const copyTooltip = useTooltip<HTMLButtonElement>({
-        message: "Copy your dashboard link & share with your friends",
-        anchor: "bc",
-        delay: 800
-    })
-
 
     const deleteTooltip = useTooltip<HTMLButtonElement>({
         message: "Delete this dashboard",
@@ -535,20 +483,14 @@ const DashboardItem = ({dashboard, dashboards, onUpdate, removeDashboard}: Dashb
         }
 
         await onUpdate({ ...dashboard, name: values.name })
-        addToast({
-            title: "Successfully updated dashboard!",
-            icon: <LayoutDashboard size={24} className="text-brand" />
-        })
+        toast.success("Successfully updated dashboard!")
         setEditDialogOpen(false)
     }
 
     const handleDelete = async () => {
         setDeleteLoading(true)
         await removeDashboard(dashboard.id)
-        addToast({
-            title: "Successfully deleted dashboard",
-            icon: <LayoutDashboard size={24} className="text-brand" />
-        })
+        toast.success("Successfully deleted dashboard!")
         setDeleteLoading(false)
         setDeleteDialogOpen(false)
     }
@@ -677,7 +619,6 @@ interface SettingsProps {
 const SettingsSection = ({onClose}: SettingsProps) => {
     const {userId} = useSession()
     const {settings, updateSettings, updateSettingsStatus} = useSettings(userId)
-    const {addToast} = useToast()
 
     const formSchema = z.object({
         hourFormat: z.enum(["12", "24"])
@@ -707,12 +648,7 @@ const SettingsSection = ({onClose}: SettingsProps) => {
         }
 
         await updateSettings(newSettings)
-
-        addToast({
-            title: "Successfully updated your settings!",
-            icon: <SettingsIcon size={24} className={"text-brand"}/>
-        })
-
+        toast.success("Successfully updated your settings!")
         onClose()
     }
 

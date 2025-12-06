@@ -5,13 +5,13 @@ import React, {useCallback, useEffect} from "react"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
-import {LayoutDashboard, SquarePen} from "lucide-react"
+import {SquarePen} from "lucide-react"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Button} from "@/components/ui/Button"
-import {useToast} from "@/components/ui/ToastProvider"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {Spinner} from "@/components/ui/Spinner"
 import {Dashboard, DashboardInsert} from "@/database"
+import {toast} from "sonner"
 
 interface DashboardDialogProps {
     open: boolean
@@ -31,8 +31,6 @@ const formSchema = z.object({
 })
 
 function DashboardDialog({open, onOpenChange, showOnClose, editMode = false, dashboards, userId, addDashboard, addDashboardStatus}: DashboardDialogProps) {
-    const {addToast} = useToast()
-
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -70,11 +68,7 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode = false, das
             updatedAt: new Date(Date.now())
         })
 
-        addToast({
-            title: "Successfully created a new dashboard!",
-            icon: <LayoutDashboard size={24} className={"text-brand"}/>
-        })
-
+        toast.success("Successfully created your new dashboard!")
         onOpenChange(false)
     }
 

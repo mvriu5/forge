@@ -1,7 +1,6 @@
 "use client"
 
 import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form"
-import { useToast } from "@/components/ui/ToastProvider"
 import {Button} from "@/components/ui/Button"
 import {z} from "zod";
 import {useForm} from "react-hook-form"
@@ -9,20 +8,19 @@ import {zodResolver} from "@hookform/resolvers/zod"
 import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
 import {useState} from "react";
-import {CloudAlert, Inbox} from "lucide-react"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
 import {Github, Google} from "@/components/svg/Icons"
+import {toast} from "sonner"
 
 function SignUpCard() {
     const router = useRouter()
-    const { addToast } = useToast()
     const [loading, setLoading] = useState(false)
 
     const formSchema = z.object({
         name: z.string().min(3, {message: "Name must be at least 3 characters."}),
-        email: z.string().email({message: "Please enter a valid email address."}),
+        email: z.email({message: "Please enter a valid email address."}),
         password: z.string().min(8, {message: "Password must be at least 8 characters."})
     })
 
@@ -47,20 +45,14 @@ function SignUpCard() {
             },
             onSuccess: (ctx) => {
                 setLoading(false)
-                addToast({
-                    title: "We sent you an email!",
-                    subtitle: "Verify your email to continue.",
-                    icon: <Inbox size={24} className={"text-success"}/>,
+                toast.success("We sent you an email!", {
+                    description: "Verify your email to continue.",
                     duration: 1000 * 60 * 5 // 5 minutes
                 })
             },
             onError: (ctx) => {
                 setLoading(false)
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24} className={"text-error"}/>
-                })
+                toast.error("Something went wrong", {description: ctx.error.message})
             }
         })
     }
@@ -72,11 +64,7 @@ function SignUpCard() {
             onSuccess: (ctx) => {
             },
             onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
+                toast.error("Something went wrong", {description: ctx.error.message})
             }
         })
     }
@@ -88,11 +76,7 @@ function SignUpCard() {
             onSuccess: (ctx) => {
             },
             onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
+                toast.error("Something went wrong", {description: ctx.error.message})
             }
         })
     }

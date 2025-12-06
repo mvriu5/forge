@@ -2,17 +2,7 @@
 
 import React, {useState} from "react"
 import {WidgetProps, WidgetTemplate} from "./base/WidgetTemplate"
-import {
-    AlertCircle,
-    Blocks,
-    CircleDashed,
-    CloudAlert,
-    Filter,
-    FolderGit,
-    FolderOpen,
-    GitPullRequest,
-    RefreshCw
-} from "lucide-react"
+import {Blocks, CircleDashed, CloudAlert, Filter, FolderOpen, GitPullRequest, RefreshCw} from "lucide-react"
 import {formatDate} from "date-fns"
 import {authClient} from "@/lib/auth-client"
 import {Button} from "@/components/ui/Button"
@@ -21,7 +11,6 @@ import {Input} from "@/components/ui/Input"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/Tabs"
 import {Skeleton} from "@/components/ui/Skeleton"
-import {useToast} from "@/components/ui/ToastProvider"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {useGithub} from "@/hooks/useGithub"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
@@ -29,13 +18,13 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
+import {toast} from "sonner"
 
 const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const {userId} = useSession()
     const {integrations, refetchIntegrations} = useIntegrations(userId)
     const githubIntegration = getIntegrationByProvider(integrations, "github")
     const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch} = useGithub()
-    const {addToast} = useToast()
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
     const filterTooltip = useTooltip<HTMLButtonElement>({
@@ -63,17 +52,10 @@ const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                 void refetchIntegrations()
             },
             onSuccess: (ctx) => {
-                addToast({
-                    title: "Successfully integrated Github",
-                    icon: <Blocks size={24}/>
-                })
+                toast.success("Successfully integrated Github")
             },
             onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
+                toast.error("Something went wrong", {description: ctx.error.message})
             }
         })
     }

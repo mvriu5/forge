@@ -10,17 +10,16 @@ import {Skeleton} from "@/components/ui/Skeleton"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {authClient} from "@/lib/auth-client"
 import {Blocks, CloudAlert} from "lucide-react"
-import {useToast} from "@/components/ui/ToastProvider"
 import {useBreakpoint} from "@/hooks/media/useBreakpoint"
 import { useSession } from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
+import {toast} from "sonner"
 
 const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const {userId} = useSession()
     const {integrations, refetchIntegrations} = useIntegrations(userId)
     const githubIntegration = getIntegrationByProvider(integrations, "github")
     const {data, isLoading, isFetching, isError} = useGithubHeatmap()
-    const {addToast} = useToast()
     const {tailwindBreakpoint} = useBreakpoint()
 
     const cellSize = {
@@ -40,17 +39,10 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWid
                 void refetchIntegrations()
             },
             onSuccess: (ctx) => {
-                addToast({
-                    title: "Successfully integrated Github",
-                    icon: <Blocks size={24}/>
-                })
+                toast.success("Successfully integrated Github", {icon: <Blocks size={24}/>})
             },
             onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
+                toast.error("Something went wrong", {description: ctx.error.message})
             }
         })
     }

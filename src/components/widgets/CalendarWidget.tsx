@@ -24,9 +24,9 @@ import {
 import {restrictToVerticalAxis, restrictToWindowEdges} from "@dnd-kit/modifiers"
 import {authClient} from "@/lib/auth-client"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
-import {useToast} from "@/components/ui/ToastProvider"
 import {Popover, PopoverContent, PopoverTrigger} from '../ui/Popover'
 import {Calendar} from "@/components/ui/Calendar"
+import {toast} from "sonner"
 
 const weekdays = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
 const months = [
@@ -46,7 +46,6 @@ const months = [
 
 const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const { calendars, events: appointments, isLoading, isFetching, isError, refetch, googleIntegration, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
-    const { addToast } = useToast()
 
     const [events, setEvents] = useState<CalendarEvent[]>([])
     const [currentTime, setCurrentTime] = useState(new Date())
@@ -95,17 +94,10 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
             onRequest: (ctx) => {
             },
             onSuccess: (ctx) => {
-                addToast({
-                    title: "Successfully integrated Google",
-                    icon: <Blocks size={24}/>
-                })
+                toast.success("Successfully integrated Google", {icon: <Blocks size={16}/>, className: "text-brand" })
             },
             onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
+                toast.error("Something went wrong", {description: ctx.error.message})
             }
         })
     }
