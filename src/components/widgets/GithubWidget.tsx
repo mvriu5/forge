@@ -2,17 +2,7 @@
 
 import React, {useState} from "react"
 import {WidgetProps, WidgetTemplate} from "./base/WidgetTemplate"
-import {
-    AlertCircle,
-    Blocks,
-    CircleDashed,
-    CloudAlert,
-    Filter,
-    FolderGit,
-    FolderOpen,
-    GitPullRequest,
-    RefreshCw
-} from "lucide-react"
+import {CircleDashed, Filter, FolderOpen, GitPullRequest, RefreshCw} from "lucide-react"
 import {formatDate} from "date-fns"
 import {authClient} from "@/lib/auth-client"
 import {Button} from "@/components/ui/Button"
@@ -21,7 +11,6 @@ import {Input} from "@/components/ui/Input"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
 import {Tabs, TabsList, TabsTrigger} from "@/components/ui/Tabs"
 import {Skeleton} from "@/components/ui/Skeleton"
-import {useToast} from "@/components/ui/ToastProvider"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {useGithub} from "@/hooks/useGithub"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
@@ -32,10 +21,9 @@ import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegra
 
 const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const {userId} = useSession()
-    const {integrations, refetchIntegrations} = useIntegrations(userId)
+    const {integrations, handleIntegrate} = useIntegrations(userId)
     const githubIntegration = getIntegrationByProvider(integrations, "github")
     const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch} = useGithub()
-    const {addToast} = useToast()
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
     const filterTooltip = useTooltip<HTMLButtonElement>({
@@ -57,27 +45,6 @@ const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
         onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]))
     }))))
 
-    const handleIntegrate = async () => {
-        const data = await authClient.signIn.social({provider: "github", callbackURL: "/dashboard"}, {
-            onRequest: (ctx) => {
-                void refetchIntegrations()
-            },
-            onSuccess: (ctx) => {
-                addToast({
-                    title: "Successfully integrated Github",
-                    icon: <Blocks size={24}/>
-                })
-            },
-            onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
-            }
-        })
-    }
-
     const hasError = !githubIntegration?.accessToken && !isLoading
 
     return (
@@ -86,7 +53,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Github account first!"}
                     actionLabel={"Integrate"}
-                    onAction={handleIntegrate}
+                    onAction={() => handleIntegrate("github")}
                 />
             ) : (
                 <>

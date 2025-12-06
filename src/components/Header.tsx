@@ -50,7 +50,7 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
         <div className={"w-full top-0 left-0 h-12 px-4 flex justify-between items-center bg-primary border-b border-main/40"}>
             <div className={"flex items-center gap-4"}>
                 <div className={"flex items-center gap-4"}>
-                    <Link href={"/?allowLanding=true"} className={"cursor-default"}>
+                    <Link href={"/"} className={"cursor-default"}>
                         <ForgeLogo/>
                     </Link>
                     <span className={"text-xl text-primary font-mono font-semibold"}>forge</span>

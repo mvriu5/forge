@@ -1,6 +1,8 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Account} from "@/database"
 import {authClient} from "@/lib/auth-client"
+import {toast} from "sonner"
+import {capitalizeFirstLetter} from "@better-auth/core/utils"
 
 interface Integration {
     id: string
@@ -16,6 +18,7 @@ interface Integration {
 }
 
 const INTEGRATIONS_QUERY_KEY = (userId: string | undefined) => ["integrations", userId] as const
+const CALLBACK_URL = "/dashboard"
 
 async function fetchIntegrations(userId: string): Promise<Integration[]> {
     const response = await fetch(`/api/accounts?userId=${userId}`)
@@ -97,9 +100,27 @@ export function useIntegrations(userId: string | undefined) {
         }
     })
 
+    const handleIntegrate = async (provider: string, callback = true) => {
+        const data = await authClient.signIn.social({
+            provider,
+            callbackURL: callback ? CALLBACK_URL : undefined
+        }, {
+            onRequest: (ctx) => {
+                void refetchIntegrations()
+            },
+            onSuccess: (ctx) => {
+                toast.success("Successfully integrated " + capitalizeFirstLetter(provider))
+            },
+            onError: (ctx) => {
+                toast.error("Something went wrong", {description: ctx.error.message})
+            }
+        })
+    }
+
     return {
         integrations: integrationsQuery.data ?? [],
         isLoading: integrationsQuery.isLoading,
+        handleIntegrate,
         refetchIntegrations,
         removeIntegration: (provider: string) => removeIntegrationMutation.mutateAsync(provider),
         removeIntegrationStatus: removeIntegrationMutation.status,

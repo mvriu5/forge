@@ -1,64 +1,31 @@
 "use client"
 
-import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form";
-import { useToast } from "@/components/ui/ToastProvider";
+import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form"
 import {Button} from "@/components/ui/Button"
 import {z} from "zod";
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {useRouter} from "next/navigation"
 import {authClient} from "@/lib/auth-client"
-import {useState} from "react";
+import {useState} from "react"
 import {CloudAlert} from "lucide-react"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
+import {toast} from "sonner"
+import {useSession} from "@/hooks/data/useSession"
+import {useAuth} from "@/hooks/useAuth"
+import {useIntegrations} from "@/hooks/data/useIntegrations"
 
 function ResetPasswordCard() {
-    const router = useRouter()
-    const { addToast } = useToast()
-    const [loading, setLoading] = useState(false)
+    const {resetSchema, isLoading, handlePasswordReset} = useAuth()
 
-    const formSchema = z.object({
-        password: z.string().min(8, {message: "Password must be at least 8 characters."}),
-    })
-
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof resetSchema>>({
+        resolver: zodResolver(resetSchema),
         defaultValues: {
             password: ""
         }
     })
-
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const token = new URLSearchParams(window.location.search).get("token");
-
-        if (!token) {
-            router.push("/signin")
-            return
-        }
-
-        await authClient.resetPassword({
-            newPassword: values.password,
-            token,
-        }, {
-            onRequest: (ctx) => {
-                setLoading(true)
-            },
-            onSuccess: (ctx) => {
-                router.push("/signin")
-            },
-            onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24} className={"text-error"}/>
-                })
-                setLoading(false)
-            }
-        })
-
-    }
 
     return (
         <div className={"w-80 h-max rounded-md border border-main/30 bg-linear-to-br from-primary from-30% to-tertiary shadow-[0_10px_10px_rgba(0,0,0,0.2)] p-8 flex flex-col gap-8 z-50"}>
@@ -73,7 +40,7 @@ function ResetPasswordCard() {
             </div>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(handlePasswordReset)} className="space-y-4">
                     <FormField
                         control={form.control}
                         name="password"
@@ -89,9 +56,9 @@ function ResetPasswordCard() {
                         type="submit"
                         variant={"brand"}
                         className={"w-full"}
-                        disabled={loading}
+                        disabled={isLoading}
                     >
-                        {loading && <Spinner/>}
+                        {isLoading && <Spinner/>}
                         Reset Password
                     </Button>
                 </form>

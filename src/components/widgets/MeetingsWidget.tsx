@@ -6,10 +6,8 @@ import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
 import {useTooltip} from "@/components/ui/TooltipProvider"
-import {authClient} from "@/lib/auth-client"
-import {Blocks, CloudAlert, Filter, RefreshCw} from "lucide-react"
+import {Filter, RefreshCw} from "lucide-react"
 import {Button} from "@/components/ui/Button"
-import {useToast} from "@/components/ui/ToastProvider"
 import {format, isSameDay} from "date-fns"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
@@ -23,10 +21,9 @@ import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegra
 const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
     const {userId} = useSession()
     const {settings} = useSettings(userId)
-    const {integrations, refetchIntegrations} = useIntegrations(userId)
+    const {integrations, handleIntegrate} = useIntegrations(userId)
     const googleIntegration = getIntegrationByProvider(integrations, "google")
     const { calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
-    const {addToast} = useToast()
 
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -39,27 +36,6 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
         message: "Filter your calendars",
         anchor: "tc"
     })
-
-    const handleIntegrate = async () => {
-        const data = await authClient.signIn.social({provider: "google", callbackURL: "/dashboard"}, {
-            onRequest: (ctx) => {
-                void refetchIntegrations()
-            },
-            onSuccess: (ctx) => {
-                addToast({
-                    title: "Successfully integrated Google",
-                    icon: <Blocks size={24}/>
-                })
-            },
-            onError: (ctx) => {
-                addToast({
-                    title: "An error occurred",
-                    subtitle: ctx.error.message,
-                    icon: <CloudAlert size={24}/>
-                })
-            }
-        })
-    }
 
     const validEvents = useMemo(() => events?.filter(e => e.start.dateTime && e.end.dateTime && new Date(e.start.dateTime) >= new Date(Date.now())) || [], [events])
 
@@ -124,7 +100,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
                     <WidgetError
                         message={"If you want to use this widget, you need to integrate your Google account first!"}
                         actionLabel={"Integrate"}
-                        onAction={handleIntegrate}
+                        onAction={() => handleIntegrate("google")}
                     />
                 ) : (
                     <>

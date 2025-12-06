@@ -2,8 +2,6 @@
 
 import {LogOut, MessageCircleQuestion, Sun} from "lucide-react"
 import React, {useState} from "react"
-import {authClient} from "@/lib/auth-client"
-import {useRouter} from "next/navigation"
 import {SettingsDialog} from "@/components/dialogs/SettingsDialog"
 import {cn} from "@/lib/utils"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
@@ -13,34 +11,19 @@ import {useTheme} from "next-themes"
 import {Spinner} from "@/components/ui/Spinner"
 import {useSession} from "@/hooks/data/useSession"
 import Link from "next/link"
+import {useAuth} from "@/hooks/useAuth"
 
 function ProfilePopover({editMode}: {editMode: boolean}) {
-    const {session, isLoading, setSession} = useSession()
-    const router = useRouter()
+    const {session, isLoading: sessionLoading, setSession} = useSession()
+    const {isLoading: signoutLoading, handleSignOut} = useAuth()
     const {theme, setTheme} = useTheme()
 
     const [open, setOpen] = useState(false)
-    const [signOutLoading, setSignOutLoading] = useState(false)
-
-    const onSignout = async () => {
-        setSignOutLoading(true)
-
-        await authClient.signOut({
-            fetchOptions: {
-                onSuccess: () => {
-                    router.push("/")
-                    setSession(null)
-                }
-            }
-        })
-
-        router.push("/")
-    }
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger
-                disabled={isLoading || editMode}
+                disabled={sessionLoading || editMode}
                 data-state={editMode ? "disabled" : "enabled"}
                 className={"group"}
             >
@@ -52,14 +35,14 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                         "md:group-data-[state=disabled]:hover:bg-secondary shadow-xs dark:shadow-md"
                     )}
                 >
-                    {isLoading ?
+                    {sessionLoading ?
                         <Skeleton className={"size-6 rounded-full"}/> :
                         <Avatar className={"size-6 border border-main/20"}>
                             <AvatarImage src={session?.user?.image ?? undefined} />
                             <AvatarFallback/>
                         </Avatar>
                     }
-                    {isLoading ?
+                    {sessionLoading ?
                         <Skeleton className={"hidden md:flex h-4 w-12"}/> :
                         <p className={"hidden md:flex"}>{session?.user?.name}</p>
                     }
@@ -94,9 +77,12 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 <button
                     type={"button"}
                     className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-error/5 text-error/90 hover:text-error ring-0 outline-0"}
-                    onClick={onSignout}
+                    onClick={() => {
+                        void handleSignOut()
+                        setSession(null)
+                    }}
                 >
-                    {signOutLoading ? <Spinner className={"text-error"}/> : <LogOut size={16} className={"text-error/65"}/>}
+                    {signoutLoading ? <Spinner className={"text-error"}/> : <LogOut size={16} className={"text-error/65"}/>}
                     <p>Logout</p>
                 </button>
             </PopoverContent>

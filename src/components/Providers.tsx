@@ -1,10 +1,11 @@
 "use client"
 
 import {ReactNode} from "react"
-import {ToastProvider} from "@/components/ui/ToastProvider"
 import {TooltipProvider} from "@/components/ui/TooltipProvider"
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
 import {ThemeProvider} from "@/components/ThemeProvider"
+import {Toaster} from "sonner"
+import {Check, CircleX, Info, LoaderCircle, TriangleAlert} from "lucide-react"
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -24,9 +25,22 @@ function Providers({children}: {children: ReactNode}) {
                 disableTransitionOnChange
             >
                 <TooltipProvider>
-                    <ToastProvider>
-                        {children}
-                    </ToastProvider>
+                    <Toaster
+                        theme="dark"
+                        toastOptions={{
+                            classNames: {
+                                toast: "!border-main/40 !bg-primary !text-primary"
+                            }
+                        }}
+                        icons={{
+                            success: <Check size={24} className={"text-brand"}/>,
+                            info: <Info size={24} className={"text-brand"}/>,
+                            warning: <TriangleAlert size={24} className={"text-brand"}/>,
+                            error: <CircleX size={24} className={"text-brand"}/>,
+                            loading: <LoaderCircle size={24} className={"text-brand animate-spin"}/>,
+                        }}
+                    />
+                    {children}
                 </TooltipProvider>
             </ThemeProvider>
         </QueryClientProvider>
