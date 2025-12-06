@@ -26,7 +26,7 @@ import {Button} from "@/components/ui/Button"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {Input} from "@/components/ui/Input"
-import {Github, Google, Linear} from "@/components/svg/Icons"
+import {Atlassian, Github, Google, Linear} from "@/components/svg/Icons"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {Dashboard, Settings} from "@/database"
 import {useTooltip} from "@/components/ui/TooltipProvider"
@@ -129,6 +129,7 @@ const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
     const githubIntegration = useMemo(() => getIntegrationByProvider(integrations, "github"), [integrations])
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
     const linearIntegration = useMemo(() => getIntegrationByProvider(integrations, "linear"), [integrations])
+    const atlassianIntegration = useMemo(() => getIntegrationByProvider(integrations, "atlassian"), [integrations])
 
     const integrationList = [
         {
@@ -160,6 +161,16 @@ const IntegrationSection = ({setOpen, userId}: IntegrationProps) => {
                 setOpen(false)
             },
             onDisconnect: () => removeIntegration("linear")
+        },
+        {
+            name: "Atlassian",
+            icon: Atlassian,
+            active: !!atlassianIntegration,
+            onConnect: async () => {
+                void handleIntegrate("atlassian", false)
+                setOpen(false)
+            },
+            onDisconnect: () => removeIntegration("atlassian")
         }
     ]
 

@@ -64,7 +64,12 @@ export const auth = betterAuth({
             clientId: process.env.LINEAR_CLIENT_ID as string,
             clientSecret: process.env.LINEAR_CLIENT_SECRET as string,
             redirectUri: "https://www.tryforge.io/api/auth/callback/linear"
-        }
+        },
+        atlassian: {
+            clientId: process.env.ATLASSIAN_CLIENT_ID as string,
+            clientSecret: process.env.ATLASSIAN_CLIENT_SECRET as string,
+            redirectURI: "https://www.tryforge.io/api/auth/callback/atlassian"
+        },
     },
     session: {
         cookieCache: {

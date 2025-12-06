@@ -41,6 +41,7 @@ import {restrictToFirstScrollableAncestor, restrictToHorizontalAxis, restrictToW
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSession} from "@/hooks/data/useSession"
 import {Asana, Atlassian, Linear, Trello} from "@/components/svg/Icons"
+import {JiraImportDialog} from "@/components/dialogs/JiraImportDialog"
 
 export type Card = {
     id: string
@@ -264,10 +265,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                             <Asana width={14} height={14}/>
                             Import from Asana
                         </Button>
-                        <Button variant={"ghost"} className={"px-2 justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
-                            <Atlassian width={14} height={14}/>
-                            Import from Jira
-                        </Button>
+                        <JiraImportDialog />
                         <Button variant={"ghost"} className={"px-2 justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
                             <Trello width={14} height={14}/>
                             Import from Trello
