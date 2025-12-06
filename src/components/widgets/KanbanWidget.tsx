@@ -261,15 +261,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                             <Linear width={14} height={14}/>
                             Import from Linear
                         </Button>
-                        <Button variant={"ghost"} className={"px-2 justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
-                            <Asana width={14} height={14}/>
-                            Import from Asana
-                        </Button>
                         <JiraImportDialog />
-                        <Button variant={"ghost"} className={"px-2 justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
-                            <Trello width={14} height={14}/>
-                            Import from Trello
-                        </Button>
                     </PopoverContent>
                 </Popover>
                 <Popover open={columnPopoverOpen} onOpenChange={setColumnPopoverOpen}>
