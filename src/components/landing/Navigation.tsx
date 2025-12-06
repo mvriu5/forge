@@ -27,8 +27,13 @@ export default function Navbar() {
                     </Link>
 
                     <Link href={"signin"}>
-                        <Button variant={"brand"}>
+                        <Button variant={"primary"}>
                             Sign In
+                        </Button>
+                    </Link>
+                    <Link href="/signup">
+                        <Button variant={"brand"}>
+                            Get started
                         </Button>
                     </Link>
                 </div>

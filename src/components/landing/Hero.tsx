@@ -21,14 +21,6 @@ function Hero() {
                 and rearrange everything in seconds. <br/>
                 Stay on top of your data, collaborate effortlessly, and build a workspace that grows with your needs.
             </p>
-
-            <div className={"w-max flex flex-col sm:flex-row items-center gap-4 mt-8"}>
-                <Input className={"w-80"} placeholder={"john.doe@gmail.com"}/>
-                <Button variant={"primary"}>
-                    Join the waitlist
-                </Button>
-            </div>
-
             <div className={"flex items-center justify-center rounded-xl shadow-xl border border-main/40"}>
                 <Image src={"/mockup.png"} alt={"Example Layout"} width={"1904"} height={"1025"} className={"rounded-xl md:rounded-md"}/>
             </div>

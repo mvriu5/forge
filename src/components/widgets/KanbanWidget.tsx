@@ -255,20 +255,20 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                             <Import size={16}/>
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent className={"w-64"} align={"end"}>
-                        <Button variant={"ghost"} className={"justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
+                    <PopoverContent className={"w-52 p-1"} align={"end"}>
+                        <Button variant={"ghost"} className={"px-2 justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
                             <Linear width={14} height={14}/>
                             Import from Linear
                         </Button>
-                        <Button variant={"ghost"} className={"justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
+                        <Button variant={"ghost"} className={"px-2 justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
                             <Asana width={14} height={14}/>
                             Import from Asana
                         </Button>
-                        <Button variant={"ghost"} className={"justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
+                        <Button variant={"ghost"} className={"px-2 justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
                             <Atlassian width={14} height={14}/>
                             Import from Jira
                         </Button>
-                        <Button variant={"ghost"} className={"justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
+                        <Button variant={"ghost"} className={"px-2 justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
                             <Trello width={14} height={14}/>
                             Import from Trello
                         </Button>
