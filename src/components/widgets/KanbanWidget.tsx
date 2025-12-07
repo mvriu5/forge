@@ -42,6 +42,7 @@ import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSession} from "@/hooks/data/useSession"
 import {Asana, Atlassian, Linear, Trello} from "@/components/svg/Icons"
 import {JiraImportDialog} from "@/components/dialogs/JiraImportDialog"
+import {LinearImportDialog} from "@/components/dialogs/LinearImportDialog"
 
 export type Card = {
     id: string
@@ -257,10 +258,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className={"w-52 p-1"} align={"end"}>
-                        <Button variant={"ghost"} className={"px-2 justify-start w-full gap-2 font-normal hover:text-brand hover:bg-brand/5"}>
-                            <Linear width={14} height={14}/>
-                            Import from Linear
-                        </Button>
+                        <LinearImportDialog/>
                         <JiraImportDialog />
                     </PopoverContent>
                 </Popover>
