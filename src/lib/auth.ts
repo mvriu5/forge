@@ -66,9 +66,11 @@ export const auth = betterAuth({
             redirectUri: `${process.env.BETTER_AUTH_URL}/api/auth/callback/linear`
         },
         atlassian: {
+            scope: ["read:jira-user", "read:jira-work", "offline_access"],
             clientId: process.env.ATLASSIAN_CLIENT_ID as string,
             clientSecret: process.env.ATLASSIAN_CLIENT_SECRET as string,
-            redirectURI: `${process.env.BETTER_AUTH_URL}/api/auth/callback/atlassian`
+            redirectURI: `${process.env.BETTER_AUTH_URL}/api/auth/callback/atlassian`,
+            accessType: "offline",
         },
     },
     session: {
