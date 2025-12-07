@@ -1,9 +1,9 @@
 import {TextAnimate} from "./TextAnimate"
 import Image from "next/image"
-import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import {Badge} from "@/components/ui/Badge"
-import {Input} from "@/components/ui/Input"
 import {Button} from "@/components/ui/Button"
+import Link from "next/link"
+import {Discord} from "@/components/svg/Icons"
 
 function Hero() {
     return (
@@ -21,6 +21,12 @@ function Hero() {
                 and rearrange everything in seconds. <br/>
                 Stay on top of your data, collaborate effortlessly, and build a workspace that grows with your needs.
             </p>
+            <Link href={"https://discord.gg/yRJzEgyED4"}>
+                <Button variant={"primary"} className={"gap-2"}>
+                    <Discord width={20} height={20} className={"mt-0.5"}/>
+                    Join our discord
+                </Button>
+            </Link>
             <div className={"flex items-center justify-center rounded-xl shadow-xl border border-main/40"}>
                 <Image src={"/mockup.png"} alt={"Example Layout"} width={"1904"} height={"1025"} className={"rounded-xl md:rounded-md"}/>
             </div>

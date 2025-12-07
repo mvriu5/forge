@@ -18,7 +18,7 @@ export const auth = betterAuth({
     account: {
         accountLinking: {
             enabled: true,
-            trustedProviders: ["github", "google", "linear"]
+            trustedProviders: ["github", "google", "linear", "atlassian"]
         }
     },
     emailVerification: {
@@ -50,7 +50,7 @@ export const auth = betterAuth({
             scope: ["repo", "user:email"],
             clientId: process.env.GITHUB_CLIENT_ID as string,
             clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-            redirectURI: "https://www.tryforge.io/api/auth/callback/github"
+            redirectURI: `${process.env.BETTER_AUTH_URL}/api/auth/callback/github`
         },
         google: {
             scope: ["https://www.googleapis.com/auth/calendar"],
@@ -58,13 +58,18 @@ export const auth = betterAuth({
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
             accessType: "offline",
             prompt: "consent",
-            redirectUri: "https://www.tryforge.io/api/auth/callback/google"
+            redirectUri: `${process.env.BETTER_AUTH_URL}/api/auth/callback/google`
         },
         linear: {
             clientId: process.env.LINEAR_CLIENT_ID as string,
             clientSecret: process.env.LINEAR_CLIENT_SECRET as string,
-            redirectUri: "https://www.tryforge.io/api/auth/callback/linear"
-        }
+            redirectUri: `${process.env.BETTER_AUTH_URL}/api/auth/callback/linear`
+        },
+        atlassian: {
+            clientId: process.env.ATLASSIAN_CLIENT_ID as string,
+            clientSecret: process.env.ATLASSIAN_CLIENT_SECRET as string,
+            redirectURI: `${process.env.BETTER_AUTH_URL}/api/auth/callback/atlassian`
+        },
     },
     session: {
         cookieCache: {

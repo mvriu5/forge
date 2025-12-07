@@ -25,12 +25,6 @@ export default function Navbar() {
                             <StarsCount />
                         </Button>
                     </Link>
-
-                    <Link href={"signin"}>
-                        <Button variant={"primary"}>
-                            Sign In
-                        </Button>
-                    </Link>
                     <Link href="/signup">
                         <Button variant={"brand"}>
                             Get started
