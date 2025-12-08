@@ -1,7 +1,7 @@
 "use client"
 
 import React, {useState} from "react"
-import {WidgetProps, WidgetTemplate} from "./base/WidgetTemplate"
+import {WidgetProps, WidgetContainer} from "./base/WidgetContainer"
 import {CircleDashed, Filter, FolderOpen, GitPullRequest, RefreshCw} from "lucide-react"
 import {formatDate} from "date-fns"
 import {authClient} from "@/lib/auth-client"
@@ -48,7 +48,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
     const hasError = !githubIntegration?.accessToken && !isLoading
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetContainer id={id} widget={widget} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             {hasError ? (
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Github account first!"}
@@ -140,7 +140,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                 </>
             )}
 
-        </WidgetTemplate>
+        </WidgetContainer>
     )
 }
 

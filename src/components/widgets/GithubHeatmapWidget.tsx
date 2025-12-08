@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {WidgetHeader} from "./base/WidgetHeader"
 import {useGithubHeatmap} from "@/hooks/useGithubHeatmap"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
@@ -33,7 +33,7 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWid
     const hasError = !githubIntegration?.accessToken && !isLoading
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetContainer id={id} widget={widget} name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             {hasError ? (
                 <WidgetError
                     message={"Please integrate your Github account to view your heatmap."}
@@ -68,7 +68,7 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWid
                     </WidgetContent>
                 </>
             )}
-        </WidgetTemplate>
+        </WidgetContainer>
     )
 }
 

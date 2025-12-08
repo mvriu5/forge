@@ -1,7 +1,7 @@
 "use client"
 
 import React, {useEffect, useState} from 'react'
-import {WidgetProps, WidgetTemplate} from './base/WidgetTemplate'
+import {WidgetProps, WidgetContainer} from './base/WidgetContainer'
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Button} from "@/components/ui/Button"
 import {Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus} from "lucide-react"
@@ -250,7 +250,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
     const hasError = !googleIntegration?.accessToken && !isLoading
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"calendar"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetContainer id={id} widget={widget} name={"calendar"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             {hasError ? (
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Google account first!"}
@@ -391,7 +391,7 @@ const CalendarWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
                     </WidgetContent>
                 </>
             )}
-        </WidgetTemplate>
+        </WidgetContainer>
     )
 }
 

@@ -2,7 +2,7 @@
 
 import type React from "react"
 import {useEffect, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
@@ -84,7 +84,7 @@ const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelet
     }
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"clock"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetContainer id={id} widget={widget} name={"clock"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Clock"}>
                 <Select value={selectedTimezone} onValueChange={(value) => handleSave(value)}>
                     <SelectTrigger className="w-max h-6 shadow-none dark:shadow-none border-0 bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
@@ -107,7 +107,7 @@ const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelet
                     {formatDate(currentTime, selectedTimezone)}
                 </div>
             </WidgetContent>
-        </WidgetTemplate>
+        </WidgetContainer>
     )
 }
 

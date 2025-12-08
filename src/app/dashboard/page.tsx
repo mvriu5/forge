@@ -2,7 +2,6 @@
 
 import {Header} from "@/components/Header"
 import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from "react"
-import {getWidgetComponent} from "@/lib/widgetRegistry"
 import {DndContext} from "@dnd-kit/core"
 import type {Widget} from "@/database"
 import {EmptyAddSVG} from "@/components/svg/EmptyAddSVG"
@@ -20,12 +19,14 @@ import {useDashboards} from "@/hooks/data/useDashboards"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSettings} from "@/hooks/data/useSettings"
 import {toast} from "sonner"
+import {WidgetRenderer} from "@/components/WidgetRenderer"
+import { WidgetRuntimeOuterProps } from "@forge/sdk"
 
 export default function Dashboard() {
     const {userId, refetchSession, isLoading: sessionLoading} = useSession()
     const {settings, isLoading: settingsLoading, updateSettings} = useSettings(userId)
     const {dashboards, currentDashboard, isLoading: dashboardsLoading, addDashboard, addDashboardStatus} = useDashboards(userId, settings)
-    const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidgetPosition, setWidgets, updateWidget} = useWidgets(userId)
+    const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidgetPosition, setWidgets} = useWidgets(userId)
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
     const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
@@ -164,7 +165,7 @@ export default function Dashboard() {
                                             key={widget.id}
                                             widget={widget}
                                             editMode={editMode}
-                                            onDelete={handleEditModeDelete}
+                                            onWidgetDelete={handleEditModeDelete}
                                             isDragging={activeWidget?.id === widget.id}
                                         />
                                     ))}
@@ -186,22 +187,13 @@ export default function Dashboard() {
     )
 }
 
-interface WidgetProps {
-    widget: Widget
-    onDelete: (id: string) => void
-    editMode: boolean
-    isDragging: boolean
-}
-
-const WidgetComponent = ({ widget, onDelete, editMode, isDragging }: WidgetProps) => {
-    const WidgetContent = useMemo(() => getWidgetComponent(widget.widgetType), [widget.widgetType])
-
+const WidgetComponent = ({ widget, onWidgetDelete, editMode, isDragging }: WidgetRuntimeOuterProps) => {
     return (
-        <WidgetContent
+        <WidgetRenderer
             widget={widget}
-            onDelete={onDelete}
             editMode={editMode}
             isDragging={isDragging}
+            onWidgetDelete={onWidgetDelete}
         />
     )
 }

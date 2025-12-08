@@ -1,7 +1,7 @@
 "use client"
 
 import React, {useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Plus, Trash} from "lucide-react"
@@ -100,7 +100,7 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetD
     }
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"countdown"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetContainer id={id} widget={widget} name={"countdown"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Countdown"}>
                 {countdown ? (
                     <Button
@@ -209,7 +209,7 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetD
                 )}
 
 
-        </WidgetTemplate>
+        </WidgetContainer>
     )
 }
 

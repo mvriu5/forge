@@ -1,5 +1,4 @@
 import React, {useCallback, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {getLogoFromLink} from "@/components/svg/BookmarkIcons"
 import {Button} from "@/components//ui/Button"
 import {Link, Plus, Trash} from "lucide-react"
@@ -24,8 +23,8 @@ import {
 import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} from "@dnd-kit/sortable"
 import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
-import {useWidgets} from "@/hooks/data/useWidgets"
-import {useSession} from "@/hooks/data/useSession"
+import type {WidgetPreview, WidgetRuntimeInnerProps } from "@forge/sdk"
+import { createWidget } from "@forge/sdk"
 
 interface BookmarkItem {
     id: string
@@ -33,20 +32,22 @@ interface BookmarkItem {
     link: string
 }
 
-const BookmarkWidget: React.FC<WidgetProps> = ({widget, id, editMode, onWidgetDelete}) => {
-    const {userId} = useSession()
-    const {updateWidget} = useWidgets(userId)
-    const [bookmarks, setBookmarks] = useState<BookmarkItem[]>(widget?.config?.bookmarks ?? [])
+interface BookmarkConfig {
+    bookmarks: BookmarkItem[]
+}
+
+const formSchema = z.object({
+    title: z.string().nonempty({message: "Title is required"}),
+    link: z.url({message: "Invalid URL"}).nonempty({message: "Link is required"}),
+})
+
+const BookmarkWidget: React.FC<WidgetRuntimeInnerProps<BookmarkConfig>> = ({config, updateConfig}) => {
     const [open, setOpen] = useState<boolean>(false)
+    const {bookmarks} = config
 
     const addTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new bookmark",
         anchor: "tc"
-    })
-
-    const formSchema = z.object({
-        title: z.string().nonempty({message: "Title is required"}),
-        link: z.string().url({message: "Invalid URL"}).nonempty({message: "Link is required"}),
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -58,23 +59,16 @@ const BookmarkWidget: React.FC<WidgetProps> = ({widget, id, editMode, onWidgetDe
     })
 
     const handleSave = useCallback(async (updatedBookmarks: BookmarkItem[]) => {
-        if (!widget) return
-        await updateWidget({
-            ...widget,
-            config: {
-                bookmarks: updatedBookmarks,
-            }
-        })
-    }, [updateWidget, widget])
+        await updateConfig({ bookmarks: updatedBookmarks })
+    }, [updateConfig])
 
     const handleAdd = async (data: z.infer<typeof formSchema>) => {
         const newBookmark: BookmarkItem = {
-            id: `bookmark-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, // Unique ID
+            id: `bookmark-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
             title: data.title,
             link: data.link,
         }
         const updatedBookmarks = [...bookmarks, newBookmark]
-        setBookmarks(updatedBookmarks)
         await handleSave(updatedBookmarks)
         setOpen(false)
         form.reset()
@@ -82,7 +76,6 @@ const BookmarkWidget: React.FC<WidgetProps> = ({widget, id, editMode, onWidgetDe
 
     const handleDelete = useCallback(async (idToDelete: string) => {
         const updatedBookmarks = bookmarks.filter((b) => b.id !== idToDelete)
-        setBookmarks(updatedBookmarks)
         await handleSave(updatedBookmarks)
     }, [bookmarks, handleSave])
 
@@ -102,20 +95,18 @@ const BookmarkWidget: React.FC<WidgetProps> = ({widget, id, editMode, onWidgetDe
 
     const handleDragEnd = useCallback((event: DragEndEvent) => {
         const { active, over } = event
+        if (!over || active.id === over.id) return
 
-        if (active.id !== over?.id) {
-            setBookmarks((items) => {
-                const oldIndex = items.findIndex((item) => item.id === active.id)
-                const newIndex = items.findIndex((item) => item.id === over?.id)
-                const newOrder = arrayMove(items, oldIndex, newIndex)
-                handleSave(newOrder)
-                return newOrder
-            })
-        }
-    }, [handleSave])
+        const oldIndex = bookmarks.findIndex((item) => item.id === active.id)
+        const newIndex = bookmarks.findIndex((item) => item.id === over.id)
+        if (oldIndex === -1 || newIndex === -1) return
+
+        const newOrder = arrayMove(bookmarks, oldIndex, newIndex)
+        void handleSave(newOrder)
+    }, [bookmarks, handleSave])
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"bookmark"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <>
             <WidgetHeader title={"Bookmark"}>
                 <Popover
                     open={open}
@@ -182,7 +173,7 @@ const BookmarkWidget: React.FC<WidgetProps> = ({widget, id, editMode, onWidgetDe
             ) : (
                 <WidgetEmpty message={" No bookmarks yet."}/>
             )}
-        </WidgetTemplate>
+        </>
     )
 }
 
@@ -236,5 +227,23 @@ const BookmarkItem = ({id, title, link, onDelete}: BookmarkItem & {onDelete: (ti
 }
 
 
+export const bookmarkWidgetDefinition = createWidget<BookmarkConfig>({
+    type: "bookmark",
+    preview: {
+        previewImage: "/bookmark_preview.svg",
+        title: "Bookmark",
+        description: "Store your bookmarks",
+        tags: ["productivity"],
+        sizes: {
+            desktop: { width: 1, height: 2 },
+            tablet: { width: 1, height: 1 },
+            mobile: { width: 1, height: 1 },
+        },
+    },
+    defaultConfig: {
+        bookmarks: [],
+    },
+    Content: BookmarkWidget,
+})
 
 export {BookmarkWidget}

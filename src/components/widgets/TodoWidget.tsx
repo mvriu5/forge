@@ -1,7 +1,7 @@
 "use client"
 
 import React, {useCallback, useRef, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Checkbox} from "@/components/ui/Checkbox"
@@ -109,7 +109,7 @@ const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete
         }, [])
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"todo"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetContainer id={id} widget={widget} name={"todo"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Todos"}>
                 <Button
                     variant={"widget"}
@@ -155,7 +155,7 @@ const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete
                     <Forward size={16}/>
                 </Button>
             </div>
-        </WidgetTemplate>
+        </WidgetContainer>
     )
 }
 

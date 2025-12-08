@@ -1,7 +1,7 @@
 "use client"
 
 import React, {useCallback, useMemo, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
@@ -95,7 +95,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
     const hasError = !googleIntegration?.accessToken && !isLoading
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetContainer id={id} widget={widget} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             {hasError ? (
                     <WidgetError
                         message={"If you want to use this widget, you need to integrate your Google account first!"}
@@ -150,7 +150,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
                         )}
                     </>
             )}
-        </WidgetTemplate>
+        </WidgetContainer>
     )
 }
 

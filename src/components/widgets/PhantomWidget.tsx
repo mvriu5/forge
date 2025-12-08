@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {usePhantom} from "@/hooks/usePhantom"
 import {Button} from "@/components/ui/Button"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
@@ -21,7 +21,7 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDel
     })
 
     return (
-        <WidgetTemplate id={id} widget={widget} className={"flex flex-col gap-4 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetContainer id={id} widget={widget} className={"flex flex-col gap-4 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Phantom"} className={"z-[1]"}>
                 <Button
                     variant={"widget"}
@@ -58,7 +58,7 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDel
                     </div>
                 </WidgetContent>
             )}
-        </WidgetTemplate>
+        </WidgetContainer>
     )
 }
 

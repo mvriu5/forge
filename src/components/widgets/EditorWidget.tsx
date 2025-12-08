@@ -14,7 +14,7 @@ import {
     JSONContent
 } from "novel"
 import {defaultExtensions} from "@/lib/extensions"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {slashCommand, suggestionItems} from "@/components/widgets/components/SlashCommand"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {NodeSelector} from "./components/NodeSelector"
@@ -131,7 +131,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
     }
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetContainer id={id} widget={widget} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Notes"}>
                 <Button
                     variant={"widget"}
@@ -158,7 +158,7 @@ const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                     ))}
                 </div>
             </WidgetContent>
-        </WidgetTemplate>
+        </WidgetContainer>
     )
 }
 

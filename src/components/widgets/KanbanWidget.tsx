@@ -1,7 +1,7 @@
 "use client"
 
 import React, {useEffect, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
@@ -249,7 +249,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
     }
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"kanban"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetContainer id={id} widget={widget} name={"kanban"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             <WidgetHeader title={"Kanban Board"}>
                 <Popover open={importPopoverOpen} onOpenChange={setImportPopoverOpen}>
                     <PopoverTrigger asChild>
@@ -363,7 +363,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                     </DndContext>
                 )}
             </WidgetContent>
-        </WidgetTemplate>
+        </WidgetContainer>
     )
 }
 

@@ -19,13 +19,14 @@ interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
     onWidgetDelete?: (id: string) => void
 }
 
-const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, widget, editMode, onWidgetDelete}) => {
+const WidgetContainer: React.FC<WidgetProps> = ({id, className, children, name, widget, editMode, onWidgetDelete}) => {
     const {breakpoint} = useBreakpoint()
-    const widgetConfig = getWidgetPreview(widget?.widgetType ?? name)
-    const responsiveSize = widgetConfig.preview.sizes[breakpoint]
+    const widgetType = widget?.widgetType ?? name
+    const preview = getWidgetPreview(widgetType)
+    const responsiveSize = preview.sizes[breakpoint]
 
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-        id: widget?.id ?? id ?? name,
+        id: widget?.id ?? id ?? widgetType,
         data: {widget},
         disabled: !editMode || !widget
     })
@@ -89,4 +90,4 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, w
     )
 }
 
-export { WidgetTemplate, type WidgetProps }
+export { WidgetContainer, type WidgetProps }

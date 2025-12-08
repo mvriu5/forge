@@ -1,7 +1,7 @@
 "use client"
 
 import React, {useCallback} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {
     Cloud,
     CloudDrizzle,
@@ -51,7 +51,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDel
         : "Please enable your geolocation info."
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <WidgetContainer id={id} widget={widget} name={"weather"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
             {hasError ? (
                 <WidgetError message={errorMessage}/>
             ) : (
@@ -99,7 +99,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDel
                     </div>
                 </>
             )}
-        </WidgetTemplate>
+        </WidgetContainer>
     )
 }
 
