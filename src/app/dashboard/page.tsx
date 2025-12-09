@@ -20,7 +20,6 @@ import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSettings} from "@/hooks/data/useSettings"
 import {toast} from "sonner"
 import {WidgetRenderer} from "@/components/WidgetRenderer"
-import { WidgetRuntimeOuterProps } from "@forge/sdk"
 
 export default function Dashboard() {
     const {userId, refetchSession, isLoading: sessionLoading} = useSession()
@@ -157,11 +156,10 @@ export default function Dashboard() {
                                         isDroppable={cell.isDroppable}
                                     />
                                 ))}
-
                                 {transformedWidgets
                                     ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
                                     .map((widget) => (
-                                        <MemoizedWidget
+                                        <WidgetRenderer
                                             key={widget.id}
                                             widget={widget}
                                             editMode={editMode}
@@ -186,16 +184,3 @@ export default function Dashboard() {
         </div>
     )
 }
-
-const WidgetComponent = ({ widget, onWidgetDelete, editMode, isDragging }: WidgetRuntimeOuterProps) => {
-    return (
-        <WidgetRenderer
-            widget={widget}
-            editMode={editMode}
-            isDragging={isDragging}
-            onWidgetDelete={onWidgetDelete}
-        />
-    )
-}
-
-const MemoizedWidget = memo(WidgetComponent)

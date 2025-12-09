@@ -129,6 +129,7 @@ export function useIntegrations(userId: string | undefined) {
     }
 }
 
-export function getIntegrationByProvider(integrations: Integration[], provider: string) {
+export function getIntegrationByProvider(integrations: Integration[], provider: string | undefined) {
+    if (!provider) return null
     return integrations.find((integration) => integration.provider === provider) ?? null
 }

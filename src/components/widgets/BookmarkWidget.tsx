@@ -23,8 +23,7 @@ import {
 import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} from "@dnd-kit/sortable"
 import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
-import type {WidgetPreview, WidgetRuntimeInnerProps } from "@forge/sdk"
-import { createWidget } from "@forge/sdk"
+import { defineWidget, WidgetProps } from "@forge/sdk"
 
 interface BookmarkItem {
     id: string
@@ -41,7 +40,7 @@ const formSchema = z.object({
     link: z.url({message: "Invalid URL"}).nonempty({message: "Link is required"}),
 })
 
-const BookmarkWidget: React.FC<WidgetRuntimeInnerProps<BookmarkConfig>> = ({config, updateConfig}) => {
+const BookmarkWidget: React.FC<WidgetProps<BookmarkConfig>> = ({config, updateConfig}) => {
     const [open, setOpen] = useState<boolean>(false)
     const {bookmarks} = config
 
@@ -227,12 +226,12 @@ const BookmarkItem = ({id, title, link, onDelete}: BookmarkItem & {onDelete: (ti
 }
 
 
-export const bookmarkWidgetDefinition = createWidget<BookmarkConfig>({
-    type: "bookmark",
+export const bookmarkWidgetDefinition = defineWidget({
+    name: "Bookmark",
+    component: BookmarkWidget,
     preview: {
-        previewImage: "/bookmark_preview.svg",
-        title: "Bookmark",
         description: "Store your bookmarks",
+        image: "/bookmark_preview.svg",
         tags: ["productivity"],
         sizes: {
             desktop: { width: 1, height: 2 },
@@ -243,7 +242,4 @@ export const bookmarkWidgetDefinition = createWidget<BookmarkConfig>({
     defaultConfig: {
         bookmarks: [],
     },
-    Content: BookmarkWidget,
 })
-
-export {BookmarkWidget}

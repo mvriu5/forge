@@ -1,7 +1,6 @@
 "use client"
 
 import React from "react"
-import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {WidgetHeader} from "./base/WidgetHeader"
 import {useGithubHeatmap} from "@/hooks/useGithubHeatmap"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
@@ -9,13 +8,12 @@ import {Heatmap} from "@/components/ui/Heatmap"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {useBreakpoint} from "@/hooks/media/useBreakpoint"
-import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
+import {defineWidget, WidgetProps } from "@forge/sdk"
 
-const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {userId} = useSession()
-    const {integrations, handleIntegrate} = useIntegrations(userId)
-    const githubIntegration = getIntegrationByProvider(integrations, "github")
+const GithubHeatmapWidget: React.FC<WidgetProps> = ({widget, integration}) => {
+    const {integrations, handleIntegrate} = useIntegrations(widget.userId)
+    const githubIntegration = getIntegrationByProvider(integrations, integration)
     const {data, isLoading, isFetching} = useGithubHeatmap()
     const {tailwindBreakpoint} = useBreakpoint()
 
@@ -33,7 +31,7 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWid
     const hasError = !githubIntegration?.accessToken && !isLoading
 
     return (
-        <WidgetContainer id={id} widget={widget} name={"github-heatmap"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <>
             {hasError ? (
                 <WidgetError
                     message={"Please integrate your Github account to view your heatmap."}
@@ -54,7 +52,7 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWid
                                 }}
                             >
                                 {Array.from({ length: 371 }, (_, i) =>
-                                    // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                                    // biome-ignore lint/suspicious/noArrayIndexKey
                                     <Skeleton key={i} className={"size-2.5 rounded-xs"}/>
                                 )}
                             </div>
@@ -68,9 +66,23 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWid
                     </WidgetContent>
                 </>
             )}
-        </WidgetContainer>
+        </>
     )
 }
 
-export { GithubHeatmapWidget }
+export const githubheatmapWidgetDefinition = defineWidget({
+    name: "Github Heatmap",
+    integration: "github",
+    component: GithubHeatmapWidget,
+    preview: {
+        description: "Show off your commit streak.",
+        image: "/github_preview.svg",
+        tags: ["github"],
+        sizes: {
+            desktop: { width: 2, height: 1 },
+            tablet: { width: 1, height: 1 },
+            mobile: { width: 1, height: 1 }
+        }
+    },
+})
 

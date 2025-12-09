@@ -14,7 +14,6 @@ import {
     JSONContent
 } from "novel"
 import {defaultExtensions} from "@/lib/extensions"
-import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {slashCommand, suggestionItems} from "@/components/widgets/components/SlashCommand"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {NodeSelector} from "./components/NodeSelector"
@@ -24,7 +23,6 @@ import AutoJoiner from "tiptap-extension-auto-joiner"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "../ui/Dialog"
-import {Widget} from "@/database"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {Input} from "@/components/ui/Input"
 import {File, Plus, Trash} from "lucide-react"
@@ -34,8 +32,7 @@ import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {cn, getUpdateTimeLabel} from "@/lib/utils"
-import {useWidgets} from "@/hooks/data/useWidgets"
-import {useSession} from "@/hooks/data/useSession"
+import {defineWidget, WidgetProps } from "@forge/sdk"
 
 type Note = {
     id: string
@@ -45,41 +42,17 @@ type Note = {
     lastUpdated: Date
 }
 
-const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {userId} = useSession()
-    const {updateWidget} = useWidgets(userId)
+interface EditorConfig {
+    notes: Note[]
+}
+
+const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig}) => {
+    const [openNoteId, setOpenNoteId] = useState<string | null>(null)
 
     const addTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new note",
         anchor: "tc"
     })
-
-    const [openNoteId, setOpenNoteId] = useState<string | null>(null)
-    const [notes, setNotes] = useState<Note[]>(() => {
-        const cfg: Note[] = widget?.config?.notes
-        if (!cfg) return []
-        return Object.entries(cfg).map(([id, { title, content, emoji, lastUpdated }]) => ({
-            id,
-            title,
-            content,
-            emoji,
-            lastUpdated: new Date(lastUpdated)
-        }))
-    })
-
-    useEffect(() => {
-        const cfg = widget?.config?.notes as Note[]
-        if (!cfg) return
-        setNotes(
-            Object.entries(cfg).map(([id, { title, content, emoji, lastUpdated }]) => ({
-                id,
-                title,
-                content,
-                emoji,
-                lastUpdated: new Date(lastUpdated)
-            }))
-        )
-    }, [widget?.config?.notes])
 
     const createNewNote = () => {
         const newNote: Note = {
@@ -89,49 +62,27 @@ const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
             emoji: "",
             lastUpdated: new Date()
         }
-        setNotes([...notes, newNote])
         setOpenNoteId(newNote.id)
     }
 
     const handleSave = async (id: string, data: { title: string, content: JSONContent, emoji: string, lastUpdated: Date }) => {
-        if (!widget) return
-        const existingNotes = widget?.config?.notes ?? {}
-
-        await updateWidget({
-            ...widget,
-            config: {
-                ...widget.config,
-                notes: {
-                    ...existingNotes,
-                    [id]: data,
-                }
-            }
-        })
-
-        setNotes((prev) =>
-            prev.map((n) =>
-                n.id === id ? { ...n, title: data.title, content: data.content, emoji: data.emoji, lastUpdated: data.lastUpdated } : n
-            )
-        )
+        await updateConfig(prev => ({
+            ...prev,
+            notes: prev.notes.map(note =>
+                note.id === id ? { ...note, ...data } : note,
+            ),
+        }))
     }
 
-    const handleDelete = (id: string) => {
-        if (!widget) return
-        setNotes((prev) => prev.filter((note) => note.id !== id))
-        const updatedNotes = { ...widget?.config?.notes }
-        delete updatedNotes[id]
-
-        void updateWidget({
-            ...widget,
-            config: {
-                ...widget.config,
-                notes: updatedNotes
-            }
-        })
+    const handleDelete = async (id: string) => {
+        await updateConfig(prev => ({
+            ...prev,
+            notes: prev.notes.filter(note => note.id !== id),
+        }))
     }
 
     return (
-        <WidgetContainer id={id} widget={widget} name={"editor"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <>
             <WidgetHeader title={"Notes"}>
                 <Button
                     variant={"widget"}
@@ -142,23 +93,22 @@ const EditorWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                     <Plus size={16}/>
                 </Button>
             </WidgetHeader>
-            {notes.length === 0 && <WidgetEmpty message={"No notes available. Create a new note to get started."}/>}
+            {config.notes.length === 0 && <WidgetEmpty message={"No notes available. Create a new note to get started."}/>}
             <WidgetContent scroll>
                 <div className={"flex flex-col gap-2"}>
-                    {notes.map((note: Note) => (
+                    {config.notes.map((note: Note) => (
                         <NoteDialog
                             key={note.id}
+                            note={note}
                             open={openNoteId === note.id}
                             onOpenChange={(isOpen) => setOpenNoteId(isOpen ? note.id : null)}
-                            note={note}
-                            widget={widget}
                             onSave={(id, data) => handleSave(id, data)}
                             onDelete={(id) => handleDelete(id)}
                         />
                     ))}
                 </div>
             </WidgetContent>
-        </WidgetContainer>
+        </>
     )
 }
 
@@ -166,18 +116,17 @@ interface NoteDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     note: Note
-    widget?: Widget
     onSave: (id: string, data: { title: string, content: JSONContent, emoji: string, lastUpdated: Date }) => void
     onDelete: (id: string) => void
 }
 
-const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget, onSave, onDelete}) => {
+const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave, onDelete}) => {
     const [title, setTitle] = useState(note.title)
     const [emoji, setEmoji] = useState(note.emoji)
     const [openNode, setOpenNode] = useState(false)
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
-    const [saved, setSaved] = useState(true)
-    const [isSaving, setIsSaving] = useState(false)
+    const [_, setSaved] = useState(true)
+    const [__, setIsSaving] = useState(false)
 
     useEffect(() => {
         setTitle(note.title)
@@ -197,14 +146,14 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
     ]
 
     const highlightCodeblocks = (content: string) => {
-        const doc = new DOMParser().parseFromString(content, "text/html");
+        const doc = new DOMParser().parseFromString(content, "text/html")
         // biome-ignore lint/complexity/noForEach: <explanation>
         doc.querySelectorAll("pre code").forEach((el) => {
             // @ts-ignore
             // https://highlightjs.readthedocs.io/en/latest/api.html?highlight=highlightElement#highlightelement
             hljs.highlightElement(el);
-        });
-        return new XMLSerializer().serializeToString(doc);
+        })
+        return new XMLSerializer().serializeToString(doc)
     }
 
     const handleTitleBlur = () => {
@@ -322,7 +271,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
                         <EditorContent
                             autofocus={title.length !== 0 && "end"}
                             extensions={extensions}
-                            initialContent={widget?.config?.notes?.[note.id]?.content ?? {}}
+                            initialContent={note.content ?? {}}
                             immediatelyRender={false}
                             onBlur={(params) => handleSave(params.editor)}
                             onUpdate={(params) => handleSave(params.editor)}
@@ -378,4 +327,20 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, widget
     )
 }
 
-export { EditorWidget }
+export const editorWidgetDefinition = defineWidget({
+    name: "Editor",
+    component: EditorWidget,
+    preview: {
+        description: "A simple text editor widget",
+        image: "/github_preview.svg",
+        tags: ["productivity"],
+        sizes: {
+            desktop: { width: 1, height: 2 },
+            tablet: { width: 1, height: 1 },
+            mobile: { width: 1, height: 1 }
+        }
+    },
+    defaultConfig: {
+        notes: [],
+    },
+})

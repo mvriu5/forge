@@ -5,21 +5,18 @@ import { WidgetContainer } from "@/components/widgets/base/WidgetContainer"
 import { useSession } from "@/hooks/data/useSession"
 import { useWidgets } from "@/hooks/data/useWidgets"
 import {getWidgetDefinition} from "@/lib/widgetRegistry"
-import { WidgetRuntimeOuterProps } from "@forge/sdk"
+import { WidgetRuntimeProps } from "@forge/sdk"
 
-export const WidgetRenderer: React.FC<WidgetRuntimeOuterProps> = ({widget, editMode, isDragging, onWidgetDelete}) => {
+export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete}) => {
     const { userId } = useSession()
     const { updateWidget } = useWidgets(userId)
     const definition = useMemo(() => getWidgetDefinition(widget.widgetType), [widget.widgetType])
-    const { Component, defaultConfig, type } = definition
+    const { Component, defaultConfig, name } = definition
     const config = (widget.config ?? defaultConfig) as typeof defaultConfig
 
     const updateConfig = async (updater: | typeof defaultConfig | ((prev: typeof defaultConfig) => typeof defaultConfig)) => {
         const current = (widget.config ?? defaultConfig) as typeof defaultConfig
-        const next =
-            typeof updater === "function"
-                ? (updater as (prev: typeof defaultConfig) => typeof defaultConfig)(current)
-                : updater
+        const next = typeof updater === "function" ? (updater as (prev: typeof defaultConfig) => typeof defaultConfig)(current) : updater
 
         await updateWidget({
             id: widget.id,
@@ -39,7 +36,7 @@ export const WidgetRenderer: React.FC<WidgetRuntimeOuterProps> = ({widget, editM
         <WidgetContainer
             id={widget.id}
             widget={widget}
-            name={definition.type}
+            name={definition.name}
             editMode={editMode}
             onWidgetDelete={onWidgetDelete}
         >

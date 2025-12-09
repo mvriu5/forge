@@ -1,19 +1,19 @@
 "use client"
 
-import type React from "react"
+import React, {useCallback} from "react"
 import {useEffect, useState} from "react"
-import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
-import {useSession} from "@/hooks/data/useSession"
 import {useSettings} from "@/hooks/data/useSettings"
-import {useWidgets} from "@/hooks/data/useWidgets"
+import { defineWidget, WidgetProps } from "@forge/sdk"
 
-const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {userId} = useSession()
-    const {settings} = useSettings(userId)
-    const {updateWidget} = useWidgets(userId)
+interface ClockConfig {
+    timezone: string
+}
+
+const ClockWidget: React.FC<WidgetProps<ClockConfig>> = ({widget, config, updateConfig}) => {
+    const {settings} = useSettings(widget?.userId)
 
     const timezones = [
         { value: "Europe/Berlin", label: "Berlin (MEZ/MESZ)" },
@@ -27,7 +27,6 @@ const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelet
         { value: "UTC", label: "UTC " },
     ]
     const [currentTime, setCurrentTime] = useState(new Date())
-    const [selectedTimezone, setSelectedTimezone] = useState(widget?.config?.timezone ?? "Europe/Berlin")
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -71,22 +70,14 @@ const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelet
         return `${weekday}, ${month} ${day}${getOrdinalSuffix(dayNum)} ${year}`
     }
 
-    const handleSave = async (timezone: string) => {
-        if (!widget) return
-        setSelectedTimezone(timezone)
-        await updateWidget({
-            ...widget,
-            config: {
-                ...widget.config,
-                "timezone": timezone
-            }
-        })
-    }
+    const handleSave = useCallback(async (updatedTimezone: string) => {
+        await updateConfig({ timezone: updatedTimezone })
+    }, [updateConfig])
 
     return (
-        <WidgetContainer id={id} widget={widget} name={"clock"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <>
             <WidgetHeader title={"Clock"}>
-                <Select value={selectedTimezone} onValueChange={(value) => handleSave(value)}>
+                <Select value={config.timezone} onValueChange={(value) => handleSave(value)}>
                     <SelectTrigger className="w-max h-6 shadow-none dark:shadow-none border-0 bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
                         <SelectValue />
                     </SelectTrigger>
@@ -101,15 +92,31 @@ const ClockWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelet
             </WidgetHeader>
             <WidgetContent className={"flex flex-col items-center justify-center"}>
                 <div className="text-5xl font-mono text-primary font-bold tracking-wider">
-                    {formatTime(currentTime, selectedTimezone)}
+                    {formatTime(currentTime, config.timezone)}
                 </div>
                 <div className="text-tertiary">
-                    {formatDate(currentTime, selectedTimezone)}
+                    {formatDate(currentTime, config.timezone)}
                 </div>
             </WidgetContent>
-        </WidgetContainer>
+        </>
     )
 }
 
-export {ClockWidget}
+export const clockWidgetDefinition = defineWidget({
+    name: "Clock",
+    component: ClockWidget,
+    preview: {
+        description: 'Beautiful clock to display your current time',
+        image: '/github_preview.svg',
+        tags: ["productivity"],
+        sizes: {
+            desktop: { width: 1, height: 1 },
+            tablet: { width: 1, height: 1 },
+            mobile: { width: 1, height: 1 }
+        }
+    },
+    defaultConfig: {
+        timezone: "Europe/Berlin",
+    },
+})
 

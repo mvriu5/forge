@@ -1,10 +1,8 @@
 "use client"
 
 import React, {useState} from "react"
-import {WidgetProps, WidgetContainer} from "./base/WidgetContainer"
 import {CircleDashed, Filter, FolderOpen, GitPullRequest, RefreshCw} from "lucide-react"
 import {formatDate} from "date-fns"
-import {authClient} from "@/lib/auth-client"
 import {Button} from "@/components/ui/Button"
 import {Badge} from "@/components/ui/Badge"
 import {Input} from "@/components/ui/Input"
@@ -16,13 +14,12 @@ import {useGithub} from "@/hooks/useGithub"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
-import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
+import { defineWidget, WidgetProps } from "@forge/sdk"
 
-const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {userId} = useSession()
-    const {integrations, handleIntegrate} = useIntegrations(userId)
-    const githubIntegration = getIntegrationByProvider(integrations, "github")
+const GithubWidget: React.FC<WidgetProps> = ({widget, integration}) => {
+    const {integrations, handleIntegrate} = useIntegrations(widget.userId)
+    const githubIntegration = getIntegrationByProvider(integrations, integration)
     const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch} = useGithub()
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -48,7 +45,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
     const hasError = !githubIntegration?.accessToken && !isLoading
 
     return (
-        <WidgetContainer id={id} widget={widget} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <>
             {hasError ? (
                 <WidgetError
                     message={"If you want to use this widget, you need to integrate your Github account first!"}
@@ -140,7 +137,7 @@ const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                 </>
             )}
 
-        </WidgetContainer>
+        </>
     )
 }
 
@@ -200,4 +197,18 @@ const PulLRequestCard = ({pr}: {pr: any}) => {
     )
 }
 
-export {GithubWidget}
+export const githubWidgetDefinition = defineWidget({
+    name: "Github",
+    integration: "github",
+    component: GithubWidget,
+    preview: {
+        description: "See your open github issues & pull requests.",
+        image: "/github_preview.svg",
+        tags: ["github"],
+        sizes: {
+            desktop: { width: 1, height: 2 },
+            tablet: { width: 1, height: 2 },
+            mobile: { width: 1, height: 1 }
+        }
+    },
+})

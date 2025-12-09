@@ -47,13 +47,9 @@ const WidgetContainer: React.FC<WidgetProps> = ({id, className, children, name, 
         zIndex: isDragging ? 30 : 20,
     } : undefined
 
-    const draggableProps = editMode ? {
-        ref: setNodeRef,
-        ...attributes,
-        ...listeners
-    } : {
-        ref: setNodeRef
-    }
+    const draggableProps = editMode
+        ? {ref: setNodeRef, ...attributes, ...listeners}
+        : {ref: setNodeRef}
 
     return (
         <div
@@ -90,4 +86,4 @@ const WidgetContainer: React.FC<WidgetProps> = ({id, className, children, name, 
     )
 }
 
-export { WidgetContainer, type WidgetProps }
+export { WidgetContainer }
