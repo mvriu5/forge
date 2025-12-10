@@ -1,11 +1,9 @@
 "use client"
 
 import {Header} from "@/components/Header"
-import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from "react"
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react"
 import {DndContext} from "@dnd-kit/core"
 import type {Widget} from "@/database"
-import {EmptyAddSVG} from "@/components/svg/EmptyAddSVG"
-import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
 import {useGrid} from "@/hooks/useGrid"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
 import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
@@ -13,13 +11,14 @@ import {useHotkeys} from "react-hotkeys-hook"
 import {SpinnerDotted} from "spinners-react"
 import {useResponsiveLayout} from "@/hooks/media/useResponsiveLayout"
 import {cn} from "@/lib/utils"
-import {GridCell} from "@/components/GridCell"
+import {Grid} from "@/components/Grid"
 import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSettings} from "@/hooks/data/useSettings"
 import {toast} from "sonner"
 import {WidgetRenderer} from "@/components/WidgetRenderer"
+import {DashboardEmpty} from "@/components/empty/DashboardEmpty"
 
 export default function Dashboard() {
     const {userId, refetchSession, isLoading: sessionLoading} = useSession()
@@ -126,18 +125,7 @@ export default function Dashboard() {
             ) : (
                 <>
                     {currentWidgets.length === 0 && currentDashboard ? (
-                        <div className={"w-full h-screen flex items-center justify-center"}>
-                            <div className={"flex flex-col gap-4 items-center justify-center p-4 md:p-12 border border-main border-dashed rounded-md shadow-md dark:shadow-xl"}>
-                                <EmptyAddSVG/>
-                                <p className={"w-56 md:w-80 text-center text-sm"}>
-                                    You dont have any widgets in your dashboard. Add a new widget, by visiting the widget store.
-                                </p>
-                                <WidgetDialog
-                                    editMode={false}
-                                    title={"Widget-Store"}
-                                />
-                            </div>
-                        </div>
+                        <DashboardEmpty/>
                     ) : (
                         <DndContext
                             sensors={sensors}
@@ -146,27 +134,16 @@ export default function Dashboard() {
                             onDragOver={handleDragOver}
                         >
                             <div className={cn("relative w-full", containerHeight, gridClasses)}>
-                                {isDesktop && gridCells?.map((cell) => (
-                                    <GridCell
-                                        key={`${cell.x},${cell.y}`}
-                                        x={cell.x}
-                                        y={cell.y}
-                                        width={cell.width}
-                                        height={cell.height}
-                                        isDroppable={cell.isDroppable}
+                                <Grid cells={gridCells} enabled={isDesktop}/>
+                                {transformedWidgets?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id)).map((widget) => (
+                                    <WidgetRenderer
+                                        key={widget.id}
+                                        widget={widget}
+                                        editMode={editMode}
+                                        onWidgetDelete={handleEditModeDelete}
+                                        isDragging={activeWidget?.id === widget.id}
                                     />
                                 ))}
-                                {transformedWidgets
-                                    ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
-                                    .map((widget) => (
-                                        <WidgetRenderer
-                                            key={widget.id}
-                                            widget={widget}
-                                            editMode={editMode}
-                                            onWidgetDelete={handleEditModeDelete}
-                                            isDragging={activeWidget?.id === widget.id}
-                                        />
-                                    ))}
                             </div>
                         </DndContext>
                     )}

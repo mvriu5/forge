@@ -1,3 +1,5 @@
+"use client"
+
 import React, {useCallback, useState} from "react"
 import {getLogoFromLink} from "@/components/svg/BookmarkIcons"
 import {Button} from "@/components//ui/Button"

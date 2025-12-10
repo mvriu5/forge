@@ -1,7 +1,6 @@
 "use client"
 
 import React, {useCallback, useMemo, useState} from "react"
-import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
@@ -14,16 +13,13 @@ import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {convertToRGBA} from "@/lib/colorConvert"
-import {useSession} from "@/hooks/data/useSession"
 import {useSettings} from "@/hooks/data/useSettings"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
+import {defineWidget, WidgetProps } from "@forge/sdk"
 
-const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {userId} = useSession()
-    const {settings} = useSettings(userId)
-    const {integrations, handleIntegrate} = useIntegrations(userId)
-    const googleIntegration = getIntegrationByProvider(integrations, "google")
-    const { calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
+const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
+    const {settings} = useSettings(widget.userId)
+    const {calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
 
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -92,65 +88,53 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
         return calendars && Array.isArray(events) && events.length === 0 && !isInitialLoading
     }, [calendars, events, isInitialLoading])
 
-    const hasError = !googleIntegration?.accessToken && !isLoading
-
     return (
-        <WidgetContainer id={id} widget={widget} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            {hasError ? (
-                    <WidgetError
-                        message={"If you want to use this widget, you need to integrate your Google account first!"}
-                        actionLabel={"Integrate"}
-                        onAction={() => handleIntegrate("google")}
-                    />
-                ) : (
-                    <>
-                        <WidgetHeader title={"Meetings"}>
-                            <DropdownMenu
-                                asChild
-                                items={dropdownFilterItems}
-                                align={"end"}
-                                open={dropdownOpen}
-                                onOpenChange={setDropdownOpen}
-                            >
-                                <Button
-                                    data-state={dropdownOpen ? "open" : "closed"}
-                                    variant={"widget"}
-                                    className={"group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
-                                    disabled={!calendars || calendars?.length === 0 || isLoading || isFetching}
-                                    {...filterTooltip}
-                                >
-                                    <Filter size={16} />
-                                </Button>
-                            </DropdownMenu>
-                            <Button
-                                className={"group"}
-                                variant={"widget"}
-                                onClick={refetch}
-                                data-loading={(isLoading || isFetching) ? "true" : "false"}
-                                {...refreshTooltip}
-                            >
-                                <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
-                            </Button>
-                        </WidgetHeader>
-                        {isInitialLoading ? (
-                            <WidgetContent scroll>
-                                <div className="flex flex-col justify-between gap-4 pt-2">
-                                    <Skeleton className={"h-15 w-full px-2"} />
-                                    <Skeleton className={"h-15 w-full px-2"} />
-                                    <Skeleton className={"h-15 w-full px-2"} />
-                                    <Skeleton className={"h-15 w-full px-2"} />
-                                </div>
-                            </WidgetContent>
-                        ) : hasNoEvents ? (
-                            <WidgetEmpty message={"No upcoming meetings"} />
-                        ) : (
-                            <WidgetContent scroll>
-                                <div className={"w-full flex flex-col gap-2 items-center"}>{renderEvents()}</div>
-                            </WidgetContent>
-                        )}
-                    </>
+        <>
+            <WidgetHeader title={"Meetings"}>
+                <DropdownMenu
+                    asChild
+                    items={dropdownFilterItems}
+                    align={"end"}
+                    open={dropdownOpen}
+                    onOpenChange={setDropdownOpen}
+                >
+                    <Button
+                        data-state={dropdownOpen ? "open" : "closed"}
+                        variant={"widget"}
+                        className={"group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
+                        disabled={!calendars || calendars?.length === 0 || isLoading || isFetching}
+                        {...filterTooltip}
+                    >
+                        <Filter size={16} />
+                    </Button>
+                </DropdownMenu>
+                <Button
+                    className={"group"}
+                    variant={"widget"}
+                    onClick={refetch}
+                    data-loading={(isLoading || isFetching) ? "true" : "false"}
+                    {...refreshTooltip}
+                >
+                    <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
+                </Button>
+            </WidgetHeader>
+            {isInitialLoading ? (
+                <WidgetContent scroll>
+                    <div className="flex flex-col justify-between gap-4 pt-2">
+                        <Skeleton className={"h-15 w-full px-2"} />
+                        <Skeleton className={"h-15 w-full px-2"} />
+                        <Skeleton className={"h-15 w-full px-2"} />
+                        <Skeleton className={"h-15 w-full px-2"} />
+                    </div>
+                </WidgetContent>
+            ) : hasNoEvents ? (
+                <WidgetEmpty message={"No upcoming meetings"} />
+            ) : (
+                <WidgetContent scroll>
+                    <div className={"w-full flex flex-col gap-2 items-center"}>{renderEvents()}</div>
+                </WidgetContent>
             )}
-        </WidgetContainer>
+        </>
     )
 }
 
@@ -188,4 +172,18 @@ const EventCard: React.FC<EventProps> = ({ event, color, hourFormat }) => {
     )
 }
 
-export {MeetingsWidget}
+export const meetingsWidgetDefinition = defineWidget({
+    name: "Meetings",
+    integration: "google",
+    component: MeetingsWidget,
+    preview: {
+        description: 'Overview of your next meetings',
+        image: "/meetings_preview.svg",
+        tags: ["productivity"],
+        sizes: {
+            desktop: { width: 1, height: 2},
+            tablet: { width: 1, height: 2 },
+            mobile: { width: 1, height: 1 }
+        }
+    }
+})

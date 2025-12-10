@@ -9,6 +9,10 @@ import {editorWidgetDefinition} from "@/components/widgets/EditorWidget"
 import {githubheatmapWidgetDefinition} from "@/components/widgets/GithubHeatmapWidget"
 import {githubWidgetDefinition} from "@/components/widgets/GithubWidget"
 import {kanbanWidgetDefinition} from "@/components/widgets/KanbanWidget"
+import {meetingsWidgetDefinition} from "@/components/widgets/MeetingsWidget"
+import {phantomWidgetDefinition} from "@/components/widgets/PhantomWidget"
+import {todoWidgetDefinition} from "@/components/widgets/TodoWidget"
+import {weatherWidgetDefinition} from "@/components/widgets/WeatherWidget"
 
 export const widgetRegistry: WidgetDefinition[] = [
     bookmarkWidgetDefinition,
@@ -17,8 +21,12 @@ export const widgetRegistry: WidgetDefinition[] = [
     editorWidgetDefinition,
     githubheatmapWidgetDefinition,
     githubWidgetDefinition,
-    kanbanWidgetDefinition
-]
+    kanbanWidgetDefinition,
+    meetingsWidgetDefinition,
+    phantomWidgetDefinition,
+    todoWidgetDefinition,
+    weatherWidgetDefinition
+] as const satisfies WidgetDefinition[]
 
 export const getWidgetDefinition = (name: string): WidgetDefinition => {
     const def = widgetRegistry.find((w) => w.name === name)

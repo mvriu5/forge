@@ -11,9 +11,7 @@ import {useBreakpoint} from "@/hooks/media/useBreakpoint"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {defineWidget, WidgetProps } from "@forge/sdk"
 
-const GithubHeatmapWidget: React.FC<WidgetProps> = ({widget, integration}) => {
-    const {integrations, handleIntegrate} = useIntegrations(widget.userId)
-    const githubIntegration = getIntegrationByProvider(integrations, integration)
+const GithubHeatmapWidget: React.FC<WidgetProps> = () => {
     const {data, isLoading, isFetching} = useGithubHeatmap()
     const {tailwindBreakpoint} = useBreakpoint()
 
@@ -28,44 +26,32 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({widget, integration}) => {
 
     const contributions = data?.map(({ date, count }) => ({ date, count }))
 
-    const hasError = !githubIntegration?.accessToken && !isLoading
-
     return (
         <>
-            {hasError ? (
-                <WidgetError
-                    message={"Please integrate your Github account to view your heatmap."}
-                    actionLabel={"Integrate Github"}
-                    onAction={() => handleIntegrate("github")}
-                />
-            ) : (
-                <>
-                    <WidgetHeader title={"Github Heatmap"}/>
-                    <WidgetContent className={"h-full items-center"}>
-                        {(isLoading || isFetching) ? (
-                            <div
-                                className="grid mt-6"
-                                style={{
-                                    gridTemplateColumns: "repeat(53, 10px)",
-                                    gridTemplateRows: "repeat(7, 10px)",
-                                    gap: "2px",
-                                }}
-                            >
-                                {Array.from({ length: 371 }, (_, i) =>
-                                    // biome-ignore lint/suspicious/noArrayIndexKey
-                                    <Skeleton key={i} className={"size-2.5 rounded-xs"}/>
-                                )}
-                            </div>
-                        ) : (
-                            <Heatmap
-                                data={contributions}
-                                cellSize={cellSize[tailwindBreakpoint]}
-                                gap={2}
-                            />
+            <WidgetHeader title={"Github Heatmap"}/>
+            <WidgetContent className={"h-full items-center"}>
+                {(isLoading || isFetching) ? (
+                    <div
+                        className="grid mt-6"
+                        style={{
+                            gridTemplateColumns: "repeat(53, 10px)",
+                            gridTemplateRows: "repeat(7, 10px)",
+                            gap: "2px",
+                        }}
+                    >
+                        {Array.from({ length: 371 }, (_, i) =>
+                            // biome-ignore lint/suspicious/noArrayIndexKey
+                            <Skeleton key={i} className={"size-2.5 rounded-xs"}/>
                         )}
-                    </WidgetContent>
-                </>
-            )}
+                    </div>
+                ) : (
+                    <Heatmap
+                        data={contributions}
+                        cellSize={cellSize[tailwindBreakpoint]}
+                        gap={2}
+                    />
+                )}
+            </WidgetContent>
         </>
     )
 }

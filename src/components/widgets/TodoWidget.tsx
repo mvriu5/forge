@@ -1,7 +1,6 @@
 "use client"
 
 import React, {useCallback, useRef, useState} from "react"
-import {WidgetProps, WidgetContainer} from "@/components/widgets/base/WidgetContainer"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Checkbox} from "@/components/ui/Checkbox"
@@ -24,17 +23,19 @@ import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSession} from "@/hooks/data/useSession"
+import { defineWidget, WidgetProps } from "@forge/sdk"
 
-interface TodoProps {
+type Todo = {
     id: string
     checked: boolean
     text: string
 }
 
-const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {userId} = useSession()
-    const {updateWidget} = useWidgets(userId)
-    const [todos, setTodos] = useState<TodoProps[]>(widget?.config?.todos ?? [])
+interface TodoConfig {
+    todos: Todo[]
+}
+
+const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({config, updateConfig}) => {
     const inputRef = useRef<HTMLInputElement>(null)
 
     const clearTodosTooltip = useTooltip<HTMLButtonElement>({
@@ -42,43 +43,33 @@ const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete
         anchor: "tc"
     })
 
-    const enterInput = () => {
+    const handleSave = useCallback(async (updatedTodos: Todo[]) => {
+        await updateConfig({ todos: updatedTodos })
+    }, [updateConfig])
+
+    const enterInput = useCallback(async () => {
         const input = inputRef.current!
         if (input?.value.trim()) {
-            const newTodo: TodoProps = {
+            const newTodo: Todo = {
                 id: `todo-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, // Unique ID
                 text: input.value.trim(),
                 checked: false,
             }
-            const updatedTodos = [...todos, newTodo]
-            setTodos(updatedTodos)
-            void handleSave(updatedTodos)
+            const updatedTodos = [...config.todos, newTodo]
+            await handleSave(updatedTodos)
             input.value = ""
         }
-    }
+    }, [])
 
-    const handleSave = async (updatedTodos: TodoProps[] = todos) => {
-        if (!widget) return
-        await updateWidget({
-            ...widget,
-            config: {
-                todos: updatedTodos,
-            },
-        })
-    }
+    const handleDelete = useCallback(async (indexToDelete: number) => {
+        const updatedTodos = config.todos.filter((_, i) => i !== indexToDelete)
+        await handleSave(updatedTodos)
+    }, [config.todos, handleSave])
 
-    const handleDelete = useCallback((indexToDelete: number) => {
-        const updatedTodos = todos.filter((_, i) => i !== indexToDelete)
-        setTodos(updatedTodos)
-        void handleSave(updatedTodos)
-    }, [todos])
-
-    const handleCheckChange = useCallback((indexToUpdate: number, checked: boolean) => {
-        const updatedTodos = [...todos]
-        updatedTodos[indexToUpdate].checked = checked
-        setTodos(updatedTodos)
-        void handleSave(updatedTodos)
-    }, [todos])
+    const handleCheckChange = useCallback(async (indexToUpdate: number, checked: boolean) => {
+        const updatedTodos = config.todos.map((todo, index) => index === indexToUpdate ? {...todo, checked} : todo)
+        await handleSave(updatedTodos)
+    }, [config.todos, handleSave])
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -95,28 +86,24 @@ const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete
     )
 
     const handleDragEnd = useCallback((event: DragEndEvent) => {
-            const { active, over } = event
+        const { active, over } = event
 
-            if (active.id !== over?.id) {
-                setTodos((items) => {
-                    const oldIndex = items.findIndex((item) => item.id === active.id)
-                    const newIndex = items.findIndex((item) => item.id === over?.id)
-                    const newOrder = arrayMove(items, oldIndex, newIndex)
-                    void handleSave(newOrder)
-                    return newOrder
-                })
-            }
-        }, [])
+        if (!over || active.id === over.id) return
+
+        const oldIndex = config.todos.findIndex((item) => item.id === active.id)
+        const newIndex = config.todos.findIndex((item) => item.id === over.id)
+        if (oldIndex === -1 || newIndex === -1) return
+
+        const newOrder = arrayMove(config.todos, oldIndex, newIndex)
+        void handleSave(newOrder)
+    }, [config.todos, handleSave])
 
     return (
-        <WidgetContainer id={id} widget={widget} name={"todo"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <>
             <WidgetHeader title={"Todos"}>
                 <Button
                     variant={"widget"}
-                    onClick={() => {
-                        setTodos([])
-                        void handleSave([])
-                    }}
+                    onClick={() => void handleSave([])}
                     {...clearTodosTooltip}
                 >
                     <Eraser size={16} />
@@ -125,17 +112,17 @@ const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete
             <WidgetContent scroll>
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis]}>
                     <SortableContext
-                        items={todos.map((todo) => todo.id)}
+                        items={config.todos.map((todo) => todo.id)}
                         strategy={verticalListSortingStrategy}
                     >
-                        {todos.map((todo, index) => (
+                        {config.todos.map((todo, index) => (
                             <Todo
                                 key={todo.id}
                                 id={todo.id}
                                 text={todo.text}
                                 checked={todo.checked}
-                                onDelete={() => handleDelete(index)}
-                                onCheckChange={(checked) => handleCheckChange(index, checked)}
+                                onDelete={() => void handleDelete(index)}
+                                onCheckChange={(checked) => void handleCheckChange(index, checked)}
                             />
                         ))}
                     </SortableContext>
@@ -146,20 +133,20 @@ const TodoWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete
                     className={"shadow-none dark:shadow-none bg-0 border-0 focus:border-0 focus:bg-0 focus:outline-0"}
                     placeholder={"Type your todo..."}
                     ref={inputRef}
-                    onKeyDown={(e) => e.key === "Enter" && enterInput()}
+                    onKeyDown={(e) => e.key === "Enter" && void enterInput()}
                 />
                 <Button
                     className={"px-2 border-0 hover:bg-inverted/10 shadow-none dark:shadow-none"}
-                    onClick={ () => enterInput()}
+                    onClick={ () => void enterInput()}
                 >
                     <Forward size={16}/>
                 </Button>
             </div>
-        </WidgetContainer>
+        </>
     )
 }
 
-const Todo = ({id, checked, text, onDelete, onCheckChange}: TodoProps & { onDelete: () => void; onCheckChange: (checked: boolean) => void }) => {
+const Todo = ({id, checked, text, onDelete, onCheckChange}: Todo & { onDelete: () => void; onCheckChange: (checked: boolean) => void }) => {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: id })
 
     const toggleChecked = () => onCheckChange(!checked)
@@ -200,4 +187,20 @@ const Todo = ({id, checked, text, onDelete, onCheckChange}: TodoProps & { onDele
     )
 }
 
-export {TodoWidget}
+export const todoWidgetDefinition = defineWidget({
+    name: "Todo",
+    component: TodoWidget,
+    preview: {
+        description: 'All your tasks in one place',
+        image: "/github_preview.svg",
+        tags: ["productivity"],
+        sizes: {
+            desktop: { width: 1, height: 2 },
+            tablet: { width: 1, height: 2 },
+            mobile: { width: 1, height: 1 }
+        }
+    },
+    defaultConfig: {
+        todos: []
+    }
+})
