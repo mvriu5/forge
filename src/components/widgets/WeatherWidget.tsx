@@ -19,7 +19,7 @@ import {useWeather} from "@/hooks/useWeather"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {useSettings} from "@/hooks/data/useSettings"
-import {defineWidget, WidgetProps } from "@forge/sdk"
+import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
 const WeatherWidget: React.FC<WidgetProps> = ({widget}) => {
     const {currentWeather, nextWeather, location, isLoading, isError, geolocationError} = useWeather()

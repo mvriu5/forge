@@ -18,7 +18,7 @@ import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSession} from "@/hooks/data/useSession"
-import {defineWidget, WidgetProps } from "@forge/sdk"
+import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
 type Countdown = {
     title: string

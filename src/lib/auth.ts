@@ -18,7 +18,7 @@ export const auth = betterAuth({
     account: {
         accountLinking: {
             enabled: true,
-            trustedProviders: ["github", "google", "linear", "atlassian"]
+            trustedProviders: ["github", "google"]
         }
     },
     emailVerification: {
@@ -59,19 +59,7 @@ export const auth = betterAuth({
             accessType: "offline",
             prompt: "consent",
             redirectUri: `${process.env.BETTER_AUTH_URL}/api/auth/callback/google`
-        },
-        linear: {
-            clientId: process.env.LINEAR_CLIENT_ID as string,
-            clientSecret: process.env.LINEAR_CLIENT_SECRET as string,
-            redirectUri: `${process.env.BETTER_AUTH_URL}/api/auth/callback/linear`
-        },
-        atlassian: {
-            scope: ["read:jira-user", "read:jira-work", "offline_access"],
-            clientId: process.env.ATLASSIAN_CLIENT_ID as string,
-            clientSecret: process.env.ATLASSIAN_CLIENT_SECRET as string,
-            redirectURI: `${process.env.BETTER_AUTH_URL}/api/auth/callback/atlassian`,
-            accessType: "offline",
-        },
+        }
     },
     session: {
         cookieCache: {

@@ -32,7 +32,7 @@ export const useAuth = () => {
             email: values.email,
             password: values.password,
             name: values.name,
-            callbackURL: "/dashboard"
+            callbackURL: "/dashboard",
         }, {
             onRequest: (ctx) => {
                 setIsLoading(true)
@@ -47,7 +47,7 @@ export const useAuth = () => {
             onError: (ctx) => {
                 setIsLoading(false)
                 toast.error("Something went wrong", {description: ctx.error.message})
-            }
+            },
         })
     }
 

@@ -6,7 +6,7 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import {useSettings} from "@/hooks/data/useSettings"
-import { defineWidget, WidgetProps } from "@forge/sdk"
+import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
 interface ClockConfig {
     timezone: string

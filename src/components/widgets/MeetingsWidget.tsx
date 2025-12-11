@@ -15,7 +15,7 @@ import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {convertToRGBA} from "@/lib/colorConvert"
 import {useSettings} from "@/hooks/data/useSettings"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import {defineWidget, WidgetProps } from "@forge/sdk"
+import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
 const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
     const {settings} = useSettings(widget.userId)

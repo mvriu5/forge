@@ -10,7 +10,7 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Skeleton} from "../ui/Skeleton"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {useTooltip} from "@/components/ui/TooltipProvider"
-import { defineWidget, WidgetProps } from "@forge/sdk"
+import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
 const PhantomWidget: React.FC<WidgetProps> = () => {
     const {provider, wallet, connect, disconnect, isLoading, isFetching, isError, refetch} = usePhantom()

@@ -5,7 +5,7 @@ import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Button} from "@/components/ui/Button"
-import {Forward, Import, Plus, Trash} from "lucide-react"
+import {Forward, Plus, Trash} from "lucide-react"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
@@ -37,9 +37,7 @@ import Compact from "@uiw/react-color-compact"
 import {convertToRGBA} from "@/lib/colorConvert"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {restrictToFirstScrollableAncestor, restrictToHorizontalAxis, restrictToWindowEdges} from "@dnd-kit/modifiers"
-import {JiraImportDialog} from "@/components/dialogs/JiraImportDialog"
-import {LinearImportDialog} from "@/components/dialogs/LinearImportDialog"
-import {defineWidget, WidgetProps } from "@forge/sdk"
+import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
 type Card = {
     id: string
@@ -63,7 +61,6 @@ const formSchema = z.object({
 
 const KanbanWidget: React.FC<WidgetProps<KanbanConfig>> = ({config, updateConfig}) => {
     const [columnPopoverOpen, setColumnPopoverOpen] = useState(false)
-    const [importPopoverOpen, setImportPopoverOpen] = useState(false)
     const [activeId, setActiveId] = useState<string | null>(null)
     const [hex, setHex] = useState("#ffffff")
 
@@ -80,11 +77,6 @@ const KanbanWidget: React.FC<WidgetProps<KanbanConfig>> = ({config, updateConfig
             }
         })
     )
-
-    const importTooltip = useTooltip<HTMLButtonElement>({
-        message: "Import from your favorite app",
-        anchor: "tc"
-    })
 
     const addColumnTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new category",
@@ -269,17 +261,6 @@ const KanbanWidget: React.FC<WidgetProps<KanbanConfig>> = ({config, updateConfig
     return (
         <>
             <WidgetHeader title={"Kanban Board"}>
-                <Popover open={importPopoverOpen} onOpenChange={setImportPopoverOpen}>
-                    <PopoverTrigger asChild>
-                        <Button variant={"widget"} className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"} {...importTooltip}>
-                            <Import size={16}/>
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className={"w-52 p-1"} align={"end"}>
-                        <LinearImportDialog/>
-                        <JiraImportDialog />
-                    </PopoverContent>
-                </Popover>
                 <Popover open={columnPopoverOpen} onOpenChange={setColumnPopoverOpen}>
                     <PopoverTrigger asChild>
                         <Button variant={"widget"} className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"} {...addColumnTooltip}>

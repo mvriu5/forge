@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useCallback, useRef, useState} from "react"
+import React, {useCallback, useRef} from "react"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Checkbox} from "@/components/ui/Checkbox"
@@ -21,9 +21,7 @@ import {
 import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} from "@dnd-kit/sortable"
 import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
-import {useWidgets} from "@/hooks/data/useWidgets"
-import {useSession} from "@/hooks/data/useSession"
-import { defineWidget, WidgetProps } from "@forge/sdk"
+import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
 type Todo = {
     id: string

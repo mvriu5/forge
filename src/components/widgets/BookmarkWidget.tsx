@@ -25,7 +25,7 @@ import {
 import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} from "@dnd-kit/sortable"
 import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
-import { defineWidget, WidgetProps } from "@forge/sdk"
+import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
 interface BookmarkItem {
     id: string

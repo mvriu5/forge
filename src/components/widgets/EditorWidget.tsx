@@ -32,7 +32,7 @@ import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {cn, getUpdateTimeLabel} from "@/lib/utils"
-import {defineWidget, WidgetProps } from "@forge/sdk"
+import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
 type Note = {
     id: string

@@ -13,7 +13,7 @@ import {useTooltip} from "@/components/ui/TooltipProvider"
 import {useGithub} from "@/hooks/useGithub"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import { defineWidget, WidgetProps } from "@forge/sdk"
+import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
 const GithubWidget: React.FC<WidgetProps> = () => {
     const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, refetch} = useGithub()

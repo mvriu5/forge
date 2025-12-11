@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server"
-import {Account, getGithubAccount, getGoogleAccount, getLinearAccount, updateAccount, updateDashboard} from "@/database"
+import {Account, getGithubAccount, getGoogleAccount, updateAccount} from "@/database"
 
 export async function GET(req: Request) {
     try {
@@ -16,7 +16,6 @@ export async function GET(req: Request) {
         const accounts: Account[] = []
         accounts.push((await getGoogleAccount(userId))[0])
         accounts.push((await getGithubAccount(userId))[0])
-        accounts.push((await getLinearAccount(userId))[0])
 
         return NextResponse.json(accounts, { status: 200 })
     } catch (error) {

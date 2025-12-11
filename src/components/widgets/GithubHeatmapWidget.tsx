@@ -9,7 +9,7 @@ import {Skeleton} from "@/components/ui/Skeleton"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {useBreakpoint} from "@/hooks/media/useBreakpoint"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import {defineWidget, WidgetProps } from "@forge/sdk"
+import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
 const GithubHeatmapWidget: React.FC<WidgetProps> = () => {
     const {data, isLoading, isFetching} = useGithubHeatmap()
