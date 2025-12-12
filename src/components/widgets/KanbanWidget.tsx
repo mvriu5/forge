@@ -518,15 +518,13 @@ function KanbanCard({card, color, onCardDelete, isPlaceholder = false}: KanbanCa
 export const kanbanWidgetDefinition = defineWidget({
     name: "Kanban",
     component: KanbanWidget,
-    preview: {
-        description: "Organize your tasks in a kanban board",
-        image: "/github_preview.svg",
-        tags: ["productivity"],
-        sizes: {
-            desktop: { width: 2, height: 2 },
-            tablet: { width: 2, height: 2 },
-            mobile: { width: 1, height: 1 }
-        }
+    description: "Organize your tasks in a kanban board",
+    image: "/github_preview.svg",
+    tags: ["productivity"],
+    sizes: {
+        desktop: { width: 2, height: 2 },
+        tablet: { width: 2, height: 2 },
+        mobile: { width: 1, height: 1 }
     },
     defaultConfig: {
         columns: []

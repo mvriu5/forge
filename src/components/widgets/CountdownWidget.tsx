@@ -203,15 +203,13 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({config, update
 export const countdownWidgetDefinition = defineWidget({
     name: "Countdown",
     component: CountdownWidget,
-    preview: {
-        description: "See how much time is left to a special event",
-        image: "/github_preview.svg",
-        tags: [],
-        sizes: {
-            desktop: { width: 1, height: 1 },
-            tablet: { width: 1, height: 1 },
-            mobile: { width: 1, height: 2 }
-        },
+    description: "See how much time is left to a special event",
+    image: "/github_preview.svg",
+    tags: [],
+    sizes: {
+        desktop: { width: 1, height: 1 },
+        tablet: { width: 1, height: 1 },
+        mobile: { width: 1, height: 2 }
     },
     defaultConfig: {
         countdown: null,

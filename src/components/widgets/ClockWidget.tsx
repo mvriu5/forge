@@ -105,15 +105,13 @@ const ClockWidget: React.FC<WidgetProps<ClockConfig>> = ({widget, config, update
 export const clockWidgetDefinition = defineWidget({
     name: "Clock",
     component: ClockWidget,
-    preview: {
-        description: 'Beautiful clock to display your current time',
-        image: '/github_preview.svg',
-        tags: ["productivity"],
-        sizes: {
-            desktop: { width: 1, height: 1 },
-            tablet: { width: 1, height: 1 },
-            mobile: { width: 1, height: 1 }
-        }
+    description: 'Beautiful clock to display your current time',
+    image: '/github_preview.svg',
+    tags: ["productivity"],
+    sizes: {
+        desktop: { width: 1, height: 1 },
+        tablet: { width: 1, height: 1 },
+        mobile: { width: 1, height: 1 }
     },
     defaultConfig: {
         timezone: "Europe/Berlin",

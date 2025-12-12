@@ -65,14 +65,12 @@ const PhantomWidget: React.FC<WidgetProps> = () => {
 export const phantomWidgetDefinition = defineWidget({
     name: "Phantom",
     component: PhantomWidget,
-    preview: {
-        description: 'See your phantom wallet balance',
-        image: "/github_preview.svg",
-        tags: ["finance"],
-        sizes: {
-            desktop: { width: 1, height: 1 },
-            tablet: { width: 1, height: 1 },
-            mobile: { width: 1, height: 1 }
-        }
+    description: 'See your phantom wallet balance',
+    image: "/github_preview.svg",
+    tags: ["finance"],
+    sizes: {
+        desktop: { width: 1, height: 1 },
+        tablet: { width: 1, height: 1 },
+        mobile: { width: 1, height: 1 }
     }
 })

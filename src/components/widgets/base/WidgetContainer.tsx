@@ -2,7 +2,7 @@ import {Button} from "@/components/ui/Button"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {useBreakpoint} from "@/hooks/media/useBreakpoint"
 import {cn} from "@/lib/utils"
-import {getWidgetPreview} from "@/lib/definitions"
+import {getWidgetDefinition} from "@/lib/definitions"
 import {useDraggable} from "@dnd-kit/core"
 import {CSS} from "@dnd-kit/utilities"
 import {Trash} from "lucide-react"
@@ -22,8 +22,8 @@ interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
 const WidgetContainer: React.FC<WidgetProps> = ({id, className, children, name, widget, editMode, onWidgetDelete}) => {
     const {breakpoint} = useBreakpoint()
     const widgetType = widget?.widgetType ?? name
-    const preview = getWidgetPreview(widgetType)
-    const responsiveSize = preview.sizes[breakpoint]
+    const definition = getWidgetDefinition(widgetType)
+    const responsiveSize = definition.sizes[breakpoint]
 
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: widget?.id ?? id ?? widgetType,

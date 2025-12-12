@@ -330,15 +330,13 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
 export const editorWidgetDefinition = defineWidget({
     name: "Editor",
     component: EditorWidget,
-    preview: {
-        description: "A simple text editor widget",
-        image: "/github_preview.svg",
-        tags: ["productivity"],
-        sizes: {
-            desktop: { width: 1, height: 2 },
-            tablet: { width: 1, height: 1 },
-            mobile: { width: 1, height: 1 }
-        }
+    description: "A simple text editor widget",
+    image: "/github_preview.svg",
+    tags: ["productivity"],
+    sizes: {
+        desktop: { width: 1, height: 2 },
+        tablet: { width: 1, height: 1 },
+        mobile: { width: 1, height: 1 }
     },
     defaultConfig: {
         notes: [],

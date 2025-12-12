@@ -1,5 +1,5 @@
 import {Widget} from "@/database"
-import {getWidgetPreview} from "@/lib/definitions"
+import {getWidgetDefinition} from "@/lib/definitions"
 
 export type Breakpoint = "desktop" | "tablet" | "mobile"
 
@@ -19,10 +19,10 @@ const placeWidgetsInGrid = (widgets: Widget[], breakpoint: Breakpoint, maxCols: 
     }
 
     widgets.map((widget) => {
-        const widgetConfig = getWidgetPreview(widget.widgetType)
-        if (!widgetConfig || !widgetConfig.sizes) return
+        const definition = getWidgetDefinition(widget.widgetType)
+        if (!definition || !definition.sizes) return
 
-        const responsiveSize = widgetConfig.sizes[breakpoint]
+        const responsiveSize = definition.sizes[breakpoint]
 
         const widgetWidth = responsiveSize.width
         const widgetHeight = responsiveSize.height
@@ -82,10 +82,10 @@ export const transformLayout = (widgets: Widget[], breakpoint: Breakpoint): Widg
 
     if (breakpoint === "mobile") {
         return sortedWidgets.map((widget, index) => {
-            const widgetConfig = getWidgetPreview(widget.widgetType)
-            if (!widgetConfig || !widgetConfig.sizes) return widget
+            const definition = getWidgetDefinition(widget.widgetType)
+            if (!definition || !definition.sizes) return widget
 
-            const responsiveSize = widgetConfig.sizes[breakpoint]
+            const responsiveSize = definition.sizes[breakpoint]
 
             return {
                 ...widget,
@@ -102,8 +102,8 @@ export const transformLayout = (widgets: Widget[], breakpoint: Breakpoint): Widg
     }
 
     return sortedWidgets.map((widget) => {
-        const widgetConfig = getWidgetPreview(widget.widgetType)
-        const responsiveSize = widgetConfig.sizes[breakpoint]
+        const definition = getWidgetDefinition(widget.widgetType)
+        const responsiveSize = definition.sizes[breakpoint]
 
         return {
             ...widget,

@@ -9,7 +9,7 @@ export default function Imprint() {
                 Back to Home
             </Link>
 
-            <h1 className="text-brand text-2xl font-bold mb-2">Privacy Policy</h1>
+            <h1 className="text-brand text-2xl font-bold mb-2">Imprint</h1>
 
             <div className="max-w-none">
                 <p className="text-tertiary">Last Updated: December 06, 2025</p>

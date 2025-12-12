@@ -231,15 +231,13 @@ const BookmarkItem = ({id, title, link, onDelete}: BookmarkItem & {onDelete: (ti
 export const bookmarkWidgetDefinition = defineWidget({
     name: "Bookmark",
     component: BookmarkWidget,
-    preview: {
-        description: "Store your bookmarks",
-        image: "/bookmark_preview.svg",
-        tags: ["productivity"],
-        sizes: {
-            desktop: { width: 1, height: 2 },
-            tablet: { width: 1, height: 1 },
-            mobile: { width: 1, height: 1 },
-        },
+    description: "Store your bookmarks",
+    image: "/bookmark_preview.svg",
+    tags: ["productivity"],
+    sizes: {
+        desktop: { width: 1, height: 2 },
+        tablet: { width: 1, height: 1 },
+        mobile: { width: 1, height: 1 },
     },
     defaultConfig: {
         bookmarks: [],

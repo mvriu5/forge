@@ -188,15 +188,13 @@ const Todo = ({id, checked, text, onDelete, onCheckChange}: Todo & { onDelete: (
 export const todoWidgetDefinition = defineWidget({
     name: "Todo",
     component: TodoWidget,
-    preview: {
-        description: 'All your tasks in one place',
-        image: "/github_preview.svg",
-        tags: ["productivity"],
-        sizes: {
-            desktop: { width: 1, height: 2 },
-            tablet: { width: 1, height: 2 },
-            mobile: { width: 1, height: 1 }
-        }
+    description: 'All your tasks in one place',
+    image: "/github_preview.svg",
+    tags: ["productivity"],
+    sizes: {
+        desktop: { width: 1, height: 2 },
+        tablet: { width: 1, height: 2 },
+        mobile: { width: 1, height: 1 }
     },
     defaultConfig: {
         todos: []

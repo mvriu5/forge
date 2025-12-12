@@ -25,8 +25,8 @@ import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useSettings} from "@/hooks/data/useSettings"
 import {toast} from "sonner"
-import { WidgetPreview } from "@tryforgeio/sdk"
 import {definitions} from "@/lib/definitions"
+import { WidgetDefinition } from "@tryforgeio/sdk"
 
 interface WidgetDialogProps {
     editMode: boolean
@@ -39,8 +39,8 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
     const {currentDashboard} = useDashboards(userId, settings)
     const {widgets, addWidget, addWidgetStatus} = useWidgets(userId)
 
-    const [selectedWidgets, setSelectedWidgets] = useState<WidgetPreview[]>([])
-    const [allWidgets] = useState<WidgetPreview[]>(definitions.map((w) => w.preview))
+    const [selectedWidgets, setSelectedWidgets] = useState<WidgetDefinition[]>([])
+    const [allWidgets] = useState<WidgetDefinition[]>(definitions)
     const [query, setQuery] = useState<string>("")
     const [tagValue, setTagValue] = useState<string>("")
     const [dialogOpen, setDialogOpen] = useState(false)
@@ -60,19 +60,19 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
 
     const filteredWidgets = useMemo(() => {
         return allWidgets.filter((widget) => {
-            const matchesSearch = widget.title.toLowerCase().includes(query.toLowerCase())
+            const matchesSearch = widget.name.toLowerCase().includes(query.toLowerCase())
             const matchesTags = tagValue === "" || widget.tags?.some((tag: any) => tag === tagValue)
             return matchesSearch && matchesTags
         })
     }, [allWidgets, query, tagValue])
 
-    const handleSelect = (widgetPreview: WidgetPreview) => {
+    const handleSelect = (widgetPreview: WidgetDefinition) => {
         if (!currentDashboard) return
-        if (widgets?.find((w) => w.widgetType === widgetPreview?.title && w.dashboardId === currentDashboard.id)) return
+        if (widgets?.find((w) => w.widgetType === widgetPreview?.name && w.dashboardId === currentDashboard.id)) return
 
         setSelectedWidgets(prev => {
-            const exists = prev.some(w => w.title === widgetPreview.title)
-            if (exists) return prev.filter(w => w.title !== widgetPreview.title)
+            const exists = prev.some(w => w.name === widgetPreview.name)
+            if (exists) return prev.filter(w => w.name !== widgetPreview.name)
             return [...prev, widgetPreview]
         })
     }
@@ -85,7 +85,7 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                 await addWidget({
                     userId,
                     dashboardId: currentDashboard.id,
-                    widgetType: widget.title,
+                    widgetType: widget.name,
                     height: widget.sizes.desktop.height,
                     width: widget.sizes.desktop.width,
                     positionX: 0,
@@ -157,9 +157,9 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {filteredWidgets.map((widget) => (
                             <div
-                                key={widget.title}
-                                data-used={widgets?.find((w) => w.widgetType === widget.title && w.dashboardId === currentDashboard?.id) ? "true" : "false"}
-                                data-selected={selectedWidgets.some((w) => w.title === widget.title) ? "true" : "false"}
+                                key={widget.name}
+                                data-used={widgets?.find((w) => w.widgetType === widget.name && w.dashboardId === currentDashboard?.id) ? "true" : "false"}
+                                data-selected={selectedWidgets.some((w) => w.name === widget.name) ? "true" : "false"}
                                 className={cn(
                                     "relative group cursor-default col-span-1 flex flex-col p-2 m-1 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
                                     "data-[selected=true]:border-brand/30 data-[used=true]:border-success/30",
@@ -169,9 +169,9 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                                 onClick={() => handleSelect(widget)}
                             >
                                 <div className={"flex justify-between items-center"}>
-                                    <p className={"text-primary"}>{widget.title}</p>
+                                    <p className={"text-primary"}>{widget.name}</p>
                                     <div className={"px-2 rounded-md bg-white/5 border border-main/40 group-data-[used=true]:bg-success/10 group-data-[used=true]:text-success group-data-[used=true]:border-success/20"}>
-                                        {widgets?.find((w) => w.widgetType === widget.title && w.dashboardId === currentDashboard?.id) ?
+                                        {widgets?.find((w) => w.widgetType === widget.name && w.dashboardId === currentDashboard?.id) ?
                                             "In use" :
                                             `${widget.sizes.desktop.width}x${widget.sizes.desktop.height}`
                                         }
@@ -179,7 +179,7 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                                 </div>
                                 <p className={"text-sm text-secondary"}>{widget.description}</p>
                                 <div className={"absolute -right-2 -bottom-16 rounded-md shadow-md pt-0.5 pl-0.5 border border-main/40 bg-secondary"}>
-                                    <Image src={widget.image} alt={widget.title} width={330} height={300}/>
+                                    <Image src={widget.image} alt={widget.name} width={330} height={300}/>
                                 </div>
                             </div>
                         ))}

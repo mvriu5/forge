@@ -184,14 +184,12 @@ export const githubWidgetDefinition = defineWidget({
     name: "Github",
     integration: "github",
     component: GithubWidget,
-    preview: {
-        description: "See your open github issues & pull requests.",
-        image: "/github_preview.svg",
-        tags: ["github"],
-        sizes: {
-            desktop: { width: 1, height: 2 },
-            tablet: { width: 1, height: 2 },
-            mobile: { width: 1, height: 1 }
-        }
-    },
+    description: "See your open github issues & pull requests.",
+    image: "/github_preview.svg",
+    tags: ["github"],
+    sizes: {
+        desktop: { width: 1, height: 2 },
+        tablet: { width: 1, height: 2 },
+        mobile: { width: 1, height: 1 }
+    }
 })

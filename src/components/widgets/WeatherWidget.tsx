@@ -21,6 +21,9 @@ import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {useSettings} from "@/hooks/data/useSettings"
 import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
+const SKELETON_COUNT = 371;
+const skeletonKeys = Array.from({ length: SKELETON_COUNT }, (_, i) => `sk-${i}`);
+
 const WeatherWidget: React.FC<WidgetProps> = ({widget}) => {
     const {currentWeather, nextWeather, location, isLoading, isError, geolocationError} = useWeather()
     const {settings} = useSettings(widget.userId)
@@ -67,9 +70,8 @@ const WeatherWidget: React.FC<WidgetProps> = ({widget}) => {
             <div className={"h-full grid grid-cols-4 grid-rows-2 gap-1"}>
                 {isLoading ? (
                     <>
-                        {[...Array(8)].map((_, index) => (
-                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                            <div className={"flex items-center justify-center"} key={index}>
+                        {skeletonKeys.map((key) => (
+                            <div className={"flex items-center justify-center"} key={key}>
                                 <Skeleton className={"h-12 w-16 rounded-md"}/>
                             </div>
                         ))}
@@ -103,14 +105,12 @@ const WeatherWidget: React.FC<WidgetProps> = ({widget}) => {
 export const weatherWidgetDefinition = defineWidget({
     name: "Weather",
     component: WeatherWidget,
-    preview: {
-        description: 'See the weather in your location',
-        image: "/github_preview.svg",
-        tags: ["weather"],
-        sizes: {
-            desktop: { width: 1, height: 1 },
-            tablet: { width: 1, height: 1 },
-            mobile: { width: 1, height: 1 }
-        }
+    description: 'See the weather in your location',
+    image: "/github_preview.svg",
+    tags: ["weather"],
+    sizes: {
+        desktop: { width: 1, height: 1 },
+        tablet: { width: 1, height: 1 },
+        mobile: { width: 1, height: 1 }
     }
 })

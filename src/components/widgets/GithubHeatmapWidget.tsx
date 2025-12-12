@@ -11,6 +11,9 @@ import {useBreakpoint} from "@/hooks/media/useBreakpoint"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
+const SKELETON_COUNT = 371;
+const skeletonKeys = Array.from({ length: SKELETON_COUNT }, (_, i) => `sk-${i}`);
+
 const GithubHeatmapWidget: React.FC<WidgetProps> = () => {
     const {data, isLoading, isFetching} = useGithubHeatmap()
     const {tailwindBreakpoint} = useBreakpoint()
@@ -39,10 +42,9 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = () => {
                             gap: "2px",
                         }}
                     >
-                        {Array.from({ length: 371 }, (_, i) =>
-                            // biome-ignore lint/suspicious/noArrayIndexKey
-                            <Skeleton key={i} className={"size-2.5 rounded-xs"}/>
-                        )}
+                        {skeletonKeys.map((key) => (
+                            <Skeleton key={key} className={"size-2.5 rounded-xs"}/>
+                        ))}
                     </div>
                 ) : (
                     <Heatmap
@@ -60,15 +62,13 @@ export const githubheatmapWidgetDefinition = defineWidget({
     name: "Github Heatmap",
     integration: "github",
     component: GithubHeatmapWidget,
-    preview: {
-        description: "Show off your commit streak.",
-        image: "/github_preview.svg",
-        tags: ["github"],
-        sizes: {
-            desktop: { width: 2, height: 1 },
-            tablet: { width: 1, height: 1 },
-            mobile: { width: 1, height: 1 }
-        }
-    },
+    description: "Show off your commit streak.",
+    image: "/github_preview.svg",
+    tags: ["github"],
+    sizes: {
+        desktop: { width: 2, height: 1 },
+        tablet: { width: 1, height: 1 },
+        mobile: { width: 1, height: 1 }
+    }
 })
 

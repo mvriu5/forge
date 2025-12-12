@@ -1,6 +1,6 @@
 "use client"
 
-import type {WidgetDefinition, WidgetPreview} from "../../../forge-sdk"
+import type {WidgetDefinition} from "@tryforgeio/sdk"
 
 import {bookmarkWidgetDefinition} from "@/components/widgets/BookmarkWidget"
 import {clockWidgetDefinition} from "@/components/widgets/ClockWidget"
@@ -32,10 +32,4 @@ export const getWidgetDefinition = (name: string): WidgetDefinition => {
     const def = definitions.find((w) => w.name === name)
     if (!def) throw new Error(`Unknown widget type: ${name}`)
     return def
-}
-
-export const getWidgetPreview = (name: string): WidgetPreview => {
-    const def = definitions.find((w) => w.preview.title === name)
-    if (!def) throw new Error(`Unknown widget type: ${name}`)
-    return def.preview
 }
