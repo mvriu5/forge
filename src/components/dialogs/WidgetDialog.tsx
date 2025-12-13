@@ -27,6 +27,7 @@ import {useSettings} from "@/hooks/data/useSettings"
 import {toast} from "sonner"
 import {definitions} from "@/lib/definitions"
 import { WidgetDefinition } from "@tryforgeio/sdk"
+import {capitalizeFirstLetter} from "@better-auth/core/utils"
 
 interface WidgetDialogProps {
     editMode: boolean
@@ -57,6 +58,11 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
         anchor: "bc",
         offset: 12
     })
+
+    const widgetCategories = useMemo(() => {
+        const tags = definitions.flatMap(d => d.tags ?? []);
+        return Array.from(new Set(tags));
+    }, [])
 
     const filteredWidgets = useMemo(() => {
         return allWidgets.filter((widget) => {
@@ -123,7 +129,7 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                     <DialogTitle>
                         <p className={"flex items-center gap-2"}>
                             Select a widget
-                            <span className={"inline break-words text-tertiary font-normal"}>{`(${filteredWidgets.length})`}</span>
+                            <span className={"inline break-words text-tertiary font-normal bg-tertiary rounded-md px-1 py-1"}>{filteredWidgets.length}</span>
                         </p>
                     </DialogTitle>
                     <DialogClose/>
@@ -138,18 +144,11 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                 </div>
                 <div className={"flex"}>
                     <ToggleGroup type="single" className={"border-0 bg-transparent px-0"} value={tagValue} onValueChange={(tag) => setTagValue(tag)}>
-                        <ToggleGroupItem value="weather" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60 "}>
-                            Weather
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="productivity" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
-                            Productivity
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="github" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
-                            Github
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="finance" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
-                            Finance
-                        </ToggleGroupItem>
+                        {widgetCategories.map(category => (
+                            <ToggleGroupItem value={category} className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
+                                {capitalizeFirstLetter((category))}
+                            </ToggleGroupItem>
+                        ))}
                     </ToggleGroup>
                 </div>
 

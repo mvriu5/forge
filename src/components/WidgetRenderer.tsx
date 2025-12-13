@@ -8,6 +8,7 @@ import {getWidgetDefinition} from "@/lib/definitions"
 import { WidgetRuntimeProps } from "@tryforgeio/sdk"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
+import {ErrorBoundary} from "react-error-boundary"
 
 export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete}) => {
     const { userId } = useSession()
@@ -66,14 +67,26 @@ export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, 
             editMode={editMode}
             onWidgetDelete={onWidgetDelete}
         >
-            <Component
-                widget={widget as any}
-                config={config}
-                updateConfig={updateConfig}
-                editMode={editMode}
-                isDragging={isDragging}
-                onWidgetDelete={onWidgetDelete}
-            />
+            <ErrorBoundary
+                resetKeys={[widget.id, widget.updatedAt]}
+                fallbackRender={({ error, resetErrorBoundary }) => (
+                    <WidgetError
+                        message={`The ${name} widget failed to load.`}
+                        details={error.message}
+                        actionLabel="Retry"
+                        onAction={resetErrorBoundary}
+                    />
+                )}
+            >
+                <Component
+                    widget={widget as any}
+                    config={config}
+                    updateConfig={updateConfig}
+                    editMode={editMode}
+                    isDragging={isDragging}
+                    onWidgetDelete={onWidgetDelete}
+                />
+            </ErrorBoundary>
         </WidgetContainer>
     )
 }

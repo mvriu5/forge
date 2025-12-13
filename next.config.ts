@@ -3,6 +3,9 @@ import type { NextConfig } from "next"
 const nextConfig: NextConfig = {
     cacheComponents: true,
     reactCompiler: true,
+    images: {
+        qualities: [100, 75]
+    },
     async rewrites() {
         return [
             {

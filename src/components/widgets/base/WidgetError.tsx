@@ -6,11 +6,12 @@ import React from "react"
 
 interface WidgetErrorProps {
     message: string
+    details?: string
     actionLabel?: string
     onAction?: () => void
 }
 
-const WidgetError = ({message, actionLabel, onAction}: WidgetErrorProps) => {
+const WidgetError = ({message, details, actionLabel, onAction}: WidgetErrorProps) => {
     return (
         <WidgetContent>
             <div className="h-full flex flex-col gap-2 items-center justify-center">
@@ -18,6 +19,9 @@ const WidgetError = ({message, actionLabel, onAction}: WidgetErrorProps) => {
                     <TriangleAlert size={32}/>
                     {message}
                 </Callout>
+                <p className={"text-tertiary text-xs"}>
+                    {details}
+                </p>
                 {actionLabel && onAction && (
                     <Button className="mt-2" onClick={onAction}>
                         {actionLabel}

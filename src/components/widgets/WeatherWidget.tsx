@@ -21,7 +21,7 @@ import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {useSettings} from "@/hooks/data/useSettings"
 import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
-const SKELETON_COUNT = 371;
+const SKELETON_COUNT = 8;
 const skeletonKeys = Array.from({ length: SKELETON_COUNT }, (_, i) => `sk-${i}`);
 
 const WeatherWidget: React.FC<WidgetProps> = ({widget}) => {

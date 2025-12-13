@@ -28,7 +28,15 @@ function Hero() {
                 </Button>
             </Link>
             <div className={"flex items-center justify-center rounded-xl shadow-xl border border-main/40"}>
-                <Image src={"/mockup.png"} alt={"Example Layout"} width={"1904"} height={"1025"} className={"rounded-xl md:rounded-md"}/>
+                <Image
+                    src={"/mockup.png"}
+                    alt={"Example Layout"}
+                    width={"1904"}
+                    height={"1025"}
+                    className={"rounded-xl md:rounded-md"}
+                    quality={100}
+                    priority
+                />
             </div>
         </div>
     )
