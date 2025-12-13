@@ -36,9 +36,15 @@ export default function Dashboard() {
         widgets.filter((w) => w.dashboardId === currentDashboard?.id)
     ), [widgets, currentDashboard?.id])
 
-    const gridCells = useGrid(activeWidget, currentWidgets)
+    const widgetsMap = useMemo(() => new Map(widgets.map((widget) => [widget.id, widget])), [widgets])
+    const widgetsToRemoveSet = useMemo(() => new Set(widgetsToRemove.map((widget) => widget.id)), [widgetsToRemove])
+    const visibleWidgets = useMemo(() => (
+        currentWidgets.filter((widget) => !widgetsToRemoveSet.has(widget.id))
+    ), [currentWidgets, widgetsToRemoveSet])
+
+    const gridCells = useGrid(activeWidget, visibleWidgets)
     const { sensors, handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop(editMode, widgets, currentDashboard?.id ?? null, updateWidgetPosition, setActiveWidget)
-    const { transformedWidgets, gridClasses, containerHeight, isDesktop } = useResponsiveLayout(currentWidgets)
+    const { transformedWidgets, gridClasses, containerHeight, isDesktop } = useResponsiveLayout(visibleWidgets)
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
@@ -53,8 +59,7 @@ export default function Dashboard() {
     }, [userId])
 
     useEffect(() => {
-        if (!userId) return
-        if (dashboardsLoading) return
+        if (!userId  || dashboardsLoading) return
         if (dashboards && dashboards.length === 0) setDialogOpen(true)
     }, [userId, dashboards, dashboardsLoading])
 
@@ -82,18 +87,24 @@ export default function Dashboard() {
     }, [removeWidget, saveWidgetsLayout, widgetsToRemove])
 
     const handleEditModeCancel = useCallback(() => {
-        setWidgets(cachedWidgetsRef.current)
+        if (cachedWidgetsRef.current) setWidgets(cachedWidgetsRef.current)
         setEditMode(false)
         setWidgetsToRemove([])
         cachedWidgetsRef.current = null
     }, [setWidgets])
 
     const handleEditModeDelete = useCallback((id: string) => {
-        const widget = widgets.find((w) => w.id === id)
-        if (widget) setWidgetsToRemove((prev) => [...prev, widget])
-    }, [widgets])
+        setWidgetsToRemove((prevWidgetsToRemove) => {
+            if (prevWidgetsToRemove.some((widget) => widget.id === id)) return prevWidgetsToRemove
+            const widget = widgetsMap.get(id)
+            if (!widget) return prevWidgetsToRemove
+            return [...prevWidgetsToRemove, widget]
+        })
+    }, [widgetsMap])
 
-    const dataLoading = sessionLoading || dashboardsLoading || widgetsLoading || settingsLoading
+    const dataLoading = useMemo(() => (
+        sessionLoading || dashboardsLoading || widgetsLoading || settingsLoading
+    ), [sessionLoading, dashboardsLoading, widgetsLoading, settingsLoading])
 
     return (
         <div className={cn("flex flex-col w-full h-full overflow-hidden", isDesktop && "max-h-screen max-w-screen")}>
@@ -104,7 +115,7 @@ export default function Dashboard() {
                 handleEditModeSave={handleEditModeSave}
                 handleEditModeCancel={handleEditModeCancel}
                 isLoading={dataLoading}
-                widgetsEmpty={currentWidgets.length === 0 && currentDashboard !== null}
+                widgetsEmpty={visibleWidgets.length === 0 && currentDashboard !== null}
                 dashboards={dashboards ?? []}
                 currentDashboard={currentDashboard}
                 onDashboardChange={async (dashboardId) => {
@@ -124,28 +135,45 @@ export default function Dashboard() {
                 </div>
             ) : (
                 <>
-                    {currentWidgets.length === 0 && currentDashboard ? (
+                    {visibleWidgets.length === 0 && currentDashboard ? (
                         <DashboardEmpty/>
                     ) : (
-                        <DndContext
-                            sensors={sensors}
-                            onDragStart={handleDragStart}
-                            onDragEnd={handleDragEnd}
-                            onDragOver={handleDragOver}
-                        >
-                            <div className={cn("relative w-full", containerHeight, gridClasses)}>
-                                <Grid cells={gridCells} enabled={isDesktop}/>
-                                {transformedWidgets?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id)).map((widget) => (
-                                    <WidgetRenderer
-                                        key={widget.id}
-                                        widget={widget}
-                                        editMode={editMode}
-                                        onWidgetDelete={handleEditModeDelete}
-                                        isDragging={activeWidget?.id === widget.id}
-                                    />
-                                ))}
-                            </div>
-                        </DndContext>
+                        <>
+                            {editMode ? (
+                                <DndContext
+                                    sensors={sensors}
+                                    onDragStart={handleDragStart}
+                                    onDragEnd={handleDragEnd}
+                                    onDragOver={handleDragOver}
+                                >
+                                    <div className={cn("relative w-full", containerHeight, gridClasses)}>
+                                        <Grid cells={gridCells} enabled={isDesktop}/>
+                                        {transformedWidgets?.map((widget) => (
+                                            <WidgetRenderer
+                                                key={widget.id}
+                                                widget={widget}
+                                                editMode={editMode}
+                                                onWidgetDelete={handleEditModeDelete}
+                                                isDragging={activeWidget?.id === widget.id}
+                                            />
+                                        ))}
+                                    </div>
+                                </DndContext>
+                            ) : (
+                                <div className={cn("relative w-full", containerHeight, gridClasses)}>
+                                    <Grid cells={gridCells} enabled={isDesktop}/>
+                                    {transformedWidgets?.map((widget) => (
+                                        <WidgetRenderer
+                                            key={widget.id}
+                                            widget={widget}
+                                            editMode={editMode}
+                                            onWidgetDelete={handleEditModeDelete}
+                                            isDragging={activeWidget?.id === widget.id}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </>
                     )}
                 </>
             )}

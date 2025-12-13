@@ -42,8 +42,8 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
 
     const [selectedWidgets, setSelectedWidgets] = useState<WidgetDefinition[]>([])
     const [allWidgets] = useState<WidgetDefinition[]>(definitions)
-    const [query, setQuery] = useState<string>("")
-    const [tagValue, setTagValue] = useState<string>("")
+    const [query, setQuery] = useState("")
+    const [tagValue, setTagValue] = useState("")
     const [dialogOpen, setDialogOpen] = useState(false)
 
     useHotkeys("mod+s", (event) => {
