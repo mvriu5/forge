@@ -69,7 +69,7 @@ export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, 
             <Component
                 widget={widget as any}
                 config={config}
-                updateConfig={updateConfig as any}
+                updateConfig={updateConfig}
                 editMode={editMode}
                 isDragging={isDragging}
                 onWidgetDelete={onWidgetDelete}

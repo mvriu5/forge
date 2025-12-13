@@ -30,7 +30,6 @@ const placeWidgetsInGrid = (widgets: Widget[], breakpoint: Breakpoint, maxCols: 
         let placed = false
         for (let row = 0; row < grid.length && !placed; row++) {
             for (let col = 0; col <= maxCols - widgetWidth && !placed; col++) {
-                // Prüfe ob der Platz frei ist
                 let canPlace = true
                 for (let r = row; r < row + widgetHeight && canPlace; r++) {
                     for (let c = col; c < col + widgetWidth && canPlace; c++) {
@@ -41,7 +40,6 @@ const placeWidgetsInGrid = (widgets: Widget[], breakpoint: Breakpoint, maxCols: 
                 }
 
                 if (canPlace) {
-                    // Platziere das Widget
                     for (let r = row; r < row + widgetHeight; r++) {
                         for (let c = col; c < col + widgetWidth; c++) {
                             if (r >= grid.length) {

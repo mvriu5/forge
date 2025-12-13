@@ -15,6 +15,13 @@ export const metadata: Metadata = siteConfig
 export default function RootLayout({children}: Readonly<{ children: ReactNode }>) {
     return (
         <html lang="en" suppressHydrationWarning>
+            <head>
+                <script
+                    crossOrigin="anonymous"
+                    src="//unpkg.com/react-scan/dist/auto.global.js"
+                />
+                <title>Forge</title>
+            </head>
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 <Analytics />
                 <SpeedInsights />

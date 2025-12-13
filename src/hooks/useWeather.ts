@@ -21,7 +21,7 @@ const fetchReverseGeocoding = async (lat: number, lon: number) => {
 const fetchWeatherData = async (lat: number, lon: number) => {
     const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode`)
 
-    if (!res.ok) throw new Error("Wetterdaten-Fehler")
+    if (!res.ok) throw new Error("Weatherdata-Error")
     return res.json()
 }
 
