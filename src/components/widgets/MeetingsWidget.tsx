@@ -10,12 +10,10 @@ import {Button} from "@/components/ui/Button"
 import {format, isSameDay} from "date-fns"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
-import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {convertToRGBA} from "@/lib/colorConvert"
 import {useSettings} from "@/hooks/data/useSettings"
-import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
+import {defineWidget, WidgetProps} from "@tryforgeio/sdk"
 
 const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
     const {settings} = useSettings(widget.userId)

@@ -49,12 +49,6 @@ export default function Dashboard() {
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
 
-    useHotkeys("mod+e", (event) => {
-        event.preventDefault()
-        if (currentWidgets.length === 0) return
-        if (!editMode) setEditMode(true)
-    }, [editMode, currentWidgets])
-
     useEffect(() => {
         void refetchSession()
     }, [userId])
@@ -108,6 +102,12 @@ export default function Dashboard() {
             return [...prevWidgetsToRemove, widget]
         })
     }, [widgetsMap])
+
+    useHotkeys("mod+e", (event) => {
+        event.preventDefault()
+        if (currentWidgets.length === 0) return
+        if (!editMode) handleEditModeEnter()
+    }, [editMode, currentWidgets, handleEditModeEnter])
 
     const dataLoading = useMemo(() => (
         sessionLoading || dashboardsLoading || widgetsLoading || settingsLoading

@@ -43,8 +43,7 @@ const formSchema = z.object({
 })
 
 const BookmarkWidget: React.FC<WidgetProps<BookmarkConfig>> = ({config, updateConfig}) => {
-    const [open, setOpen] = useState<boolean>(false)
-    const {bookmarks} = config
+    const [open, setOpen] = useState(false)
 
     const addTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new bookmark",
@@ -58,27 +57,6 @@ const BookmarkWidget: React.FC<WidgetProps<BookmarkConfig>> = ({config, updateCo
             link: ""
         },
     })
-
-    const handleSave = useCallback(async (updatedBookmarks: BookmarkItem[]) => {
-        await updateConfig({ bookmarks: updatedBookmarks })
-    }, [updateConfig])
-
-    const handleAdd = async (data: z.infer<typeof formSchema>) => {
-        const newBookmark: BookmarkItem = {
-            id: `bookmark-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-            title: data.title,
-            link: data.link,
-        }
-        const updatedBookmarks = [...bookmarks, newBookmark]
-        await handleSave(updatedBookmarks)
-        setOpen(false)
-        form.reset()
-    }
-
-    const handleDelete = useCallback(async (idToDelete: string) => {
-        const updatedBookmarks = bookmarks.filter((b) => b.id !== idToDelete)
-        await handleSave(updatedBookmarks)
-    }, [bookmarks, handleSave])
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -94,17 +72,38 @@ const BookmarkWidget: React.FC<WidgetProps<BookmarkConfig>> = ({config, updateCo
         })
     )
 
+    const handleSave = useCallback(async (updatedBookmarks: BookmarkItem[]) => {
+        await updateConfig({ bookmarks: updatedBookmarks })
+    }, [updateConfig])
+
+    const handleAdd = useCallback(async (data: z.infer<typeof formSchema>) => {
+        const newBookmark: BookmarkItem = {
+            id: crypto.randomUUID(),
+            title: data.title,
+            link: data.link,
+        }
+        const updatedBookmarks = [...config.bookmarks, newBookmark]
+        await handleSave(updatedBookmarks)
+        setOpen(false)
+        form.reset()
+    }, [config.bookmarks])
+
+    const handleDelete = useCallback(async (idToDelete: string) => {
+        const updatedBookmarks = config.bookmarks.filter((b) => b.id !== idToDelete)
+        await handleSave(updatedBookmarks)
+    }, [config.bookmarks, handleSave])
+
     const handleDragEnd = useCallback((event: DragEndEvent) => {
         const { active, over } = event
         if (!over || active.id === over.id) return
 
-        const oldIndex = bookmarks.findIndex((item) => item.id === active.id)
-        const newIndex = bookmarks.findIndex((item) => item.id === over.id)
+        const oldIndex = config.bookmarks.findIndex((item) => item.id === active.id)
+        const newIndex = config.bookmarks.findIndex((item) => item.id === over.id)
         if (oldIndex === -1 || newIndex === -1) return
 
-        const newOrder = arrayMove(bookmarks, oldIndex, newIndex)
+        const newOrder = arrayMove(config.bookmarks, oldIndex, newIndex)
         void handleSave(newOrder)
-    }, [bookmarks, handleSave])
+    }, [config.bookmarks, handleSave])
 
     return (
         <>
@@ -158,14 +157,14 @@ const BookmarkWidget: React.FC<WidgetProps<BookmarkConfig>> = ({config, updateCo
                     </PopoverContent>
                 </Popover>
             </WidgetHeader>
-            {bookmarks.length > 0 ? (
+            {config.bookmarks.length > 0 ? (
                 <WidgetContent scroll>
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis]}>
                         <SortableContext
-                            items={bookmarks.map((bookmark) => bookmark.id)}
+                            items={config.bookmarks.map((bookmark) => bookmark.id)}
                             strategy={verticalListSortingStrategy}
                         >
-                            {bookmarks.map((bookmark) => (
+                            {config.bookmarks.map((bookmark) => (
                                 <BookmarkItem key={bookmark.id} id={bookmark.id} title={bookmark.title} link={bookmark.link} onDelete={() => handleDelete(bookmark.id)}/>
                             ))}
                         </SortableContext>

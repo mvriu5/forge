@@ -15,47 +15,32 @@ export const CONTAINER_STYLES = {
     )
 }
 
-export function hexToRgba(hex: string, alpha: number) {
-    const [r, g, b] = hex
-        .replace(/^#/, "")
-        .match(/.{2}/g)!
-        .map((h) => Number.parseInt(h, 16))
+export function getUpdateTimeLabel(date: Date | string | number | undefined | null): string {
+    if (date == null) return 'Updated now'
 
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`
-}
 
-export function getUpdateTimeLabel(date: Date): string {
+    const d = date instanceof Date ? date : new Date(date as string | number)
+    if (Number.isNaN(d.getTime())) return 'Updated now'
+
     const now = new Date()
-    const diffSec = (now.getTime() - date.getTime()) / 1000
+    const diffSec = (now.getTime() - d.getTime()) / 1000
 
-    if (diffSec < 120) {
-        return 'Updated now'
-    }
+    if (diffSec < 120) return 'Updated now'
 
     const minutes = Math.floor(diffSec / 60)
-    if (diffSec < 60 * 60) {
-        return `Updated ${minutes} minute${minutes !== 1 ? 's' : ''} ago`
-    }
+    if (diffSec < 60 * 60) return `Updated ${minutes} minute${minutes !== 1 ? 's' : ''} ago`
 
     const hours = Math.floor(diffSec / 3600)
-    if (diffSec < 60 * 60 * 24) {
-        return `Updated ${hours} hour${hours !== 1 ? 's' : ''} ago`
-    }
+    if (diffSec < 60 * 60 * 24) return `Updated ${hours} hour${hours !== 1 ? 's' : ''} ago`
 
     const days = Math.floor(diffSec / (3600 * 24))
-    if (diffSec < 3600 * 24 * 7) {
-        return `Updated ${days} day${days !== 1 ? 's' : ''} ago`
-    }
+    if (diffSec < 3600 * 24 * 7) return `Updated ${days} day${days !== 1 ? 's' : ''} ago`
 
     const weeks = Math.floor(diffSec / (3600 * 24 * 7))
-    if (diffSec < 3600 * 24 * 30) {
-        return `Updated ${weeks} week${weeks !== 1 ? 's' : ''} ago`
-    }
+    if (diffSec < 3600 * 24 * 30) return `Updated ${weeks} week${weeks !== 1 ? 's' : ''} ago`
 
     const months = Math.floor(diffSec / (3600 * 24 * 30))
-    if (diffSec < 3600 * 24 * 30 * 12) {
-        return `Updated ${months} month${months !== 1 ? 's' : ''} ago`
-    }
+    if (diffSec < 3600 * 24 * 30 * 12) return `Updated ${months} month${months !== 1 ? 's' : ''} ago`
 
     return 'Updated last year'
 }

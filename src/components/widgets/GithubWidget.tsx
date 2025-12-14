@@ -29,14 +29,14 @@ const GithubWidget: React.FC<WidgetProps> = () => {
         anchor: "tc",
     })
 
-    const dropdownFilterItems: MenuItem[] = Array.from(new Set(allLabels.map((label) => ({
+    const dropdownFilterItems: MenuItem[] = allLabels.map((label) => ({
         type: "checkbox",
         icon: <div className={"size-3 rounded-sm"} style={{backgroundColor: `#${label.color}`}}/>,
         key: label.id,
         label: label.name,
-        checked: selectedLabels.includes(label),
-        onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]))
-    }))))
+        checked: selectedLabels.includes(label.name),
+        onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label.name) ? prev.filter((name) => name !== label.name) : [...prev, label.name]))
+    }))
 
     return (
         <>

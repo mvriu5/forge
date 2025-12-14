@@ -49,7 +49,7 @@ const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({config, updateConfig}) =
         const input = inputRef.current!
         if (input?.value.trim()) {
             const newTodo: Todo = {
-                id: `todo-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, // Unique ID
+                id: crypto.randomUUID(),
                 text: input.value.trim(),
                 checked: false,
             }
@@ -57,7 +57,7 @@ const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({config, updateConfig}) =
             await handleSave(updatedTodos)
             input.value = ""
         }
-    }, [])
+    }, [inputRef.current, config.todos, handleSave])
 
     const handleDelete = useCallback(async (indexToDelete: number) => {
         const updatedTodos = config.todos.filter((_, i) => i !== indexToDelete)

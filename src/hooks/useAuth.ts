@@ -60,6 +60,9 @@ export const useAuth = () => {
             onRequest: (ctx) => {
                 setIsLoading(true)
             },
+            onSuccess: (ctx) => {
+                setIsLoading(false)
+            },
             onError: (ctx) => {
                 if (ctx.error.status === 403) {
                     toast.error("Verify your email first!")

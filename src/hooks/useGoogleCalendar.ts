@@ -153,7 +153,10 @@ export const useGoogleCalendar = () => {
         queryKey: GOOGLE_EVENT_QUERY_KEY(currentAccessToken, selectedCalendars),
         queryFn: async () => {
             const selectedCalendarObjects = calendars.filter((cal: any) => selectedCalendars.includes(cal.id))
-            const calendarPromises = selectedCalendarObjects.map((calendar: any) => fetchCalendarEvents(currentAccessToken, calendar.id))
+            const calendarPromises = selectedCalendarObjects.map(async (calendar: any) => {
+                const events = await fetchCalendarEvents(currentAccessToken, calendar.id)
+                return events.map((event: any) => ({ ...event, calendarId: calendar.id }))
+            })
             const results = await Promise.all(calendarPromises)
             return results.flat()
         },
@@ -171,11 +174,14 @@ export const useGoogleCalendar = () => {
 
     const getColor = useCallback((eventId: string) => {
         const event = events?.find(e => e.id === eventId)
-        const calendar = calendars?.find((c: any) => c.id === event.creator.email)
-        return calendar.backgroundColor ?? null
+        if (!event?.calendarId) return null
+        const calendar = calendars?.find((c: any) => c.id === event.calendarId)
+        return calendar?.backgroundColor ?? null
     }, [events, calendars])
 
-    const filteredEvents = useMemo(() => events?.filter(event => selectedCalendars.includes(event.creator.email)) || [], [events, selectedCalendars])
+    const filteredEvents = useMemo(() => (
+        events?.filter(event => selectedCalendars.includes(event.calendarId)) || []
+    ), [events, selectedCalendars])
 
     const manualRefresh = useCallback(async () => {
         await Promise.all([

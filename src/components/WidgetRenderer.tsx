@@ -1,16 +1,16 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, {useCallback, useMemo} from "react"
 import { WidgetContainer } from "@/components/widgets/base/WidgetContainer"
 import { useSession } from "@/hooks/data/useSession"
 import { useWidgets } from "@/hooks/data/useWidgets"
 import {getWidgetDefinition} from "@/lib/definitions"
-import { WidgetRuntimeProps } from "@tryforgeio/sdk"
+import {BaseWidget, WidgetRuntimeProps} from "@tryforgeio/sdk"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {ErrorBoundary} from "react-error-boundary"
 
-export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete}) => {
+export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete, onWidgetUpdate}) => {
     const { userId } = useSession()
     const { updateWidget } = useWidgets(userId)
     const { integrations, isLoading: isLoadingIntegrations, handleIntegrate } = useIntegrations(userId)
@@ -22,7 +22,7 @@ export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, 
     const integrationAccount = useMemo(() => getIntegrationByProvider(integrations, requiredIntegration), [integrations, requiredIntegration])
     const missingIntegration = requiredIntegration && !integrationAccount?.accessToken
 
-    const updateConfig = async (updater: | typeof defaultConfig | ((prev: typeof defaultConfig) => typeof defaultConfig)) => {
+    const updateConfig = useCallback(async (updater: | typeof defaultConfig | ((prev: typeof defaultConfig) => typeof defaultConfig)) => {
         const current = (widget.config ?? defaultConfig) as typeof defaultConfig
         const next = typeof updater === "function" ? (updater as (prev: typeof defaultConfig) => typeof defaultConfig)(current) : updater
 
@@ -39,7 +39,7 @@ export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, 
             updatedAt: widget.updatedAt,
             config: next as Record<string, any>,
         })
-    }
+    }, [defaultConfig, updateWidget, widget])
 
     if (missingIntegration && !isLoadingIntegrations) {
         return (
@@ -79,12 +79,13 @@ export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, 
                 )}
             >
                 <Component
-                    widget={widget as any}
+                    widget={widget as BaseWidget}
                     config={config}
                     updateConfig={updateConfig}
                     editMode={editMode}
                     isDragging={isDragging}
                     onWidgetDelete={onWidgetDelete}
+                    onWidgetUpdate={onWidgetUpdate}
                 />
             </ErrorBoundary>
         </WidgetContainer>

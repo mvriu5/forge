@@ -61,10 +61,10 @@ interface UpdateIntegrationArgs {
 }
 
 async function updateIntegrationRequest({provider, userId, data}: UpdateIntegrationArgs): Promise<Integration> {
-    const response = await fetch(`/api/accounts?userId=${userId}&provider=${provider}`, {
+    const response = await fetch("/api/accounts", {
         method: "PUT",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(data)
+        body: JSON.stringify({...data, userId, provider})
     })
 
     if (!response.ok) {

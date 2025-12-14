@@ -20,7 +20,7 @@
     "@scalar/nextjs-api-reference": "^0.9.5",
     "@tailwindcss/postcss": "^4.1.4",
     "@tanstack/react-query": "^5.90.12",
-    "@tryforgeio/sdk": "^0.1.3",
+    "@tryforgeio/sdk": "^0.1.8",
     "@uiw/react-color": "^2.9.2",
     "@vercel/analytics": "^1.6.1",
     "@vercel/blob": "^2.0.0",

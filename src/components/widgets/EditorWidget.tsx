@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useEffect, useState} from "react"
+import React, {useCallback, useEffect, useState} from "react"
 import {
     EditorBubble,
     EditorCommand,
@@ -54,32 +54,27 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig
         anchor: "tc"
     })
 
-    const createNewNote = () => {
+    const createNewNote = useCallback(async () => {
         const newNote: Note = {
-            id: `note-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            id: crypto.randomUUID(),
             title: "",
             content: {} as JSONContent,
             emoji: "",
             lastUpdated: new Date()
         }
+        await updateConfig({notes: [...config.notes, newNote]})
         setOpenNoteId(newNote.id)
-    }
+    }, [setOpenNoteId, updateConfig, config.notes])
 
-    const handleSave = async (id: string, data: { title: string, content: JSONContent, emoji: string, lastUpdated: Date }) => {
-        await updateConfig(prev => ({
-            ...prev,
-            notes: prev.notes.map(note =>
-                note.id === id ? { ...note, ...data } : note,
-            ),
-        }))
-    }
+    const handleSave = useCallback(async (updatedNotes: Note[]) => {
+        await updateConfig({ notes: updatedNotes })
+    }, [updateConfig])
 
-    const handleDelete = async (id: string) => {
-        await updateConfig(prev => ({
-            ...prev,
-            notes: prev.notes.filter(note => note.id !== id),
-        }))
-    }
+
+    const handleDelete = useCallback(async (idToDelete: string) => {
+        const updatedNotes = config.notes.filter((n) => n.id !== idToDelete)
+        await handleSave(updatedNotes)
+    }, [config.notes, handleSave])
 
     return (
         <>
@@ -104,7 +99,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig
                                 note={note}
                                 open={openNoteId === note.id}
                                 onOpenChange={(isOpen) => setOpenNoteId(isOpen ? note.id : null)}
-                                onSave={(id, data) => handleSave(id, data)}
+                                onSave={(note) => handleSave(config.notes.map((n) => n.id === note.id ? note : n))}
                                 onDelete={(id) => handleDelete(id)}
                             />
                         ))}
@@ -119,7 +114,7 @@ interface NoteDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     note: Note
-    onSave: (id: string, data: { title: string, content: JSONContent, emoji: string, lastUpdated: Date }) => void
+    onSave: (note: Note) => void
     onDelete: (id: string) => void
 }
 
@@ -150,7 +145,6 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
 
     const highlightCodeblocks = (content: string) => {
         const doc = new DOMParser().parseFromString(content, "text/html")
-        // biome-ignore lint/complexity/noForEach: <explanation>
         doc.querySelectorAll("pre code").forEach((el) => {
             // @ts-ignore
             // https://highlightjs.readthedocs.io/en/latest/api.html?highlight=highlightElement#highlightelement
@@ -161,21 +155,21 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
 
     const handleTitleBlur = () => {
         if (title !== note.title) {
-            onSave(note.id, { title, content: note.content as any, emoji: note.emoji, lastUpdated: new Date() })
+            onSave({id: note.id, title, content: note.content as any, emoji: note.emoji, lastUpdated: new Date()})
             setSaved(true)
         }
     }
 
     const handleEmojiSelect = (emoji: string) => {
         setEmoji(emoji)
-        onSave(note.id, { title, content: note.content as any, emoji, lastUpdated: new Date() })
+        onSave({id: note.id, title, content: note.content as any, emoji, lastUpdated: new Date()})
         setSaved(true)
         setEmojiPickerOpen(false)
     }
 
     const handleRemoveEmoji = () => {
         setEmoji("")
-        onSave(note.id, { title, content: note.content as any, emoji: "", lastUpdated: new Date() })
+        onSave({id: note.id, title, content: note.content as any, emoji: "", lastUpdated: new Date()})
         setSaved(true)
         setEmojiPickerOpen(false)
     }
@@ -187,13 +181,13 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
         const html = highlightCodeblocks(editor.getHTML())
         window.localStorage.setItem("html-content", highlightCodeblocks(html))
 
-        onSave(note.id, { title, content: json, emoji, lastUpdated: new Date() })
+        onSave({id: note.id, title, content: json, emoji, lastUpdated: new Date()})
         setSaved(true)
         setIsSaving(false)
     }
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
+        <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
             <DialogTrigger asChild>
                 <div className={"group w-full p-1 flex items-center justify-between cursor-pointer text-primary rounded-md hover:bg-secondary"}>
                     <div className="flex items-center gap-2">
@@ -223,8 +217,8 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
                 <DialogHeader className={"flex flex-row items-center py-2"}>
                     <Popover open={emojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
                         <PopoverTrigger asChild>
-                            <Button variant={"widget"} className={"size-10 text-2xl"}>
-                                {emoji?.length > 0 ? emoji : <File size={24}/>}
+                            <Button variant={"widget"} className={"size-8 text-2xl"}>
+                                {emoji?.length > 0 ? emoji : <File size={16}/>}
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className={"p-0 z-[60]"} onWheel={(e) => e.stopPropagation()}>
@@ -262,12 +256,12 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
                         }}
                         autoFocus={title.length === 0}
                         onBlur={handleTitleBlur}
-                        className={"shadow-none dark:shadow-none bg-0 border-0 focus:border-0 focus:bg-0 focus:outline-0 !text-2xl text-primary font-medium p-2"}
+                        className={"shadow-none dark:shadow-none bg-0 border-0 focus:border-0 focus:bg-0 focus:outline-0 !text-lg text-primary font-medium p-2"}
                     />
                     <VisuallyHidden>
                         <DialogTitle/>
                     </VisuallyHidden>
-                    <DialogClose iconSize={24} className={"absolute top-4 right-4 p-1 rounded-md hover:bg-white/5"}/>
+                    <DialogClose iconSize={16} className={"absolute top-4 right-4 p-1 rounded-md hover:bg-white/5"}/>
                 </DialogHeader>
                 <EditorRoot>
                     <div className={"rounded-md h-[72vh]"}>
