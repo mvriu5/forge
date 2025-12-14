@@ -127,10 +127,10 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
             <DialogContent className={"md:min-w-[800px] pl-8 pt-8"}>
                 <DialogHeader className={"flex flex-row justify-between items-center pr-4"}>
                     <DialogTitle>
-                        <p className={"flex items-center gap-2"}>
-                            Select a widget
+                        <div className={"flex items-center gap-2"}>
+                            <p>Select a widget</p>
                             <span className={"inline break-words text-tertiary font-normal bg-tertiary rounded-md px-1 py-1"}>{filteredWidgets.length}</span>
-                        </p>
+                        </div>
                     </DialogTitle>
                     <DialogClose/>
                 </DialogHeader>

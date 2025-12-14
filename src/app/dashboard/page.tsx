@@ -1,12 +1,11 @@
 "use client"
 
 import {Header} from "@/components/Header"
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react"
+import React, {Suspense, useCallback, useEffect, useMemo, useRef, useState} from "react"
 import {DndContext} from "@dnd-kit/core"
 import type {Widget} from "@/database"
 import {useGrid} from "@/hooks/useGrid"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
-import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 import {useHotkeys} from "react-hotkeys-hook"
 import {SpinnerDotted} from "spinners-react"
 import {useResponsiveLayout} from "@/hooks/media/useResponsiveLayout"
@@ -19,6 +18,8 @@ import {useSettings} from "@/hooks/data/useSettings"
 import {toast} from "sonner"
 import {WidgetRenderer} from "@/components/WidgetRenderer"
 import {DashboardEmpty} from "@/components/empty/DashboardEmpty"
+
+const LazyDashboardDialog = React.lazy(() => import("@/components/dialogs/DashboardDialog"))
 
 export default function Dashboard() {
     const {userId, refetchSession, isLoading: sessionLoading} = useSession()
@@ -62,6 +63,12 @@ export default function Dashboard() {
         if (!userId  || dashboardsLoading) return
         if (dashboards && dashboards.length === 0) setDialogOpen(true)
     }, [userId, dashboards, dashboardsLoading])
+
+    const handleDashboardChange = useCallback(async (dashboardId: string | null) => {
+      if (!settings) return
+      await updateSettings({ ...settings, lastDashboardId: dashboardId })
+    }, [settings, updateSettings])
+
 
     const handleEditModeEnter = useCallback(() => {
         setEditMode(true)
@@ -118,13 +125,7 @@ export default function Dashboard() {
                 widgetsEmpty={visibleWidgets.length === 0 && currentDashboard !== null}
                 dashboards={dashboards ?? []}
                 currentDashboard={currentDashboard}
-                onDashboardChange={async (dashboardId) => {
-                    if (!settings) return
-                    await updateSettings({
-                        ...settings,
-                        lastDashboardId: dashboardId,
-                    })
-                }}
+                onDashboardChange={handleDashboardChange}
                 addDashboard={addDashboard}
                 addDashboardStatus={addDashboardStatus}
                 userId={userId}
@@ -177,15 +178,18 @@ export default function Dashboard() {
                     )}
                 </>
             )}
-            <DashboardDialog
-                open={dialogOpen}
-                onOpenChange={setDialogOpen}
-                showOnClose={false}
-                dashboards={dashboards}
-                addDashboard={addDashboard}
-                addDashboardStatus={addDashboardStatus}
-                userId={userId}
-            />
+
+            <Suspense fallback={null}>
+                <LazyDashboardDialog
+                    open={dialogOpen}
+                    onOpenChange={setDialogOpen}
+                    showOnClose={false}
+                    dashboards={dashboards}
+                    addDashboard={addDashboard}
+                    addDashboardStatus={addDashboardStatus}
+                    userId={userId}
+                />
+            </Suspense>
         </div>
     )
 }

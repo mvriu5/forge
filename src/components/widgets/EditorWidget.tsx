@@ -93,21 +93,24 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig
                     <Plus size={16}/>
                 </Button>
             </WidgetHeader>
-            {config.notes.length === 0 && <WidgetEmpty message={"No notes available. Create a new note to get started."}/>}
-            <WidgetContent scroll>
-                <div className={"flex flex-col gap-2"}>
-                    {config.notes.map((note: Note) => (
-                        <NoteDialog
-                            key={note.id}
-                            note={note}
-                            open={openNoteId === note.id}
-                            onOpenChange={(isOpen) => setOpenNoteId(isOpen ? note.id : null)}
-                            onSave={(id, data) => handleSave(id, data)}
-                            onDelete={(id) => handleDelete(id)}
-                        />
-                    ))}
-                </div>
-            </WidgetContent>
+            {config.notes.length === 0 ? (
+                <WidgetEmpty message={"No notes yet."}/>
+            ) : (
+                <WidgetContent scroll>
+                    <div className={"flex flex-col gap-2"}>
+                        {config.notes.map((note: Note) => (
+                            <NoteDialog
+                                key={note.id}
+                                note={note}
+                                open={openNoteId === note.id}
+                                onOpenChange={(isOpen) => setOpenNoteId(isOpen ? note.id : null)}
+                                onSave={(id, data) => handleSave(id, data)}
+                                onDelete={(id) => handleDelete(id)}
+                            />
+                        ))}
+                    </div>
+                </WidgetContent>
+            )}
         </>
     )
 }

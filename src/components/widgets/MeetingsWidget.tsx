@@ -177,7 +177,7 @@ export const meetingsWidgetDefinition = defineWidget({
     integration: "google",
     component: MeetingsWidget,
     description: 'Overview of your next meetings',
-    image: "/meetings_preview.svg",
+    image: "/github_preview.svg",
     tags: ["productivity"],
     sizes: {
         desktop: { width: 1, height: 2},

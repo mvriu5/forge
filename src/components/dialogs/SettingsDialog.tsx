@@ -349,6 +349,7 @@ const ProfileSection = ({onClose}: ProfileProps) => {
                         <div className={"w-full flex gap-2 justify-end"}>
                             <Button
                                 className={"w-max"}
+                                type={"button"}
                                 onClick={onClose}
                             >
                                 Cancel
