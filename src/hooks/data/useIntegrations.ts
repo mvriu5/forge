@@ -3,6 +3,7 @@ import type {Account} from "@/database"
 import {authClient} from "@/lib/auth-client"
 import {toast} from "sonner"
 import {capitalizeFirstLetter} from "@better-auth/core/utils"
+import posthog from "posthog-js"
 
 interface Integration {
     id: string
@@ -44,7 +45,13 @@ async function fetchIntegrations(userId: string): Promise<Integration[]> {
 }
 
 async function unlinkIntegration(provider: string) {
-    await authClient.unlinkAccount({ providerId: provider })
+    await authClient.unlinkAccount({ providerId: provider }, {
+        onError: (error) => {
+             posthog.captureException(error, {
+                method: "unlinkIntegration", provider
+             })
+        }
+    })
 }
 
 interface UpdateIntegrationArgs {
@@ -87,7 +94,10 @@ export function useIntegrations(userId: string | undefined) {
                 if (!previous) return previous
                 return previous.filter((integration) => integration.provider !== provider)
             })
-        }
+        },
+        onError: (error, provider) => posthog.captureException(error, {
+            hook: "useIntegrations.deleteIntegration", userId, provider
+        })
     })
 
     const updateIntegrationMutation = useMutation({
@@ -97,7 +107,10 @@ export function useIntegrations(userId: string | undefined) {
                 if (!previous) return [updatedIntegration]
                 return previous.map((integration) => integration.provider === updatedIntegration.provider ? updatedIntegration : integration)
             })
-        }
+        },
+        onError: (error, updatedIntegration) => posthog.captureException(error, {
+            hook: "useIntegrations.updateIntegration", userId, updatedIntegration
+        })
     })
 
     const handleIntegrate = async (provider: string, callback = true) => {
@@ -113,6 +126,9 @@ export function useIntegrations(userId: string | undefined) {
             },
             onError: (ctx) => {
                 toast.error("Something went wrong", {description: ctx.error.message})
+                posthog.captureException(ctx.error, {
+                    method: "handleIntegrate", userId, provider
+                })
             }
         })
     }

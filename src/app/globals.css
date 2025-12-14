@@ -125,7 +125,8 @@
 }
 
 body {
-  @apply bg-secondary text-secondary;
+    @apply bg-secondary text-secondary;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
@@ -149,3 +150,9 @@ body {
     }
   }
 }
+
+@theme inline {
+    --font-sans: var(--font-figtree);
+    --font-mono: var(--font-geist-mono);
+}
+

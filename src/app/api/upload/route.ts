@@ -1,5 +1,8 @@
 import {NextResponse} from "next/server"
 import {put, del} from "@vercel/blob"
+import posthog from "posthog-js"
+
+const routePath = "/api/upload"
 
 export async function POST(request: Request) {
     const { searchParams } = new URL(request.url)
@@ -7,9 +10,14 @@ export async function POST(request: Request) {
 
     if (!filename || !request.body) return NextResponse.json({ error: "Filename is required" }, { status: 400 })
 
-    const blob = await put(filename, request.body, { access: 'public' })
+    try {
+        const blob = await put(filename, request.body, { access: 'public' })
+        return NextResponse.json(blob, { status: 200 })
+    } catch (error) {
+        posthog.captureException(error, { route: routePath, method: "POST", filename })
+        return NextResponse.json({ error: "Uploading failed" }, { status: 500 })
+    }
 
-    return NextResponse.json(blob)
 }
 
 export async function DELETE(request: Request) {
@@ -20,8 +28,9 @@ export async function DELETE(request: Request) {
 
     try {
         await del(filename)
-        return NextResponse.json({ success: true })
+        return NextResponse.json({ status: 200 })
     } catch (error) {
+        posthog.captureException(error, { route: routePath, method: "DELETE", filename })
         return NextResponse.json({ error: "Deletion failed" }, { status: 500 })
     }
 }
