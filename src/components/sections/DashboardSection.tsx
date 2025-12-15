@@ -10,7 +10,7 @@ import {formatDate} from "@/lib/utils"
 const LazyDeleteDashboardDialog = React.lazy(() => import('@/components/dialogs/DeleteDashboardDialog'))
 const LazyEditDashboardDialog = React.lazy(() => import('@/components/dialogs/EditDashboardDialog'))
 
-function DashboardSection() {
+function DashboardSection({handleClose}: {handleClose?: () => void}) {
     const {userId} = useSession()
     const {settings} = useSettings(userId)
     const {dashboards = []} = useDashboards(userId, null)
@@ -28,7 +28,11 @@ function DashboardSection() {
                                     <LazyEditDashboardDialog dashboard={dashboard} />
                                 </Suspense>
                                 <Suspense fallback={null}>
-                                    <LazyDeleteDashboardDialog dashboardId={dashboard.id} />
+                                    <LazyDeleteDashboardDialog
+                                        dashboardId={dashboard.id}
+                                        onDelete={handleClose}
+                                        onAllDeleted={handleClose}
+                                    />
                                 </Suspense>
                             </div>
                         </div>
