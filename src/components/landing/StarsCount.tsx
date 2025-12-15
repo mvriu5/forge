@@ -1,9 +1,4 @@
-import { cacheLife } from "next/cache"
-
 export async function StarsCount() {
-    "use cache"
-    cacheLife("hours")
-
     const data = await fetch("https://api.github.com/repos/mvriu5/forge")
     const json = await data.json()
     const stars = json.stargazers_count

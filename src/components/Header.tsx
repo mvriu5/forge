@@ -13,6 +13,8 @@ import {Skeleton} from "./ui/Skeleton"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
 import {Dashboard, DashboardInsert} from "@/database"
+import {NotificationPopover} from "@/components/popovers/NotificationPopover"
+import {useNotifications} from "@/hooks/data/useNotifications"
 
 interface HeaderProps {
     editMode: boolean
@@ -31,6 +33,8 @@ interface HeaderProps {
 }
 
 function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, onDashboardChange, addDashboard, addDashboardStatus, userId}: HeaderProps) {
+    const {sendNotification} = useNotifications(userId)
+
     const [dialogOpen, setDialogOpen] = useState(false)
 
     const layoutTooltip = useTooltip<HTMLButtonElement>({
@@ -107,7 +111,21 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                     </div>
                 }
             </div>
-            <ProfilePopover editMode={editMode}/>
+            <div className={"flex items-center gap-2"}>
+                <Button
+                    onClick={() => {
+                        void sendNotification({
+                            type: "message",
+                            message: "This is a test notification!",
+                            createdAt: new Date().toISOString()
+                        })
+                    }}
+                >
+                    Test Notification
+                </Button>
+                <NotificationPopover editMode={editMode}/>
+                <ProfilePopover editMode={editMode}/>
+            </div>
         </div>
     )
 }
