@@ -103,7 +103,7 @@ function SettingsDialog() {
                     <div className={"flex flex-col w-full h-full p-4 gap-4"}>
                         {tab === "profile" && <ProfileSection handleClose={() => setOpen(false)}/>}
                         {tab === "integrations" && <IntegrationSection handleClose={() => setOpen(false)}/>}
-                        {tab === "dashboards" && <DashboardSection />}
+                        {tab === "dashboards" && <DashboardSection handleClose={() => setOpen(false)}/>}
                         {tab === "settings" && <SettingsSection handleClose={() => setOpen(false)}/>}
                     </div>
                 </div>

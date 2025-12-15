@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useCallback, useEffect, useState} from "react"
+import React, {useCallback, useEffect, useRef, useState} from "react"
 import {
     EditorBubble,
     EditorCommand,
@@ -25,14 +25,14 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "../ui/Dialog"
 import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 import {Input} from "@/components/ui/Input"
-import {File, Plus, Trash} from "lucide-react"
+import {File, Plus, Trash, X} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
-import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {cn, getUpdateTimeLabel} from "@/lib/utils"
 import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
+import {EmojiPicker} from "@/components/ui/EmojiPicker"
 
 type Note = {
     id: string
@@ -126,10 +126,22 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
     const [_, setSaved] = useState(true)
     const [__, setIsSaving] = useState(false)
 
+    const titleSaveTimeout = useRef<NodeJS.Timeout | null>(null)
+    const contentSaveTimeout = useRef<NodeJS.Timeout | null>(null)
+
     useEffect(() => {
         setTitle(note.title)
         setEmoji(note.emoji)
     }, [note.title, note.emoji])
+
+    useEffect(() => {
+        return () => {
+            if (contentSaveTimeout.current) {
+                clearTimeout(contentSaveTimeout.current)
+                contentSaveTimeout.current = null
+            }
+        }
+    }, [])
 
     const extensions = [
         GlobalDragHandle.configure({
@@ -143,7 +155,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
         slashCommand
     ]
 
-    const highlightCodeblocks = (content: string) => {
+    const highlightCodeblocks = useCallback((content: string) => {
         const doc = new DOMParser().parseFromString(content, "text/html")
         doc.querySelectorAll("pre code").forEach((el) => {
             // @ts-ignore
@@ -151,30 +163,55 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
             hljs.highlightElement(el);
         })
         return new XMLSerializer().serializeToString(doc)
-    }
+    }, [])
 
-    const handleTitleBlur = () => {
+    useEffect(() => {
+        if (title === note.title) return
+
+        if (titleSaveTimeout.current) {
+            clearTimeout(titleSaveTimeout.current)
+        }
+
+        titleSaveTimeout.current = setTimeout(() => {
+            onSave({id: note.id, title, content: note.content as any, emoji, lastUpdated: new Date()})
+            setSaved(true)
+            titleSaveTimeout.current = null
+        }, 500)
+
+        return () => {
+            if (titleSaveTimeout.current) {
+                clearTimeout(titleSaveTimeout.current)
+                titleSaveTimeout.current = null
+            }
+        }
+    }, [title, note.title, note.id, note.content, emoji, onSave])
+
+    const handleTitleBlur = useCallback(() => {
+        if (titleSaveTimeout.current) {
+            clearTimeout(titleSaveTimeout.current)
+            titleSaveTimeout.current = null
+        }
         if (title !== note.title) {
-            onSave({id: note.id, title, content: note.content as any, emoji: note.emoji, lastUpdated: new Date()})
+            onSave({id: note.id, title, content: note.content as any, emoji, lastUpdated: new Date()})
             setSaved(true)
         }
-    }
+    }, [title, note.title, note.id, note.content, emoji, onSave])
 
-    const handleEmojiSelect = (emoji: string) => {
+    const handleEmojiSelect = useCallback((emoji: string) => {
         setEmoji(emoji)
         onSave({id: note.id, title, content: note.content as any, emoji, lastUpdated: new Date()})
         setSaved(true)
         setEmojiPickerOpen(false)
-    }
+    }, [note.id, title, onSave])
 
-    const handleRemoveEmoji = () => {
+    const handleRemoveEmoji = useCallback(() => {
         setEmoji("")
         onSave({id: note.id, title, content: note.content as any, emoji: "", lastUpdated: new Date()})
         setSaved(true)
         setEmojiPickerOpen(false)
-    }
+    }, [note.id, title, onSave])
 
-    const handleSave = async (editor: EditorInstance) => {
+    const persistContent = useCallback(async (editor: EditorInstance) => {
         setIsSaving(true)
 
         const json = editor.getJSON()
@@ -184,7 +221,27 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
         onSave({id: note.id, title, content: json, emoji, lastUpdated: new Date()})
         setSaved(true)
         setIsSaving(false)
-    }
+    }, [note.id, title, emoji, onSave])
+
+    const handleSave = useCallback((editor: EditorInstance) => {
+        if (contentSaveTimeout.current) {
+            clearTimeout(contentSaveTimeout.current)
+        }
+
+        contentSaveTimeout.current = setTimeout(() => {
+            void persistContent(editor)
+            contentSaveTimeout.current = null
+        }, 300)
+    }, [])
+
+    const flushSave = useCallback((editor: EditorInstance) => {
+        if (contentSaveTimeout.current) {
+            clearTimeout(contentSaveTimeout.current)
+            contentSaveTimeout.current = null
+        }
+
+        void persistContent(editor)
+    }, [])
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
@@ -213,7 +270,7 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
                     </Button>
                 </div>
             </DialogTrigger>
-            <DialogContent className={"md:min-w-[800px] h-full max-h-[80vh] w-full overflow-hidden gap-0 p-2"}>
+            <DialogContent className={"md:min-w-[800px] h-[80vh] max-h-[80vh] w-full overflow-hidden gap-0 p-2 flex flex-col"}>
                 <DialogHeader className={"flex flex-row items-center py-2"}>
                     <Popover open={emojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
                         <PopoverTrigger asChild>
@@ -226,25 +283,8 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
                                 emojisPerRow={6}
                                 emojiSize={40}
                                 onEmojiSelect={(emoji) => handleEmojiSelect(emoji)}
-                                className={"border-0 h-full"}
-                            >
-                                <EmojiPicker.Header className={"shadow-md dark:shadow-xl pb-1"}>
-                                    <EmojiPicker.Input placeholder="Search emoji" hideIcon className={"px-1 bg-secondary border border-main/40"}/>
-                                    <Button
-                                        variant={"widget"}
-                                        className={"h-7 hover:bg-error/10 hover:text-error"}
-                                        onClick={handleRemoveEmoji}
-                                    >
-                                        Remove
-                                    </Button>
-                                </EmojiPicker.Header>
-                                <EmojiPicker.Group>
-                                    <ScrollArea className={"h-80"} thumbClassname={"bg-white/10"}>
-                                        <EmojiPicker.List containerHeight={12976}/>
-                                    </ScrollArea>
-                                </EmojiPicker.Group>
-
-                            </EmojiPicker>
+                                onRemove={handleRemoveEmoji}
+                            />
                         </PopoverContent>
                     </Popover>
                     <Input
@@ -272,12 +312,12 @@ const NoteDialog: React.FC<NoteDialogProps> = ({open, onOpenChange, note, onSave
                             immediatelyRender={false}
                             onBlur={(params) => handleSave(params.editor)}
                             onUpdate={(params) => handleSave(params.editor)}
-                            className="p-2 rounded-md h-full w-full bg-primary"
+                            className="p-2 rounded-md max-h-full min-h-full w-full bg-primary"
                             editorProps={{
                                 handleDOMEvents: {
                                     keydown: (_view, event) => handleCommandNavigation(event)
                                 },
-                                attributes: {class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",},
+                                attributes: {class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full min-h-full cursor-text"},
                             }}
                         >
                             <EditorCommand

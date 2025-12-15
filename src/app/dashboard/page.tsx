@@ -45,7 +45,10 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (!userId || dashboardsLoading) return
-        if (dashboards && dashboards.length === 0) setDialogOpen(true)
+        if (dashboards && dashboards.length === 0) {
+            const timer = setTimeout(() => setDialogOpen(true), 500)
+            return () => clearTimeout(timer)
+        }
     }, [userId, dashboards, dashboardsLoading])
 
     const handleDashboardChange = useCallback(async (dashboardId: string | null) => {

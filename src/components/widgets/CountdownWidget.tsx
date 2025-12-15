@@ -1,9 +1,9 @@
 "use client"
 
-import React, {useCallback} from "react"
+import React, {useCallback, useState} from "react"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
-import {Plus, TimerReset, Trash} from "lucide-react"
+import {File, Plus, TimerReset, Trash} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {z} from "zod"
@@ -13,10 +13,9 @@ import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/co
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {DatePicker} from "@/components/ui/Datepicker"
-import {EmojiPicker} from "@ferrucc-io/emoji-picker"
-import {ScrollArea} from "@/components/ui/ScrollArea"
 import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 import {addDays} from "@/lib/utils"
+import {EmojiPicker} from "@/components/ui/EmojiPicker"
 
 type Countdown = {
     title: string
@@ -35,6 +34,8 @@ const formSchema = z.object({
 })
 
 const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({config, updateConfig}) => {
+    const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
+
     const addTooltip = useTooltip<HTMLButtonElement>({
         message: config.countdown ? "Delete the current countdown" : "Add a new countdown",
         anchor: "tc"
@@ -113,6 +114,32 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({config, update
                                 <form onSubmit={form.handleSubmit(handleAddCountdown)} className="space-y-2">
                                     <FormField
                                         control={form.control}
+                                        name="emoji"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <Popover open={emojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
+                                                    <PopoverTrigger asChild>
+                                                        <Button variant={"widget"} className={"size-8 text-2xl"}>
+                                                            {field.value}
+                                                        </Button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className={"p-0 z-[60]"} onWheel={(e) => e.stopPropagation()}>
+                                                        <EmojiPicker
+                                                            emojisPerRow={6}
+                                                            emojiSize={32}
+                                                            onEmojiSelect={(value) => {
+                                                                field.onChange(value)
+                                                                setEmojiPickerOpen(false)
+                                                            }}
+                                                        />
+                                                    </PopoverContent>
+                                                </Popover>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
                                         name="title"
                                         render={({ field }) => (
                                             <FormItem>
@@ -133,33 +160,6 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({config, update
                                                     value={field.value}
                                                     onSelect={field.onChange}
                                                 />
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="emoji"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Emoji</FormLabel>
-                                                <EmojiPicker
-                                                    emojisPerRow={6}
-                                                    emojiSize={32}
-                                                    onEmojiSelect={field.onChange}
-                                                    className={"border-0 h-full"}
-                                                >
-                                                    <EmojiPicker.Header className={"shadow-md dark:shadow-xl pb-1"}>
-                                                        <EmojiPicker.Input placeholder="Search emoji" hideIcon className={"px-1 bg-secondary border border-main/40"}/>
-                                                    </EmojiPicker.Header>
-                                                    <EmojiPicker.Group>
-                                                        <ScrollArea className={"h-80"} thumbClassname={"bg-white/10"}>
-                                                            <EmojiPicker.List containerHeight={12976}/>
-                                                        </ScrollArea>
-                                                    </EmojiPicker.Group>
-
-                                                </EmojiPicker>
                                                 <FormMessage />
                                             </FormItem>
                                         )}

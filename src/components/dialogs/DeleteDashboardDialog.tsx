@@ -10,9 +10,15 @@ import {toast} from "sonner"
 import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 
-function DeleteDashboardDialog({dashboardId}: {dashboardId: string}) {
+interface DeleteDashboardDialogProps {
+    dashboardId: string
+    onDelete?: () => void
+    onAllDeleted?: () => void
+}
+
+function DeleteDashboardDialog({dashboardId, onDelete, onAllDeleted}: DeleteDashboardDialogProps) {
     const {userId} = useSession()
-    const {removeDashboard} = useDashboards(userId, null)
+    const {dashboards, removeDashboard} = useDashboards(userId, null)
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -24,8 +30,13 @@ function DeleteDashboardDialog({dashboardId}: {dashboardId: string}) {
     })
 
     const handleDelete = async () => {
+        const isLastDashboard = (dashboards?.length ?? 0) <= 1
+        if (isLastDashboard) onDelete?.()
+
         setLoading(true)
         await removeDashboard(dashboardId)
+        if (isLastDashboard) onAllDeleted?.()
+
         toast.success("Successfully deleted dashboard!")
         setLoading(false)
         setOpen(false)
