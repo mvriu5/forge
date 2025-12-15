@@ -30,7 +30,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 <div
                     data-state={open ? "open" : "closed"}
                     className={cn(
-                        "h-8 md:border border-main/20 flex items-center gap-2 md:bg-secondary md:hover:bg-tertiary md:data-[state=open]:bg-tertiary",
+                        "h-8 md:border border-main/60 flex items-center gap-2 md:bg-secondary md:hover:bg-inverted/10 md:data-[state=open]:bg-inverted/10",
                         "rounded-md md:px-2 md:group-data-[state=disabled]:bg-secondary",
                         "md:group-data-[state=disabled]:hover:bg-secondary shadow-xs dark:shadow-md"
                     )}

@@ -46,6 +46,36 @@ export function getUpdateTimeLabel(date: Date | string | number | undefined | nu
     return 'Updated last year'
 }
 
+export function getTimeLabel(date: Date | string | number | undefined | null): string {
+    if (date == null) return 'Now'
+
+
+    const d = date instanceof Date ? date : new Date(date as string | number)
+    if (Number.isNaN(d.getTime())) return 'Now'
+
+    const now = new Date()
+    const diffSec = (now.getTime() - d.getTime()) / 1000
+
+    if (diffSec < 120) return 'Now'
+
+    const minutes = Math.floor(diffSec / 60)
+    if (diffSec < 60 * 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`
+
+    const hours = Math.floor(diffSec / 3600)
+    if (diffSec < 60 * 60 * 24) return `${hours} hour${hours !== 1 ? 's' : ''} ago`
+
+    const days = Math.floor(diffSec / (3600 * 24))
+    if (diffSec < 3600 * 24 * 7) return `${days} day${days !== 1 ? 's' : ''} ago`
+
+    const weeks = Math.floor(diffSec / (3600 * 24 * 7))
+    if (diffSec < 3600 * 24 * 30) return `${weeks} week${weeks !== 1 ? 's' : ''} ago`
+
+    const months = Math.floor(diffSec / (3600 * 24 * 30))
+    if (diffSec < 3600 * 24 * 30 * 12) return ` ${months} month${months !== 1 ? 's' : ''} ago`
+
+    return 'Last year'
+}
+
 export function formatDate(date?: string | number | Date | null, hourFormat: "12" | "24" = "24"): string {
     if (!date) return ""
 

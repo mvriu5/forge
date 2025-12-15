@@ -10,40 +10,51 @@ export function useNotifications(userId: string | undefined) {
     useEffect(() => {
         if (!userId) return
 
-        let es: EventSource | null = null;
+        let es: EventSource | null = null
+        const controller = new AbortController();
 
         (async () => {
-            const res = await fetch(`/api/notifications?userId=${userId}`)
-            if (!res.ok) return
+            try {
+                const res = await fetch(`/api/notifications?userId=${userId}`, { signal: controller.signal })
+                if (!res.ok) return
 
-            const initial: Notification[] = await res.json()
-            setNotifications(initial)
+                const initial: Notification[] = await res.json()
+                setNotifications(initial.slice(-100))
+            } catch (error) {
+                return
+            }
 
             es = new EventSource(`/api/notifications/stream?userId=${userId}`)
             es.onopen = () => setConnected(true)
-            es.onerror = () => setConnected(false)
+            es.onerror = () => {
+                setConnected(false)
+                es?.close()
+            }
             es.onmessage = (event) => {
-                const firstComma = event.data.indexOf(",")
-                const secondComma = event.data.indexOf(",", firstComma + 1)
+                const jsonStart = event.data.indexOf("{")
+                if (jsonStart === -1) return
 
-                if (firstComma === -1 || secondComma === -1) return
-
-                const kind = event.data.slice(0, firstComma)
-                if (kind !== "message") return
-
-                const payload = event.data.slice(secondComma + 1)
-                if (!payload || payload[0] !== "{") return
+                const payload = event.data.slice(jsonStart)
 
                 try {
                     const notification = JSON.parse(payload) as Notification
-                    setNotifications((prev) => [...prev, notification])
-                } catch {
-                    console.log("Failed to parse notification payload", payload)
+
+                    if (!notification?.id) return
+
+                    setNotifications((prev) => {
+                        if (prev.some((item) => item.id === notification.id)) return prev
+                        const next = [...prev, notification]
+                        return next.slice(-100)
+                    })
+                } catch (error) {
                 }
             }
         })()
 
-        return () => es?.close()
+        return () => {
+            controller.abort()
+            es?.close()
+        }
     }, [userId])
 
     const sendNotification = useCallback(async (input: { type: Notification["type"], message: string, createdAt: string }) => {

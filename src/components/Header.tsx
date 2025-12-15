@@ -112,17 +112,6 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                 }
             </div>
             <div className={"flex items-center gap-2"}>
-                <Button
-                    onClick={() => {
-                        void sendNotification({
-                            type: "message",
-                            message: "This is a test notification!",
-                            createdAt: new Date().toISOString()
-                        })
-                    }}
-                >
-                    Test Notification
-                </Button>
                 <NotificationPopover editMode={editMode}/>
                 <ProfilePopover editMode={editMode}/>
             </div>
