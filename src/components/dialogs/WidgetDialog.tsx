@@ -15,7 +15,6 @@ import {Grid2x2Plus} from "lucide-react"
 import React, {useMemo, useState} from "react"
 import {cn} from "@/lib/utils"
 import Image from "next/image"
-import {getAllWidgetPreviews, type WidgetPreview} from "@/lib/widgetRegistry"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
 import {ScrollArea} from "@/components/ui/ScrollArea"
@@ -26,6 +25,9 @@ import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useSettings} from "@/hooks/data/useSettings"
 import {toast} from "sonner"
+import {definitions} from "@/lib/definitions"
+import { WidgetDefinition } from "@tryforgeio/sdk"
+import {capitalizeFirstLetter} from "@better-auth/core/utils"
 
 interface WidgetDialogProps {
     editMode: boolean
@@ -38,10 +40,10 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
     const {currentDashboard} = useDashboards(userId, settings)
     const {widgets, addWidget, addWidgetStatus} = useWidgets(userId)
 
-    const [selectedWidgets, setSelectedWidgets] = useState<WidgetPreview[]>([])
-    const [allWidgets] = useState<WidgetPreview[]>(() => getAllWidgetPreviews())
-    const [query, setQuery] = useState<string>("")
-    const [tagValue, setTagValue] = useState<string>("")
+    const [selectedWidgets, setSelectedWidgets] = useState<WidgetDefinition[]>([])
+    const [allWidgets] = useState<WidgetDefinition[]>(definitions)
+    const [query, setQuery] = useState("")
+    const [tagValue, setTagValue] = useState("")
     const [dialogOpen, setDialogOpen] = useState(false)
 
     useHotkeys("mod+s", (event) => {
@@ -57,22 +59,27 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
         offset: 12
     })
 
+    const widgetCategories = useMemo(() => {
+        const tags = definitions.flatMap(d => d.tags ?? []);
+        return Array.from(new Set(tags));
+    }, [])
+
     const filteredWidgets = useMemo(() => {
         return allWidgets.filter((widget) => {
-            const matchesSearch = widget.title.toLowerCase().includes(query.toLowerCase())
+            const matchesSearch = widget.name.toLowerCase().includes(query.toLowerCase())
             const matchesTags = tagValue === "" || widget.tags?.some((tag: any) => tag === tagValue)
             return matchesSearch && matchesTags
         })
     }, [allWidgets, query, tagValue])
 
-    const handleSelect = (widgetPreview: WidgetPreview) => {
+    const handleSelect = (widgetPreview: WidgetDefinition) => {
         if (!currentDashboard) return
-        if (widgets?.find((w) => w.widgetType === widgetPreview?.widgetType && w.dashboardId === currentDashboard.id)) return
+        if (widgets?.find((w) => w.widgetType === widgetPreview?.name && w.dashboardId === currentDashboard.id)) return
 
         setSelectedWidgets(prev => {
-            const exists = prev.some(w => w.widgetType === widgetPreview.widgetType);
-            if (exists) return prev.filter(w => w.widgetType !== widgetPreview.widgetType);
-            return [...prev, widgetPreview];
+            const exists = prev.some(w => w.name === widgetPreview.name)
+            if (exists) return prev.filter(w => w.name !== widgetPreview.name)
+            return [...prev, widgetPreview]
         })
     }
 
@@ -84,7 +91,7 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                 await addWidget({
                     userId,
                     dashboardId: currentDashboard.id,
-                    widgetType: widget.widgetType,
+                    widgetType: widget.name,
                     height: widget.sizes.desktop.height,
                     width: widget.sizes.desktop.width,
                     positionX: 0,
@@ -120,10 +127,10 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
             <DialogContent className={"md:min-w-[800px] pl-8 pt-8"}>
                 <DialogHeader className={"flex flex-row justify-between items-center pr-4"}>
                     <DialogTitle>
-                        <p className={"flex items-center gap-2"}>
-                            Select a widget
-                            <span className={"inline break-words text-tertiary font-normal"}>{`(${filteredWidgets.length})`}</span>
-                        </p>
+                        <div className={"flex items-center gap-2"}>
+                            <p>Select a widget</p>
+                            <span className={"inline break-words text-tertiary font-normal bg-tertiary rounded-md px-1 py-1"}>{filteredWidgets.length}</span>
+                        </div>
                     </DialogTitle>
                     <DialogClose/>
                 </DialogHeader>
@@ -137,18 +144,11 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                 </div>
                 <div className={"flex"}>
                     <ToggleGroup type="single" className={"border-0 bg-transparent px-0"} value={tagValue} onValueChange={(tag) => setTagValue(tag)}>
-                        <ToggleGroupItem value="weather" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60 "}>
-                            Weather
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="productivity" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
-                            Productivity
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="github" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
-                            Github
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="finance" className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
-                            Finance
-                        </ToggleGroupItem>
+                        {widgetCategories.map(category => (
+                            <ToggleGroupItem key={category} value={category} className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
+                                {capitalizeFirstLetter((category))}
+                            </ToggleGroupItem>
+                        ))}
                     </ToggleGroup>
                 </div>
 
@@ -156,9 +156,9 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {filteredWidgets.map((widget) => (
                             <div
-                                key={widget.widgetType}
-                                data-used={widgets?.find((w) => w.widgetType === widget.widgetType && w.dashboardId === currentDashboard?.id) ? "true" : "false"}
-                                data-selected={selectedWidgets.some((w) => w.widgetType === widget.widgetType) ? "true" : "false"}
+                                key={widget.name}
+                                data-used={widgets?.find((w) => w.widgetType === widget.name && w.dashboardId === currentDashboard?.id) ? "true" : "false"}
+                                data-selected={selectedWidgets.some((w) => w.name === widget.name) ? "true" : "false"}
                                 className={cn(
                                     "relative group cursor-default col-span-1 flex flex-col p-2 m-1 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
                                     "data-[selected=true]:border-brand/30 data-[used=true]:border-success/30",
@@ -168,9 +168,9 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                                 onClick={() => handleSelect(widget)}
                             >
                                 <div className={"flex justify-between items-center"}>
-                                    <p className={"text-primary"}>{widget.title}</p>
+                                    <p className={"text-primary"}>{widget.name}</p>
                                     <div className={"px-2 rounded-md bg-white/5 border border-main/40 group-data-[used=true]:bg-success/10 group-data-[used=true]:text-success group-data-[used=true]:border-success/20"}>
-                                        {widgets?.find((w) => w.widgetType === widget.widgetType && w.dashboardId === currentDashboard?.id) ?
+                                        {widgets?.find((w) => w.widgetType === widget.name && w.dashboardId === currentDashboard?.id) ?
                                             "In use" :
                                             `${widget.sizes.desktop.width}x${widget.sizes.desktop.height}`
                                         }
@@ -178,7 +178,7 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                                 </div>
                                 <p className={"text-sm text-secondary"}>{widget.description}</p>
                                 <div className={"absolute -right-2 -bottom-16 rounded-md shadow-md pt-0.5 pl-0.5 border border-main/40 bg-secondary"}>
-                                    <Image src={widget.previewImage} alt={widget.title} width={330} height={300}/>
+                                    <Image src={widget.image} alt={widget.name} width={330} height={300}/>
                                 </div>
                             </div>
                         ))}

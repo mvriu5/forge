@@ -178,16 +178,6 @@ export const getGithubAccount = async (userId: string): Promise<Account[]> => {
         ))
 }
 
-export const getLinearAccount = async (userId: string): Promise<Account[]> => {
-    return db
-        .select()
-        .from(account)
-        .where(and(
-            eq(account.userId, userId),
-            eq(account.providerId, "linear")
-        ))
-}
-
 export const updateAccount = async (userId: string, provider: string, data: Partial<AccountInsert>) => {
     const now = new Date()
     return db

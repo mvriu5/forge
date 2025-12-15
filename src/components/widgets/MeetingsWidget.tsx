@@ -1,29 +1,23 @@
 "use client"
 
 import React, {useCallback, useMemo, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {Filter, RefreshCw} from "lucide-react"
 import {Button} from "@/components/ui/Button"
-import {format, isSameDay} from "date-fns"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
-import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {convertToRGBA} from "@/lib/colorConvert"
-import {useSession} from "@/hooks/data/useSession"
 import {useSettings} from "@/hooks/data/useSettings"
-import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
+import {defineWidget, WidgetProps} from "@tryforgeio/sdk"
+import {formatDateHeader, formatTime, isSameDay} from "@/lib/utils"
 
-const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {userId} = useSession()
-    const {settings} = useSettings(userId)
-    const {integrations, handleIntegrate} = useIntegrations(userId)
-    const googleIntegration = getIntegrationByProvider(integrations, "google")
-    const { calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
+const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
+    const {settings} = useSettings(widget.userId)
+    const {calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
 
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -67,7 +61,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
                 return (
                     <React.Fragment key={event.id}>
                         <p className="w-full text-tertiary text-xs mt-3 mb-1">
-                            {format(eventDate, "EEEE, d MMMM")}
+                            {formatDateHeader(eventDate)}
                         </p>
                         <EventCard event={event} color={getColor(event.id)} hourFormat={settings?.config.hourFormat ?? "24"}/>
                     </React.Fragment>
@@ -92,65 +86,53 @@ const MeetingsWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDe
         return calendars && Array.isArray(events) && events.length === 0 && !isInitialLoading
     }, [calendars, events, isInitialLoading])
 
-    const hasError = !googleIntegration?.accessToken && !isLoading
-
     return (
-        <WidgetTemplate id={id} widget={widget} name={"meetings"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            {hasError ? (
-                    <WidgetError
-                        message={"If you want to use this widget, you need to integrate your Google account first!"}
-                        actionLabel={"Integrate"}
-                        onAction={() => handleIntegrate("google")}
-                    />
-                ) : (
-                    <>
-                        <WidgetHeader title={"Meetings"}>
-                            <DropdownMenu
-                                asChild
-                                items={dropdownFilterItems}
-                                align={"end"}
-                                open={dropdownOpen}
-                                onOpenChange={setDropdownOpen}
-                            >
-                                <Button
-                                    data-state={dropdownOpen ? "open" : "closed"}
-                                    variant={"widget"}
-                                    className={"group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
-                                    disabled={!calendars || calendars?.length === 0 || isLoading || isFetching}
-                                    {...filterTooltip}
-                                >
-                                    <Filter size={16} />
-                                </Button>
-                            </DropdownMenu>
-                            <Button
-                                className={"group"}
-                                variant={"widget"}
-                                onClick={refetch}
-                                data-loading={(isLoading || isFetching) ? "true" : "false"}
-                                {...refreshTooltip}
-                            >
-                                <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
-                            </Button>
-                        </WidgetHeader>
-                        {isInitialLoading ? (
-                            <WidgetContent scroll>
-                                <div className="flex flex-col justify-between gap-4 pt-2">
-                                    <Skeleton className={"h-15 w-full px-2"} />
-                                    <Skeleton className={"h-15 w-full px-2"} />
-                                    <Skeleton className={"h-15 w-full px-2"} />
-                                    <Skeleton className={"h-15 w-full px-2"} />
-                                </div>
-                            </WidgetContent>
-                        ) : hasNoEvents ? (
-                            <WidgetEmpty message={"No upcoming meetings"} />
-                        ) : (
-                            <WidgetContent scroll>
-                                <div className={"w-full flex flex-col gap-2 items-center"}>{renderEvents()}</div>
-                            </WidgetContent>
-                        )}
-                    </>
+        <>
+            <WidgetHeader title={"Meetings"}>
+                <DropdownMenu
+                    asChild
+                    items={dropdownFilterItems}
+                    align={"end"}
+                    open={dropdownOpen}
+                    onOpenChange={setDropdownOpen}
+                >
+                    <Button
+                        data-state={dropdownOpen ? "open" : "closed"}
+                        variant={"widget"}
+                        className={"group data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
+                        disabled={!calendars || calendars?.length === 0 || isLoading || isFetching}
+                        {...filterTooltip}
+                    >
+                        <Filter size={16} />
+                    </Button>
+                </DropdownMenu>
+                <Button
+                    className={"group"}
+                    variant={"widget"}
+                    onClick={refetch}
+                    data-loading={(isLoading || isFetching) ? "true" : "false"}
+                    {...refreshTooltip}
+                >
+                    <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
+                </Button>
+            </WidgetHeader>
+            {isInitialLoading ? (
+                <WidgetContent scroll>
+                    <div className="flex flex-col justify-between gap-4 pt-2">
+                        <Skeleton className={"h-15 w-full px-2"} />
+                        <Skeleton className={"h-15 w-full px-2"} />
+                        <Skeleton className={"h-15 w-full px-2"} />
+                        <Skeleton className={"h-15 w-full px-2"} />
+                    </div>
+                </WidgetContent>
+            ) : hasNoEvents ? (
+                <WidgetEmpty message={"No upcoming meetings"} />
+            ) : (
+                <WidgetContent scroll>
+                    <div className={"w-full flex flex-col gap-2 items-center"}>{renderEvents()}</div>
+                </WidgetContent>
             )}
-        </WidgetTemplate>
+        </>
     )
 }
 
@@ -181,11 +163,23 @@ const EventCard: React.FC<EventProps> = ({ event, color, hourFormat }) => {
 
             <div className="relative z-10 text-primary">
                 <p className="font-medium">{event.summary}</p>
-                <p className={"text-secondary"}>{`${format(event.start.dateTime, hourFormat === "24" ? "HH:mm" : "h:mm a")} - ${format(event.end.dateTime, hourFormat === "24" ? "HH:mm" : "h:mm a")}`}</p>
+                <p className={"text-secondary"}>{`${formatTime(event.start.dateTime, hourFormat)} - ${formatTime(event.end.dateTime, hourFormat)}`}</p>
                 <p className={"text-tertiary"}>{event.location}</p>
             </div>
         </div>
     )
 }
 
-export {MeetingsWidget}
+export const meetingsWidgetDefinition = defineWidget({
+    name: "Meetings",
+    integration: "google",
+    component: MeetingsWidget,
+    description: 'Overview of your next meetings',
+    image: "/github_preview.svg",
+    tags: ["productivity"],
+    sizes: {
+        desktop: { width: 1, height: 2},
+        tablet: { width: 1, height: 2 },
+        mobile: { width: 1, height: 1 }
+    }
+})

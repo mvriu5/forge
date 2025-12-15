@@ -4,6 +4,9 @@ import { useEffect, useState } from "react"
 const GEOCODING_QUERY_KEY = (coords: { lat: number, lon: number } | null) => ["reverse-geocoding", coords] as const
 const WEATHER_QUERY_KEY = (coords: { lat: number, lon: number} | null) => ["weather", coords] as const
 
+const GEO_COORDS_STORAGE_KEY = "weatherWidgetCoords"
+const GEO_PERMISSION_STORAGE_KEY = "weatherWidgetPermission"
+
 const USER_AGENT_HEADER = {"User-Agent": "Forge (tryforge.io)"}
 
 const fetchReverseGeocoding = async (lat: number, lon: number) => {
@@ -18,7 +21,7 @@ const fetchReverseGeocoding = async (lat: number, lon: number) => {
 const fetchWeatherData = async (lat: number, lon: number) => {
     const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode`)
 
-    if (!res.ok) throw new Error("Wetterdaten-Fehler")
+    if (!res.ok) throw new Error("Weatherdata-Error")
     return res.json()
 }
 
@@ -27,14 +30,49 @@ export const useWeather = () => {
     const [geolocationError, setGeolocationError] = useState(false)
 
     useEffect(() => {
+        if (typeof window === "undefined") return
+
+        const storedCoords = window.localStorage.getItem(GEO_COORDS_STORAGE_KEY)
+        if (storedCoords) {
+            try {
+                const parsed = JSON.parse(storedCoords) as { lat?: number; lon?: number }
+                if (typeof parsed?.lat === "number" && typeof parsed?.lon === "number") {
+                    setCoords({ lat: parsed.lat, lon: parsed.lon })
+                    return
+                }
+            } catch {
+                // ignore invalid stored data
+            }
+        }
+
+        const storedPermission = window.localStorage.getItem(GEO_PERMISSION_STORAGE_KEY)
+        if (storedPermission === "denied") {
+            setGeolocationError(true)
+            return
+        }
+
         if (!("geolocation" in navigator)) {
             setGeolocationError(true)
             return
         }
 
         navigator.geolocation.getCurrentPosition((position) => {
-            setCoords({lat: position.coords.latitude, lon: position.coords.longitude})
-        }, () => setGeolocationError(true))
+            const newCoords = { lat: position.coords.latitude, lon: position.coords.longitude }
+            setCoords(newCoords)
+            try {
+                window.localStorage.setItem(GEO_COORDS_STORAGE_KEY, JSON.stringify(newCoords))
+                window.localStorage.removeItem(GEO_PERMISSION_STORAGE_KEY)
+            } catch {
+                // ignore storage errors
+            }
+        }, () => {
+            setGeolocationError(true)
+            try {
+                window.localStorage.setItem(GEO_PERMISSION_STORAGE_KEY, "denied")
+            } catch {
+                // ignore storage errors
+            }
+        })
     }, [])
 
     const isGeoLoading = coords === null && !geolocationError

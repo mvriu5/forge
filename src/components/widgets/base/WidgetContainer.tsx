@@ -2,7 +2,7 @@ import {Button} from "@/components/ui/Button"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {useBreakpoint} from "@/hooks/media/useBreakpoint"
 import {cn} from "@/lib/utils"
-import {getWidgetPreview} from "@/lib/widgetRegistry"
+import {getWidgetDefinition} from "@/lib/definitions"
 import {useDraggable} from "@dnd-kit/core"
 import {CSS} from "@dnd-kit/utilities"
 import {Trash} from "lucide-react"
@@ -19,13 +19,14 @@ interface WidgetProps extends HTMLAttributes<HTMLDivElement> {
     onWidgetDelete?: (id: string) => void
 }
 
-const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, widget, editMode, onWidgetDelete}) => {
+const WidgetContainer: React.FC<WidgetProps> = ({id, className, children, name, widget, editMode, onWidgetDelete}) => {
     const {breakpoint} = useBreakpoint()
-    const widgetConfig = getWidgetPreview(widget?.widgetType ?? name)
-    const responsiveSize = widgetConfig.preview.sizes[breakpoint]
+    const widgetType = widget?.widgetType ?? name
+    const definition = getWidgetDefinition(widgetType)
+    const responsiveSize = definition.sizes[breakpoint]
 
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-        id: widget?.id ?? id ?? name,
+        id: widget?.id ?? id ?? widgetType,
         data: {widget},
         disabled: !editMode || !widget
     })
@@ -46,13 +47,9 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, w
         zIndex: isDragging ? 30 : 20,
     } : undefined
 
-    const draggableProps = editMode ? {
-        ref: setNodeRef,
-        ...attributes,
-        ...listeners
-    } : {
-        ref: setNodeRef
-    }
+    const draggableProps = editMode
+        ? {ref: setNodeRef, ...attributes, ...listeners}
+        : {ref: setNodeRef}
 
     return (
         <div
@@ -89,4 +86,4 @@ const WidgetTemplate: React.FC<WidgetProps> = ({id, className, children, name, w
     )
 }
 
-export { WidgetTemplate, type WidgetProps }
+export { WidgetContainer }

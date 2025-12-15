@@ -151,4 +151,4 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode = false, das
     )
 }
 
-export {DashboardDialog}
+export default DashboardDialog

@@ -1,7 +1,6 @@
 "use client"
 
 import React from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
 import {usePhantom} from "@/hooks/usePhantom"
 import {Button} from "@/components/ui/Button"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
@@ -11,8 +10,9 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Skeleton} from "../ui/Skeleton"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {useTooltip} from "@/components/ui/TooltipProvider"
+import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
-const PhantomWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
+const PhantomWidget: React.FC<WidgetProps> = () => {
     const {provider, wallet, connect, disconnect, isLoading, isFetching, isError, refetch} = usePhantom()
 
     const connectTooltip = useTooltip<HTMLButtonElement>({
@@ -21,7 +21,7 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDel
     })
 
     return (
-        <WidgetTemplate id={id} widget={widget} className={"flex flex-col gap-4 overflow-hidden"} name={"phantom"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <>
             <WidgetHeader title={"Phantom"} className={"z-[1]"}>
                 <Button
                     variant={"widget"}
@@ -58,8 +58,19 @@ const PhantomWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDel
                     </div>
                 </WidgetContent>
             )}
-        </WidgetTemplate>
+        </>
     )
 }
 
-export {PhantomWidget}
+export const phantomWidgetDefinition = defineWidget({
+    name: "Phantom",
+    component: PhantomWidget,
+    description: 'See your phantom wallet balance',
+    image: "/github_preview.svg",
+    tags: ["finance"],
+    sizes: {
+        desktop: { width: 1, height: 1 },
+        tablet: { width: 1, height: 1 },
+        mobile: { width: 1, height: 1 }
+    }
+})

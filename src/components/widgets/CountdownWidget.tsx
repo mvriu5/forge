@@ -1,24 +1,22 @@
 "use client"
 
-import React, {useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import React, {useCallback} from "react"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
-import {Plus, Trash} from "lucide-react"
+import {Plus, TimerReset, Trash} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
-import {addDays} from "date-fns"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {DatePicker} from "@/components/ui/Datepicker"
 import {EmojiPicker} from "@ferrucc-io/emoji-picker"
 import {ScrollArea} from "@/components/ui/ScrollArea"
-import {useWidgets} from "@/hooks/data/useWidgets"
-import {useSession} from "@/hooks/data/useSession"
+import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
+import {addDays} from "@/lib/utils"
 
 type Countdown = {
     title: string
@@ -26,20 +24,20 @@ type Countdown = {
     date: Date
 }
 
-const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {userId} = useSession()
-    const {updateWidget} = useWidgets(userId)
-    const [countdown, setCountdown] = useState<Countdown | null>(widget?.config?.countdown ?? null)
+interface CountdownConfig {
+    countdown: Countdown | null
+}
 
+const formSchema = z.object({
+    title: z.string().nonempty({message: "Title is required"}),
+    date: z.date(),
+    emoji: z.string()
+})
+
+const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({config, updateConfig}) => {
     const addTooltip = useTooltip<HTMLButtonElement>({
-        message: countdown ? "Delete the current countdown" : "Add a new countdown",
+        message: config.countdown ? "Delete the current countdown" : "Add a new countdown",
         anchor: "tc"
-    })
-
-    const formSchema = z.object({
-        title: z.string().nonempty({message: "Title is required"}),
-        date: z.date(),
-        emoji: z.string()
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -51,11 +49,11 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetD
         },
     })
 
-    const formatCountdown = () => {
-        if (!countdown) return ""
+    const formatCountdown = useCallback(() => {
+        if (!config.countdown) return ""
 
         const now = new Date()
-        const targetDate = new Date(countdown.date)
+        const targetDate = new Date(config.countdown.date)
         const diff = targetDate.getTime() - now.getTime()
 
         if (diff <= 0) {
@@ -67,19 +65,15 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetD
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
 
         return `${days}d ${hours}h ${minutes}m `
-    }
+    }, [config.countdown])
 
-    const handleDeleteCountdown = async () => {
-        if(!widget) return
-        setCountdown(null)
-        await updateWidget({
-            ...widget,
-            config: {}
-        })
-    }
+    const handleSave = useCallback(async (updatedCountdown: Countdown | null) => {
+        await updateConfig({ countdown: updatedCountdown })
+    }, [updateConfig])
 
-    const handleAddCountdown = async () => {
-        if (!widget) return
+    const handleDeleteCountdown = useCallback(async () => await handleSave(null), [handleSave])
+
+    const handleAddCountdown = useCallback(async () => {
         const data = form.getValues()
 
         const newCountdown: Countdown = {
@@ -88,27 +82,20 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetD
             date: data.date
         }
 
-        await updateWidget({
-            ...widget,
-            config: {
-                countdown: newCountdown
-            }
-        })
-
-        setCountdown(newCountdown)
+        await updateConfig({ countdown: newCountdown })
         form.reset()
-    }
+    }, [updateConfig, form])
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"countdown"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            <WidgetHeader title={"Countdown"}>
-                {countdown ? (
+        <>
+            <WidgetHeader title={config.countdown?.title ?? "Countdown"}>
+                {config.countdown ? (
                     <Button
                         variant={"widget"}
                         onClick={handleDeleteCountdown}
                         {...addTooltip}
                     >
-                        <Trash size={16}/>
+                        <TimerReset size={16}/>
                     </Button>
                 ) : (
                     <Popover>
@@ -135,7 +122,6 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetD
                                             </FormItem>
                                         )}
                                     />
-                                    {/*Datepicker & Emojipicker*/}
                                     <FormField
                                         control={form.control}
                                         name="date"
@@ -160,7 +146,7 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetD
                                                 <FormLabel>Emoji</FormLabel>
                                                 <EmojiPicker
                                                     emojisPerRow={6}
-                                                    emojiSize={40}
+                                                    emojiSize={32}
                                                     onEmojiSelect={field.onChange}
                                                     className={"border-0 h-full"}
                                                 >
@@ -193,24 +179,38 @@ const CountdownWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetD
                 )}
 
             </WidgetHeader>
-                {countdown ? (
-                    <WidgetContent className="flex flex-row items-center">
-                        <div className={"flex items-center justify-center bg-black/5 dark:bg-white/5 size-24 rounded-md text-7xl"}>
-                            {countdown?.emoji}
-                        </div>
-                        <div className={"flex flex-col gap-2 "}>
-                            <p className={"text-2xl text-secondary font-medium"}>{countdown.title}</p>
-                            <p className={"text-3xl text-primary font-semibold"}>{formatCountdown()}</p>
-                        </div>
-                    </WidgetContent>
+            {config.countdown ? (
+                <WidgetContent className="flex flex-col sm:flex-row sm:items-center sm:gap-4 gap-2">
+                    <div className={"shrink-0 flex items-center justify-center bg-black/5 dark:bg-white/5 border border-main/40 dark:shadow-md shadow-sm rounded-md w-20 h-20 sm:w-24 sm:h-24 text-4xl sm:text-6xl md:text-7xl"}>
+                        {config.countdown?.emoji}
+                    </div>
 
-                ) : (
-                    <WidgetEmpty message={"No countdown configured yet."}/>
-                )}
+                    <div className={"flex-1 flex items-center overflow-hidden"}>
+                        <p className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-primary font-semibold font-mono truncate"}>
+                            {formatCountdown()}
+                        </p>
+                    </div>
+                </WidgetContent>
 
-
-        </WidgetTemplate>
+            ) : (
+                <WidgetEmpty message={"No countdown configured yet."}/>
+            )}
+        </>
     )
 }
 
-export {CountdownWidget}
+export const countdownWidgetDefinition = defineWidget({
+    name: "Countdown",
+    component: CountdownWidget,
+    description: "See how much time is left to a special event",
+    image: "/github_preview.svg",
+    tags: [],
+    sizes: {
+        desktop: { width: 1, height: 1 },
+        tablet: { width: 1, height: 1 },
+        mobile: { width: 1, height: 2 }
+    },
+    defaultConfig: {
+        countdown: null,
+    },
+})

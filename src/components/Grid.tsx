@@ -1,5 +1,6 @@
 import {useDroppable} from "@dnd-kit/core"
 import React from "react"
+import {map} from "zod"
 
 interface GridCellProps {
     x: number
@@ -7,6 +8,11 @@ interface GridCellProps {
     width: number
     height: number
     isDroppable: boolean
+}
+
+interface GridProps {
+    cells: GridCellProps[]
+    enabled: boolean
 }
 
 const GridCell = ({ x, y, width, height, isDroppable }: GridCellProps) => {
@@ -35,4 +41,19 @@ const GridCell = ({ x, y, width, height, isDroppable }: GridCellProps) => {
     )
 }
 
-export {GridCell}
+const Grid = ({cells, enabled}: GridProps) => {
+    if (!enabled) return null
+
+    return cells.map((cell) => (
+        <GridCell
+            key={`${cell.x},${cell.y}`}
+            x={cell.x}
+            y={cell.y}
+            width={cell.width}
+            height={cell.height}
+            isDroppable={cell.isDroppable}
+        />
+    ))
+}
+
+export {Grid}

@@ -1,12 +1,11 @@
 "use client"
 
-import React, {useEffect, useState} from "react"
-import {WidgetProps, WidgetTemplate} from "@/components/widgets/base/WidgetTemplate"
+import React, {useState} from "react"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Button} from "@/components/ui/Button"
-import {Forward, Import, Plus, Trash} from "lucide-react"
+import {Forward, Plus, Trash} from "lucide-react"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
@@ -38,13 +37,9 @@ import Compact from "@uiw/react-color-compact"
 import {convertToRGBA} from "@/lib/colorConvert"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {restrictToFirstScrollableAncestor, restrictToHorizontalAxis, restrictToWindowEdges} from "@dnd-kit/modifiers"
-import {useWidgets} from "@/hooks/data/useWidgets"
-import {useSession} from "@/hooks/data/useSession"
-import {Asana, Atlassian, Linear, Trello} from "@/components/svg/Icons"
-import {JiraImportDialog} from "@/components/dialogs/JiraImportDialog"
-import {LinearImportDialog} from "@/components/dialogs/LinearImportDialog"
+import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
-export type Card = {
+type Card = {
     id: string
     title: string
 }
@@ -56,18 +51,18 @@ type Column = {
     cards: Card[]
 }
 
-const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {userId} = useSession()
-    const {updateWidget} = useWidgets(userId)
-    const [columns, setColumns] = useState<Column[]>(widget?.config?.kanban ?? [])
+interface KanbanConfig {
+    columns: Column[]
+}
+
+const formSchema = z.object({
+    title: z.string()
+})
+
+const KanbanWidget: React.FC<WidgetProps<KanbanConfig>> = ({config, updateConfig}) => {
     const [columnPopoverOpen, setColumnPopoverOpen] = useState(false)
-    const [importPopoverOpen, setImportPopoverOpen] = useState(false)
     const [activeId, setActiveId] = useState<string | null>(null)
     const [hex, setHex] = useState("#ffffff")
-
-    useEffect(() => {
-        void updateWidgetConfig()
-    }, [columns])
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -83,18 +78,9 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
         })
     )
 
-    const importTooltip = useTooltip<HTMLButtonElement>({
-        message: "Import from your favorite app",
-        anchor: "tc"
-    })
-
     const addColumnTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new category",
         anchor: "tc"
-    })
-
-    const formSchema = z.object({
-        title: z.string()
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -104,25 +90,28 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
         },
     })
 
-    const updateWidgetConfig = async () => {
-        if (!widget) return
-        await updateWidget({
-            ...widget,
-            config: {
-                kanban: columns,
-            },
-        })
+    const findColumn = (cols: Column[], id: string) => {
+        if (id.startsWith("column-")) {
+            return cols.find((col) => col.id === id)
+        }
+        return cols.find((col) => col.cards.some((card) => card.id === id))
     }
 
-    const handleAddColumn = (column: Partial<Column>) => {
+    const handleAddColumn = async (column: Partial<Column>) => {
+        if (!updateConfig) return
+
         if (column.title?.trim()) {
             const newColumn: Column = {
                 id: `column-${crypto.randomUUID()}`,
-                title: column.title?.trim(),
+                title: column.title.trim(),
                 color: hex,
                 cards: [],
             }
-            setColumns((prev) => [...prev, newColumn])
+
+            await updateConfig(prev => ({
+                ...prev,
+                columns: [...(prev.columns ?? []), newColumn],
+            }))
 
             setColumnPopoverOpen(false)
             setHex("#ffffff")
@@ -130,27 +119,43 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
         }
     }
 
-    const handleColumnDelete = (columnId: string) => {
-        setColumns((prevColumns) => prevColumns.filter((col) => col.id !== columnId))
+    const handleColumnDelete = async (columnId: string) => {
+        if (!updateConfig) return
+
+        await updateConfig(prev => ({
+            ...prev,
+            columns: (prev.columns ?? []).filter(col => col.id !== columnId),
+        }))
     }
 
-    const handleCardDelete = (cardId: string) => {
-        setColumns((prev) => prev.map((col) => ({...col, cards: col.cards.filter((card) => card.id !== cardId)})))
+    const handleCardDelete = async (cardId: string) => {
+        if (!updateConfig) return
+
+        await updateConfig(prev => ({
+            ...prev,
+            columns: (prev.columns ?? []).map(col => ({
+                ...col,
+                cards: col.cards.filter(card => card.id !== cardId),
+            })),
+        }))
     }
 
-    const handleAddCardToColumn = (columnId: string, title: string) => {
+    const handleAddCardToColumn = async (columnId: string, title: string) => {
+        if (!updateConfig) return
+
         const newCard: Card = {
             id: `card-${crypto.randomUUID()}`,
-            title
+            title,
         }
-        setColumns((prev) => prev.map((col) => (col.id === columnId ? { ...col, cards: [...col.cards, newCard] } : col)),)
-    }
 
-    const findColumn = (id: string) => {
-        if (id.startsWith("column-")) {
-            return columns.find((col) => col.id === id)
-        }
-        return columns.find((col) => col.cards.some((card) => card.id === id))
+        await updateConfig(prev => ({
+            ...prev,
+            columns: (prev.columns ?? []).map(col =>
+                col.id === columnId
+                    ? { ...col, cards: [...col.cards, newCard] }
+                    : col
+            ),
+        }))
     }
 
     const onDragStart = (event: DragStartEvent) => {
@@ -159,109 +164,103 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
 
     const onDragOver = (event: DragOverEvent) => {
         const { active, over } = event
-
         if (!over || active.id === over.id) return
+        if (!updateConfig) return
 
-        const activeContainer = findColumn(active.id as string)
-        const overContainer = findColumn(over.id as string)
+        void updateConfig(prev => {
+            const prevColumns = [...(prev.columns ?? [])]
 
-        if (!activeContainer || !overContainer || activeContainer.id === overContainer.id) return
+            const activeContainer = findColumn(prevColumns, active.id as string)
+            const overContainer = findColumn(prevColumns, over.id as string)
 
-        if (active.id.toString().startsWith("card-")) {
-            setColumns((prevColumns) => {
-                const newColumns = [...prevColumns]
+            if (!activeContainer || !overContainer || activeContainer.id === overContainer.id) {
+                return prev
+            }
 
-                const activeColumnIndex = newColumns.findIndex((col) => col.id === activeContainer.id)
-                const overColumnIndex = newColumns.findIndex((col) => col.id === overContainer.id)
+            if (!active.id.toString().startsWith("card-")) return prev
 
-                if (activeColumnIndex === -1 || overColumnIndex === -1) {
-                    return prevColumns
+            const activeColumnIndex = prevColumns.findIndex(col => col.id === activeContainer.id)
+            const overColumnIndex = prevColumns.findIndex(col => col.id === overContainer.id)
+            if (activeColumnIndex === -1 || overColumnIndex === -1) return prev
+
+            const activeCardIndex = prevColumns[activeColumnIndex].cards.findIndex(card => card.id === active.id)
+            if (activeCardIndex === -1) return prev
+
+            const [movedCard] = prevColumns[activeColumnIndex].cards.splice(activeCardIndex, 1)
+
+            let newCardIndex: number
+            if (over.id.toString().startsWith("card-")) {
+                newCardIndex = prevColumns[overColumnIndex].cards.findIndex(card => card.id === over.id)
+                if (newCardIndex === -1) {
+                    newCardIndex = prevColumns[overColumnIndex].cards.length
                 }
+            } else {
+                newCardIndex = prevColumns[overColumnIndex].cards.length
+            }
 
-                const activeCardIndex = newColumns[activeColumnIndex].cards.findIndex((card) => card.id === active.id)
-                if (activeCardIndex === -1) {
-                    return prevColumns
-                }
+            prevColumns[overColumnIndex].cards.splice(newCardIndex, 0, movedCard)
 
-                const [movedCard] = newColumns[activeColumnIndex].cards.splice(activeCardIndex, 1)
-
-                let newCardIndex: number
-                if (over.id.toString().startsWith("card-")) {
-                    newCardIndex = newColumns[overColumnIndex].cards.findIndex((card) => card.id === over.id)
-                    if (newCardIndex === -1) {
-                        newCardIndex = newColumns[overColumnIndex].cards.length
-                    }
-                } else {
-                    newCardIndex = newColumns[overColumnIndex].cards.length
-                }
-
-                newColumns[overColumnIndex].cards.splice(newCardIndex, 0, movedCard)
-
-                return newColumns
-            })
-        }
+            return {
+                ...prev,
+                columns: prevColumns,
+            }
+        })
     }
 
     const onDragEnd = (event: DragEndEvent) => {
         const { active, over } = event
         setActiveId(null)
-
-        if (!over || active.id === over.id) {
-            return
-        }
-
-        const activeContainer = findColumn(active.id as string)
-        const overContainer = findColumn(over.id as string)
-
-        if (!activeContainer || !overContainer) {
-            return
-        }
+        if (!over || active.id === over.id) return
+        if (!updateConfig) return
 
         const isDraggingColumn = active.id.toString().startsWith("column-")
         const isDraggingCard = active.id.toString().startsWith("card-")
 
-        if (isDraggingColumn && activeContainer.id !== overContainer.id) {
-            const oldIndex = columns.findIndex((col) => col.id === active.id)
-            const newIndex = columns.findIndex((col) => col.id === over.id)
+        void updateConfig(prev => {
+            const prevColumns = [...(prev.columns ?? [])]
+            const activeContainer = findColumn(prevColumns, active.id as string)
+            const overContainer = findColumn(prevColumns, over.id as string)
 
-            if (oldIndex !== -1 && newIndex !== -1) {
-                setColumns((prev) => arrayMove(prev, oldIndex, newIndex))
+            if (!activeContainer || !overContainer) return prev
+
+            if (isDraggingColumn && activeContainer.id !== overContainer.id) {
+                const oldIndex = prevColumns.findIndex(col => col.id === active.id)
+                const newIndex = prevColumns.findIndex(col => col.id === over.id)
+                if (oldIndex === -1 || newIndex === -1) return prev
+
+                return {
+                    ...prev,
+                    columns: arrayMove(prevColumns, oldIndex, newIndex),
+                }
             }
-        }
-        else if (isDraggingCard && activeContainer.id === overContainer.id) {
-            setColumns((prevColumns) => {
-                const newColumns = [...prevColumns]
-                const columnIndex = newColumns.findIndex((col) => col.id === activeContainer.id)
 
-                if (columnIndex === -1) {
-                    return prevColumns
+            if (isDraggingCard && activeContainer.id === overContainer.id) {
+                const columnIndex = prevColumns.findIndex(col => col.id === activeContainer.id)
+                if (columnIndex === -1) return prev
+
+                const oldCardIndex = prevColumns[columnIndex].cards.findIndex(card => card.id === active.id)
+                const newCardIndex = prevColumns[columnIndex].cards.findIndex(card => card.id === over.id)
+                if (oldCardIndex === -1 || newCardIndex === -1) return prev
+
+                prevColumns[columnIndex].cards = arrayMove(
+                    prevColumns[columnIndex].cards,
+                    oldCardIndex,
+                    newCardIndex
+                )
+
+                return {
+                    ...prev,
+                    columns: prevColumns,
                 }
+            }
 
-                const oldCardIndex = newColumns[columnIndex].cards.findIndex((card) => card.id === active.id)
-                const newCardIndex = newColumns[columnIndex].cards.findIndex((card) => card.id === over.id)
-
-                if (oldCardIndex !== -1 && newCardIndex !== -1) {
-                    newColumns[columnIndex].cards = arrayMove(newColumns[columnIndex].cards, oldCardIndex, newCardIndex)
-                }
-                return newColumns
-            })
-        }
+            return prev
+        })
     }
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"kanban"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
+        <>
             <WidgetHeader title={"Kanban Board"}>
-                <Popover open={importPopoverOpen} onOpenChange={setImportPopoverOpen}>
-                    <PopoverTrigger asChild>
-                        <Button variant={"widget"} className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"} {...importTooltip}>
-                            <Import size={16}/>
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className={"w-52 p-1"} align={"end"}>
-                        <LinearImportDialog/>
-                        <JiraImportDialog />
-                    </PopoverContent>
-                </Popover>
                 <Popover open={columnPopoverOpen} onOpenChange={setColumnPopoverOpen}>
                     <PopoverTrigger asChild>
                         <Button variant={"widget"} className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"} {...addColumnTooltip}>
@@ -334,7 +333,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                 </Popover>
             </WidgetHeader>
             <WidgetContent>
-                {columns.length === 0 ? (
+                {config.columns.length === 0 ? (
                     <WidgetEmpty message={"No categories yet. Add a category or import from another app to get started."}/>
                 ) : (
                     <DndContext
@@ -345,10 +344,10 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                         onDragEnd={onDragEnd}
                         modifiers={activeId?.startsWith("column-") ? [restrictToHorizontalAxis, restrictToFirstScrollableAncestor] : [restrictToWindowEdges]}
                     >
-                        <SortableContext items={columns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
+                        <SortableContext items={config.columns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
                             <ScrollArea className={"min-w-80"} orientation={"horizontal"} thumbClassname={"bg-white/10"}>
                                 <div className="flex gap-4 overflow-x-auto">
-                                    {columns.map((column) => (
+                                    {config.columns.map((column) => (
                                         <KanbanColumn
                                             key={column.id}
                                             column={column}
@@ -363,7 +362,7 @@ const KanbanWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
                     </DndContext>
                 )}
             </WidgetContent>
-        </WidgetTemplate>
+        </>
     )
 }
 
@@ -444,7 +443,7 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard, 
                                     card={card}
                                     onCardDelete={() => onDeleteCard(card.id)}
                                     color={column.color}
-                                    isPlceholder={isPlaceholder}
+                                    isPlaceholder={isPlaceholder}
                                 />
                             ))}
                         </div>
@@ -474,10 +473,10 @@ interface KanbanCardProps {
     card: Card
     color: string
     onCardDelete: (cardId: string) => void
-    isPlceholder?: boolean
+    isPlaceholder?: boolean
 }
 
-function KanbanCard({card, color, onCardDelete, isPlceholder = false}: KanbanCardProps) {
+function KanbanCard({card, color, onCardDelete, isPlaceholder = false}: KanbanCardProps) {
     const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
         id: card.id,
         data: {
@@ -496,7 +495,7 @@ function KanbanCard({card, color, onCardDelete, isPlceholder = false}: KanbanCar
 
     return (
         <div
-            className={cn("group flex gap-2 items-center justify-between rounded-md p-1 text-primary", isPlceholder && "pointer-events-none")}
+            className={cn("group flex gap-2 items-center justify-between rounded-md p-1 text-primary", isPlaceholder && "pointer-events-none")}
             ref={setNodeRef}
             style={style}
             {...attributes}
@@ -516,5 +515,18 @@ function KanbanCard({card, color, onCardDelete, isPlceholder = false}: KanbanCar
     )
 }
 
-
-export {KanbanWidget}
+export const kanbanWidgetDefinition = defineWidget({
+    name: "Kanban",
+    component: KanbanWidget,
+    description: "Organize your tasks in a kanban board",
+    image: "/github_preview.svg",
+    tags: ["productivity"],
+    sizes: {
+        desktop: { width: 2, height: 2 },
+        tablet: { width: 2, height: 2 },
+        mobile: { width: 1, height: 1 }
+    },
+    defaultConfig: {
+        columns: []
+    }
+})

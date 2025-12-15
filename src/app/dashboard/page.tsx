@@ -1,31 +1,27 @@
 "use client"
 
 import {Header} from "@/components/Header"
-import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from "react"
-import {getWidgetComponent} from "@/lib/widgetRegistry"
-import {DndContext} from "@dnd-kit/core"
+import React, {Suspense, useCallback, useEffect, useMemo, useRef, useState} from "react"
 import type {Widget} from "@/database"
-import {EmptyAddSVG} from "@/components/svg/EmptyAddSVG"
-import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
-import {useGrid} from "@/hooks/useGrid"
-import {useDragAndDrop} from "@/hooks/useDragAndDrop"
-import {DashboardDialog} from "@/components/dialogs/DashboardDialog"
 import {useHotkeys} from "react-hotkeys-hook"
 import {SpinnerDotted} from "spinners-react"
 import {useResponsiveLayout} from "@/hooks/media/useResponsiveLayout"
 import {cn} from "@/lib/utils"
-import {GridCell} from "@/components/GridCell"
 import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSettings} from "@/hooks/data/useSettings"
 import {toast} from "sonner"
+import {DashboardEmpty} from "@/components/empty/DashboardEmpty"
+import {DashboardGrid} from "@/components/DashboardGrid"
+
+const LazyDashboardDialog = React.lazy(() => import("@/components/dialogs/DashboardDialog"))
 
 export default function Dashboard() {
-    const {userId, refetchSession, isLoading: sessionLoading} = useSession()
+    const {userId, isLoading: sessionLoading} = useSession()
     const {settings, isLoading: settingsLoading, updateSettings} = useSettings(userId)
     const {dashboards, currentDashboard, isLoading: dashboardsLoading, addDashboard, addDashboardStatus} = useDashboards(userId, settings)
-    const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidgetPosition, setWidgets, updateWidget} = useWidgets(userId)
+    const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidget, updateWidgetPosition, setWidgets} = useWidgets(userId)
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
     const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
@@ -33,31 +29,29 @@ export default function Dashboard() {
     const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
     const [dialogOpen, setDialogOpen] = useState(false)
 
-    const currentWidgets = useMemo(() => (
-        widgets.filter((w) => w.dashboardId === currentDashboard?.id)
-    ), [widgets, currentDashboard?.id])
+    const currentDashboardId = currentDashboard?.id ?? null
+    const currentWidgets = useMemo(() => widgets.filter((widget) => widget.dashboardId === currentDashboardId), [widgets, currentDashboardId])
+    const widgetsToRemoveSet = useMemo(() => new Set(widgetsToRemove.map((widget) => widget.id)), [widgetsToRemove])
+    const visibleWidgets = useMemo(() => currentWidgets.filter((widget) => !widgetsToRemoveSet.has(widget.id)), [currentWidgets, widgetsToRemoveSet])
 
-    const gridCells = useGrid(activeWidget, currentWidgets)
-    const { sensors, handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop(editMode, widgets, currentDashboard?.id ?? null, updateWidgetPosition, setActiveWidget)
-    const { transformedWidgets, gridClasses, containerHeight, isDesktop } = useResponsiveLayout(currentWidgets)
+    const {isDesktop} = useResponsiveLayout(visibleWidgets)
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
-
-    useHotkeys("mod+e", (event) => {
-        event.preventDefault()
-        if (currentWidgets.length === 0) return
-        if (!editMode) setEditMode(true)
-    }, [editMode, currentWidgets])
+    const currentWidgetsRef = useRef<Widget[]>([])
 
     useEffect(() => {
-        void refetchSession()
-    }, [userId])
+        currentWidgetsRef.current = currentWidgets
+    }, [currentWidgets])
 
     useEffect(() => {
-        if (!userId) return
-        if (dashboardsLoading) return
+        if (!userId || dashboardsLoading) return
         if (dashboards && dashboards.length === 0) setDialogOpen(true)
     }, [userId, dashboards, dashboardsLoading])
+
+    const handleDashboardChange = useCallback(async (dashboardId: string | null) => {
+        if (!settings) return
+        await updateSettings({ ...settings, lastDashboardId: dashboardId })
+    }, [settings, updateSettings])
 
     const handleEditModeEnter = useCallback(() => {
         setEditMode(true)
@@ -83,18 +77,30 @@ export default function Dashboard() {
     }, [removeWidget, saveWidgetsLayout, widgetsToRemove])
 
     const handleEditModeCancel = useCallback(() => {
-        setWidgets(cachedWidgetsRef.current)
+        if (cachedWidgetsRef.current) setWidgets(cachedWidgetsRef.current)
         setEditMode(false)
         setWidgetsToRemove([])
         cachedWidgetsRef.current = null
     }, [setWidgets])
 
     const handleEditModeDelete = useCallback((id: string) => {
-        const widget = widgets.find((w) => w.id === id)
-        if (widget) setWidgetsToRemove((prev) => [...prev, widget])
-    }, [widgets])
+        setWidgetsToRemove((prevWidgetsToRemove) => {
+            if (prevWidgetsToRemove.some((widget) => widget.id === id)) return prevWidgetsToRemove
+            const widget = currentWidgetsRef.current.find((candidate) => candidate.id === id)
+            if (!widget) return prevWidgetsToRemove
+            return [...prevWidgetsToRemove, widget]
+        })
+    }, [])
 
-    const dataLoading = sessionLoading || dashboardsLoading || widgetsLoading || settingsLoading
+    useHotkeys("mod+e", (event) => {
+        event.preventDefault()
+        if (currentWidgets.length === 0) return
+        if (!editMode) handleEditModeEnter()
+    }, [editMode, currentWidgets, handleEditModeEnter])
+
+    const dataLoading = useMemo(() => (
+        sessionLoading || dashboardsLoading || widgetsLoading || settingsLoading
+    ), [sessionLoading, dashboardsLoading, widgetsLoading, settingsLoading])
 
     return (
         <div className={cn("flex flex-col w-full h-full overflow-hidden", isDesktop && "max-h-screen max-w-screen")}>
@@ -105,16 +111,10 @@ export default function Dashboard() {
                 handleEditModeSave={handleEditModeSave}
                 handleEditModeCancel={handleEditModeCancel}
                 isLoading={dataLoading}
-                widgetsEmpty={currentWidgets.length === 0 && currentDashboard !== null}
+                widgetsEmpty={visibleWidgets.length === 0 && currentDashboard !== null}
                 dashboards={dashboards ?? []}
                 currentDashboard={currentDashboard}
-                onDashboardChange={async (dashboardId) => {
-                    if (!settings) return
-                    await updateSettings({
-                        ...settings,
-                        lastDashboardId: dashboardId,
-                    })
-                }}
+                onDashboardChange={handleDashboardChange}
                 addDashboard={addDashboard}
                 addDashboardStatus={addDashboardStatus}
                 userId={userId}
@@ -123,87 +123,33 @@ export default function Dashboard() {
                 <div className={"h-screen w-screen flex items-center justify-center"}>
                     <SpinnerDotted size={56} thickness={160} speed={100} color="rgba(237, 102, 49, 1)" />
                 </div>
+            ) : (visibleWidgets.length === 0 && currentDashboard ? (
+                <DashboardEmpty/>
             ) : (
-                <>
-                    {currentWidgets.length === 0 && currentDashboard ? (
-                        <div className={"w-full h-screen flex items-center justify-center"}>
-                            <div className={"flex flex-col gap-4 items-center justify-center p-4 md:p-12 border border-main border-dashed rounded-md shadow-md dark:shadow-xl"}>
-                                <EmptyAddSVG/>
-                                <p className={"w-56 md:w-80 text-center text-sm"}>
-                                    You dont have any widgets in your dashboard. Add a new widget, by visiting the widget store.
-                                </p>
-                                <WidgetDialog
-                                    editMode={false}
-                                    title={"Widget-Store"}
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        <DndContext
-                            sensors={sensors}
-                            onDragStart={handleDragStart}
-                            onDragEnd={handleDragEnd}
-                            onDragOver={handleDragOver}
-                        >
-                            <div className={cn("relative w-full", containerHeight, gridClasses)}>
-                                {isDesktop && gridCells?.map((cell) => (
-                                    <GridCell
-                                        key={`${cell.x},${cell.y}`}
-                                        x={cell.x}
-                                        y={cell.y}
-                                        width={cell.width}
-                                        height={cell.height}
-                                        isDroppable={cell.isDroppable}
-                                    />
-                                ))}
-
-                                {transformedWidgets
-                                    ?.filter((widget) => !widgetsToRemove?.some((w) => w.id === widget.id))
-                                    .map((widget) => (
-                                        <MemoizedWidget
-                                            key={widget.id}
-                                            widget={widget}
-                                            editMode={editMode}
-                                            onDelete={handleEditModeDelete}
-                                            isDragging={activeWidget?.id === widget.id}
-                                        />
-                                    ))}
-                            </div>
-                        </DndContext>
-                    )}
-                </>
-            )}
-            <DashboardDialog
-                open={dialogOpen}
-                onOpenChange={setDialogOpen}
-                showOnClose={false}
-                dashboards={dashboards}
-                addDashboard={addDashboard}
-                addDashboardStatus={addDashboardStatus}
-                userId={userId}
-            />
+                <DashboardGrid
+                    editMode={editMode}
+                    activeWidgetId={activeWidget?.id ?? null}
+                    onWidgetDelete={handleEditModeDelete}
+                    onWidgetUpdate={updateWidget}
+                    currentDashboardId={currentDashboardId}
+                    currentWidgets={currentWidgets}
+                    updateWidgetPosition={updateWidgetPosition}
+                    visibleWidgets={visibleWidgets}
+                    activeWidget={activeWidget}
+                    setActiveWidget={setActiveWidget}
+                />
+            ))}
+            <Suspense fallback={null}>
+                <LazyDashboardDialog
+                    open={dialogOpen}
+                    onOpenChange={setDialogOpen}
+                    showOnClose={false}
+                    dashboards={dashboards}
+                    addDashboard={addDashboard}
+                    addDashboardStatus={addDashboardStatus}
+                    userId={userId}
+                />
+            </Suspense>
         </div>
     )
 }
-
-interface WidgetProps {
-    widget: Widget
-    onDelete: (id: string) => void
-    editMode: boolean
-    isDragging: boolean
-}
-
-const WidgetComponent = ({ widget, onDelete, editMode, isDragging }: WidgetProps) => {
-    const WidgetContent = useMemo(() => getWidgetComponent(widget.widgetType), [widget.widgetType])
-
-    return (
-        <WidgetContent
-            widget={widget}
-            onDelete={onDelete}
-            editMode={editMode}
-            isDragging={isDragging}
-        />
-    )
-}
-
-const MemoizedWidget = memo(WidgetComponent)

@@ -135,7 +135,7 @@ export const useGithub = () => {
                     .toLowerCase()
                     .includes(searchQuery.toLowerCase())
 
-            const matchesLabels = selectedLabels.length === 0 || (issue.labels?.some((label: any) => selectedLabels.includes(label)))
+            const matchesLabels = selectedLabels.length === 0 || issue.labels?.some((label: any) => selectedLabels.includes(label.name))
             return matchesSearch && matchesLabels
         })
     }, [issues, searchQuery, selectedLabels])

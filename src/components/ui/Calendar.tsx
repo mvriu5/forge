@@ -2,12 +2,10 @@
 
 import type React from "react"
 import {DayPicker, useDayPicker, type DayPickerProps, labelNext, labelPrevious} from "react-day-picker"
-
-import { cn } from "@/lib/utils"
+import {cn, differenceInCalendarDays} from "@/lib/utils"
 import {useCallback, useMemo, useState} from "react"
 import {ChevronLeft, ChevronRight} from "lucide-react"
 import {Button} from "@/components/ui/Button"
-import {differenceInCalendarDays} from "date-fns"
 
 export type CalendarProps = DayPickerProps & {
     yearRange?: number
@@ -263,31 +261,33 @@ const MonthGrid = ({className, children, displayYears, startMonth, endMonth, nav
 const YearGrid = ({className, displayYears, startMonth, endMonth, setNavView, navView, ...props}: YearGridProps) => {
     const { goToMonth, selected } = useDayPicker()
 
+    const years = useMemo(() => {
+        const from = displayYears.from
+        const to = displayYears.to
+        return Array.from({ length: to - from + 1 }, (_, idx) => from + idx)
+    }, [displayYears.from, displayYears.to])
+
     return (
         <div className={cn("grid grid-cols-4 gap-y-2", className)} {...props}>
-            {Array.from({ length: displayYears.to - displayYears.from + 1 }, (_, i) => {
-
-                // biome-ignore lint/style/noNonNullAssertion: <explanation>
-                const isBefore = differenceInCalendarDays(new Date(displayYears.from + i, 11, 31), startMonth!) < 0
-                // biome-ignore lint/style/noNonNullAssertion: <explanation>
-                const isAfter = differenceInCalendarDays(new Date(displayYears.from + i, 0, 0), endMonth!) > 0
+            {years.map((year) => {
+                const isBefore = startMonth ? differenceInCalendarDays(new Date(year, 11, 31), startMonth) < 0 : false
+                const isAfter = endMonth ? differenceInCalendarDays(new Date(year, 0, 0), endMonth) > 0 : false
                 const isDisabled = isBefore || isAfter
 
                 return (
                     <Button
-                        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                        key={i}
+                        key={year}
                         className={cn(
                             "h-7 w-full text-sm font-normal hover:bg-tertiary bg-transparent border-0",
-                            displayYears.from + i === new Date().getFullYear() && "bg-tertiary font-medium text-primary"
+                            year === new Date().getFullYear() && "bg-tertiary font-medium text-primary"
                         )}
                         onClick={() => {
                             setNavView("days")
-                            goToMonth(new Date(displayYears.from + i, (selected as Date | undefined)?.getMonth() ?? 0))
+                            goToMonth(new Date(year, (selected as Date | undefined)?.getMonth() ?? 0))
                         }}
                         disabled={navView === "years" ? isDisabled : undefined}
                     >
-                        {displayYears.from + i}
+                        {year}
                     </Button>
                 )
             })}

@@ -53,7 +53,8 @@ function findFreePosition(relevantWidgets: Widget[], width: number, height: numb
 export const useDragAndDrop = (editMode: boolean, widgets: Widget[] | undefined, currentDashboardId: string | null, updateWidgetPosition: (id: string, x: number, y: number) => void, setActiveWidget: (widget: Widget | null) => void) => {
     const relevantWidgets = useMemo(() => {
         if (!widgets || !currentDashboardId) return []
-        return widgets.filter((widget) => widget.dashboardId === currentDashboardId)
+        const alreadyScoped = widgets.every((widget) => widget.dashboardId === currentDashboardId)
+        return alreadyScoped ? widgets : widgets.filter((widget) => widget.dashboardId === currentDashboardId)
     }, [widgets, currentDashboardId])
 
     const sensors = useSensors(
@@ -85,9 +86,15 @@ export const useDragAndDrop = (editMode: boolean, widgets: Widget[] | undefined,
 
     const moveConflictingWidgets = useCallback((newWidget: { width: number; height: number }, x: number, y: number, excludeId: string) => {
         const conflictingWidgets = getConflictingWidgets(newWidget, x, y, excludeId)
+        const movedWidgets: Array<{ id: string; x: number; y: number; width: number; height: number }> = []
 
         conflictingWidgets.map((widget) => {
-            const freePosition = findFreePosition(relevantWidgets, widget.width, widget.height, widget.id, {
+            const updatedWidgets = relevantWidgets.map(w => {
+                const moved = movedWidgets.find(m => m.id === w.id)
+                return moved ? { ...w, positionX: moved.x, positionY: moved.y } : w
+            })
+
+            const freePosition = findFreePosition(updatedWidgets, widget.width, widget.height, widget.id, {  // <-- FIX 🟢 use updatedWidgets reflecting prior moves
                 x,
                 y,
                 width: newWidget.width,
@@ -95,8 +102,9 @@ export const useDragAndDrop = (editMode: boolean, widgets: Widget[] | undefined,
             })
 
             updateWidgetPosition(widget.id, freePosition.x, freePosition.y)
+            movedWidgets.push({ id: widget.id, x: freePosition.x, y: freePosition.y, width: widget.width, height: widget.height })
         })
-    }, [getConflictingWidgets, updateWidgetPosition])
+    }, [getConflictingWidgets, updateWidgetPosition, relevantWidgets])
 
     const handleDragStart = useCallback((event: DragStartEvent) => {
         if (!editMode) return

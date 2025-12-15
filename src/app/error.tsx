@@ -8,12 +8,7 @@ interface ErrorProps {
     reset: () => void
 }
 
-export default function CustomError({ error, reset }: ErrorProps) {
-
-    useEffect(() => {
-        console.error(error)
-    }, [error])
-
+export default function CustomError({ reset }: ErrorProps) {
     return (
         <div className="flex w-full h-screen items-center justify-center text-center bg-primary">
             <div className="flex-col items-center justify-center text-primary">

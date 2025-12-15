@@ -1,10 +1,7 @@
 "use client"
 
 import React, {useState} from "react"
-import {WidgetProps, WidgetTemplate} from "./base/WidgetTemplate"
 import {CircleDashed, Filter, FolderOpen, GitPullRequest, RefreshCw} from "lucide-react"
-import {formatDate} from "date-fns"
-import {authClient} from "@/lib/auth-client"
 import {Button} from "@/components/ui/Button"
 import {Badge} from "@/components/ui/Badge"
 import {Input} from "@/components/ui/Input"
@@ -15,15 +12,20 @@ import {useTooltip} from "@/components/ui/TooltipProvider"
 import {useGithub} from "@/hooks/useGithub"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {WidgetError} from "@/components/widgets/base/WidgetError"
-import {useSession} from "@/hooks/data/useSession"
-import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
+import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
-const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDelete}) => {
-    const {userId} = useSession()
-    const {integrations, handleIntegrate} = useIntegrations(userId)
-    const githubIntegration = getIntegrationByProvider(integrations, "github")
-    const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, isError, refetch} = useGithub()
+const formatShortDate = (iso?: string | number | Date | null) => {
+    if (!iso) return ""
+    const d = iso instanceof Date ? iso : new Date(iso)
+    if (Number.isNaN(d.getTime())) return ""
+    const dd = String(d.getDate()).padStart(2, "0")
+    const mm = String(d.getMonth() + 1).padStart(2, "0")
+    const yyyy = d.getFullYear()
+    return `${dd}/${mm}/${yyyy}`
+}
+
+const GithubWidget: React.FC<WidgetProps> = () => {
+    const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, refetch} = useGithub()
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
     const filterTooltip = useTooltip<HTMLButtonElement>({
@@ -36,111 +38,98 @@ const GithubWidget: React.FC<WidgetProps> = ({id, widget, editMode, onWidgetDele
         anchor: "tc",
     })
 
-    const dropdownFilterItems: MenuItem[] = Array.from(new Set(allLabels.map((label) => ({
+    const dropdownFilterItems: MenuItem[] = allLabels.map((label) => ({
         type: "checkbox",
         icon: <div className={"size-3 rounded-sm"} style={{backgroundColor: `#${label.color}`}}/>,
         key: label.id,
         label: label.name,
-        checked: selectedLabels.includes(label),
-        onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label]))
-    }))))
-
-    const hasError = !githubIntegration?.accessToken && !isLoading
+        checked: selectedLabels.includes(label.name),
+        onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label.name) ? prev.filter((name) => name !== label.name) : [...prev, label.name]))
+    }))
 
     return (
-        <WidgetTemplate id={id} widget={widget} name={"github"} editMode={editMode} onWidgetDelete={onWidgetDelete}>
-            {hasError ? (
-                <WidgetError
-                    message={"If you want to use this widget, you need to integrate your Github account first!"}
-                    actionLabel={"Integrate"}
-                    onAction={() => handleIntegrate("github")}
+        <>
+            <WidgetHeader title={"Github"}>
+                <Badge
+                    variant="brand"
+                    className="text-xs bg-brand/10 border-brand/40 font-mono"
+                    title={`${activeTab === "issues" ? filteredIssues.length : filteredPRs.length} open`}
                 />
-            ) : (
-                <>
-                    <WidgetHeader title={"Github"}>
-                        <Badge
-                            variant="brand"
-                            className="text-xs bg-brand/10 border-brand/40 font-mono"
-                            title={`${activeTab === "issues" ? filteredIssues.length : filteredPRs.length} open`}
-                        />
-                        {activeTab === "issues" &&
-                            <DropdownMenu
-                                asChild
-                                items={dropdownFilterItems}
-                                align={"end"}
-                                open={dropdownOpen}
-                                onOpenChange={setDropdownOpen}
-                            >
-                                <Button
-                                    data-state={dropdownOpen ? "open" : "closed"}
-                                    variant={"widget"}
-                                    className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
-                                    disabled={allLabels.length === 0 || isLoading || isFetching}
-                                    {...filterTooltip}
-                                >
-                                    <Filter size={16} />
-                                </Button>
-                            </DropdownMenu>
-                        }
+                {activeTab === "issues" &&
+                    <DropdownMenu
+                        asChild
+                        items={dropdownFilterItems}
+                        align={"end"}
+                        open={dropdownOpen}
+                        onOpenChange={setDropdownOpen}
+                    >
                         <Button
+                            data-state={dropdownOpen ? "open" : "closed"}
                             variant={"widget"}
-                            onClick={() => refetch()}
-                            data-loading={(isLoading || isFetching) ? "true" : "false"}
-                            {...refreshTooltip}
+                            className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
+                            disabled={allLabels.length === 0 || isLoading || isFetching}
+                            {...filterTooltip}
                         >
-                            <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
+                            <Filter size={16} />
                         </Button>
-                    </WidgetHeader>
-                    <div className="flex items-center gap-2">
-                        <Input
-                            placeholder="Search..."
-                            className="bg-tertiary"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                    </DropdownMenu>
+                }
+                <Button
+                    variant={"widget"}
+                    onClick={() => refetch()}
+                    data-loading={(isLoading || isFetching) ? "true" : "false"}
+                    {...refreshTooltip}
+                >
+                    <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
+                </Button>
+            </WidgetHeader>
+            <div className="flex items-center gap-2">
+                <Input
+                    placeholder="Search..."
+                    className="bg-tertiary"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
+            <Tabs defaultValue="issues" onValueChange={setActiveTab}>
+                <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
+                    <TabsTrigger value="issues">
+                        Issues
+                    </TabsTrigger>
+                    <TabsTrigger value="pull-requests">
+                        Pull Requests
+                    </TabsTrigger>
+                </TabsList>
+            </Tabs>
+            <WidgetContent scroll>
+                {(isLoading || isFetching) ? (
+                    <div className="h-full flex flex-col gap-4 pt-2">
+                        <Skeleton className={"h-16 w-full px-2"} />
+                        <Skeleton className={"h-16 w-full px-2"} />
+                        <Skeleton className={"h-16 w-full px-2"} />
                     </div>
-                    <Tabs defaultValue="issues" onValueChange={setActiveTab}>
-                        <TabsList className="w-full grid grid-cols-2 bg-secondary rounded-md">
-                            <TabsTrigger value="issues">
-                                Issues
-                            </TabsTrigger>
-                            <TabsTrigger value="pull-requests">
-                                Pull Requests
-                            </TabsTrigger>
-                        </TabsList>
-                    </Tabs>
-                    <WidgetContent scroll>
-                        {(isLoading || isFetching) ? (
-                            <div className="h-full flex flex-col gap-4 pt-2">
-                                <Skeleton className={"h-16 w-full px-2"} />
-                                <Skeleton className={"h-16 w-full px-2"} />
-                                <Skeleton className={"h-16 w-full px-2"} />
+                ) : (
+                    <div className={"flex flex-col gap-2"}>
+                        {activeTab === "issues" && filteredIssues.map((issue) => (
+                            <IssueCard issue={issue} key={issue.id}/>
+                        ))}
+                        {activeTab === "pull-requests" && filteredPRs.map((pr) => (
+                            <PulLRequestCard pr={pr} key={pr.id}/>
+                        ))}
+                        {activeTab === "issues" && filteredIssues.length === 0 &&
+                            <div className={"mt-4 flex justify-center items-center text-sm text-tertiary"}>
+                                No results found
                             </div>
-                        ) : (
-                            <div className={"flex flex-col gap-2"}>
-                                {activeTab === "issues" && filteredIssues.map((issue) => (
-                                    <IssueCard issue={issue} key={issue.id}/>
-                                ))}
-                                {activeTab === "pull-requests" && filteredPRs.map((pr) => (
-                                    <PulLRequestCard pr={pr} key={pr.id}/>
-                                ))}
-                                {activeTab === "issues" && filteredIssues.length === 0 &&
-                                    <div className={"mt-4 flex justify-center items-center text-sm text-tertiary"}>
-                                        No results found
-                                    </div>
-                                }
-                                {activeTab === "pull-requests" && filteredPRs.length === 0 &&
-                                    <div className={"mt-4 flex justify-center items-center text-sm text-tertiary"}>
-                                        No results found
-                                    </div>
-                                }
+                        }
+                        {activeTab === "pull-requests" && filteredPRs.length === 0 &&
+                            <div className={"mt-4 flex justify-center items-center text-sm text-tertiary"}>
+                                No results found
                             </div>
-                        )}
-                    </WidgetContent>
-                </>
-            )}
-
-        </WidgetTemplate>
+                        }
+                    </div>
+                )}
+            </WidgetContent>
+        </>
     )
 }
 
@@ -160,7 +149,7 @@ const IssueCard = ({issue}: { issue: any }) => {
                             <FolderOpen size={14} className="mr-1" />
                             {issue.repository_url.split('/').pop()}
                         </div>
-                        <span className={"text-tertiary font-mono"}>{formatDate(issue.created_at, "dd/MM/yyyy")}</span>
+                        <span className={"text-tertiary font-mono"}>{formatShortDate(issue.created_at)}</span>
                     </div>
                     <div className="flex flex-wrap gap-1 mt-1">
                         {issue.labels.map((label: any) => (
@@ -188,7 +177,7 @@ const PulLRequestCard = ({pr}: {pr: any}) => {
                         <FolderOpen size={14} className="mr-1" />
                         {pr.repository_url.split('/').pop()}
                     </div>
-                    <span className={"text-tertiary font-mono"}>{formatDate(pr.created_at, "dd/MM/yyyy")}</span>
+                    <span className={"text-tertiary font-mono"}>{formatShortDate(pr.created_at)}</span>
                 </div>
                 <div className="flex flex-wrap gap-1 mt-1">
                     {pr.labels.map((label: any) => (
@@ -200,4 +189,16 @@ const PulLRequestCard = ({pr}: {pr: any}) => {
     )
 }
 
-export {GithubWidget}
+export const githubWidgetDefinition = defineWidget({
+    name: "Github",
+    integration: "github",
+    component: GithubWidget,
+    description: "See your open github issues & pull requests.",
+    image: "/github_preview.svg",
+    tags: ["github"],
+    sizes: {
+        desktop: { width: 1, height: 2 },
+        tablet: { width: 1, height: 2 },
+        mobile: { width: 1, height: 1 }
+    }
+})

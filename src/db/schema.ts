@@ -72,7 +72,7 @@ export const dashboard = pgTable("dashboard", {
 export const settings = pgTable("settings", {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' }),
-    lastDashboardId: uuid('last_dashboard_id').references(()=> dashboard.id, { onDelete: 'cascade' }),
+    lastDashboardId: uuid('last_dashboard_id').references(()=> dashboard.id, { onDelete: 'set null' }),
     config: jsonb('config'),
     createdAt: timestamp('created_at').notNull(),
     updatedAt: timestamp('updated_at').notNull()
