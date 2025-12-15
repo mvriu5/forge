@@ -37,6 +37,11 @@ export default function Dashboard() {
     const {isDesktop} = useResponsiveLayout(visibleWidgets)
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
+    const currentWidgetsRef = useRef<Widget[]>([])
+
+    useEffect(() => {
+        currentWidgetsRef.current = currentWidgets
+    }, [currentWidgets])
 
     useEffect(() => {
         if (!userId || dashboardsLoading) return
@@ -81,11 +86,11 @@ export default function Dashboard() {
     const handleEditModeDelete = useCallback((id: string) => {
         setWidgetsToRemove((prevWidgetsToRemove) => {
             if (prevWidgetsToRemove.some((widget) => widget.id === id)) return prevWidgetsToRemove
-            const widget = currentWidgets.find((candidate) => candidate.id === id)
+            const widget = currentWidgetsRef.current.find((candidate) => candidate.id === id)
             if (!widget) return prevWidgetsToRemove
             return [...prevWidgetsToRemove, widget]
         })
-    }, [currentWidgets])
+    }, [])
 
     useHotkeys("mod+e", (event) => {
         event.preventDefault()

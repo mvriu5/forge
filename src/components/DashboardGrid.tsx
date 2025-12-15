@@ -3,7 +3,7 @@ import {WidgetRenderer} from "@/components/WidgetRenderer"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
 import {Widget} from "@/database"
 import {useGrid} from "@/hooks/useGrid"
-import React from "react"
+import React, {useMemo} from "react"
 import {Grid} from "@/components/Grid"
 import {cn} from "@/lib/utils"
 import {useResponsiveLayout} from "@/hooks/media/useResponsiveLayout"
@@ -42,22 +42,23 @@ const DashboardGrid = React.memo<DashboardGridProps>(function DashboardGrid({edi
 
     const gridCells = useGrid(activeWidget, visibleWidgets)
 
+    const widgetElements = useMemo(() => transformedWidgets?.map((widget) => (
+        <WidgetRenderer
+            key={widget.id}
+            widget={widget}
+            editMode={editMode}
+            onWidgetDelete={onWidgetDelete}
+            onWidgetUpdate={onWidgetUpdate}
+            isDragging={activeWidgetId === widget.id}
+        />
+    )), [transformedWidgets, editMode, onWidgetDelete, onWidgetUpdate, activeWidgetId])
 
-    const content = (
+    const content = useMemo(() => (
         <div className={cn("relative w-full", containerHeight, gridClasses)}>
             <Grid cells={gridCells} enabled={isDesktop}/>
-            {transformedWidgets?.map((widget) => (
-                <WidgetRenderer
-                    key={widget.id}
-                    widget={widget}
-                    editMode={editMode}
-                    onWidgetDelete={onWidgetDelete}
-                    onWidgetUpdate={onWidgetUpdate}
-                    isDragging={activeWidgetId === widget.id}
-                />
-            ))}
+            {widgetElements}
         </div>
-    )
+    ), [containerHeight, gridClasses, gridCells, isDesktop, widgetElements])
 
     if (!editMode) return content
 
