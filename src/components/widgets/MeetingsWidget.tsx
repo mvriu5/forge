@@ -7,13 +7,13 @@ import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {Filter, RefreshCw} from "lucide-react"
 import {Button} from "@/components/ui/Button"
-import {format, isSameDay} from "date-fns"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {convertToRGBA} from "@/lib/colorConvert"
 import {useSettings} from "@/hooks/data/useSettings"
 import {defineWidget, WidgetProps} from "@tryforgeio/sdk"
+import {formatDateHeader, formatTime, isSameDay} from "@/lib/utils"
 
 const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
     const {settings} = useSettings(widget.userId)
@@ -61,7 +61,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
                 return (
                     <React.Fragment key={event.id}>
                         <p className="w-full text-tertiary text-xs mt-3 mb-1">
-                            {format(eventDate, "EEEE, d MMMM")}
+                            {formatDateHeader(eventDate)}
                         </p>
                         <EventCard event={event} color={getColor(event.id)} hourFormat={settings?.config.hourFormat ?? "24"}/>
                     </React.Fragment>
@@ -163,7 +163,7 @@ const EventCard: React.FC<EventProps> = ({ event, color, hourFormat }) => {
 
             <div className="relative z-10 text-primary">
                 <p className="font-medium">{event.summary}</p>
-                <p className={"text-secondary"}>{`${format(event.start.dateTime, hourFormat === "24" ? "HH:mm" : "h:mm a")} - ${format(event.end.dateTime, hourFormat === "24" ? "HH:mm" : "h:mm a")}`}</p>
+                <p className={"text-secondary"}>{`${formatTime(event.start.dateTime, hourFormat)} - ${formatTime(event.end.dateTime, hourFormat)}`}</p>
                 <p className={"text-tertiary"}>{event.location}</p>
             </div>
         </div>

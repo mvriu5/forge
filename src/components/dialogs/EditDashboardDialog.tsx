@@ -63,10 +63,11 @@ function EditDashboardDialog({dashboard}: {dashboard: Dashboard}) {
             <DialogTrigger asChild>
                 <Button
                     type={"button"}
-                    className={"px-1.5 rounded-r-none border-r-0"}
+                    className={"px-1.5 gap-1.5 text-sm"}
                     {...editTooltip}
                 >
-                    <Pencil size={16}/>
+                    <Pencil size={14}/>
+                    Edit
                 </Button>
             </DialogTrigger>
             <DialogContent className={"md:min-w-[300px] p-4"}>

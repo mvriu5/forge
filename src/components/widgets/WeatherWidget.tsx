@@ -13,13 +13,13 @@ import {
     MapPinned,
     Sun
 } from "lucide-react"
-import {formatDate} from "date-fns"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {useWeather} from "@/hooks/useWeather"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {useSettings} from "@/hooks/data/useSettings"
 import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
+import {formatWeatherHour} from "@/lib/utils"
 
 const SKELETON_COUNT = 8;
 const skeletonKeys = Array.from({ length: SKELETON_COUNT }, (_, i) => `sk-${i}`);
@@ -87,7 +87,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({widget}) => {
                         {nextWeather?.map((weather: any) =>
                             <div className={"h-full flex flex-col items-center justify-center"} key={weather.time}>
                                 <p className={"text-xs font-medium text-tertiary"}>
-                                    {formatDate(weather.time, settings?.config.hourFormat === "24" ?  "HH:00" : "h a")}
+                                    {formatWeatherHour(weather.time, settings?.config.hourFormat ?? "24")}
                                 </p>
                                 <p className={"flex items-center gap-1 text-secondary font-medium"}>
                                     {getWeatherIcon(weather.weathercode)}

@@ -38,6 +38,9 @@ export default function Dashboard() {
     ), [widgets, currentDashboard?.id])
 
     const widgetsMap = useMemo(() => new Map(widgets.map((widget) => [widget.id, widget])), [widgets])
+    // keep a stable ref to widgetsMap so handleEditModeDelete can be stable
+    const widgetsMapRef = useRef(widgetsMap)
+    useEffect(() => { widgetsMapRef.current = widgetsMap }, [widgetsMap])
     const widgetsToRemoveSet = useMemo(() => new Set(widgetsToRemove.map((widget) => widget.id)), [widgetsToRemove])
     const visibleWidgets = useMemo(() => (
         currentWidgets.filter((widget) => !widgetsToRemoveSet.has(widget.id))
@@ -97,11 +100,11 @@ export default function Dashboard() {
     const handleEditModeDelete = useCallback((id: string) => {
         setWidgetsToRemove((prevWidgetsToRemove) => {
             if (prevWidgetsToRemove.some((widget) => widget.id === id)) return prevWidgetsToRemove
-            const widget = widgetsMap.get(id)
+            const widget = widgetsMapRef.current.get(id)
             if (!widget) return prevWidgetsToRemove
             return [...prevWidgetsToRemove, widget]
         })
-    }, [widgetsMap])
+    }, [])
 
     useHotkeys("mod+e", (event) => {
         event.preventDefault()

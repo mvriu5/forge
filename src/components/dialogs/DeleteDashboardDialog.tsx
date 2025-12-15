@@ -36,7 +36,7 @@ function DeleteDashboardDialog({dashboardId}: {dashboardId: string}) {
             <DialogTrigger asChild>
                 <Button
                     type={"button"}
-                    className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error rounded-l-none"}
+                    className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error"}
                     {...deleteTooltip}
                 >
                     <Trash size={16}/>

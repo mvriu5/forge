@@ -1,9 +1,8 @@
 "use client"
 
-import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 
-import { cn } from "@/lib/utils"
+import {cn, formatPrettyDate} from "@/lib/utils"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Button} from "@/components/ui/Button"
 import {Calendar} from "@/components/ui/Calendar"
@@ -36,9 +35,9 @@ function DatePicker({ value, title, onSelect, mode = "single", className }: Date
                 >
                     <CalendarIcon size={14}/>
                     {!date && <span>{title}</span>}
-                    {date && mode === "single" && format(date as Date, "PPP")}
+                    {date && mode === "single" && formatPrettyDate(date as Date)}
                     {date && mode === "multiple" && `${(date as Date[]).length} Date's selected`}
-                    {date && mode === "range" && `${format((date as DateRange).from as Date, "PP")} - ${format((date as DateRange).to as Date, "PP")}`}
+                    {date && mode === "range" && `${formatPrettyDate((date as DateRange).from as Date, { year: "numeric", month: "short", day: "numeric" })} - ${formatPrettyDate((date as DateRange).to as Date, { year: "numeric", month: "short", day: "numeric" })}`}
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 border-0" align="start">

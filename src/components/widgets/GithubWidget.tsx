@@ -2,7 +2,6 @@
 
 import React, {useState} from "react"
 import {CircleDashed, Filter, FolderOpen, GitPullRequest, RefreshCw} from "lucide-react"
-import {formatDate} from "date-fns"
 import {Button} from "@/components/ui/Button"
 import {Badge} from "@/components/ui/Badge"
 import {Input} from "@/components/ui/Input"
@@ -14,6 +13,16 @@ import {useGithub} from "@/hooks/useGithub"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
+
+const formatShortDate = (iso?: string | number | Date | null) => {
+    if (!iso) return ""
+    const d = iso instanceof Date ? iso : new Date(iso)
+    if (Number.isNaN(d.getTime())) return ""
+    const dd = String(d.getDate()).padStart(2, "0")
+    const mm = String(d.getMonth() + 1).padStart(2, "0")
+    const yyyy = d.getFullYear()
+    return `${dd}/${mm}/${yyyy}`
+}
 
 const GithubWidget: React.FC<WidgetProps> = () => {
     const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, refetch} = useGithub()
@@ -140,7 +149,7 @@ const IssueCard = ({issue}: { issue: any }) => {
                             <FolderOpen size={14} className="mr-1" />
                             {issue.repository_url.split('/').pop()}
                         </div>
-                        <span className={"text-tertiary font-mono"}>{formatDate(issue.created_at, "dd/MM/yyyy")}</span>
+                        <span className={"text-tertiary font-mono"}>{formatShortDate(issue.created_at)}</span>
                     </div>
                     <div className="flex flex-wrap gap-1 mt-1">
                         {issue.labels.map((label: any) => (
@@ -168,7 +177,7 @@ const PulLRequestCard = ({pr}: {pr: any}) => {
                         <FolderOpen size={14} className="mr-1" />
                         {pr.repository_url.split('/').pop()}
                     </div>
-                    <span className={"text-tertiary font-mono"}>{formatDate(pr.created_at, "dd/MM/yyyy")}</span>
+                    <span className={"text-tertiary font-mono"}>{formatShortDate(pr.created_at)}</span>
                 </div>
                 <div className="flex flex-wrap gap-1 mt-1">
                     {pr.labels.map((label: any) => (

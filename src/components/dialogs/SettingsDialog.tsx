@@ -61,7 +61,7 @@ function SettingsDialog() {
                     <p>Settings</p>
                 </button>
             </DialogTrigger>
-            <DialogContent className={"p-0"}>
+            <DialogContent className={"p-0 max-w-2/5"}>
                 <VisuallyHidden>
                     <DialogHeader>
                         <DialogTitle>
@@ -69,9 +69,11 @@ function SettingsDialog() {
                         </DialogTitle>
                     </DialogHeader>
                 </VisuallyHidden>
-                <div className={"flex h-80"}>
+                <div className={"flex h-96"}>
                     <div className={"flex flex-col bg-secondary w-max h-full rounded-l-md border-r border-main/40 p-2"}>
-
+                        <p className={"font-mono text-tertiary text-sm mb-2"}>
+                            Settings
+                        </p>
                         <ToggleGroup
                             type="single"
                             className={"flex flex-col gap-2 border-0 bg-transparent px-0 justify-start items-start"}

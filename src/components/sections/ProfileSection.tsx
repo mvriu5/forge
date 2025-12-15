@@ -14,13 +14,17 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
 import {CircleUserRound, X} from "lucide-react"
 import {Input} from "@/components/ui/Input"
 import {Spinner} from "@/components/ui/Spinner"
+import {useTooltip} from "@/components/ui/TooltipProvider"
+import {useSettings} from "@/hooks/data/useSettings"
+import {formatDate} from "@/lib/utils"
 
 const formSchema = z.object({
     name: z.string().min(3, {message: "Please enter more than 3 characters."})
 })
 
 function ProfileSection({handleClose}: {handleClose: () => void}) {
-    const {session, updateUser} = useSession()
+    const {userId, session, updateUser} = useSession()
+    const {settings} = useSettings(userId)
     const [uploading, setUploading] = useState(false)
     const [avatarUrl, setAvatarUrl] = useState<string | undefined>(session?.user?.image ?? "")
     const [blob, setBlob] = useState<PutBlobResult | undefined>(undefined)
@@ -32,6 +36,11 @@ function ProfileSection({handleClose}: {handleClose: () => void}) {
         defaultValues: {
             name: session?.user?.name,
         }
+    })
+
+    const removeAvatarTooltip = useTooltip({
+        message: "Remove your current avatar",
+        anchor: "tc"
     })
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -106,16 +115,16 @@ function ProfileSection({handleClose}: {handleClose: () => void}) {
             <div className={"flex flex-col gap-4 h-full"}>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between gap-4 h-full">
-                        <div className="w-full flex items-center gap-4">
+                        <div className="w-full flex gap-4 bg-secondary border border-main/40 p-2 rounded-md">
                             <div className="relative w-min inline-flex">
                                 <Button
                                     type={"button"}
-                                    className="relative size-16 p-0 overflow-hidden shadow-none rounded-full"
+                                    className="relative size-14 p-0 overflow-hidden shadow-none rounded-full"
                                     onClick={() => inputFileRef.current?.click()}
                                     aria-label={avatarUrl ? "Change image" : "Upload image"}
                                 >
                                     {avatarUrl ? (
-                                        <Avatar className={"size-16"}>
+                                        <Avatar className={"size-14"}>
                                             <AvatarImage
                                                 src={blob?.url || avatarUrl || undefined}
                                                 alt="Avatar Preview"
@@ -139,6 +148,7 @@ function ProfileSection({handleClose}: {handleClose: () => void}) {
                                         onClick={handleDelete}
                                         aria-label="Remove image"
                                         type={"button"}
+                                        {...removeAvatarTooltip}
                                     >
                                         <X className="h-3.5 w-3.5" strokeWidth={2.5}/>
                                     </Button>
@@ -157,17 +167,27 @@ function ProfileSection({handleClose}: {handleClose: () => void}) {
                                     className="hidden"
                                 />
                             </div>
-                            <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                    <FormItem className={"w-full"}>
-                                        <FormLabel>Name</FormLabel>
-                                        <FormInput placeholder="Name" {...field} />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                            <div className={"w-full flex flex-col gap-2"}>
+                                <FormField
+                                    control={form.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                        <FormItem className={"w-full"}>
+                                            <FormLabel>Name</FormLabel>
+                                            <FormInput placeholder="Name" {...field} />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <div className={"w-full flex gap-2 text-sm mt-2"}>
+                                    <p className={"text-tertiary"}>E-Mail:</p>
+                                    <p className={""}>{session?.user?.email}</p>
+                                </div>
+                                <div className={"w-full flex gap-2 text-sm"}>
+                                    <p className={"text-tertiary"}>Account created:</p>
+                                    <p className={""}>{formatDate(session?.user?.createdAt, settings?.config?.hourFormat)}</p>
+                                </div>
+                            </div>
                         </div>
                         <div className={"w-full flex gap-2 justify-end"}>
                             <Button

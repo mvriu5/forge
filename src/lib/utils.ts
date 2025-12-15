@@ -1,5 +1,6 @@
 import clsx, { type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import {useCallback} from "react"
 
 export const cn = (...classes: ClassValue[]) => twMerge(clsx(classes))
 
@@ -43,4 +44,79 @@ export function getUpdateTimeLabel(date: Date | string | number | undefined | nu
     if (diffSec < 3600 * 24 * 30 * 12) return `Updated ${months} month${months !== 1 ? 's' : ''} ago`
 
     return 'Updated last year'
+}
+
+export function formatDate(date?: string | number | Date | null, hourFormat: "12" | "24" = "24"): string {
+    if (!date) return ""
+
+    const d = date instanceof Date ? date : new Date(date)
+    if (Number.isNaN(d.getTime())) return ""
+
+    return new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: hourFormat === "12",
+    }).format(d)
+}
+
+export function formatDateHeader(iso?: string | number | Date | null) {
+    if (!iso) return ""
+    const d = iso instanceof Date ? iso : new Date(iso)
+    if (Number.isNaN(d.getTime())) return ""
+
+    return new Intl.DateTimeFormat("en-US", { weekday: "long", day: "numeric", month: "long" }).format(d)
+}
+
+export function formatTime(iso?: string | number | Date | null, hourFormat: string = "24") {
+    if (!iso) return ""
+    const d = iso instanceof Date ? iso : new Date(iso)
+    if (Number.isNaN(d.getTime())) return ""
+
+    const hour12 = hourFormat === "12"
+    const hourOption: '2-digit' | 'numeric' = hour12 ? 'numeric' : '2-digit'
+
+    return new Intl.DateTimeFormat("en-US", { hour: hourOption, minute: "2-digit", hour12 }).format(d)
+}
+
+export function isSameDay (a?: string | number | Date | null, b?: string | number | Date | null) {
+    if (!a || !b) return false
+    const da = a instanceof Date ? a : new Date(a)
+    const db = b instanceof Date ? b : new Date(b)
+    if (Number.isNaN(da.getTime()) || Number.isNaN(db.getTime())) return false
+    return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth() && da.getDate() === db.getDate()
+}
+
+export function addDays(date: Date, days: number) {
+    const d = new Date(date)
+    d.setDate(d.getDate() + days)
+    return d
+}
+
+export function formatPrettyDate(date: Date | null, options?: Intl.DateTimeFormatOptions) {
+    if (!date) return ""
+    if (Number.isNaN(date.getTime())) return ""
+    return new Intl.DateTimeFormat("en-US", options ?? { year: "numeric", month: "short", day: "numeric" }).format(date)
+}
+
+export function differenceInCalendarDays(a: Date, b: Date) {
+    const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+    return Math.floor((startOfDay(a) - startOfDay(b)) / (24 * 60 * 60 * 1000))
+}
+
+export function formatWeatherHour(iso?: string | number | Date | null, hourFormat: string = "24") {
+    if (!iso) return ""
+    const d = iso instanceof Date ? iso : new Date(iso)
+    if (Number.isNaN(d.getTime())) return ""
+
+    if (hourFormat === "24") {
+        const hour = d.getHours().toString().padStart(2, "0")
+        return `${hour}:00`
+    }
+
+    const hour = d.getHours() % 12 || 12
+    const ampm = d.getHours() >= 12 ? "PM" : "AM"
+    return `${hour} ${ampm}`
 }

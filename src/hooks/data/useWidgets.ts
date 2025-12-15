@@ -103,7 +103,7 @@ function findNextAvailablePosition(widgets: Widget[] | undefined, newWidgetWidth
 export function useWidgets(userId: string | undefined) {
     const queryClient = useQueryClient()
 
-    const widgetsQuery = useQuery({
+    const widgetsQuery = useQuery<Widget[], Error>({
         queryKey: WIDGETS_QUERY_KEY(userId),
         queryFn: () => fetchWidgets(userId!),
         enabled: !!userId,

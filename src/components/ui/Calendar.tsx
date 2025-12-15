@@ -2,12 +2,10 @@
 
 import type React from "react"
 import {DayPicker, useDayPicker, type DayPickerProps, labelNext, labelPrevious} from "react-day-picker"
-
-import { cn } from "@/lib/utils"
+import {cn, differenceInCalendarDays} from "@/lib/utils"
 import {useCallback, useMemo, useState} from "react"
 import {ChevronLeft, ChevronRight} from "lucide-react"
 import {Button} from "@/components/ui/Button"
-import {differenceInCalendarDays} from "date-fns"
 
 export type CalendarProps = DayPickerProps & {
     yearRange?: number

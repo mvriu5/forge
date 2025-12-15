@@ -7,10 +7,9 @@ import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {Settings} from "@/database"
 import {toast} from "sonner"
-import {Form, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
+import {Form, FormDescription, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Spinner} from "@/components/ui/Spinner"
-import {RadioGroup} from "@/components/ui/RadioGroup"
-import {RadioGroupBox} from "@/components/ui/RadioGroupBox"
+import {Select, SelectTrigger, SelectContent, SelectItem, SelectValue} from "@/components/ui/Select"
 import {Button} from "@/components/ui/Button"
 import React, {Suspense} from "react"
 
@@ -52,56 +51,58 @@ function SettingsSection({handleClose}: {handleClose: () => void}) {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between gap-4 h-full">
+            <form onSubmit={form.handleSubmit(onSubmit)} className={"h-full"}>
                 <Suspense fallback={<Spinner/>}>
-                    <div className="w-full flex items-center gap-4">
-                        <FormField
-                            control={form.control}
-                            name="hourFormat"
-                            render={({ field }) => (
-                                <FormItem className={"w-full"}>
-                                    <FormLabel>Hour format</FormLabel>
-                                    <RadioGroup
-                                        {...field}
-                                        onValueChange={field.onChange}
-                                        value={field.value}
-                                        className="grid-cols-2 "
-                                    >
-                                        <RadioGroupBox
-                                            title={"12h"}
-                                            value={"12"}
-                                            id={"12h-format"}
-                                            compareField={field.value}
-                                        />
-                                        <RadioGroupBox
-                                            title={"24h"}
-                                            value={"24"}
-                                            id={"24h-format"}
-                                            compareField={field.value}
-                                        />
-                                    </RadioGroup>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                    <div className={"w-full flex gap-2 justify-end"}>
-                        <Button
-                            type={"button"}
-                            className={"w-max"}
-                            onClick={handleClose}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            variant={"brand"}
-                            className={"w-max"}
-                            type={"submit"}
-                            disabled={form.formState.isSubmitting || updateSettingsStatus === "pending"}
-                        >
-                            {(form.formState.isSubmitting || updateSettingsStatus === "pending") && <Spinner/>}
-                            Save
-                        </Button>
+                    <div className="flex flex-col justify-between gap-4 h-full">
+                        <div className={"flex flex-col gap-2"}>
+                            <p className={"font-mono text-primary"}>General</p>
+                            <div className="w-full flex items-center p-2 bg-secondary rounded-md border border-main/40">
+                                <FormField
+                                    control={form.control}
+                                    name="hourFormat"
+                                    render={({ field }) => (
+                                        <FormItem className={"w-full flex items-center justify-between gap-2"}>
+                                            <div className={"w-full flex flex-col justify-center p-0 m-0"}>
+                                                <FormLabel className={"text-secondary"}>Hour format</FormLabel>
+                                                <FormDescription className={"text-tertiary"}>
+                                                    Select which hour format you prefer to use in the application.
+                                                </FormDescription>
+                                            </div>
+                                            <div className={"flex flex-col gap-2"}>
+                                                <Select value={field.value} onValueChange={field.onChange}>
+                                                    <SelectTrigger className="w-42">
+                                                        <SelectValue placeholder="Select format" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className={"border-main/40"}>
+                                                        <SelectItem value={"12"}>12 Hour format</SelectItem>
+                                                        <SelectItem value={"24"}>24 Hour format</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </div>
+                        <div className={"w-full flex gap-2 justify-end"}>
+                            <Button
+                                type={"button"}
+                                className={"w-max"}
+                                onClick={handleClose}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant={"brand"}
+                                className={"w-max"}
+                                type={"submit"}
+                                disabled={form.formState.isSubmitting || updateSettingsStatus === "pending"}
+                            >
+                                {(form.formState.isSubmitting || updateSettingsStatus === "pending") && <Spinner/>}
+                                Save
+                            </Button>
+                        </div>
                     </div>
                 </Suspense>
             </form>
