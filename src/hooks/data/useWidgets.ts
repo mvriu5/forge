@@ -1,6 +1,7 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Widget, WidgetInsert} from "@/database"
 import posthog from "posthog-js"
+import {useCallback, useMemo, useRef} from "react"
 
 const WIDGETS_QUERY_KEY = (userId: string | undefined) => ["widgets", userId] as const
 
@@ -50,6 +51,25 @@ async function deleteWidgetRequest(id: string): Promise<void> {
     if (!response.ok) {
         throw new Error("Failed to delete widget")
     }
+}
+
+
+const areWidgetsEqual = (a: Widget, b: Widget): boolean => {
+    if (a === b) return true
+
+    return (
+        a.id === b.id
+        && a.userId === b.userId
+        && a.dashboardId === b.dashboardId
+        && a.widgetType === b.widgetType
+        && a.width === b.width
+        && a.height === b.height
+        && a.positionX === b.positionX
+        && a.positionY === b.positionY
+        && a.createdAt === b.createdAt
+        && a.updatedAt === b.updatedAt
+        && JSON.stringify(a.config ?? null) === JSON.stringify(b.config ?? null)
+    )
 }
 
 function findNextAvailablePosition(widgets: Widget[] | undefined, newWidgetWidth: number, newWidgetHeight: number, dashboardId: string): { x: number, y: number } | null {
@@ -102,11 +122,39 @@ function findNextAvailablePosition(widgets: Widget[] | undefined, newWidgetWidth
 
 export function useWidgets(userId: string | undefined) {
     const queryClient = useQueryClient()
+    const previousWidgetsRef = useRef<Widget[] | null>(null)
 
     const widgetsQuery = useQuery<Widget[], Error>({
         queryKey: WIDGETS_QUERY_KEY(userId),
         queryFn: () => fetchWidgets(userId!),
         enabled: !!userId,
+        select: (widgets) => {
+            const previousWidgets = previousWidgetsRef.current
+
+            if (!previousWidgets) {
+                previousWidgetsRef.current = widgets
+                return widgets
+            }
+
+            const previousById = new Map(previousWidgets.map((widget) => [widget.id, widget]))
+
+            let hasChanges = previousWidgets.length !== widgets.length
+
+            const merged = widgets.map((widget) => {
+                const previous = previousById.get(widget.id)
+
+                if (previous && areWidgetsEqual(previous, widget)) {
+                    return previous
+                }
+
+                hasChanges = true
+                return widget
+            })
+
+            const result = hasChanges ? merged : previousWidgets
+            previousWidgetsRef.current = result
+            return result
+        },
     })
 
     const addWidgetMutation = useMutation({
@@ -185,19 +233,19 @@ export function useWidgets(userId: string | undefined) {
         })
     })
 
-    const updateWidgetPosition = (id: string, x: number, y: number) => {
+    const updateWidgetPosition = useCallback((id: string, x: number, y: number) => {
         queryClient.setQueryData(WIDGETS_QUERY_KEY(userId), (previous: Widget[] | undefined) => {
             if (!previous) return previous
             return previous.map((widget) => widget.id === id ? {...widget, positionX: x, positionY: y} : widget)
         })
-    }
+    }, [queryClient, userId])
 
-    const getWidget = (dashboardId: string, widgetName: string) => {
+    const getWidget = useCallback((dashboardId: string, widgetName: string) => {
         const widgets = queryClient.getQueryData<Widget[]>(WIDGETS_QUERY_KEY(userId))
         return widgets?.find((widget) => widget.widgetType === widgetName && widget.dashboardId === dashboardId)
-    }
+    }, [queryClient, userId])
 
-    const setWidgets = (updater: Widget[] | null | ((widgets: Widget[] | null) => Widget[])) => {
+    const setWidgets = useCallback((updater: Widget[] | null | ((widgets: Widget[] | null) => Widget[])) => {
         if (!userId) return
         queryClient.setQueryData(WIDGETS_QUERY_KEY(userId), (previous: Widget[] | undefined) => {
             const current = previous ?? []
@@ -205,16 +253,18 @@ export function useWidgets(userId: string | undefined) {
                 ? (updater as (widgets: Widget[]) => Widget[])(current)
                 : updater
         })
-    }
+    }, [queryClient, userId])
+
+    const widgets = useMemo(() => widgetsQuery.data ?? [], [widgetsQuery.data])
 
     return {
-        widgets: widgetsQuery.data ?? [],
+        widgets,
         isLoading: widgetsQuery.isLoading,
         refetchWidgets: widgetsQuery.refetch,
-        addWidget: (widget: WidgetInsert) => addWidgetMutation.mutateAsync(widget),
-        updateWidget: (widget: Widget) => refreshWidgetMutation.mutateAsync(widget),
-        removeWidget: (id: string) => removeWidgetMutation.mutateAsync(id),
-        saveWidgetsLayout: () => saveWidgetsLayoutMutation.mutateAsync(),
+        addWidget: useCallback((widget: WidgetInsert) => addWidgetMutation.mutateAsync(widget), [addWidgetMutation]),
+        updateWidget: useCallback((widget: Widget) => refreshWidgetMutation.mutateAsync(widget), [refreshWidgetMutation]),
+        removeWidget: useCallback((id: string) => removeWidgetMutation.mutateAsync(id), [removeWidgetMutation]),
+        saveWidgetsLayout: useCallback(() => saveWidgetsLayoutMutation.mutateAsync(), [saveWidgetsLayoutMutation]),
         updateWidgetPosition,
         getWidget,
         setWidgets,

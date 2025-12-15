@@ -3,16 +3,31 @@
 import React, {useCallback, useMemo} from "react"
 import { WidgetContainer } from "@/components/widgets/base/WidgetContainer"
 import { useSession } from "@/hooks/data/useSession"
-import { useWidgets } from "@/hooks/data/useWidgets"
 import {getWidgetDefinition} from "@/lib/definitions"
 import {BaseWidget, WidgetRuntimeProps} from "@tryforgeio/sdk"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {ErrorBoundary} from "react-error-boundary"
 
-export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete, onWidgetUpdate}) => {
+const areWidgetsEqual = (a: BaseWidget, b: BaseWidget): boolean => (
+    a === b
+    || (
+        a.id === b.id
+        && a.userId === b.userId
+        && a.dashboardId === b.dashboardId
+        && a.widgetType === b.widgetType
+        && a.width === b.width
+        && a.height === b.height
+        && a.positionX === b.positionX
+        && a.positionY === b.positionY
+        && a.createdAt === b.createdAt
+        && a.updatedAt === b.updatedAt
+        && JSON.stringify(a.config ?? null) === JSON.stringify(b.config ?? null)
+    )
+)
+
+export const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete, onWidgetUpdate}) => {
     const { userId } = useSession()
-    const { updateWidget } = useWidgets(userId)
     const { integrations, isLoading: isLoadingIntegrations, handleIntegrate } = useIntegrations(userId)
 
     const definition = useMemo(() => getWidgetDefinition(widget.widgetType), [widget.widgetType])
@@ -26,7 +41,7 @@ export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, 
         const current = (widget.config ?? defaultConfig) as typeof defaultConfig
         const next = typeof updater === "function" ? (updater as (prev: typeof defaultConfig) => typeof defaultConfig)(current) : updater
 
-        await updateWidget({
+        await onWidgetUpdate?.({
             id: widget.id,
             userId: widget.userId,
             dashboardId: widget.dashboardId,
@@ -39,7 +54,7 @@ export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, 
             updatedAt: widget.updatedAt,
             config: next as Record<string, any>,
         })
-    }, [defaultConfig, updateWidget, widget])
+    }, [defaultConfig, onWidgetUpdate, widget])
 
     if (missingIntegration && !isLoadingIntegrations) {
         return (
@@ -91,3 +106,11 @@ export const WidgetRenderer: React.FC<WidgetRuntimeProps> = ({widget, editMode, 
         </WidgetContainer>
     )
 }
+
+export const WidgetRenderer = React.memo(WidgetRendererComponent, (prev, next) => (
+    areWidgetsEqual(prev.widget as BaseWidget, next.widget as BaseWidget)
+    && prev.editMode === next.editMode
+    && prev.isDragging === next.isDragging
+    && prev.onWidgetDelete === next.onWidgetDelete
+    && prev.onWidgetUpdate === next.onWidgetUpdate
+))
