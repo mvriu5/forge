@@ -15,6 +15,7 @@ import {IntegrationSection} from "@/components/sections/IntegrationSection"
 import {ProfileSection} from "@/components/sections/ProfileSection"
 import {DashboardSection} from "@/components/sections/DashboardSection"
 import {SettingsSection} from "@/components/sections/SettingsSection"
+import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 
 function SettingsDialog() {
     const [open, setOpen] = useState(false)
@@ -35,12 +36,14 @@ function SettingsDialog() {
                 </button>
             </DialogTrigger>
             <DialogContent className={"p-0 w-[800px] max-w-[90vw]"}>
+                <VisuallyHidden>
                     <DialogHeader>
                         <DialogTitle>
                             Settings
                         </DialogTitle>
                         <DialogDescription className={"sr-only"}/>
                     </DialogHeader>
+                </VisuallyHidden>
                 <div className={"flex h-[520px] max-h-[520px]"}>
                     <div className={"flex flex-col bg-secondary w-max h-full rounded-l-md border-r border-main/40 p-2"}>
                         <p className={"font-mono text-tertiary text-sm mb-2"}>

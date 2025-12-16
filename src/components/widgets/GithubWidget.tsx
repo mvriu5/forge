@@ -103,10 +103,11 @@ const GithubWidget: React.FC<WidgetProps> = () => {
             </Tabs>
             <WidgetContent scroll>
                 {(isLoading || isFetching) ? (
-                    <div className="h-full flex flex-col gap-4 pt-2">
-                        <Skeleton className={"h-16 w-full px-2"} />
-                        <Skeleton className={"h-16 w-full px-2"} />
-                        <Skeleton className={"h-16 w-full px-2"} />
+                    <div className="flex flex-col justify-between gap-4 pt-2">
+                        <Skeleton className={"h-17 w-full px-2"} />
+                        <Skeleton className={"h-17 w-full px-2"} />
+                        <Skeleton className={"h-17 w-full px-2"} />
+                        <Skeleton className={"h-17 w-full px-2"} />
                     </div>
                 ) : (
                     <div className={"flex flex-col gap-2"}>

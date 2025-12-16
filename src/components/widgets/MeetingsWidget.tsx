@@ -28,7 +28,7 @@ const MeetingsWidget: React.FC<WidgetProps> = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
     const refreshTooltip = useTooltip<HTMLButtonElement>({
-        message: "Refresh your issues & pull requests",
+        message: "Refresh your events",
         anchor: "tc"
     })
 
@@ -181,8 +181,10 @@ const MeetingsWidget: React.FC<WidgetProps> = () => {
             {isLoading ? (
                 <WidgetContent scroll>
                     <div className="flex flex-col justify-between gap-4 pt-2">
+                        <Skeleton className={"w-1/2 h-6 px-2"} />
                         <Skeleton className={"h-15 w-full px-2"} />
                         <Skeleton className={"h-15 w-full px-2"} />
+                        <Skeleton className={"w-1/3 h-6 px-2"} />
                         <Skeleton className={"h-15 w-full px-2"} />
                         <Skeleton className={"h-15 w-full px-2"} />
                     </div>

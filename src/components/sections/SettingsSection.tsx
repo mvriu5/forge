@@ -18,6 +18,7 @@ import {ScrollArea} from "@/components/ui/ScrollArea"
 const formSchema = z.object({
     hourFormat: z.enum(["12", "24"]),
     todoReminder: z.boolean(),
+    githubReminder: z.boolean(),
     meetingReminders: z.array(z.enum(["0", "5", "10", "15", "30", "60"]))
 })
 
@@ -30,6 +31,7 @@ function SettingsSection({handleClose}: {handleClose: () => void}) {
         defaultValues: {
             hourFormat: settings?.config?.hourFormat ?? "24",
             todoReminder: settings?.config?.todoReminder ?? false,
+            githubReminder: settings?.config?.githubReminder ?? false,
             meetingReminders: settings?.config?.meetingReminders ?? []
         }
     })
@@ -43,6 +45,7 @@ function SettingsSection({handleClose}: {handleClose: () => void}) {
         const newConfig = {
             hourFormat: values.hourFormat,
             todoReminder: values.todoReminder,
+            githubReminder: values.githubReminder,
             meetingReminders: values.meetingReminders
         }
 
@@ -109,7 +112,36 @@ function SettingsSection({handleClose}: {handleClose: () => void}) {
                                         <div className={"w-full flex flex-col justify-center p-0 m-0"}>
                                             <FormLabel className={"text-secondary"}>Todo Reminder</FormLabel>
                                             <FormDescription className={"text-tertiary"}>
-                                               Do you want to be reminded of your open todos when you login?
+                                               Do you want a reminder of your open todos?
+                                            </FormDescription>
+                                        </div>
+                                        <div className={"flex flex-col gap-2"}>
+                                            <Select
+                                                value={field.value ? "true" : "false"}
+                                                onValueChange={(value) => field.onChange(value === "true")}
+                                            >
+                                                <SelectTrigger className="w-42">
+                                                    <SelectValue placeholder="" />
+                                                </SelectTrigger>
+                                                <SelectContent className={"border-main/40"}>
+                                                    <SelectItem value={"true"}>Yes</SelectItem>
+                                                    <SelectItem value={"false"}>No</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="githubReminder"
+                                render={({ field }) => (
+                                    <FormItem className={"w-full flex items-center justify-between gap-2"}>
+                                        <div className={"w-full flex flex-col justify-center p-0 m-0"}>
+                                            <FormLabel className={"text-secondary"}>Github Reminder</FormLabel>
+                                            <FormDescription className={"text-tertiary"}>
+                                                Do you want a reminder of your open issues & pull requests?
                                             </FormDescription>
                                         </div>
                                         <div className={"flex flex-col gap-2"}>
@@ -138,7 +170,7 @@ function SettingsSection({handleClose}: {handleClose: () => void}) {
                                         <div className={"w-full flex flex-col justify-center p-0 m-0"}>
                                             <FormLabel className={"text-secondary"}>Meetings Reminder</FormLabel>
                                             <FormDescription className={"text-tertiary"}>
-                                                Do you want to be reminded of your next meetings?
+                                                Do you want a reminder of your next meetings?
                                             </FormDescription>
                                         </div>
                                         <div className={"flex flex-col gap-2"}>
