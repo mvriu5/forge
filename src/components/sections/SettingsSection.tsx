@@ -11,10 +11,13 @@ import {Form, FormDescription, FormField, FormItem, FormLabel, FormMessage} from
 import {Spinner} from "@/components/ui/Spinner"
 import {Select, SelectTrigger, SelectContent, SelectItem, SelectValue} from "@/components/ui/Select"
 import {Button} from "@/components/ui/Button"
-import React, {Suspense} from "react"
+import React, {Suspense, useMemo} from "react"
+import {MultiSelect} from "@/components/ui/MultiSelect"
 
 const formSchema = z.object({
-    hourFormat: z.enum(["12", "24"])
+    hourFormat: z.enum(["12", "24"]),
+    todoReminder: z.boolean(),
+    meetingReminders: z.array(z.enum(["0", "5", "10", "15", "30", "60"]))
 })
 
 function SettingsSection({handleClose}: {handleClose: () => void}) {
@@ -24,13 +27,22 @@ function SettingsSection({handleClose}: {handleClose: () => void}) {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            hourFormat: settings?.config?.hourFormat ?? "24"
+            hourFormat: settings?.config?.hourFormat ?? "24",
+            todoReminder: settings?.config?.todoReminder ?? false,
+            meetingReminders: settings?.config?.meetingReminders ?? []
         }
     })
 
+    const meetingReminderOptions = useMemo(() => ["0", "5", "10", "15", "30", "60"].map((minutes) => ({
+        label: `${minutes} minutes before`,
+        value: minutes
+    })), [])
+
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         const newConfig = {
-            hourFormat: values.hourFormat
+            hourFormat: values.hourFormat,
+            todoReminder: values.todoReminder,
+            meetingReminders: values.meetingReminders
         }
 
         if (!settings) return
@@ -78,6 +90,63 @@ function SettingsSection({handleClose}: {handleClose: () => void}) {
                                                         <SelectItem value={"24"}>24 Hour format</SelectItem>
                                                     </SelectContent>
                                                 </Select>
+                                            </div>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <p className={"font-mono text-primary mt-2"}>Widget</p>
+                            <div className="w-full flex flex-col gap-2 items-center p-2 bg-secondary rounded-md border border-main/40">
+                                <FormField
+                                    control={form.control}
+                                    name="todoReminder"
+                                    render={({ field }) => (
+                                        <FormItem className={"w-full flex items-center justify-between gap-2"}>
+                                            <div className={"w-full flex flex-col justify-center p-0 m-0"}>
+                                                <FormLabel className={"text-secondary"}>Todo Reminder</FormLabel>
+                                                <FormDescription className={"text-tertiary"}>
+                                                   Do you want to be reminded of your open todos when you login?
+                                                </FormDescription>
+                                            </div>
+                                            <div className={"flex flex-col gap-2"}>
+                                                <Select
+                                                    value={field.value ? "true" : "false"}
+                                                    onValueChange={(value) => field.onChange(value === "true")}
+                                                >
+                                                    <SelectTrigger className="w-42">
+                                                        <SelectValue placeholder="" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className={"border-main/40"}>
+                                                        <SelectItem value={"true"}>Yes</SelectItem>
+                                                        <SelectItem value={"false"}>No</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="meetingReminders"
+                                    render={({ field }) => (
+                                        <FormItem className={"w-full flex items-center justify-between gap-2"}>
+                                            <div className={"w-full flex flex-col justify-center p-0 m-0"}>
+                                                <FormLabel className={"text-secondary"}>Meetings Reminder</FormLabel>
+                                                <FormDescription className={"text-tertiary"}>
+                                                    Do you want to be reminded of your next meetings?
+                                                </FormDescription>
+                                            </div>
+                                            <div className={"flex flex-col gap-2"}>
+                                                <MultiSelect
+                                                    options={meetingReminderOptions}
+                                                    displayValue={`${field.value.length} reminders`}
+                                                    value={field.value}
+                                                    onValueChange={field.onChange}
+                                                    placeholder={"Select reminder times"}
+                                                />
                                             </div>
                                             <FormMessage />
                                         </FormItem>

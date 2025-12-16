@@ -7,7 +7,8 @@ import {VerificationEmail} from "@/components/emails/VerificationEmail"
 import {ReactNode} from "react"
 import {ResetPasswordEmail} from "@/components/emails/ResetPasswordEmail"
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY)
+const isProd = process.env.NODE_ENV === "production"
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
@@ -57,7 +58,7 @@ export const auth = betterAuth({
             clientId: process.env.GOOGLE_CLIENT_ID as string,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
             accessType: "offline",
-            prompt: "consent",
+            prompt: "select_account consent",
             redirectUri: `${process.env.BETTER_AUTH_URL}/api/auth/callback/google`
         }
     },
@@ -70,11 +71,11 @@ export const auth = betterAuth({
         updateAge: 60 * 60 * 24 * 3, // 1 day (every 1 day the session expiration is updated)
     },
     advanced: {
-        useSecureCookies: true,
+        useSecureCookies: isProd,
         defaultCookieAttributes: {
-            secure: true
+            secure: isProd
         }
-    },
+    }
 })
 
 export type Session = typeof auth.$Infer.Session

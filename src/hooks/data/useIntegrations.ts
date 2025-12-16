@@ -116,7 +116,7 @@ export function useIntegrations(userId: string | undefined) {
     const handleIntegrate = async (provider: string, callback = true) => {
         const data = await authClient.signIn.social({
             provider,
-            callbackURL: callback ? CALLBACK_URL : undefined
+            callbackURL: callback ? CALLBACK_URL : undefined,
         }, {
             onRequest: (ctx) => {
                 void refetchIntegrations()

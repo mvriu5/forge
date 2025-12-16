@@ -2,6 +2,7 @@
 
 import {useCallback, useEffect, useState} from "react"
 import type { Notification } from "@/database"
+import {toast} from "sonner"
 
 export function useNotifications(userId: string | undefined) {
     const [notifications, setNotifications] = useState<Notification[]>([])
@@ -57,7 +58,7 @@ export function useNotifications(userId: string | undefined) {
         }
     }, [userId])
 
-    const sendNotification = useCallback(async (input: { type: Notification["type"], message: string, createdAt: string }) => {
+    const sendNotification = useCallback(async (input: { type: Notification["type"], message: string }) => {
         if (!userId) return
 
         await fetch("/api/notifications", {
@@ -68,6 +69,10 @@ export function useNotifications(userId: string | undefined) {
                 type: input.type,
                 message: input.message,
             })
+        })
+        toast.info(input.message, {
+            duration: 10000,
+            closeButton: true,
         })
     }, [userId])
 

@@ -23,7 +23,7 @@ type FormFieldContextValue<TFieldValues extends FieldValues = FieldValues, TName
 
 const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue)
 
-const FormField = <TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>>({...props}: ControllerProps<TFieldValues, TName>) => {
+const FormField = <TFieldValues extends FieldValues = FieldValues, TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>, TTransformedValues extends FieldValues = TFieldValues>({...props}: ControllerProps<TFieldValues, TName, TTransformedValues>) => {
     return (
         <FormFieldContext.Provider value={{ name: props.name }}>
             <Controller {...props} />

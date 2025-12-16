@@ -1,7 +1,7 @@
 "use client"
 
 import {Archive, Bell, BellRing, Inbox, Mails, TriangleAlert} from "lucide-react"
-import React, {useState} from "react"
+import React, {useMemo, useState} from "react"
 import {cn, getTimeLabel} from "@/lib/utils"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {useSession} from "@/hooks/data/useSession"
@@ -12,7 +12,11 @@ import {useTooltip} from "@/components/ui/TooltipProvider"
 
 function NotificationPopover({editMode}: {editMode: boolean}) {
     const {userId, isLoading: sessionLoading} = useSession()
-    const { notifications, clearNotifications} = useNotifications(userId)
+    const {notifications, clearNotifications} = useNotifications(userId)
+
+    const sortedNotifications = useMemo(() => (
+        notifications.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    ), [notifications])
 
     const [open, setOpen] = useState(false)
 
@@ -39,7 +43,7 @@ function NotificationPopover({editMode}: {editMode: boolean}) {
                 className={"h-full w-64 gap-1 p-0"}
                 align={"end"}
             >
-                <div className={"flex items-center gap-2 justify-between bg-tertiary p-2 border-b border-main/40"}>
+                <div className={"flex items-center gap-2 justify-between bg-tertiary p-1 pl-2 border-b border-main/40"}>
                     <p className={"text-tertiary text-sm"}>
                         {notifications.length > 0 ? `${notifications.length} new notifications` : "Notifications"}
                     </p>
@@ -56,9 +60,9 @@ function NotificationPopover({editMode}: {editMode: boolean}) {
                     </div>
                 ) : (
                     <ScrollArea className={"h-72"}>
-                        <div className={"h-full flex flex-col gap-1 overflow-y-auto p-2"}>
-                            {notifications?.map((notification) => (
-                                <div key={notification.id} className={"flex items-center gap-2 p-2 rounded-md hover:bg-tertiary"}>
+                        <div className={"h-full flex flex-col gap-1 overflow-y-auto p-1 pr-3"}>
+                            {sortedNotifications.map((notification) => (
+                                <div key={notification.id} className={"flex items-center gap-2 p-2 rounded-md"}>
                                     <div className={"flex items-center justify-center size-8 bg-tertiary rounded-md"}>
                                         {notification.type === "message" && (
                                         <Mails size={20} className={"text-green-400"}/>
@@ -71,7 +75,7 @@ function NotificationPopover({editMode}: {editMode: boolean}) {
                                         )}
                                     </div>
                                     <div className={"flex flex-col"}>
-                                        <p className={"text-sm"}>
+                                        <p className={"text-xs"}>
                                             {notification.message}
                                         </p>
                                         <p className={"text-xs text-tertiary mt-1"}>
@@ -83,7 +87,6 @@ function NotificationPopover({editMode}: {editMode: boolean}) {
                         </div>
                     </ScrollArea>
                 )}
-
             </PopoverContent>
         </Popover>
     )

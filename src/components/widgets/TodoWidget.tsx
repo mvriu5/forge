@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useCallback, useRef} from "react"
+import React, {useCallback, useEffect, useRef} from "react"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Checkbox} from "@/components/ui/Checkbox"
@@ -22,6 +22,10 @@ import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} f
 import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
+import {useSession} from "@/hooks/data/useSession"
+import {useNotifications} from "@/hooks/data/useNotifications"
+import {toast} from "sonner"
+import {useSettings} from "@/hooks/data/useSettings"
 
 type Todo = {
     id: string
@@ -34,12 +38,34 @@ interface TodoConfig {
 }
 
 const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({config, updateConfig}) => {
+    const {userId} = useSession()
+    const {settings} = useSettings(userId)
+    const {sendNotification} = useNotifications(userId)
+
+    const hasSentReminderRef = useRef(false)
     const inputRef = useRef<HTMLInputElement>(null)
 
     const clearTodosTooltip = useTooltip<HTMLButtonElement>({
         message: "Clear all todos",
         anchor: "tc"
     })
+
+    useEffect(() => {
+        if (!settings?.config.todoReminder) return
+        if (hasSentReminderRef.current) return
+
+        const hasPendingTodos = config.todos.some((todo) => !todo.checked)
+        if (!hasPendingTodos) return
+
+        hasSentReminderRef.current = true
+
+        void sendNotification({
+            message: "You have pending todos for today!",
+            type: "reminder",
+        }).catch(() => {
+            hasSentReminderRef.current = false
+        })
+    }, [sendNotification])
 
     const handleSave = useCallback(async (updatedTodos: Todo[]) => {
         await updateConfig({ todos: updatedTodos })

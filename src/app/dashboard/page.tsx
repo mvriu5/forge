@@ -126,7 +126,7 @@ export default function Dashboard() {
                 <div className={"h-screen w-screen flex items-center justify-center"}>
                     <SpinnerDotted size={56} thickness={160} speed={100} color="rgba(237, 102, 49, 1)" />
                 </div>
-            ) : (visibleWidgets.length === 0 && currentDashboard ? (
+            ) : (visibleWidgets.length === 0 && currentDashboard && !editMode ? (
                 <DashboardEmpty/>
             ) : (
                 <DashboardGrid
