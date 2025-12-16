@@ -53,7 +53,6 @@ async function deleteWidgetRequest(id: string): Promise<void> {
     }
 }
 
-
 const areWidgetsEqual = (a: Widget, b: Widget): boolean => {
     if (a === b) return true
 

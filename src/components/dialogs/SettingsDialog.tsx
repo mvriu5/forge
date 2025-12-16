@@ -1,28 +1,9 @@
 "use client"
 
-import React, {useCallback, useMemo, useRef, useState} from "react"
-import {
-    Blocks,
-    Check,
-    CircleUserRound,
-    LayoutDashboard,
-    Pencil,
-    Settings as SettingsIcon,
-    Trash,
-    User,
-    Wrench,
-    X
-} from "lucide-react"
-import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
-import {z} from "zod"
-import {useForm} from "react-hook-form"
-import {zodResolver} from "@hookform/resolvers/zod"
-import {cn} from "@/lib/utils"
-import {authClient} from "@/lib/auth-client"
-import type {PutBlobResult} from "@vercel/blob"
+import React, {useState} from "react"
+import {Blocks, LayoutDashboard, Settings as SettingsIcon, User, Wrench} from "lucide-react"
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
     DialogHeader,
@@ -30,22 +11,6 @@ import {
     DialogTrigger
 } from "@/components/ui/Dialog"
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
-import {Button} from "@/components/ui/Button"
-import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
-import {Input} from "@/components/ui/Input"
-import {Github, Google} from "@/components/svg/Icons"
-import {ScrollArea} from "@/components/ui/ScrollArea"
-import {Dashboard, Settings} from "@/database"
-import {useTooltip} from "@/components/ui/TooltipProvider"
-import {RadioGroup} from "@/components/ui/RadioGroup"
-import {RadioGroupBox} from "@/components/ui/RadioGroupBox"
-import {Spinner} from "@/components/ui/Spinner"
-import {useSession} from "@/hooks/data/useSession"
-import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import {useDashboards} from "@/hooks/data/useDashboards"
-import {useSettings} from "@/hooks/data/useSettings"
-import {toast} from "sonner"
 import {IntegrationSection} from "@/components/sections/IntegrationSection"
 import {ProfileSection} from "@/components/sections/ProfileSection"
 import {DashboardSection} from "@/components/sections/DashboardSection"

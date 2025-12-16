@@ -15,11 +15,13 @@ import {useSettings} from "@/hooks/data/useSettings"
 import {defineWidget, WidgetProps} from "@tryforgeio/sdk"
 import {formatDateHeader, formatTime, isSameDay} from "@/lib/utils"
 import {useNotifications} from "@/hooks/data/useNotifications"
+import {useSession} from "@/hooks/data/useSession"
 
-const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
-    const {settings} = useSettings(widget.userId)
-    const {sendMeetingNotification} = useNotifications(widget.userId)
-    const {calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
+const MeetingsWidget: React.FC<WidgetProps> = () => {
+    const {userId} = useSession()
+    const {settings} = useSettings(userId)
+    const {sendMeetingNotification} = useNotifications(userId)
+    const {calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars} = useGoogleCalendar()
 
     const sentRemindersRef = useRef<Set<string>>(new Set())
 
@@ -88,10 +90,8 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
                 dueReminders.map(({key}: {key: any}) => sentRemindersRef.current.add(key))
 
                 const startLabel = formatTime(startTimeString, settings.config.hourFormat ?? "24")
-                const timingLabel = nearestReminder.minutes === 0
-                    ? "now"
-                    : `in ${nearestReminder.minutes} minutes`
-                const message = `${event.summary ?? "Meeting"} starts ${timingLabel} (${startLabel})`
+                const timingLabel = nearestReminder.minutes === 0 ? "now" : `in ${nearestReminder.minutes} minutes`
+                const message = `"${event.summary}" meeting starts ${timingLabel} (${startLabel})`
 
                 void sendMeetingNotification({
                     message,
@@ -144,19 +144,9 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
         })
     }, [sortedEvents, getColor, settings?.config.hourFormat])
 
-    const isInitialLoading = useMemo(() => {
-        return (
-            (isLoading && !calendars) ||
-            (isLoading && !events) ||
-            (!calendars && !isError) ||
-            (calendars && calendars.length > 0 && !events && !isError) ||
-            (filterLoading)
-        )
-    }, [isLoading, calendars, events, isError, filterLoading])
-
     const hasNoEvents = useMemo(() => {
-        return calendars && Array.isArray(events) && events.length === 0 && !isInitialLoading
-    }, [calendars, events, isInitialLoading])
+        return calendars && Array.isArray(events) && events.length === 0 && !isLoading
+    }, [calendars, events, isLoading])
 
     return (
         <>

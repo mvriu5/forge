@@ -11,7 +11,7 @@ import {z} from "zod"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {Dashboard} from "@/database"
 import {useTooltip} from "@/components/ui/TooltipProvider"
-import {toast} from "sonner"
+import {toast} from "@/components/ui/Toast"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useSession} from "@/hooks/data/useSession"
 

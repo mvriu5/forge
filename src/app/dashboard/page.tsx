@@ -11,7 +11,7 @@ import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSettings} from "@/hooks/data/useSettings"
-import {toast} from "sonner"
+import {toast} from "@/components/ui/Toast"
 import {DashboardEmpty} from "@/components/empty/DashboardEmpty"
 import {DashboardGrid} from "@/components/DashboardGrid"
 
@@ -68,9 +68,9 @@ export default function Dashboard() {
                 await Promise.all(widgetsToRemove.map((widget) => removeWidget(widget.id)))
             }
             await saveWidgetsLayout()
-            toast.success("Successfully updated your layout")
+            toast.success("Successfully updated your layout.")
         } catch (error) {
-            toast.error("Something went wrong")
+            toast.error("Something went wrong.")
         } finally {
             setEditMode(false)
             setEditModeLoading(false)

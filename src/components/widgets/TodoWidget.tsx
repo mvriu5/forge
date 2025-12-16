@@ -38,7 +38,7 @@ interface TodoConfig {
 
 const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({widget, config, updateConfig}) => {
     const {settings} = useSettings(widget.userId)
-    const {sendNotification} = useNotifications(widget.userId)
+    const {sendReminderNotification} = useNotifications(widget.userId)
 
     const hasSentReminderRef = useRef(false)
     const inputRef = useRef<HTMLInputElement>(null)
@@ -57,13 +57,13 @@ const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({widget, config, updateCo
 
         hasSentReminderRef.current = true
 
-        void sendNotification({
-            message: "You have pending todos for today!",
+        void sendReminderNotification({
+            message: `You have ${config.todos.length} pending ${config.todos.length == 1 ? "todo" : "todos"} for today!`,
             type: "reminder",
         }).catch(() => {
             hasSentReminderRef.current = false
         })
-    }, [sendNotification])
+    }, [sendReminderNotification])
 
     const handleSave = useCallback(async (updatedTodos: Todo[]) => {
         await updateConfig({ todos: updatedTodos })

@@ -6,7 +6,7 @@ import {Trash} from "lucide-react"
 import {Spinner} from "@/components/ui/Spinner"
 import React, {useState} from "react"
 import {useTooltip} from "@/components/ui/TooltipProvider"
-import {toast} from "sonner"
+import {toast} from "@/components/ui/Toast"
 import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 

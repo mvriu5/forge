@@ -58,7 +58,7 @@ export function useNotifications(userId: string | undefined) {
         }
     }, [userId])
 
-    const sendNotification = useCallback(async (input: { type: Notification["type"], message: string }) => {
+    const sendReminderNotification = useCallback(async (input: { type: Notification["type"], message: string }) => {
         if (!userId) return
 
         await fetch("/api/notifications", {
@@ -70,10 +70,7 @@ export function useNotifications(userId: string | undefined) {
                 message: input.message,
             })
         })
-        toast.info(input.message, {
-            duration: 10000,
-            closeButton: true,
-        })
+        toast.reminder(input.message)
     }, [userId])
 
     const sendMeetingNotification = useCallback(async (input: { type: Notification["type"], message: string, url: string }) => {
@@ -101,7 +98,7 @@ export function useNotifications(userId: string | undefined) {
     return {
         notifications,
         connected,
-        sendNotification,
+        sendReminderNotification,
         sendMeetingNotification,
         clearNotifications
     }

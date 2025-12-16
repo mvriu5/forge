@@ -1,7 +1,7 @@
 import {useState} from "react"
 import {z} from "zod"
 import {authClient} from "@/lib/auth-client"
-import {toast} from "sonner"
+import {toast} from "@/components/ui/Toast"
 import {useRouter} from "next/navigation"
 
 export const useAuth = () => {
@@ -39,14 +39,11 @@ export const useAuth = () => {
             },
             onSuccess: (ctx) => {
                 setIsLoading(false)
-                toast.success("We sent you an email!", {
-                    description: "Verify your email to continue.",
-                    duration: 1000 * 60 * 5 // 5 minutes
-                })
+                toast.success("We sent you an email! Verify your email to continue.")
             },
             onError: (ctx) => {
                 setIsLoading(false)
-                toast.error("Something went wrong", {description: ctx.error.message})
+                toast.error("Something went wrong.")
             },
         })
     }
@@ -67,9 +64,9 @@ export const useAuth = () => {
                 if (ctx.error.status === 403) {
                     toast.error("Verify your email first!")
                 } else if (ctx.error.status === 401) {
-                    toast.error("Wrong credentials")
+                    toast.error("Wrong credentials.")
                 } else {
-                    toast.error("Something went wrong", {description: ctx.error.message})
+                    toast.error("Something went wrong.")
                 }
                 setIsLoading(false)
             }
@@ -85,11 +82,11 @@ export const useAuth = () => {
                 setIsLoading(true)
             },
             onSuccess: (ctx) => {
-                toast.success("Reset E-Mail was sent.", {description: "Please check your mails."})
+                toast.success("Reset E-Mail was sent. Please check your inbox.")
                 setIsLoading(false)
             },
             onError: (ctx) => {
-                toast.error("Something went wrong", {description: ctx.error.message})
+                toast.error("Something went wrong.")
                 setIsLoading(false)
             }
         })
@@ -114,7 +111,7 @@ export const useAuth = () => {
                 router.push("/signin")
             },
             onError: (ctx) => {
-                toast.error("Something went wrong", {description: ctx.error.message})
+                toast.error("Something went wrong.")
                 setIsLoading(false)
             }
         })

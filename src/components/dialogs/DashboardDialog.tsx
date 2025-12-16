@@ -11,7 +11,7 @@ import {Button} from "@/components/ui/Button"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {Spinner} from "@/components/ui/Spinner"
 import {Dashboard, DashboardInsert} from "@/database"
-import {toast} from "sonner"
+import {toast} from "@/components/ui/Toast"
 
 interface DashboardDialogProps {
     open: boolean

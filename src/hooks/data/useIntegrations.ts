@@ -1,7 +1,7 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Account} from "@/database"
 import {authClient} from "@/lib/auth-client"
-import {toast} from "sonner"
+import {toast} from "@/components/ui/Toast"
 import {capitalizeFirstLetter} from "@better-auth/core/utils"
 import posthog from "posthog-js"
 import {useEffect} from "react"
@@ -91,7 +91,7 @@ export function useIntegrations(userId: string | undefined) {
     useEffect(() => {
         if (!userId) return
         void refetchIntegrations()
-    }, [refetchIntegrations, userId])
+    }, [userId])
 
     const isLoadingIntegrations = integrationsQuery.isLoading || integrationsQuery.isFetching || !userId
 
@@ -130,13 +130,11 @@ export function useIntegrations(userId: string | undefined) {
                 void refetchIntegrations()
             },
             onSuccess: (ctx) => {
-                toast.success("Successfully integrated " + capitalizeFirstLetter(provider))
+                toast.success(`Successfully integrated ${capitalizeFirstLetter(provider)}.`)
             },
             onError: (ctx) => {
-                toast.error("Something went wrong", {description: ctx.error.message})
-                posthog.captureException(ctx.error, {
-                    method: "handleIntegrate", userId, provider
-                })
+                toast.error("Something went wrong.")
+                posthog.captureException(ctx.error, {method: "handleIntegrate", userId, provider})
             }
         })
     }

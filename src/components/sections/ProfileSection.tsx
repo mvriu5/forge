@@ -7,7 +7,7 @@ import {z} from "zod"
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {authClient} from "@/lib/auth-client"
-import {toast} from "sonner"
+import {toast} from "@/components/ui/Toast"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Button} from "@/components/ui/Button"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
@@ -59,10 +59,10 @@ function ProfileSection({handleClose}: {handleClose: () => void}) {
             })
 
             updateUser({ image: imageUrl, name: values.name })
-            toast.success("Successfully updated your profile")
+            toast.success("Successfully updated your profile.")
             handleClose()
         } catch (error) {
-            toast.error("Something went wrong")
+            toast.error("Something went wrong.")
         }
     }
 
@@ -81,7 +81,7 @@ function ProfileSection({handleClose}: {handleClose: () => void}) {
             return data
 
         } catch (error) {
-            toast.error("Something went wrong")
+            toast.error("Something went wrong.")
             return null
         } finally {
             setUploading(false)
@@ -104,9 +104,9 @@ function ProfileSection({handleClose}: {handleClose: () => void}) {
             await authClient.updateUser({image: null})
             updateUser({ image: null })
             handleClose()
-            toast.success("Successfully removed your avatar")
+            toast.success("Successfully removed your avatar.")
         } catch (error) {
-            toast.error("Something went wrong")
+            toast.error("Something went wrong.")
         }
     }
 

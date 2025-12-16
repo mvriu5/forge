@@ -69,6 +69,7 @@ export const useGoogleCalendar = () => {
     const queryClient = useQueryClient()
     const previousUserId = useRef<string | undefined>(undefined)
     const isRefreshingToken = useRef(false)
+    const hasSeenInitialSelection = useRef(false)
 
     useEffect(() => {
         if (!userId) {
@@ -105,7 +106,6 @@ export const useGoogleCalendar = () => {
                     })
                     await refetchIntegrations()
                 } catch (error) {
-                    console.error("Failed to refresh Google access token", error)
                     setAccessToken(googleIntegration.accessToken ?? null)
                 } finally {
                     isRefreshingToken.current = false
@@ -118,7 +118,6 @@ export const useGoogleCalendar = () => {
 
         setAccessToken(googleIntegration.accessToken)
     }, [googleIntegration, refetchIntegrations, userId])
-
 
     const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError} = useQuery({
         queryKey: GOOGLE_CALENDAR_QUERY_KEY(accessToken),
@@ -157,6 +156,8 @@ export const useGoogleCalendar = () => {
         enabled: Boolean(accessToken) && Boolean(calendars?.length),
         staleTime: 5 * 60 * 1000,
         gcTime: 15 * 60 * 1000,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
         retry: (failureCount) => failureCount < 3,
     })
 
@@ -179,19 +180,16 @@ export const useGoogleCalendar = () => {
     }, [queryClient, accessToken, selectedCalendars])
 
     useEffect(() => {
-        setFilterLoading(true)
+        if (hasSeenInitialSelection.current) {
+            setFilterLoading(true)
+        } else {
+            hasSeenInitialSelection.current = true
+        }
     }, [selectedCalendars])
 
     useEffect(() => {
         if (!calendarLoading && !eventsLoading && filterLoading) setFilterLoading(false)
     }, [calendarLoading, eventsLoading, filterLoading])
-
-    useEffect(() => {
-        if (!accessToken) return
-
-        void queryClient.invalidateQueries({ queryKey: GOOGLE_CALENDAR_QUERY_KEY(accessToken) })
-        void queryClient.invalidateQueries({ queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars) })
-    }, [accessToken, queryClient, selectedCalendars])
 
     return {
         calendars,
