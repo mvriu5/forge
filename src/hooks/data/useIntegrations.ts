@@ -4,6 +4,7 @@ import {authClient} from "@/lib/auth-client"
 import {toast} from "sonner"
 import {capitalizeFirstLetter} from "@better-auth/core/utils"
 import posthog from "posthog-js"
+import {useEffect} from "react"
 
 interface Integration {
     id: string
@@ -85,7 +86,14 @@ export function useIntegrations(userId: string | undefined) {
         initialData: [] as Integration[],
     })
 
-    const refetchIntegrations = integrationsQuery.refetch
+    const { refetch: refetchIntegrations } = integrationsQuery
+
+    useEffect(() => {
+        if (!userId) return
+        void refetchIntegrations()
+    }, [refetchIntegrations, userId])
+
+    const isLoadingIntegrations = integrationsQuery.isLoading || integrationsQuery.isFetching || !userId
 
     const removeIntegrationMutation = useMutation({
         mutationFn: unlinkIntegration,
@@ -135,7 +143,7 @@ export function useIntegrations(userId: string | undefined) {
 
     return {
         integrations: integrationsQuery.data ?? [],
-        isLoading: integrationsQuery.isLoading,
+        isLoading: isLoadingIntegrations,
         handleIntegrate,
         refetchIntegrations,
         removeIntegration: (provider: string) => removeIntegrationMutation.mutateAsync(provider),

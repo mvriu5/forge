@@ -27,9 +27,8 @@ const areWidgetsEqual = (a: BaseWidget, b: BaseWidget): boolean => (
 )
 
 export const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete, onWidgetUpdate}) => {
-    const { userId } = useSession()
+    const { userId, isLoading: isLoadingSession } = useSession()
     const { integrations, isLoading: isLoadingIntegrations, handleIntegrate } = useIntegrations(userId)
-    console.log(integrations)
 
     const definition = useMemo(() => getWidgetDefinition(widget.widgetType), [widget.widgetType])
     const { Component, defaultConfig, name, integration: requiredIntegration } = definition
@@ -57,7 +56,7 @@ export const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, e
         })
     }, [defaultConfig, onWidgetUpdate, widget])
 
-    if (missingIntegration && !isLoadingIntegrations) {
+    if (missingIntegration && !(isLoadingIntegrations || isLoadingSession)) {
         return (
             <WidgetContainer
                 id={widget.id}

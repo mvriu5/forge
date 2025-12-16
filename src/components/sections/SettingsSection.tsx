@@ -13,6 +13,7 @@ import {Select, SelectTrigger, SelectContent, SelectItem, SelectValue} from "@/c
 import {Button} from "@/components/ui/Button"
 import React, {Suspense, useMemo} from "react"
 import {MultiSelect} from "@/components/ui/MultiSelect"
+import {ScrollArea} from "@/components/ui/ScrollArea"
 
 const formSchema = z.object({
     hourFormat: z.enum(["12", "24"]),
@@ -66,94 +67,96 @@ function SettingsSection({handleClose}: {handleClose: () => void}) {
             <form onSubmit={form.handleSubmit(onSubmit)} className={"h-full"}>
                 <Suspense fallback={<Spinner/>}>
                     <div className="flex flex-col justify-between gap-4 h-full">
-                        <div className={"flex flex-col gap-2"}>
-                            <p className={"font-mono text-primary"}>General</p>
-                            <div className="w-full flex items-center p-2 bg-secondary rounded-md border border-main/40">
-                                <FormField
-                                    control={form.control}
-                                    name="hourFormat"
-                                    render={({ field }) => (
-                                        <FormItem className={"w-full flex items-center justify-between gap-2"}>
-                                            <div className={"w-full flex flex-col justify-center p-0 m-0"}>
-                                                <FormLabel className={"text-secondary"}>Hour format</FormLabel>
-                                                <FormDescription className={"text-tertiary"}>
-                                                    Select which hour format you prefer to use in the application.
-                                                </FormDescription>
-                                            </div>
-                                            <div className={"flex flex-col gap-2"}>
-                                                <Select value={field.value} onValueChange={field.onChange}>
-                                                    <SelectTrigger className="w-42">
-                                                        <SelectValue placeholder="Select format" />
-                                                    </SelectTrigger>
-                                                    <SelectContent className={"border-main/40"}>
-                                                        <SelectItem value={"12"}>12 Hour format</SelectItem>
-                                                        <SelectItem value={"24"}>24 Hour format</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <p className={"font-mono text-primary mt-2"}>Widget</p>
-                            <div className="w-full flex flex-col gap-2 items-center p-2 bg-secondary rounded-md border border-main/40">
-                                <FormField
-                                    control={form.control}
-                                    name="todoReminder"
-                                    render={({ field }) => (
-                                        <FormItem className={"w-full flex items-center justify-between gap-2"}>
-                                            <div className={"w-full flex flex-col justify-center p-0 m-0"}>
-                                                <FormLabel className={"text-secondary"}>Todo Reminder</FormLabel>
-                                                <FormDescription className={"text-tertiary"}>
-                                                   Do you want to be reminded of your open todos when you login?
-                                                </FormDescription>
-                                            </div>
-                                            <div className={"flex flex-col gap-2"}>
-                                                <Select
-                                                    value={field.value ? "true" : "false"}
-                                                    onValueChange={(value) => field.onChange(value === "true")}
-                                                >
-                                                    <SelectTrigger className="w-42">
-                                                        <SelectValue placeholder="" />
-                                                    </SelectTrigger>
-                                                    <SelectContent className={"border-main/40"}>
-                                                        <SelectItem value={"true"}>Yes</SelectItem>
-                                                        <SelectItem value={"false"}>No</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="meetingReminders"
-                                    render={({ field }) => (
-                                        <FormItem className={"w-full flex items-center justify-between gap-2"}>
-                                            <div className={"w-full flex flex-col justify-center p-0 m-0"}>
-                                                <FormLabel className={"text-secondary"}>Meetings Reminder</FormLabel>
-                                                <FormDescription className={"text-tertiary"}>
-                                                    Do you want to be reminded of your next meetings?
-                                                </FormDescription>
-                                            </div>
-                                            <div className={"flex flex-col gap-2"}>
-                                                <MultiSelect
-                                                    options={meetingReminderOptions}
-                                                    displayValue={`${field.value.length} reminders`}
-                                                    value={field.value}
-                                                    onValueChange={field.onChange}
-                                                    placeholder={"Select reminder times"}
-                                                />
-                                            </div>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+                        <ScrollArea className={"h-full"}>
+                            <div className={"flex flex-col gap-2"}>
+                        <p className={"font-mono text-primary"}>General</p>
+                        <div className="w-full flex items-center p-2 bg-secondary rounded-md border border-main/40">
+                            <FormField
+                                control={form.control}
+                                name="hourFormat"
+                                render={({ field }) => (
+                                    <FormItem className={"w-full flex items-center justify-between gap-2"}>
+                                        <div className={"w-full flex flex-col justify-center p-0 m-0"}>
+                                            <FormLabel className={"text-secondary"}>Hour format</FormLabel>
+                                            <FormDescription className={"text-tertiary"}>
+                                                Select which hour format you prefer to use in the application.
+                                            </FormDescription>
+                                        </div>
+                                        <div className={"flex flex-col gap-2"}>
+                                            <Select value={field.value} onValueChange={field.onChange}>
+                                                <SelectTrigger className="w-42">
+                                                    <SelectValue placeholder="Select format" />
+                                                </SelectTrigger>
+                                                <SelectContent className={"border-main/40"}>
+                                                    <SelectItem value={"12"}>12 Hour format</SelectItem>
+                                                    <SelectItem value={"24"}>24 Hour format</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         </div>
+
+                        <p className={"font-mono text-primary mt-2"}>Widget</p>
+                        <div className="w-full flex flex-col gap-2 items-center p-2 bg-secondary rounded-md border border-main/40">
+                            <FormField
+                                control={form.control}
+                                name="todoReminder"
+                                render={({ field }) => (
+                                    <FormItem className={"w-full flex items-center justify-between gap-2"}>
+                                        <div className={"w-full flex flex-col justify-center p-0 m-0"}>
+                                            <FormLabel className={"text-secondary"}>Todo Reminder</FormLabel>
+                                            <FormDescription className={"text-tertiary"}>
+                                               Do you want to be reminded of your open todos when you login?
+                                            </FormDescription>
+                                        </div>
+                                        <div className={"flex flex-col gap-2"}>
+                                            <Select
+                                                value={field.value ? "true" : "false"}
+                                                onValueChange={(value) => field.onChange(value === "true")}
+                                            >
+                                                <SelectTrigger className="w-42">
+                                                    <SelectValue placeholder="" />
+                                                </SelectTrigger>
+                                                <SelectContent className={"border-main/40"}>
+                                                    <SelectItem value={"true"}>Yes</SelectItem>
+                                                    <SelectItem value={"false"}>No</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="meetingReminders"
+                                render={({ field }) => (
+                                    <FormItem className={"w-full flex items-center justify-between gap-2"}>
+                                        <div className={"w-full flex flex-col justify-center p-0 m-0"}>
+                                            <FormLabel className={"text-secondary"}>Meetings Reminder</FormLabel>
+                                            <FormDescription className={"text-tertiary"}>
+                                                Do you want to be reminded of your next meetings?
+                                            </FormDescription>
+                                        </div>
+                                        <div className={"flex flex-col gap-2"}>
+                                            <MultiSelect
+                                                options={meetingReminderOptions}
+                                                displayValue={`${field.value.length} reminders`}
+                                                value={field.value}
+                                                onValueChange={field.onChange}
+                                                placeholder={"Select reminder times"}
+                                            />
+                                        </div>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+                        </ScrollArea>
                         <div className={"w-full flex gap-2 justify-end"}>
                             <Button
                                 type={"button"}

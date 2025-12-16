@@ -20,7 +20,15 @@ import {zodResolver} from "@hookform/resolvers/zod"
 import {cn} from "@/lib/utils"
 import {authClient} from "@/lib/auth-client"
 import type {PutBlobResult} from "@vercel/blob"
-import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/Dialog"
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
 import {Button} from "@/components/ui/Button"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
@@ -61,15 +69,14 @@ function SettingsDialog() {
                     <p>Settings</p>
                 </button>
             </DialogTrigger>
-            <DialogContent className={"p-0 max-w-2/5"}>
-                <VisuallyHidden>
+            <DialogContent className={"p-0 w-[800px] max-w-[90vw]"}>
                     <DialogHeader>
                         <DialogTitle>
                             Settings
                         </DialogTitle>
+                        <DialogDescription className={"sr-only"}/>
                     </DialogHeader>
-                </VisuallyHidden>
-                <div className={"flex h-96"}>
+                <div className={"flex h-[520px] max-h-[520px]"}>
                     <div className={"flex flex-col bg-secondary w-max h-full rounded-l-md border-r border-main/40 p-2"}>
                         <p className={"font-mono text-tertiary text-sm mb-2"}>
                             Settings

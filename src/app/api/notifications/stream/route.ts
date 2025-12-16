@@ -10,6 +10,10 @@ const isAbortError = (error: unknown) => {
     return typeof error === "object" && error !== null && "name" in error && (error as { name?: string }).name === "AbortError"
 }
 
+const isTerminatedFetchError = (error: unknown) => {
+    return error instanceof TypeError && (error.message === "terminated" || error.message === "fetch failed")
+}
+
 export async function GET(req: Request) {
     let userId: string | null = null
 
@@ -24,14 +28,24 @@ export async function GET(req: Request) {
         const channel = `notifications:live:${userId}`
         const url = `${process.env.UPSTASH_REDIS_REST_URL}/subscribe/${encodeURIComponent(channel)}`
 
-        const upstream = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
-                Accept: "text/event-stream",
-                "Cache-Control": "no-cache",
-            },
-            cache: "no-store",
-        })
+        let upstream: Response
+        try {
+            upstream = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
+                    Accept: "text/event-stream",
+                    "Cache-Control": "no-cache",
+                },
+                cache: "no-store",
+            })
+        } catch (error) {
+            if (isAbortError(error) || isTerminatedFetchError(error)) {
+                return new Response(null, { status: 499 })
+            }
+
+            posthog.captureException(error, { route: routePath, method: "GET", userId })
+            return new Response("Upstream subscribe failed", { status: 502 })
+        }
 
         if (!upstream.ok || !upstream.body) {
             return new Response("Upstream subscribe failed", { status: 502 })
@@ -74,6 +88,7 @@ export async function GET(req: Request) {
                                 streamClosed = true
                                 controller.close()
                             }
+                            await cancelUpstream()
                             return
                         }
 
@@ -135,15 +150,17 @@ export async function GET(req: Request) {
                             boundary = buffer.indexOf("\n\n")
                         }
                     } catch (error) {
-                        if (streamClosed || isAbortError(error)) {
+                        if (streamClosed || isAbortError(error) || isTerminatedFetchError(error)) {
                             streamClosed = true
-                            controller.error(error)
+                            controller.close()
+                            await cancelUpstream()
                             return
                         }
 
                         posthog.captureException(error, { route: routePath, method: "GET", userId })
                         streamClosed = true
                         controller.error(error)
+                        await cancelUpstream()
                     }
                 }
             },
