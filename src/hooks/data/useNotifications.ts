@@ -2,7 +2,7 @@
 
 import {useCallback, useEffect, useState} from "react"
 import type { Notification } from "@/database"
-import {toast} from "sonner"
+import {toast} from "@/components/ui/Toast"
 
 export function useNotifications(userId: string | undefined) {
     const [notifications, setNotifications] = useState<Notification[]>([])
@@ -76,6 +76,21 @@ export function useNotifications(userId: string | undefined) {
         })
     }, [userId])
 
+    const sendMeetingNotification = useCallback(async (input: { type: Notification["type"], message: string, url: string }) => {
+        if (!userId) return
+
+        await fetch("/api/notifications", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId: userId,
+                type: input.type,
+                message: input.message,
+            })
+        })
+        toast.meeting(input.message, input.url)
+    }, [userId])
+
     const clearNotifications = useCallback(async () => {
         if (!userId) return
 
@@ -87,6 +102,7 @@ export function useNotifications(userId: string | undefined) {
         notifications,
         connected,
         sendNotification,
+        sendMeetingNotification,
         clearNotifications
     }
 }

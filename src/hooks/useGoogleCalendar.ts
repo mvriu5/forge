@@ -1,9 +1,7 @@
 import {useQuery, useQueryClient} from "@tanstack/react-query"
-import {useCallback, useEffect, useMemo, useState} from "react"
+import {useCallback, useEffect, useMemo, useRef, useState} from "react"
 import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import {useAuth} from "@/hooks/useAuth"
-import {refreshToken} from "better-auth/api"
 import {authClient} from "@/lib/auth-client"
 
 const GOOGLE_CALENDAR_QUERY_KEY = (accessToken: string | null) => ["googleCalendarList", accessToken] as const
@@ -24,19 +22,31 @@ async function fetchCalendarList(accessToken: string | null) {
 async function fetchCalendarEvents(accessToken: string | null, calendarId: string) {
     if (!accessToken) return
 
-    const params = new URLSearchParams({
+    const baseParams = new URLSearchParams({
         maxResults: "1000",
         orderBy: "updated",
     })
 
-    const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`, {
-        headers: {Authorization: `Bearer ${accessToken}`},
-    })
+    let events: any[] = []
+    let nextPageToken: string | undefined
 
-    if (!res.ok) return []
+    do {
+        const params = new URLSearchParams(baseParams)
+        if (nextPageToken) params.set("pageToken", nextPageToken)
 
-    const data = await res.json()
-    return data.items
+        const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`, {
+            headers: {Authorization: `Bearer ${accessToken}`},
+        })
+
+        if (!res.ok) return []
+
+        const data: { items?: any[]; nextPageToken?: string } = await res.json()
+        events = [...events, ...(data.items ?? [])]
+        if (events.length > 1000) events = events.slice(-1000)
+        nextPageToken = data.nextPageToken
+    } while (nextPageToken)
+
+    return events
 }
 
 export interface CalendarEvent {
@@ -49,24 +59,65 @@ export interface CalendarEvent {
 
 export const useGoogleCalendar = () => {
     const {userId} = useSession()
-    const {integrations} = useIntegrations(userId)
+    const {integrations, refetchIntegrations} = useIntegrations(userId)
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
 
     const [selectedCalendars, setSelectedCalendars] = useState<string[]>([])
     const [filterLoading, setFilterLoading] = useState<boolean>(false)
+    const [accessToken, setAccessToken] = useState<string | null>(null)
 
     const queryClient = useQueryClient()
+    const previousUserId = useRef<string | undefined>(undefined)
+    const isRefreshingToken = useRef(false)
 
-    const accessToken = useMemo(() => {
-        if (!googleIntegration || !googleIntegration.accessTokenExpiration) return null
-        if (new Date(googleIntegration.accessTokenExpiration).getTime() < new Date().getTime()) {
-            void authClient.refreshToken({
-                providerId: "google",
-                userId
-            })
+    useEffect(() => {
+        if (!userId) {
+            previousUserId.current = undefined
+            isRefreshingToken.current = false
+            setAccessToken(null)
+            return
         }
-        return googleIntegration.accessToken
-    }, [googleIntegration, userId])
+
+        const userChanged = previousUserId.current !== userId
+        previousUserId.current = userId
+        if (userChanged) {
+            isRefreshingToken.current = false
+        }
+
+        if (!googleIntegration) {
+            setAccessToken(null)
+            return
+        }
+
+        const tokenExpired = googleIntegration.accessTokenExpiration
+            ? new Date(googleIntegration.accessTokenExpiration).getTime() <= new Date().getTime()
+            : false
+        const missingToken = !googleIntegration.accessToken
+        const shouldRefreshToken = tokenExpired || missingToken || userChanged
+
+        if (shouldRefreshToken && !isRefreshingToken.current) {
+            isRefreshingToken.current = true
+            const refreshAccessToken = async () => {
+                try {
+                    await authClient.refreshToken({
+                        providerId: "google",
+                        userId,
+                    })
+                    await refetchIntegrations()
+                } catch (error) {
+                    console.error("Failed to refresh Google access token", error)
+                    setAccessToken(googleIntegration.accessToken ?? null)
+                } finally {
+                    isRefreshingToken.current = false
+                }
+            }
+
+            void refreshAccessToken()
+            return
+        }
+
+        setAccessToken(googleIntegration.accessToken)
+    }, [googleIntegration, refetchIntegrations, userId])
 
 
     const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError} = useQuery({
@@ -134,6 +185,13 @@ export const useGoogleCalendar = () => {
     useEffect(() => {
         if (!calendarLoading && !eventsLoading && filterLoading) setFilterLoading(false)
     }, [calendarLoading, eventsLoading, filterLoading])
+
+    useEffect(() => {
+        if (!accessToken) return
+
+        void queryClient.invalidateQueries({ queryKey: GOOGLE_CALENDAR_QUERY_KEY(accessToken) })
+        void queryClient.invalidateQueries({ queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars) })
+    }, [accessToken, queryClient, selectedCalendars])
 
     return {
         calendars,

@@ -24,7 +24,6 @@ import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 import {useSession} from "@/hooks/data/useSession"
 import {useNotifications} from "@/hooks/data/useNotifications"
-import {toast} from "sonner"
 import {useSettings} from "@/hooks/data/useSettings"
 
 type Todo = {
@@ -37,10 +36,9 @@ interface TodoConfig {
     todos: Todo[]
 }
 
-const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({config, updateConfig}) => {
-    const {userId} = useSession()
-    const {settings} = useSettings(userId)
-    const {sendNotification} = useNotifications(userId)
+const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({widget, config, updateConfig}) => {
+    const {settings} = useSettings(widget.userId)
+    const {sendNotification} = useNotifications(widget.userId)
 
     const hasSentReminderRef = useRef(false)
     const inputRef = useRef<HTMLInputElement>(null)

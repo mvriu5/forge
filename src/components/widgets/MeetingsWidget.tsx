@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useCallback, useMemo, useState} from "react"
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
@@ -14,10 +14,14 @@ import {convertToRGBA} from "@/lib/colorConvert"
 import {useSettings} from "@/hooks/data/useSettings"
 import {defineWidget, WidgetProps} from "@tryforgeio/sdk"
 import {formatDateHeader, formatTime, isSameDay} from "@/lib/utils"
+import {useNotifications} from "@/hooks/data/useNotifications"
 
 const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
     const {settings} = useSettings(widget.userId)
+    const {sendMeetingNotification} = useNotifications(widget.userId)
     const {calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars, filterLoading} = useGoogleCalendar()
+
+    const sentRemindersRef = useRef<Set<string>>(new Set())
 
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -31,11 +35,79 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
         anchor: "tc"
     })
 
-    const validEvents = useMemo(() => events?.filter(e => e.start.dateTime && e.end.dateTime && new Date(e.start.dateTime) >= new Date(Date.now())) || [], [events])
+    const validEvents = useMemo(() => events?.filter((event) => {
+        const start = event.start.dateTime
+        const end = event.end.dateTime
+
+        if (!start || !end) return false
+
+        return new Date(start) >= new Date()
+    }) || [], [events])
 
     const sortedEvents = useMemo(() => [...validEvents].sort((a, b) => {
-        return new Date(a.start.dateTime).getTime() - new Date(b.start.dateTime).getTime()
+        const firstDate = new Date(a.start.dateTime ?? a.start.date).getTime()
+        const secondDate = new Date(b.start.dateTime ?? b.start.date).getTime()
+
+        return firstDate - secondDate
     }), [validEvents])
+
+    useEffect(() => {
+        if (!sortedEvents || !settings?.config.meetingReminders?.length) return
+
+        const reminderMinutes = settings.config.meetingReminders
+            .map((value: any) => Number(value))
+            .filter((value: unknown) => !Number.isNaN(value))
+            .sort((a: number, b: number) => a - b)
+
+        if (!reminderMinutes.length) return
+
+        const checkReminders = () => {
+            const now = Date.now()
+
+            sortedEvents.forEach((event) => {
+                const startTimeString = event.start.dateTime ?? event.start.date
+                if (!event.start.dateTime || !startTimeString) return
+
+                const startTime = new Date(startTimeString).getTime()
+                if (Number.isNaN(startTime) || startTime <= now) return
+
+                const dueReminders = reminderMinutes
+                    .map((minutes: number) => ({
+                        minutes,
+                        key: `${event.id}-${minutes}`,
+                        reminderTime: startTime - minutes * 60_000,
+                    }))
+                    .filter(({key, reminderTime}: {key: any, reminderTime: any}) => reminderTime <= now && !sentRemindersRef.current.has(key))
+
+                if (!dueReminders.length) return
+
+                const nearestReminder = dueReminders.reduce((closest: { minutes: number }, current: { minutes: number }) => (
+                    current.minutes < closest.minutes ? current : closest
+                ))
+
+                dueReminders.map(({key}: {key: any}) => sentRemindersRef.current.add(key))
+
+                const startLabel = formatTime(startTimeString, settings.config.hourFormat ?? "24")
+                const timingLabel = nearestReminder.minutes === 0
+                    ? "now"
+                    : `in ${nearestReminder.minutes} minutes`
+                const message = `${event.summary ?? "Meeting"} starts ${timingLabel} (${startLabel})`
+
+                void sendMeetingNotification({
+                    message,
+                    type: "reminder",
+                    url: nearestReminder.minutes === 0 ? event.hangoutLink : null,
+                }).catch(() => {
+                    dueReminders.map(({key}: {key: any}) => sentRemindersRef.current.delete(key))
+                })
+            })
+        }
+
+        const interval = setInterval(checkReminders, 30_000)
+        checkReminders()
+
+        return () => clearInterval(interval)
+    }, [sortedEvents, settings?.config.meetingReminders, settings?.config.hourFormat, sendMeetingNotification])
 
     const dropdownFilterItems: MenuItem[] = useMemo(() => Array.from(new Set(calendars?.map((cal: any) => ({
         type: "checkbox",
@@ -116,7 +188,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
                     <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
                 </Button>
             </WidgetHeader>
-            {isInitialLoading ? (
+            {isLoading ? (
                 <WidgetContent scroll>
                     <div className="flex flex-col justify-between gap-4 pt-2">
                         <Skeleton className={"h-15 w-full px-2"} />
