@@ -2,7 +2,6 @@ import {useQuery, useQueryClient} from "@tanstack/react-query"
 import {useCallback, useEffect, useMemo, useState} from "react"
 import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import {refreshToken} from "better-auth/api"
 
 const GOOGLE_CALENDAR_QUERY_KEY = (accessToken: string | null) => ["googleCalendarList", accessToken] as const
 const GOOGLE_EVENT_QUERY_KEY = (accessToken: string | null, calendars: string[]) => ["googleCalendarEvents", accessToken, calendars] as const
@@ -47,7 +46,7 @@ export interface CalendarEvent {
 
 export const useGoogleCalendar = () => {
     const {userId} = useSession()
-    const {integrations, refetchIntegrations} = useIntegrations(userId)
+    const {integrations} = useIntegrations(userId)
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
 
     const [selectedCalendars, setSelectedCalendars] = useState<string[]>([])
@@ -60,20 +59,9 @@ export const useGoogleCalendar = () => {
     const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError} = useQuery({
         queryKey: GOOGLE_CALENDAR_QUERY_KEY(currentAccessToken),
         queryFn: async () => {
-            const validToken = await getValidAccessToken()
-            if (!validToken) return
-
-            const calendars = await fetchCalendarList(validToken)
-
-            if ([401, 403].includes(calendars.status)) {
-                const refreshedToken = await refreshGoogleAccessToken()
-                if (!refreshedToken) return calendars.items
-
-                const retriedCalendars = await fetchCalendarList(refreshedToken)
-                return retriedCalendars.items
-            }
-
-            return calendars.items
+            if (!currentAccessToken) return
+            const calendarItems = await fetchCalendarList(currentAccessToken)
+            return calendarItems ?? []
         },
         enabled: Boolean(currentAccessToken),
         staleTime: 15 * 60 * 1000,
@@ -92,22 +80,12 @@ export const useGoogleCalendar = () => {
     const {data: events, isLoading: eventsLoading, isFetching: eventsFetching, isError: eventsError} = useQuery({
         queryKey: GOOGLE_EVENT_QUERY_KEY(currentAccessToken, selectedCalendars),
         queryFn: async () => {
-            const validToken = await getValidAccessToken()
-            if (!validToken) return []
-
+            if (!currentAccessToken || !calendars) return []
             const selectedCalendarObjects = calendars.filter((cal: any) => selectedCalendars.includes(cal.id))
+
             const calendarPromises = selectedCalendarObjects.map(async (calendar: any) => {
-                const events = await fetchCalendarEvents(validToken, calendar.id)
-
-                if ([401, 403].includes(events.status)) {
-                    const refreshedToken = await refreshGoogleAccessToken()
-                    if (!refreshedToken) return events.items.map((event: any) => ({...event, calendarId: calendar.id}))
-
-                    const retriedEvents = await fetchCalendarEvents(refreshedToken, calendar.id)
-                    return retriedEvents.items.map((event: any) => ({...event, calendarId: calendar.id}))
-                }
-
-                return events.items.map((event: any) => ({...event, calendarId: calendar.id}))
+                const calendarEvents = await fetchCalendarEvents(currentAccessToken, calendar.id)
+                return (calendarEvents ?? []).map((event: any) => ({...event, calendarId: calendar.id}))
             })
             const results = await Promise.all(calendarPromises)
             return results.flat()
@@ -119,14 +97,14 @@ export const useGoogleCalendar = () => {
     })
 
     const getColor = useCallback((eventId: string) => {
-        const event = events?.find(e => e.id === eventId)
+        const event = events?.find((e: { id: string }) => e.id === eventId)
         if (!event?.calendarId) return null
         const calendar = calendars?.find((c: any) => c.id === event.calendarId)
         return calendar?.backgroundColor ?? null
     }, [events, calendars])
 
     const filteredEvents = useMemo(() => (
-        events?.filter(event => selectedCalendars.includes(event.calendarId)) || []
+        events?.filter((event: { calendarId: string }) => selectedCalendars.includes(event.calendarId)) || []
     ), [events, selectedCalendars])
 
     const manualRefresh = useCallback(async () => {
