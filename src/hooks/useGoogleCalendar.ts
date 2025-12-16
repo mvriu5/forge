@@ -2,6 +2,9 @@ import {useQuery, useQueryClient} from "@tanstack/react-query"
 import {useCallback, useEffect, useMemo, useState} from "react"
 import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
+import {useAuth} from "@/hooks/useAuth"
+import {refreshToken} from "better-auth/api"
+import {authClient} from "@/lib/auth-client"
 
 const GOOGLE_CALENDAR_QUERY_KEY = (accessToken: string | null) => ["googleCalendarList", accessToken] as const
 const GOOGLE_EVENT_QUERY_KEY = (accessToken: string | null, calendars: string[]) => ["googleCalendarEvents", accessToken, calendars] as const
@@ -54,16 +57,26 @@ export const useGoogleCalendar = () => {
 
     const queryClient = useQueryClient()
 
-    const currentAccessToken = useMemo(() => googleIntegration?.accessToken ?? null, [googleIntegration?.accessToken])
+    const accessToken = useMemo(() => {
+        if (!googleIntegration || !googleIntegration.accessTokenExpiration) return null
+        if (new Date(googleIntegration.accessTokenExpiration).getTime() < new Date().getTime()) {
+            void authClient.refreshToken({
+                providerId: "google",
+                userId
+            })
+        }
+        return googleIntegration.accessToken
+    }, [googleIntegration, userId])
+
 
     const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError} = useQuery({
-        queryKey: GOOGLE_CALENDAR_QUERY_KEY(currentAccessToken),
+        queryKey: GOOGLE_CALENDAR_QUERY_KEY(accessToken),
         queryFn: async () => {
-            if (!currentAccessToken) return
-            const calendarItems = await fetchCalendarList(currentAccessToken)
+            if (!accessToken) return
+            const calendarItems = await fetchCalendarList(accessToken)
             return calendarItems ?? []
         },
-        enabled: Boolean(currentAccessToken),
+        enabled: Boolean(accessToken),
         staleTime: 15 * 60 * 1000,
         gcTime: 30 * 60 * 1000,
         refetchOnWindowFocus: false,
@@ -78,19 +91,19 @@ export const useGoogleCalendar = () => {
     }, [calendars, selectedCalendars])
 
     const {data: events, isLoading: eventsLoading, isFetching: eventsFetching, isError: eventsError} = useQuery({
-        queryKey: GOOGLE_EVENT_QUERY_KEY(currentAccessToken, selectedCalendars),
+        queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars),
         queryFn: async () => {
-            if (!currentAccessToken || !calendars) return []
+            if (!accessToken || !calendars) return []
             const selectedCalendarObjects = calendars.filter((cal: any) => selectedCalendars.includes(cal.id))
 
             const calendarPromises = selectedCalendarObjects.map(async (calendar: any) => {
-                const calendarEvents = await fetchCalendarEvents(currentAccessToken, calendar.id)
+                const calendarEvents = await fetchCalendarEvents(accessToken, calendar.id)
                 return (calendarEvents ?? []).map((event: any) => ({...event, calendarId: calendar.id}))
             })
             const results = await Promise.all(calendarPromises)
             return results.flat()
         },
-        enabled: Boolean(currentAccessToken) && Boolean(calendars?.length),
+        enabled: Boolean(accessToken) && Boolean(calendars?.length),
         staleTime: 5 * 60 * 1000,
         gcTime: 15 * 60 * 1000,
         retry: (failureCount) => failureCount < 3,
@@ -109,10 +122,10 @@ export const useGoogleCalendar = () => {
 
     const manualRefresh = useCallback(async () => {
         await Promise.all([
-            queryClient.invalidateQueries({ queryKey: GOOGLE_CALENDAR_QUERY_KEY(currentAccessToken) }),
-            queryClient.invalidateQueries({ queryKey: GOOGLE_EVENT_QUERY_KEY(currentAccessToken, selectedCalendars) }),
+            queryClient.invalidateQueries({ queryKey: GOOGLE_CALENDAR_QUERY_KEY(accessToken) }),
+            queryClient.invalidateQueries({ queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars) }),
         ])
-    }, [queryClient, currentAccessToken, selectedCalendars])
+    }, [queryClient, accessToken, selectedCalendars])
 
     useEffect(() => {
         setFilterLoading(true)

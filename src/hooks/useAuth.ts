@@ -3,8 +3,6 @@ import {z} from "zod"
 import {authClient} from "@/lib/auth-client"
 import {toast} from "sonner"
 import {useRouter} from "next/navigation"
-import {auth} from "@/lib/auth"
-import {refreshAccessToken} from "better-auth"
 
 export const useAuth = () => {
     const router = useRouter()
@@ -134,35 +132,6 @@ export const useAuth = () => {
         router.push("/")
     }
 
-    const getGoogleAccessToken = async (userId: string) => {
-        const ctx = await auth.$context
-        const [account] = await ctx.internalAdapter.findAccountByUserId(userId)
-        if (account.refreshToken && account.accessTokenExpiresAt && account.accessTokenExpiresAt.getTime() - Date.now() < 5_000) {
-            try {
-                const res = await refreshAccessToken({
-                    refreshToken: account.refreshToken,
-                    tokenEndpoint: "https://oauth2.googleapis.com/token",
-                    options: {
-                        clientId: process.env.GOOGLE_CLIENT_ID!,
-                        clientSecret: process.env.GOOGLE_CLIENT_SECRET!
-                    }
-                })
-                await ctx.internalAdapter.updateAccount(account.id, {
-                    accessToken: res.accessToken,
-                    accessTokenExpiresAt: res.accessTokenExpiresAt,
-                    refreshToken: res.refreshToken,
-                    refreshTokenExpiresAt: res.refreshTokenExpiresAt
-                })
-                console.log("Refreshed access token.")
-                return res.accessToken
-            } catch (e: any) {
-                console.error("Failed to refres access token:", e)
-                return null
-            }
-        }
-        return account.accessToken
-    }
-
     return {
         isLoading,
         signupSchema,
@@ -173,7 +142,6 @@ export const useAuth = () => {
         handleEmailSignIn,
         handlePasswordForgot,
         handlePasswordReset,
-        handleSignOut,
-        getGoogleAccessToken
+        handleSignOut
     }
 }
