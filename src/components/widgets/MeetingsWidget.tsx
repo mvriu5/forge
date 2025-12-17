@@ -1,11 +1,11 @@
 "use client"
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react"
+import React, {Suspense, useCallback, useEffect, useMemo, useRef, useState} from "react"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
 import {useTooltip} from "@/components/ui/TooltipProvider"
-import {Filter, RefreshCw} from "lucide-react"
+import {CalendarPlus, Filter, RefreshCw} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {Skeleton} from "@/components/ui/Skeleton"
 import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
@@ -15,6 +15,9 @@ import {useSettings} from "@/hooks/data/useSettings"
 import {defineWidget, WidgetProps} from "@tryforgeio/sdk"
 import {formatDateHeader, formatTime, isSameDay} from "@/lib/utils"
 import {useNotifications} from "@/hooks/data/useNotifications"
+import Link from "next/link"
+
+const LazyCreateMeetingDialog = React.lazy(() => import('../dialogs/CreateMeetingDialog').then(module => ({ default: module.CreateMeetingDialog })))
 
 const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
     const {settings} = useSettings(widget.userId)
@@ -149,6 +152,15 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
     return (
         <>
             <WidgetHeader title={"Meetings"}>
+                <Suspense
+                    fallback={
+                        <Button variant={"widget"}>
+                            <CalendarPlus size={16}/>
+                        </Button>
+                    }
+                >
+                    <LazyCreateMeetingDialog/>
+                </Suspense>
                 <DropdownMenu
                     asChild
                     items={dropdownFilterItems}
@@ -227,6 +239,16 @@ const EventCard: React.FC<EventProps> = ({ event, color, hourFormat }) => {
                 <p className="font-medium">{event.summary}</p>
                 <p className={"text-secondary"}>{`${formatTime(event.start.dateTime, hourFormat)} - ${formatTime(event.end.dateTime, hourFormat)}`}</p>
                 <p className={"text-tertiary"}>{event.location}</p>
+                {event.hangoutLink &&
+                    <Link
+                        href={event.hangoutLink}
+                        className={"text-sm font-medium mt-2 inline-block text-blue-500 hover:underline"}
+                        target={"_blank"}
+                        rel={"noopener noreferrer"}
+                    >
+                        Meeting Link
+                    </Link>
+                }
             </div>
         </div>
     )

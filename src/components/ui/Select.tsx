@@ -95,7 +95,7 @@ const SelectLabel = ({ className, ...props }: ComponentPropsWithRef<typeof Selec
     )
 }
 
-const SelectItem = ({ className, children, ...props }: ComponentPropsWithRef<typeof SelectPrimitive.Item>) => {
+const SelectItem = ({ className, children, checkIcon = true, ...props }: ComponentPropsWithRef<typeof SelectPrimitive.Item> & {checkIcon?: boolean}) => {
     return (
         <SelectPrimitive.Item
             className={cn(
@@ -106,11 +106,13 @@ const SelectItem = ({ className, children, ...props }: ComponentPropsWithRef<typ
             )}
             {...props}
         >
-            <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                <SelectPrimitive.ItemIndicator>
-                    <Check className="h-4 w-4" />
-                </SelectPrimitive.ItemIndicator>
-            </span>
+            {checkIcon &&
+                <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                    <SelectPrimitive.ItemIndicator>
+                        <Check className="h-4 w-4" />
+                    </SelectPrimitive.ItemIndicator>
+                </span>
+            }
             <SelectPrimitive.ItemText>
                 {children}
             </SelectPrimitive.ItemText>

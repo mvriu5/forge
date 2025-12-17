@@ -1,4 +1,4 @@
-import {useQuery, useQueryClient} from "@tanstack/react-query"
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import {useCallback, useEffect, useMemo, useRef, useState} from "react"
 import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
@@ -49,12 +49,30 @@ async function fetchCalendarEvents(accessToken: string | null, calendarId: strin
     return events
 }
 
+async function createCalendarEvent(accessToken: string | null, calendarId: string, eventData: Partial<CalendarEvent>) {
+    if (!accessToken) throw new Error("Missing access token")
+
+    const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(eventData),
+    })
+
+    if (!res.ok) throw new Error("Failed to create calendar event")
+
+    return res.json()
+}
+
 export interface CalendarEvent {
     id: string
     summary: string
     start: { dateTime: string }
     end: { dateTime: string }
-    location: string
+    location?: string
+    hangoutLink?: string
 }
 
 export const useGoogleCalendar = () => {
@@ -172,6 +190,14 @@ export const useGoogleCalendar = () => {
         events?.filter((event: { calendarId: string }) => selectedCalendars.includes(event.calendarId)) || []
     ), [events, selectedCalendars])
 
+    const createEventMutation = useMutation({
+        mutationFn: (variables: { calendarId: string; eventData: Partial<CalendarEvent> }) =>
+            createCalendarEvent(accessToken, variables.calendarId, variables.eventData),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars) })
+        },
+    })
+
     const manualRefresh = useCallback(async () => {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: GOOGLE_CALENDAR_QUERY_KEY(accessToken) }),
@@ -197,6 +223,7 @@ export const useGoogleCalendar = () => {
         isLoading: calendarLoading || eventsLoading,
         isFetching: calendarFetching || eventsFetching,
         isError: calendarError || eventsError,
+        createEvent: createEventMutation.mutateAsync,
         refetch: manualRefresh,
         googleIntegration,
         getColor,

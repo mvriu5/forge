@@ -40,7 +40,7 @@ function DatePicker({ value, title, onSelect, mode = "single", className }: Date
                     {date && mode === "range" && `${formatPrettyDate((date as DateRange).from as Date, { year: "numeric", month: "short", day: "numeric" })} - ${formatPrettyDate((date as DateRange).to as Date, { year: "numeric", month: "short", day: "numeric" })}`}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 border-0" align="start">
+            <PopoverContent className="w-auto p-0 border border-main/40" align="start">
                 {mode === "single" &&
                     <Calendar
                         mode={mode}

@@ -16,7 +16,7 @@ const TimePicker = ({value, onValueChange}: TimePickerProps) => {
             <Input
                 type='time'
                 id='time-picker'
-                step='1'
+                step='60'
                 className='peer bg-primary appearance-none pl-9 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none'
                 value={value ?? "08:00:00"}
                 onChange={(e) => onValueChange?.(e.target.value)}
