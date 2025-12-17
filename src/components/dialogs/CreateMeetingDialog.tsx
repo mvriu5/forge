@@ -25,7 +25,7 @@ const formSchema = z.object({
     timeStart: z.string().nonempty({ message: "Start is required" }),
     timeEnd: z.string().nonempty({ message: "End is required" }),
     location: z.string().optional().or(z.literal("")),
-    createConference: z.boolean().default(false),
+    createConference: z.boolean()
 }).refine((data) => {
     if (!data.timeStart || !data.timeEnd) return true
     const [startHour, startMinute] = data.timeStart.split(":").map(Number)

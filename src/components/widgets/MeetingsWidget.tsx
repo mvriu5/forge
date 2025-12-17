@@ -236,19 +236,25 @@ const EventCard: React.FC<EventProps> = ({ event, color, hourFormat }) => {
             />
 
             <div className="relative z-10 text-primary">
-                <p className="font-medium">{event.summary}</p>
+                <div className={"flex items-start justify-between gap-2"}>
+                    <p className="font-medium">{event.summary}</p>
+                    {event.hangoutLink &&
+                        <Link
+                            href={event.hangoutLink}
+                            target={"_blank"}
+                            rel={"noopener noreferrer"}
+                        >
+                            <Button
+                                variant={"primary"}
+                                className={"h-6 text-xs px-2 font-medium shadow-none dark:shadow-none"}
+                            >
+                                Join Meeting
+                            </Button>
+                        </Link>
+                    }
+                </div>
                 <p className={"text-secondary"}>{`${formatTime(event.start.dateTime, hourFormat)} - ${formatTime(event.end.dateTime, hourFormat)}`}</p>
                 <p className={"text-tertiary"}>{event.location}</p>
-                {event.hangoutLink &&
-                    <Link
-                        href={event.hangoutLink}
-                        className={"text-sm font-medium mt-2 inline-block text-blue-500 hover:underline"}
-                        target={"_blank"}
-                        rel={"noopener noreferrer"}
-                    >
-                        Meeting Link
-                    </Link>
-                }
             </div>
         </div>
     )
