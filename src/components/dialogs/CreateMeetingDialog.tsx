@@ -1,12 +1,12 @@
 "use client"
 
 import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
-import {CalendarPlus, RefreshCw} from "lucide-react"
+import {CalendarPlus, Info} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import React, {useEffect, useMemo, useState} from "react"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {z} from "zod"
-import {useForm} from "react-hook-form"
+import {SubmitHandler, useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {Form, FormDescription, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Spinner} from "@/components/ui/Spinner"
@@ -14,6 +14,7 @@ import {DatePicker} from "@/components/ui/Datepicker"
 import {TimePicker} from "@/components/ui/TimePicker"
 import {useGoogleCalendar} from "@/hooks/useGoogleCalendar"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
+import {Switch} from "@/components/ui/Switch"
 
 const formSchema = z.object({
     calendarId: z.string(),
@@ -24,7 +25,7 @@ const formSchema = z.object({
     timeStart: z.string().nonempty({ message: "Start is required" }),
     timeEnd: z.string().nonempty({ message: "End is required" }),
     location: z.string().optional().or(z.literal("")),
-    link: z.url().optional().or(z.literal("")),
+    createConference: z.boolean().default(false),
 }).refine((data) => {
     if (!data.timeStart || !data.timeEnd) return true
     const [startHour, startMinute] = data.timeStart.split(":").map(Number)
@@ -33,6 +34,8 @@ const formSchema = z.object({
     if (endHour < startHour) return false
     return !(endHour === startHour && endMinute <= startMinute)
 })
+
+type MeetingFormValues = z.infer<typeof formSchema>
 
 function CreateMeetingDialog() {
     const {calendars, createEvent, isLoading} = useGoogleCalendar()
@@ -46,7 +49,7 @@ function CreateMeetingDialog() {
     const calendarsWithAccess = useMemo(() => calendars?.filter((cal: { accessRole: string }) => cal.accessRole === "owner" || cal.accessRole === "writer"), [calendars])
     const defaultCalendarId = useMemo(() => calendarsWithAccess?.[0]?.id ?? "", [calendarsWithAccess])
 
-    const form = useForm<z.infer<typeof formSchema>>({
+    const form = useForm<MeetingFormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             calendarId: calendarsWithAccess?.[0]?.id || "",
@@ -55,7 +58,7 @@ function CreateMeetingDialog() {
             timeStart: "08:00",
             timeEnd: "09:00",
             location: "",
-            link: ""
+            createConference: false
         }
     })
 
@@ -65,7 +68,7 @@ function CreateMeetingDialog() {
         }
     }, [calendarsWithAccess, form])
 
-    const handleAddMeeting = async (data: z.infer<typeof formSchema>) => {
+    const handleAddMeeting: SubmitHandler<MeetingFormValues> = async (data) => {
         const [hoursStart, minutesStart] = data.timeStart.split(":").map(Number)
         const [hoursEnd, minutesEnd] = data.timeEnd.split(":").map(Number)
 
@@ -75,12 +78,23 @@ function CreateMeetingDialog() {
         const dateEnd = new Date(data.date)
         dateEnd.setHours(hoursEnd, minutesEnd)
 
+        const requestId = typeof crypto !== "undefined" && "randomUUID" in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+
         const newEvent = {
             summary: data.title,
             start: { dateTime: dateStart.toISOString() },
             end: { dateTime: dateEnd.toISOString() },
             location: data.location,
-            hangoutLink: data.link
+            ...(data.createConference ? {
+                conferenceData: {
+                    createRequest: {
+                        requestId,
+                        conferenceSolutionKey: { type: "hangoutsMeet" }
+                    }
+                }
+            } : {}),
         }
 
         await createEvent({
@@ -180,7 +194,7 @@ function CreateMeetingDialog() {
                                         name="timeStart"
                                         render={({ field }) => (
                                             <FormItem className="flex flex-col w-full">
-                                                <FormLabel>Start</FormLabel>
+                                                <FormLabel className={"opacity-0"}>Start</FormLabel>
                                                 <TimePicker
                                                     value={field.value}
                                                     onValueChange={field.onChange}
@@ -194,7 +208,7 @@ function CreateMeetingDialog() {
                                         name="timeEnd"
                                         render={({ field }) => (
                                             <FormItem className="flex flex-col w-full">
-                                                <FormLabel>End</FormLabel>
+                                                <FormLabel className={"opacity-0"}>End</FormLabel>
                                                 <TimePicker
                                                     value={field.value}
                                                     onValueChange={field.onChange}
@@ -218,12 +232,17 @@ function CreateMeetingDialog() {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="link"
+                                    name="createConference"
                                     render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Meeting Link</FormLabel>
-                                            <FormInput placeholder="https://meet.google.com/1234" {...field}/>
-                                            <FormMessage />
+                                        <FormItem className={"w-full flex items-center justify-between gap-2 bg-tertiary border border-main/20 rounded-md px-2 py-0.5 shadow-xs dark:shadow-md"}>
+                                            <FormDescription className={"flex items-center gap-2 text-tertiary mt-1.5 text-xs"}>
+                                                <Info size={14}/>
+                                                Do you want to create a Google Meet link for this meeting?
+                                            </FormDescription>
+                                            <div className={"flex flex-col gap-2"}>
+                                                <Switch onCheckedChange={field.onChange} checked={field.value} />
+                                                <FormMessage />
+                                            </div>
                                         </FormItem>
                                     )}
                                 />

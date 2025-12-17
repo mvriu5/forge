@@ -52,7 +52,13 @@ async function fetchCalendarEvents(accessToken: string | null, calendarId: strin
 async function createCalendarEvent(accessToken: string | null, calendarId: string, eventData: Partial<CalendarEvent>) {
     if (!accessToken) throw new Error("Missing access token")
 
-    const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`, {
+    const baseUrl = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`
+    const requestUrl = new URL(baseUrl)
+    if (eventData.conferenceData) {
+        requestUrl.searchParams.set("conferenceDataVersion", "1")
+    }
+
+    const res = await fetch(requestUrl, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -73,6 +79,12 @@ export interface CalendarEvent {
     end: { dateTime: string }
     location?: string
     hangoutLink?: string
+    conferenceData?: {
+        createRequest?: {
+            requestId?: string
+            conferenceSolutionKey?: { type?: string }
+        }
+    }
 }
 
 export const useGoogleCalendar = () => {
