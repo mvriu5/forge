@@ -61,17 +61,17 @@ function SettingsSection({handleClose}: {handleClose: () => void}) {
         }
     })
 
-    const lightTooltip = useTooltip({
+    const lightTooltip = useTooltip<HTMLDivElement>({
         message: "Light Theme",
         anchor: "tc"
     })
 
-    const darkTooltip = useTooltip({
+    const darkTooltip = useTooltip<HTMLDivElement>({
         message: "Dark Theme",
         anchor: "tc"
     })
 
-    const systemTooltip = useTooltip({
+    const systemTooltip = useTooltip<HTMLDivElement>({
         message: "System Theme",
         anchor: "tc"
     })
