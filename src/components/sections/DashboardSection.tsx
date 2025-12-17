@@ -6,6 +6,8 @@ import React, {Suspense} from "react"
 import {useSession} from "@/hooks/data/useSession"
 import {useSettings} from "@/hooks/data/useSettings"
 import {formatDate} from "@/lib/utils"
+import {Pencil, Trash} from "lucide-react"
+import {Button} from "@/components/ui/Button"
 
 const LazyDeleteDashboardDialog = React.lazy(() => import('@/components/dialogs/DeleteDashboardDialog'))
 const LazyEditDashboardDialog = React.lazy(() => import('@/components/dialogs/EditDashboardDialog'))
@@ -24,10 +26,23 @@ function DashboardSection({handleClose}: {handleClose?: () => void}) {
                         <div className={"flex items-center justify-between gap-2 bg-secondary px-2 py-2 rounded-t-md border-x border-t border-main/40"}>
                             <p className={"text-primary"}>{dashboard.name}</p>
                             <div className={"flex items-center gap-2"}>
-                                <Suspense fallback={null}>
+                                <Suspense
+                                    fallback={
+                                        <Button type={"button"} className={"px-1.5 gap-1.5 text-sm"}>
+                                            <Pencil size={14}/>
+                                            Edit
+                                        </Button>
+                                    }
+                                >
                                     <LazyEditDashboardDialog dashboard={dashboard} />
                                 </Suspense>
-                                <Suspense fallback={null}>
+                                <Suspense
+                                    fallback={
+                                        <Button type={"button"} className={"px-1.5 bg-error/10 text-error/80 border-error/20 hover:bg-error/20 hover:text-error"}>
+                                            <Trash size={16}/>
+                                        </Button>
+                                    }
+                                >
                                     <LazyDeleteDashboardDialog
                                         dashboardId={dashboard.id}
                                         onDelete={handleClose}

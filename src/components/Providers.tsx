@@ -25,21 +25,7 @@ function Providers({children}: {children: ReactNode}) {
                 disableTransitionOnChange
             >
                 <TooltipProvider>
-                    <Toaster
-                        theme="dark"
-                        toastOptions={{
-                            classNames: {
-                                toast: "!border-main/40 !bg-primary !text-primary"
-                            }
-                        }}
-                        icons={{
-                            success: <Check size={24} className={"text-brand"}/>,
-                            info: <Info size={24} className={"text-brand"}/>,
-                            warning: <TriangleAlert size={24} className={"text-brand"}/>,
-                            error: <CircleX size={24} className={"text-brand"}/>,
-                            loading: <LoaderCircle size={24} className={"text-brand animate-spin"}/>,
-                        }}
-                    />
+                    <Toaster theme="dark"/>
                     {children}
                 </TooltipProvider>
             </ThemeProvider>

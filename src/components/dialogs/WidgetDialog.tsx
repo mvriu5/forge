@@ -4,7 +4,7 @@ import {Button} from "@/components/ui/Button"
 import {
     Dialog,
     DialogClose,
-    DialogContent,
+    DialogContent, DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -24,7 +24,7 @@ import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useSettings} from "@/hooks/data/useSettings"
-import {toast} from "sonner"
+import {toast} from "@/components/ui/Toast"
 import {definitions} from "@/lib/definitions"
 import { WidgetDefinition } from "@tryforgeio/sdk"
 import {capitalizeFirstLetter} from "@better-auth/core/utils"
@@ -132,6 +132,7 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                             <span className={"inline break-words text-tertiary font-normal bg-tertiary rounded-md px-1 py-1"}>{filteredWidgets.length}</span>
                         </div>
                     </DialogTitle>
+                    <DialogDescription className={"sr-only"}/>
                     <DialogClose/>
                 </DialogHeader>
                 <div className={"flex pr-4 w-full"}>
@@ -177,8 +178,15 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                                     </div>
                                 </div>
                                 <p className={"text-sm text-secondary"}>{widget.description}</p>
-                                <div className={"absolute -right-2 -bottom-16 rounded-md shadow-md pt-0.5 pl-0.5 border border-main/40 bg-secondary"}>
-                                    <Image src={widget.image} alt={widget.name} width={330} height={300}/>
+                                <div className={"absolute -right-2 -bottom-16 rounded-md shadow-md pt-0.5 pl-0.5 ml-4 border border-main/40 bg-secondary"}>
+                                    <Image
+                                        src={widget.image}
+                                        alt={widget.name}
+                                        width="0"
+                                        height="0"
+                                        sizes="100vw"
+                                        className="w-full h-auto"
+                                    />
                                 </div>
                             </div>
                         ))}

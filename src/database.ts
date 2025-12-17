@@ -199,3 +199,12 @@ export const getUserFromId = async (id: string): Promise<User[]> => {
         .from(user)
         .where(eq(user.id, id))
 }
+
+//Notifications
+export type Notification = {
+    id: string
+    userId: string
+    type: "reminder" | "alert" | "message"
+    message: string
+    createdAt: Date
+}

@@ -21,17 +21,8 @@ type DashboardGridProps = {
     setActiveWidget: React.Dispatch<React.SetStateAction<Widget | null>>
 }
 
-const DashboardGrid = React.memo<DashboardGridProps>(function DashboardGrid({editMode,
-                                                                                activeWidgetId,
-                                                                                onWidgetDelete,
-                                                                                onWidgetUpdate,
-                                                                                currentDashboardId,
-                                                                                currentWidgets,
-                                                                                updateWidgetPosition,
-                                                                                visibleWidgets,
-                                                                                activeWidget,
-                                                                                setActiveWidget}) {
-    const { transformedWidgets, gridClasses, containerHeight, isDesktop } = useResponsiveLayout(visibleWidgets)
+const DashboardGrid = React.memo<DashboardGridProps>(function DashboardGrid({editMode, activeWidgetId, onWidgetDelete, onWidgetUpdate, currentDashboardId, currentWidgets, updateWidgetPosition, visibleWidgets, activeWidget, setActiveWidget}) {
+    const { transformedWidgets, gridClasses, isDesktop } = useResponsiveLayout(visibleWidgets)
     const { sensors, handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop(
         editMode,
         currentWidgets,
@@ -54,20 +45,18 @@ const DashboardGrid = React.memo<DashboardGridProps>(function DashboardGrid({edi
     )), [transformedWidgets, editMode, onWidgetDelete, onWidgetUpdate, activeWidgetId])
 
     const content = useMemo(() => (
-        <div className={cn("relative w-full", containerHeight, gridClasses)}>
+        <div className={cn("relative w-full h-screen", gridClasses)}>
             <Grid cells={gridCells} enabled={isDesktop}/>
             {widgetElements}
         </div>
-    ), [containerHeight, gridClasses, gridCells, isDesktop, widgetElements])
-
-    if (!editMode) return content
+    ), [gridClasses, gridCells, isDesktop, widgetElements])
 
     return (
         <DndContext
             sensors={sensors}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDragOver={handleDragOver}
+            onDragStart={editMode ? handleDragStart : undefined}
+            onDragEnd={editMode ? handleDragEnd : undefined}
+            onDragOver={editMode ? handleDragOver : undefined}
         >
             {content}
         </DndContext>

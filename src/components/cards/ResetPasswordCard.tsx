@@ -1,21 +1,14 @@
 "use client"
 
-import { Form, FormField, FormItem, FormLabel, FormInput, FormMessage } from "@/components/ui/Form"
+import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
 import {Button} from "@/components/ui/Button"
 import {z} from "zod";
 import {useForm} from "react-hook-form"
 import {zodResolver} from "@hookform/resolvers/zod"
-import {useRouter} from "next/navigation"
-import {authClient} from "@/lib/auth-client"
-import {useState} from "react"
-import {CloudAlert} from "lucide-react"
 import {ForgeLogo} from "@/components/svg/ForgeLogo"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
-import {toast} from "sonner"
-import {useSession} from "@/hooks/data/useSession"
 import {useAuth} from "@/hooks/useAuth"
-import {useIntegrations} from "@/hooks/data/useIntegrations"
 
 function ResetPasswordCard() {
     const {resetSchema, isLoading, handlePasswordReset} = useAuth()

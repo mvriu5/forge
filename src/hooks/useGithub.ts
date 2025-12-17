@@ -165,6 +165,6 @@ export const useGithub = () => {
         isLoading,
         isFetching,
         isError,
-        refetch,
+        refetch
     }
 }

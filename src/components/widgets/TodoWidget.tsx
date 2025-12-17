@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useCallback, useRef} from "react"
+import React, {useCallback, useEffect, useRef} from "react"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {Checkbox} from "@/components/ui/Checkbox"
@@ -22,6 +22,9 @@ import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} f
 import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
+import {useSession} from "@/hooks/data/useSession"
+import {useNotifications} from "@/hooks/data/useNotifications"
+import {useSettings} from "@/hooks/data/useSettings"
 
 type Todo = {
     id: string
@@ -33,13 +36,34 @@ interface TodoConfig {
     todos: Todo[]
 }
 
-const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({config, updateConfig}) => {
+const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({widget, config, updateConfig}) => {
+    const {settings} = useSettings(widget.userId)
+    const {sendReminderNotification} = useNotifications(widget.userId)
+
+    const hasSentReminderRef = useRef(false)
     const inputRef = useRef<HTMLInputElement>(null)
 
     const clearTodosTooltip = useTooltip<HTMLButtonElement>({
         message: "Clear all todos",
         anchor: "tc"
     })
+
+    useEffect(() => {
+        if (!settings?.config.todoReminder) return
+        if (hasSentReminderRef.current) return
+
+        const hasPendingTodos = config.todos.some((todo) => !todo.checked)
+        if (!hasPendingTodos) return
+
+        hasSentReminderRef.current = true
+
+        void sendReminderNotification({
+            message: `You have ${config.todos.length} pending ${config.todos.length == 1 ? "todo" : "todos"} for today!`,
+            type: "reminder",
+        }).catch(() => {
+            hasSentReminderRef.current = false
+        })
+    }, [sendReminderNotification])
 
     const handleSave = useCallback(async (updatedTodos: Todo[]) => {
         await updateConfig({ todos: updatedTodos })

@@ -12,6 +12,7 @@ import {Spinner} from "@/components/ui/Spinner"
 import {useSession} from "@/hooks/data/useSession"
 import Link from "next/link"
 import {useAuth} from "@/hooks/useAuth"
+import {Button} from "@/components/ui/Button"
 
 function ProfilePopover({editMode}: {editMode: boolean}) {
     const {session, isLoading: sessionLoading, setSession} = useSession()
@@ -26,11 +27,12 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 disabled={sessionLoading || editMode}
                 data-state={editMode ? "disabled" : "enabled"}
                 className={"group"}
+                asChild
             >
-                <div
+                <Button
                     data-state={open ? "open" : "closed"}
                     className={cn(
-                        "h-8 md:border border-main/20 flex items-center gap-2 md:bg-secondary md:hover:bg-tertiary md:data-[state=open]:bg-tertiary",
+                        "h-8 md:border border-main/60 flex items-center gap-2 md:bg-secondary md:hover:bg-inverted/10 md:data-[state=open]:bg-inverted/10",
                         "rounded-md md:px-2 md:group-data-[state=disabled]:bg-secondary",
                         "md:group-data-[state=disabled]:hover:bg-secondary shadow-xs dark:shadow-md"
                     )}
@@ -46,7 +48,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                         <Skeleton className={"hidden md:flex h-4 w-12"}/> :
                         <p className={"hidden md:flex"}>{session?.user?.name}</p>
                     }
-                </div>
+                </Button>
             </PopoverTrigger>
             <PopoverContent
                 className={"p-1 w-max md:w-36 gap-1"}

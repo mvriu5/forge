@@ -13,6 +13,8 @@ import {Skeleton} from "./ui/Skeleton"
 import Link from "next/link"
 import {Spinner} from "@/components/ui/Spinner"
 import {Dashboard, DashboardInsert} from "@/database"
+import {NotificationPopover} from "@/components/popovers/NotificationPopover"
+import {useNotifications} from "@/hooks/data/useNotifications"
 
 interface HeaderProps {
     editMode: boolean
@@ -47,7 +49,7 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
     }
 
     return (
-        <div className={"w-full top-0 left-0 h-12 px-4 flex justify-between items-center bg-primary border-b border-main/40"}>
+        <div className={"w-full top-0 left-0 py-2 px-4 flex justify-between items-center bg-primary border-b border-main/40"}>
             <div className={"flex items-center gap-4"}>
                 <div className={"flex items-center gap-4"}>
                     <Link href={"/"} className={"cursor-default"}>
@@ -107,7 +109,10 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                     </div>
                 }
             </div>
-            <ProfilePopover editMode={editMode}/>
+            <div className={"flex items-center gap-2"}>
+                <NotificationPopover editMode={editMode}/>
+                <ProfilePopover editMode={editMode}/>
+            </div>
         </div>
     )
 }

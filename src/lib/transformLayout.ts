@@ -121,13 +121,3 @@ export const getGridClasses = (breakpoint: Breakpoint): string => {
             return "grid grid-cols-4 grid-rows-4 gap-4 p-4"
     }
 }
-
-export const getContainerHeight = (breakpoint: Breakpoint): string => {
-    switch (breakpoint) {
-        case "mobile":
-        case "tablet":
-            return "min-h-screen"
-        default:
-            return "h-[calc(100vh-48px)]"
-    }
-}

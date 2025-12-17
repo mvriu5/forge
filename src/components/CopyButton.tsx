@@ -1,11 +1,11 @@
 "use client"
 
 import {AnimatePresence, motion} from "framer-motion"
-import {Check, Clipboard, Share2} from "lucide-react"
+import {Check, Share2} from "lucide-react"
 import React, {HTMLAttributes, ReactNode, useEffect, useState} from "react"
 import {Button} from "@/components/ui/Button"
 import {cn} from "@/lib/utils"
-import {toast} from "sonner"
+import {toast} from "@/components/ui/Toast"
 
 interface CopyButtonProps extends HTMLAttributes<HTMLDivElement> {
     copyText: string
@@ -29,7 +29,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, copyIcon, cl
             onClick={() => {
                 setIsChecked(true)
                 navigator.clipboard.writeText(copyText).then()
-                toast.success("Successfully copied to clipboard")
+                toast.success("Successfully copied to clipboard.")
             }}
         >
             <AnimatePresence mode={"wait"}>

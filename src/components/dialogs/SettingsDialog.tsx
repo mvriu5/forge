@@ -1,47 +1,21 @@
 "use client"
 
-import React, {useCallback, useMemo, useRef, useState} from "react"
+import React, {useState} from "react"
+import {Blocks, LayoutDashboard, Settings as SettingsIcon, User, Wrench} from "lucide-react"
 import {
-    Blocks,
-    Check,
-    CircleUserRound,
-    LayoutDashboard,
-    Pencil,
-    Settings as SettingsIcon,
-    Trash,
-    User,
-    Wrench,
-    X
-} from "lucide-react"
-import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
-import {z} from "zod"
-import {useForm} from "react-hook-form"
-import {zodResolver} from "@hookform/resolvers/zod"
-import {cn} from "@/lib/utils"
-import {authClient} from "@/lib/auth-client"
-import type {PutBlobResult} from "@vercel/blob"
-import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "@/components/ui/Dialog"
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
-import {Button} from "@/components/ui/Button"
-import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
-import {Input} from "@/components/ui/Input"
-import {Github, Google} from "@/components/svg/Icons"
-import {ScrollArea} from "@/components/ui/ScrollArea"
-import {Dashboard, Settings} from "@/database"
-import {useTooltip} from "@/components/ui/TooltipProvider"
-import {RadioGroup} from "@/components/ui/RadioGroup"
-import {RadioGroupBox} from "@/components/ui/RadioGroupBox"
-import {Spinner} from "@/components/ui/Spinner"
-import {useSession} from "@/hooks/data/useSession"
-import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import {useDashboards} from "@/hooks/data/useDashboards"
-import {useSettings} from "@/hooks/data/useSettings"
-import {toast} from "sonner"
 import {IntegrationSection} from "@/components/sections/IntegrationSection"
 import {ProfileSection} from "@/components/sections/ProfileSection"
 import {DashboardSection} from "@/components/sections/DashboardSection"
 import {SettingsSection} from "@/components/sections/SettingsSection"
+import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
 
 function SettingsDialog() {
     const [open, setOpen] = useState(false)
@@ -61,15 +35,16 @@ function SettingsDialog() {
                     <p>Settings</p>
                 </button>
             </DialogTrigger>
-            <DialogContent className={"p-0 max-w-2/5"}>
+            <DialogContent className={"p-0 w-[800px] max-w-[90vw]"}>
                 <VisuallyHidden>
                     <DialogHeader>
                         <DialogTitle>
                             Settings
                         </DialogTitle>
+                        <DialogDescription className={"sr-only"}/>
                     </DialogHeader>
                 </VisuallyHidden>
-                <div className={"flex h-96"}>
+                <div className={"flex h-[520px] max-h-[520px]"}>
                     <div className={"flex flex-col bg-secondary w-max h-full rounded-l-md border-r border-main/40 p-2"}>
                         <p className={"font-mono text-tertiary text-sm mb-2"}>
                             Settings

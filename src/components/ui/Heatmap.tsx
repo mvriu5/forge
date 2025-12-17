@@ -60,7 +60,7 @@ function Heatmap({data, startDate, endDate, cellSize = 12, gap = 2, className}: 
             grid.push(weekData)
         }
 
-        const monthLabels: Array<{ label: string; span: number; offset: number }> = []
+        const monthLabels: Array<{ label: string, span: number, offset: number }> = []
         let currentMonth = -1
         let monthStart = 0
         let monthWeeks = 0
@@ -119,12 +119,10 @@ function Heatmap({data, startDate, endDate, cellSize = 12, gap = 2, className}: 
         <div className={cn("relative", className)}>
             <div className="flex">
                 <div>
-                    {/* Month Labels */}
                     <div className="flex mb-2">
-                        {gridData.monthLabels.map((month, index) => (
+                        {gridData.monthLabels.map((month) => (
                             <div
-                                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                                key={index}
+                                key={`${month.label}-${month.offset}`}
                                 className="text-xs text-tertiary flex items-center justify-center absolute"
                                 style={{
                                     left: month.offset * (cellSize + gap),
@@ -134,11 +132,9 @@ function Heatmap({data, startDate, endDate, cellSize = 12, gap = 2, className}: 
                                 {month.label}
                             </div>
                         ))}
-                        {/* Spacer für die Höhe */}
                         <div className={"h-4 w-full"} />
                     </div>
 
-                    {/* Heatmap Grid */}
                     <div
                         className="grid"
                         style={{
@@ -156,7 +152,7 @@ function Heatmap({data, startDate, endDate, cellSize = 12, gap = 2, className}: 
 
                                 return (
                                     <div
-                                        key={cell.date}
+                                        key={`${cell.date}-${week}-${day}`}
                                         {...getTooltip(cell)}
                                         className={cn(
                                             "rounded-xs bg-gray-400",

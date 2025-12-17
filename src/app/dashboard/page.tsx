@@ -11,7 +11,7 @@ import {useSession} from "@/hooks/data/useSession"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useWidgets} from "@/hooks/data/useWidgets"
 import {useSettings} from "@/hooks/data/useSettings"
-import {toast} from "sonner"
+import {toast} from "@/components/ui/Toast"
 import {DashboardEmpty} from "@/components/empty/DashboardEmpty"
 import {DashboardGrid} from "@/components/DashboardGrid"
 
@@ -68,9 +68,9 @@ export default function Dashboard() {
                 await Promise.all(widgetsToRemove.map((widget) => removeWidget(widget.id)))
             }
             await saveWidgetsLayout()
-            toast.success("Successfully updated your layout")
+            toast.success("Successfully updated your layout.")
         } catch (error) {
-            toast.error("Something went wrong")
+            toast.error("Something went wrong.")
         } finally {
             setEditMode(false)
             setEditModeLoading(false)
@@ -126,7 +126,7 @@ export default function Dashboard() {
                 <div className={"h-screen w-screen flex items-center justify-center"}>
                     <SpinnerDotted size={56} thickness={160} speed={100} color="rgba(237, 102, 49, 1)" />
                 </div>
-            ) : (visibleWidgets.length === 0 && currentDashboard ? (
+            ) : (visibleWidgets.length === 0 && currentDashboard && !editMode ? (
                 <DashboardEmpty/>
             ) : (
                 <DashboardGrid

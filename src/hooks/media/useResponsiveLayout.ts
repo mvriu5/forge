@@ -1,7 +1,7 @@
 "use client"
 
 import {useMemo, useRef} from "react"
-import { transformLayout, type Breakpoint, getGridClasses, getContainerHeight } from "@/lib/transformLayout"
+import { transformLayout, type Breakpoint, getGridClasses } from "@/lib/transformLayout"
 import { Widget } from "@/database"
 import { useBreakpoint } from "@/hooks/media/useBreakpoint"
 
@@ -78,13 +78,11 @@ export const useResponsiveLayout = (originalWidgets: Widget[]) => {
     }, [transformedWidgets])
 
     const gridClasses = useMemo(() => getGridClasses(breakpoint), [breakpoint])
-    const containerHeight = useMemo(() => getContainerHeight(breakpoint), [breakpoint])
 
     return {
         transformedWidgets: stableWidgets,
         breakpoint,
         gridClasses,
-        containerHeight,
         isMobile: breakpoint === "mobile",
         isTablet: breakpoint === "tablet",
         isDesktop: breakpoint === "desktop",
