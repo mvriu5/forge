@@ -8,6 +8,14 @@ export function useNotifications(userId: string | undefined) {
     const [notifications, setNotifications] = useState<Notification[]>([])
     const [connected, setConnected] = useState(false)
 
+    const addNotification = useCallback((notification: Notification) => {
+        setNotifications((prev) => {
+            if (prev.some((item) => item.id === notification.id)) return prev
+            const next = [...prev, notification]
+            return next.slice(-100)
+        })
+    }, [])
+
     useEffect(() => {
         if (!userId) return
 
@@ -39,14 +47,9 @@ export function useNotifications(userId: string | undefined) {
 
                 try {
                     const notification = JSON.parse(payload) as Notification
-
                     if (!notification?.id) return
 
-                    setNotifications((prev) => {
-                        if (prev.some((item) => item.id === notification.id)) return prev
-                        const next = [...prev, notification]
-                        return next.slice(-100)
-                    })
+                    addNotification({...notification, createdAt: new Date(notification.createdAt)})
                 } catch (error) {
                 }
             }
@@ -61,7 +64,7 @@ export function useNotifications(userId: string | undefined) {
     const sendReminderNotification = useCallback(async (input: { type: Notification["type"], message: string }) => {
         if (!userId) return
 
-        await fetch("/api/notifications", {
+        const res = await fetch("/api/notifications", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -70,13 +73,17 @@ export function useNotifications(userId: string | undefined) {
                 message: input.message,
             })
         })
+        if (res.ok) {
+            const created = await res.json() as Notification
+            addNotification({...created, createdAt: new Date(created.createdAt)})
+        }
         toast.reminder(input.message)
-    }, [userId])
+    }, [userId, addNotification])
 
     const sendMeetingNotification = useCallback(async (input: { type: Notification["type"], message: string, url: string }) => {
         if (!userId) return
 
-        await fetch("/api/notifications", {
+        const res = await fetch("/api/notifications", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -85,13 +92,17 @@ export function useNotifications(userId: string | undefined) {
                 message: input.message,
             })
         })
+        if (res.ok) {
+            const created = await res.json() as Notification
+            addNotification({...created, createdAt: new Date(created.createdAt)})
+        }
         toast.meeting(input.message, input.url)
-    }, [userId])
+    }, [userId, addNotification])
 
     const sendGithubNotification = useCallback(async (input: { type: Notification["type"], message: string, issues: number, pullRequests: number }) => {
         if (!userId) return
 
-        await fetch("/api/notifications", {
+        const res = await fetch("/api/notifications", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -100,8 +111,12 @@ export function useNotifications(userId: string | undefined) {
                 message: input.message,
             })
         })
+        if (res.ok) {
+            const created = await res.json() as Notification
+            addNotification({...created, createdAt: new Date(created.createdAt)})
+        }
         toast.github(input.message, input.issues, input.pullRequests)
-    }, [userId])
+    }, [userId, addNotification])
 
     const clearNotifications = useCallback(async () => {
         if (!userId) return

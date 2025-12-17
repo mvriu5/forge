@@ -14,9 +14,11 @@ function NotificationPopover({editMode}: {editMode: boolean}) {
     const {userId, isLoading: sessionLoading} = useSession()
     const {notifications, clearNotifications} = useNotifications(userId)
 
-    const sortedNotifications = useMemo(() => (
-        notifications.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    ), [notifications])
+    const sortedNotifications = useMemo(() => {
+        return [...notifications]
+            .filter((n, index, self) => index === self.findIndex(m => m.message === n.message))
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    }, [notifications])
 
     const [open, setOpen] = useState(false)
 
