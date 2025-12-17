@@ -55,6 +55,7 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config
     const {sendReminderNotification} = useNotifications(widget.userId)
 
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
+    const [now, setNow] = useState(new Date())
 
     const hasSentReminderRef = useRef(false)
 
@@ -77,34 +78,59 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config
         if (!settings?.config.countdownReminder) return
         if (!config.countdown) return
 
-        const checkReminders = () => {
-            const now = new Date()
-            const targetDate = new Date(config.countdown!.date)
+        hasSentReminderRef.current = false
 
-            if (now >= targetDate) {
-                hasSentReminderRef.current = true
+        const targetDate = new Date(config.countdown.date)
 
-                void sendReminderNotification({
-                    message: `Your countdown "${config.countdown?.title}" ended!`,
-                    type: "reminder",
-                }).catch(() => {
-                    hasSentReminderRef.current = false
-                })
+        const notify = () => {
+            if (hasSentReminderRef.current) return
 
-                clearInterval(interval)
-            }
+            hasSentReminderRef.current = true
+
+            void sendReminderNotification({
+                message: `Your countdown "${config.countdown?.title}" ended!`,
+                type: "reminder",
+            }).catch(() => {
+                hasSentReminderRef.current = false
+            })
         }
 
-        const interval = setInterval(checkReminders, 30_000)
-        checkReminders()
+        const delay = targetDate.getTime() - Date.now()
+
+        if (delay <= 0) {
+            notify()
+            return
+        }
+
+        const timeout = setTimeout(notify, delay)
+        return () => clearTimeout(timeout)
+    }, [config.countdown, sendReminderNotification, settings?.config.countdownReminder])
+
+    useEffect(() => {
+        if (!config.countdown) return
+
+        const targetDate = new Date(config.countdown.date)
+
+        const tick = () => {
+            const current = new Date()
+
+            if (current >= targetDate) {
+                setNow(targetDate)
+                clearInterval(interval)
+                return
+            }
+
+            setNow(current)
+        }
+        const interval = setInterval(tick, 1_000)
+        tick()
 
         return () => clearInterval(interval)
-    }, [sendReminderNotification])
+    }, [config.countdown])
 
     const formatCountdown = useCallback(() => {
         if (!config.countdown) return ""
 
-        const now = new Date()
         const targetDate = new Date(config.countdown.date)
         const diff = targetDate.getTime() - now.getTime()
 
@@ -117,7 +143,7 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
 
         return `${days}d ${hours}h ${minutes}m `
-    }, [config.countdown])
+    }, [config.countdown, now])
 
     const handleSave = useCallback(async (updatedCountdown: Countdown | null) => {
         await updateConfig({ countdown: updatedCountdown })
