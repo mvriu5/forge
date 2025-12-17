@@ -28,7 +28,7 @@ function DatePicker({ value, title, onSelect, mode = "single", className }: Date
                     data-state={isOpen ? "open" : "closed"}
                     variant={"default"}
                     className={cn(
-                        "gap-2 text-sm justify-start text-left font-normal hover:text-secondary",
+                        "gap-2 pl-3 text-sm justify-start text-left font-normal hover:text-secondary",
                         "data-[state=open]:bg-inverted/10 data-[state=open]:text-primary",
                         className
                     )}

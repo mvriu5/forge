@@ -11,8 +11,8 @@ import {useBreakpoint} from "@/hooks/media/useBreakpoint"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 
-const SKELETON_COUNT = 371;
-const skeletonKeys = Array.from({ length: SKELETON_COUNT }, (_, i) => `sk-${i}`);
+const SKELETON_COUNT = 371
+const skeletonKeys = Array.from({ length: SKELETON_COUNT }, (_, i) => `sk-${i}`)
 
 const GithubHeatmapWidget: React.FC<WidgetProps> = () => {
     const {data, isLoading, isFetching} = useGithubHeatmap()
@@ -31,8 +31,7 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = () => {
 
     return (
         <>
-            <WidgetHeader title={"Github Heatmap"}/>
-            <WidgetContent className={"h-full items-center"}>
+            <WidgetContent className={"h-full flex justify-center items-center"}>
                 {(isLoading || isFetching) ? (
                     <div
                         className="grid mt-6"

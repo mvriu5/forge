@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useCallback, useState} from "react"
+import React, {useCallback, useEffect, useRef, useState} from "react"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {File, Plus, TimerReset, Trash} from "lucide-react"
@@ -16,6 +16,9 @@ import {DatePicker} from "@/components/ui/Datepicker"
 import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
 import {addDays} from "@/lib/utils"
 import {EmojiPicker} from "@/components/ui/EmojiPicker"
+import {TimePicker} from "@/components/ui/TimePicker"
+import {useSettings} from "@/hooks/data/useSettings"
+import {useNotifications} from "@/hooks/data/useNotifications"
 
 type Countdown = {
     title: string
@@ -28,13 +31,32 @@ interface CountdownConfig {
 }
 
 const formSchema = z.object({
-    title: z.string().nonempty({message: "Title is required"}),
+    title: z.string().nonempty({ message: "Title is required" }),
     date: z.date(),
-    emoji: z.string()
+    time: z.string().nonempty({ message: "Time is required" }),
+    emoji: z.string(),
+}).superRefine((data, ctx) => {
+    const [h, m, s] = data.time.split(":").map(Number)
+
+    const combined = new Date(data.date)
+    combined.setHours(h, m, s ?? 0, 0)
+
+    if (combined <= new Date()) {
+        ctx.addIssue({
+            path: ["date"],
+            message: "Date and time must be in the future",
+            code: "custom"
+        })
+    }
 })
 
-const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({config, updateConfig}) => {
+const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config, updateConfig}) => {
+    const {settings} = useSettings(widget.userId)
+    const {sendReminderNotification} = useNotifications(widget.userId)
+
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
+
+    const hasSentReminderRef = useRef(false)
 
     const addTooltip = useTooltip<HTMLButtonElement>({
         message: config.countdown ? "Delete the current countdown" : "Add a new countdown",
@@ -46,9 +68,38 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({config, update
         defaultValues: {
             title: "",
             date: addDays(new Date(), 2),
+            time: "08:00:00",
             emoji: "🎉"
         },
     })
+
+    useEffect(() => {
+        if (!settings?.config.countdownReminder) return
+        if (!config.countdown) return
+
+        const checkReminders = () => {
+            const now = new Date()
+            const targetDate = new Date(config.countdown!.date)
+
+            if (now >= targetDate) {
+                hasSentReminderRef.current = true
+
+                void sendReminderNotification({
+                    message: `Your countdown "${config.countdown?.title}" ended!`,
+                    type: "reminder",
+                }).catch(() => {
+                    hasSentReminderRef.current = false
+                })
+
+                clearInterval(interval)
+            }
+        }
+
+        const interval = setInterval(checkReminders, 30_000)
+        checkReminders()
+
+        return () => clearInterval(interval)
+    }, [sendReminderNotification])
 
     const formatCountdown = useCallback(() => {
         if (!config.countdown) return ""
@@ -58,7 +109,7 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({config, update
         const diff = targetDate.getTime() - now.getTime()
 
         if (diff <= 0) {
-            return "Countdown has ended"
+            return "Ended"
         }
 
         const days = Math.floor(diff / (1000 * 60 * 60 * 24))
@@ -77,10 +128,15 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({config, update
     const handleAddCountdown = useCallback(async () => {
         const data = form.getValues()
 
+        const [hours, minutes, seconds] = data.time.split(":").map(Number)
+
+        const date = new Date(data.date)
+        date.setHours(hours, minutes, seconds ?? 0, 0)
+
         const newCountdown: Countdown = {
             title: data.title,
             emoji: data.emoji,
-            date: data.date
+            date: date
         }
 
         await updateConfig({ countdown: newCountdown })
@@ -111,7 +167,7 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({config, update
                         </PopoverTrigger>
                         <PopoverContent>
                             <Form {...form}>
-                                <form onSubmit={form.handleSubmit(handleAddCountdown)} className="space-y-2">
+                                <form onSubmit={form.handleSubmit(handleAddCountdown)} className="flex flex-col gap-2">
                                     <FormField
                                         control={form.control}
                                         name="emoji"
@@ -159,6 +215,21 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({config, update
                                                     title={"Pick a date"}
                                                     value={field.value}
                                                     onSelect={field.onChange}
+                                                />
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="time"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-col">
+                                                <FormLabel>Date</FormLabel>
+                                                <TimePicker
+                                                    value={field.value}
+                                                    onValueChange={field.onChange}
                                                 />
                                                 <FormMessage />
                                             </FormItem>

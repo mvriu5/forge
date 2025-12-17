@@ -33,10 +33,13 @@ function NotificationPopover({editMode}: {editMode: boolean}) {
             >
                 <Button
                     data-state={open ? "open" : "closed"}
-                    className={cn("size-8 bg-secondary border-main/60 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary")}
+                    className={cn("relative size-8 bg-secondary border-main/60 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary")}
                     onClick={() => setOpen(!open)}
                 >
-                   <Bell size={16}/>
+                    <Bell size={16}/>
+                    {notifications.length > 0 &&
+                        <div className={"z-50 -right-1 -top-1 absolute rounded-full size-3 bg-brand border border-main/40"}/>
+                    }
                 </Button>
             </PopoverTrigger>
             <PopoverContent

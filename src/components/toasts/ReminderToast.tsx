@@ -14,7 +14,9 @@ function ReminderToast({ t, title }: ReminderToastProps) {
         <div className="w-[380px] min-h-16 flex items-center rounded-md border border-main/40 bg-primary p-2 shadow-xl">
             <div className="w-full h-full flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2">
-                    <BellRing size={24} className="text-tertiary"/>
+                    <div className={"rounded-md p-1 bg-brand/5 border border-brand/20 shadow-xs dark:shadow-md"}>
+                        <BellRing size={24} className="text-brand"/>
+                    </div>
                     <p className="text-sm font-medium">{title}</p>
                 </div>
                 <button

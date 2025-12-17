@@ -15,12 +15,10 @@ import {useSettings} from "@/hooks/data/useSettings"
 import {defineWidget, WidgetProps} from "@tryforgeio/sdk"
 import {formatDateHeader, formatTime, isSameDay} from "@/lib/utils"
 import {useNotifications} from "@/hooks/data/useNotifications"
-import {useSession} from "@/hooks/data/useSession"
 
-const MeetingsWidget: React.FC<WidgetProps> = () => {
-    const {userId} = useSession()
-    const {settings} = useSettings(userId)
-    const {sendMeetingNotification} = useNotifications(userId)
+const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
+    const {settings} = useSettings(widget.userId)
+    const {sendMeetingNotification} = useNotifications(widget.userId)
     const {calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars} = useGoogleCalendar()
 
     const sentRemindersRef = useRef<Set<string>>(new Set())
@@ -91,7 +89,7 @@ const MeetingsWidget: React.FC<WidgetProps> = () => {
 
                 const startLabel = formatTime(startTimeString, settings.config.hourFormat ?? "24")
                 const timingLabel = nearestReminder.minutes === 0 ? "now" : `in ${nearestReminder.minutes} minutes`
-                const message = `"${event.summary}" meeting starts ${timingLabel} (${startLabel})`
+                const message = `"${event.summary}"${event.hangoutLink ? "meeting" : ""} starts ${timingLabel} (${startLabel})`
 
                 void sendMeetingNotification({
                     message,

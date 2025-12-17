@@ -53,7 +53,7 @@ async function getContributions(accessToken: string | null, username: string | u
         to: to.toISOString(),
     })
 
-    if (!response.user) throw new Error(`Benutzer ${username} nicht gefunden`)
+    if (!response.user) throw new Error(`User ${username} not found.`)
 
     const contributions: GitHubContribution[] = []
     const weeks = response.user.contributionsCollection.contributionCalendar.weeks
@@ -79,8 +79,8 @@ export const useGithubHeatmap = () => {
         queryKey: GITHUB_QUERY_KEY(githubIntegration?.accessToken ?? null, session?.user?.name),
         queryFn: () => getContributions(githubIntegration?.accessToken ?? null, session?.user?.name),
         enabled: Boolean(githubIntegration?.accessToken),
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        refetchInterval: 5 * 60 * 1000, // 5 minutes
+        staleTime: 30 * 60 * 1000, // 30 minutes
+        refetchInterval: 30 * 60 * 1000, // 30 minutes
         refetchOnWindowFocus: false,
         refetchOnMount: false
     })

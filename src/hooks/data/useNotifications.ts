@@ -88,6 +88,21 @@ export function useNotifications(userId: string | undefined) {
         toast.meeting(input.message, input.url)
     }, [userId])
 
+    const sendGithubNotification = useCallback(async (input: { type: Notification["type"], message: string, issues: number, pullRequests: number }) => {
+        if (!userId) return
+
+        await fetch("/api/notifications", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId: userId,
+                type: input.type,
+                message: input.message,
+            })
+        })
+        toast.github(input.message, input.issues, input.pullRequests)
+    }, [userId])
+
     const clearNotifications = useCallback(async () => {
         if (!userId) return
 
@@ -100,6 +115,7 @@ export function useNotifications(userId: string | undefined) {
         connected,
         sendReminderNotification,
         sendMeetingNotification,
+        sendGithubNotification,
         clearNotifications
     }
 }

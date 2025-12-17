@@ -5,6 +5,7 @@ import { MeetingToast } from "@/components/toasts/MeetingToast"
 import {ReminderToast} from "@/components/toasts/ReminderToast"
 import {SuccessToast} from "@/components/toasts/SuccessToast"
 import {ErrorToast} from "@/components/toasts/ErrorToast"
+import {GithubToast} from "@/components/toasts/GithubToast"
 
 export const toast = {
     ...sonnerToast,
@@ -16,9 +17,12 @@ export const toast = {
         return sonnerToast.custom((t) => <ReminderToast t={t} title={title} />, {duration: 10000, dismissible: true})
     },
     success(title: string) {
-        return sonnerToast.custom((t) => <SuccessToast title={title} />, {duration: 3000, dismissible: false})
+        return sonnerToast.custom(() => <SuccessToast title={title} />, {duration: 3000, dismissible: false})
     },
     error(title: string) {
-        return sonnerToast.custom((t) => <ErrorToast title={title} />, {duration: 3000, dismissible: false})
+        return sonnerToast.custom(() => <ErrorToast title={title} />, {duration: 3000, dismissible: false})
+    },
+    github(title: string, issues: number, pullRequests: number) {
+        return sonnerToast.custom((t) => <GithubToast t={t} title={title} issues={issues} pullRequests={pullRequests} />, {duration: 10000, dismissible: true})
     }
 }
