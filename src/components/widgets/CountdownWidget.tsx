@@ -36,10 +36,10 @@ const formSchema = z.object({
     time: z.string().nonempty({ message: "Time is required" }),
     emoji: z.string(),
 }).superRefine((data, ctx) => {
-    const [h, m, s] = data.time.split(":").map(Number)
+    const [h, m] = data.time.split(":").map(Number)
 
     const combined = new Date(data.date)
-    combined.setHours(h, m, s ?? 0, 0)
+    combined.setHours(h, m ?? 0)
 
     if (combined <= new Date()) {
         ctx.addIssue({
@@ -69,7 +69,7 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config
         defaultValues: {
             title: "",
             date: addDays(new Date(), 2),
-            time: "08:00:00",
+            time: "08:00",
             emoji: "🎉"
         },
     })
@@ -161,10 +161,10 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config
     const handleAddCountdown = useCallback(async () => {
         const data = form.getValues()
 
-        const [hours, minutes, seconds] = data.time.split(":").map(Number)
+        const [hours, minutes] = data.time.split(":").map(Number)
 
         const date = new Date(data.date)
-        date.setHours(hours, minutes, seconds ?? 0, 0)
+        date.setHours(hours, minutes ?? 0)
 
         const newCountdown: Countdown = {
             title: data.title,
