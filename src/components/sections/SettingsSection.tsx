@@ -11,7 +11,7 @@ import {Form, FormDescription, FormField, FormItem, FormLabel, FormMessage} from
 import {Spinner} from "@/components/ui/Spinner"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import {Button} from "@/components/ui/Button"
-import React, {Suspense} from "react"
+import React, {Suspense, useMemo} from "react"
 import {MultiSelect} from "@/components/ui/MultiSelect"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import {Switch} from "@/components/ui/Switch"
@@ -30,11 +30,6 @@ const TIMEZONES = [
     "Asia/Tokyo",
     "Asia/Shanghai",
 ] as const
-
-const meetingReminderOptions = ["0", "5", "10", "15", "30", "60"].map((minutes) => ({
-    label: `${minutes} minutes before`,
-    value: minutes
-})) as const
 
 const formSchema = z.object({
     theme: z.enum(["light", "dark", "system"]),
@@ -80,6 +75,11 @@ function SettingsSection({handleClose}: {handleClose: () => void}) {
         message: "System Theme",
         anchor: "tc"
     })
+
+    const meetingReminderOptions = useMemo(() => ["0", "5", "10", "15", "30", "60"].map((minutes) => ({
+        label: `${minutes} minutes before`,
+        value: minutes
+    })), [])
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         const newConfig = {
