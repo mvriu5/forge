@@ -80,9 +80,11 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config
 
         const reminderMessage = `Your countdown "${config.countdown.title}" ended!`
 
-        hasSentReminderRef.current = notifications.some((notification) =>
-            notification.type === "reminder" && notification.message === reminderMessage
-        )
+        if (!hasSentReminderRef.current) {
+            hasSentReminderRef.current = notifications.some((notification) =>
+                notification.type === "reminder" && notification.message === reminderMessage
+            )
+        }
 
         if (hasSentReminderRef.current) return
 

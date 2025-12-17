@@ -50,7 +50,7 @@ function NotificationPopover({editMode}: {editMode: boolean}) {
             >
                 <div className={"flex items-center gap-2 justify-between bg-tertiary p-1 pl-2 border-b border-main/40"}>
                     <p className={"text-tertiary text-sm"}>
-                        {notifications.length > 0 ? `${notifications.length} new notifications` : "Notifications"}
+                        {notifications.length > 0 ? `${sortedNotifications.length} new notifications` : "Notifications"}
                     </p>
                     <Button onClick={() => clearNotifications()} variant={"ghost"} className={"size-8"} {...archiveTooltip}>
                         <Archive size={16}/>
