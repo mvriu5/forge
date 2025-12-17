@@ -1,31 +1,12 @@
 "use client"
 
-import React, {useCallback} from "react"
-import {useEffect, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
 import {useSettings} from "@/hooks/data/useSettings"
-import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
+import {defineWidget, WidgetProps} from "@tryforgeio/sdk"
 
-interface ClockConfig {
-    timezone: string
-}
-
-const ClockWidget: React.FC<WidgetProps<ClockConfig>> = ({widget, config, updateConfig}) => {
+const ClockWidget: React.FC<WidgetProps> = ({widget}) => {
     const {settings} = useSettings(widget?.userId)
-
-    const timezones = [
-        { value: "Europe/Berlin", label: "Berlin (MEZ/MESZ)" },
-        { value: "Europe/London", label: "London (GMT/BST)" },
-        { value: "Europe/Paris", label: "Paris (MEZ/MESZ)" },
-        { value: "America/New_York", label: "New York (EST/EDT)" },
-        { value: "America/Los_Angeles", label: "Los Angeles (PST/PDT)" },
-        { value: "Asia/Tokyo", label: "Tokyo (JST)" },
-        { value: "Asia/Shanghai", label: "Shanghai (CST)" },
-        { value: "Australia/Sydney", label: "Sydney (AEST/AEDT)" },
-        { value: "UTC", label: "UTC " },
-    ]
     const [currentTime, setCurrentTime] = useState(new Date())
 
     useEffect(() => {
@@ -33,9 +14,9 @@ const ClockWidget: React.FC<WidgetProps<ClockConfig>> = ({widget, config, update
         return () => clearInterval(timer)
     }, [])
 
-    const formatTime = (date: Date, timezone: string) => {
+    const formatTime = (date: Date) => {
         return new Intl.DateTimeFormat("en-US", {
-            timeZone: timezone,
+            timeZone: settings?.config?.timezone,
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
@@ -43,9 +24,9 @@ const ClockWidget: React.FC<WidgetProps<ClockConfig>> = ({widget, config, update
         }).format(date)
     }
 
-    const formatDate = (date: Date, timezone: string) => {
+    const formatDate = (date: Date) => {
         const options: Intl.DateTimeFormatOptions = {
-            timeZone: timezone,
+            timeZone: settings?.config?.timezone,
             weekday: "long",
             year: "numeric",
             month: "long",
@@ -70,33 +51,11 @@ const ClockWidget: React.FC<WidgetProps<ClockConfig>> = ({widget, config, update
         return `${weekday}, ${month} ${day}${getOrdinalSuffix(dayNum)} ${year}`
     }
 
-    const handleSave = useCallback(async (updatedTimezone: string) => {
-        await updateConfig({ timezone: updatedTimezone })
-    }, [updateConfig])
-
     return (
         <>
-            <WidgetHeader title={"Clock"}>
-                <Select value={config.timezone} onValueChange={(value) => handleSave(value)}>
-                    <SelectTrigger className="w-max h-6 shadow-none dark:shadow-none border-0 bg-tertiary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className={"border-main/40"} >
-                        {timezones.map((timezone) => (
-                            <SelectItem key={timezone.value} value={timezone.value}>
-                                <span>{timezone.label}</span>
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </WidgetHeader>
             <WidgetContent className={"flex flex-col items-center justify-center"}>
-                <div className="text-5xl font-mono text-primary font-bold tracking-wider">
-                    {formatTime(currentTime, config.timezone)}
-                </div>
-                <div className="text-tertiary">
-                    {formatDate(currentTime, config.timezone)}
-                </div>
+                <p className="text-5xl font-mono text-primary font-bold tracking-wider">{formatTime(currentTime)}</p>
+                <p className={"text-tertiary"}>{formatDate(currentTime)}</p>
             </WidgetContent>
         </>
     )
@@ -112,9 +71,6 @@ export const clockWidgetDefinition = defineWidget({
         desktop: { width: 1, height: 1 },
         tablet: { width: 1, height: 1 },
         mobile: { width: 1, height: 1 }
-    },
-    defaultConfig: {
-        timezone: "Europe/Berlin",
-    },
+    }
 })
 

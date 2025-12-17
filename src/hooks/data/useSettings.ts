@@ -5,7 +5,14 @@ import posthog from "posthog-js"
 const SETTINGS_QUERY_KEY = (userId: string | undefined) => ["settings", userId] as const
 
 const DEFAULT_SETTINGS = {
+    theme: "system",
     hourFormat: "24",
+    timezone: "UTC",
+    todoReminder: false,
+    countdownReminder: false,
+    githubReminder: false,
+    meetingReminders: [],
+    deleteTodos: false
 }
 
 async function fetchSettings(userId: string): Promise<Settings | null> {
