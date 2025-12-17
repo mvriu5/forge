@@ -22,7 +22,6 @@ import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} f
 import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
-import {useSession} from "@/hooks/data/useSession"
 import {useNotifications} from "@/hooks/data/useNotifications"
 import {useSettings} from "@/hooks/data/useSettings"
 
@@ -30,6 +29,7 @@ type Todo = {
     id: string
     checked: boolean
     text: string
+    createdAt: string
 }
 
 interface TodoConfig {
@@ -69,6 +69,25 @@ const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({widget, config, updateCo
         await updateConfig({ todos: updatedTodos })
     }, [updateConfig])
 
+    useEffect(() => {
+        if (!settings?.config.deleteTodos) return
+        if (config.todos.length === 0) return
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        const hasOldTodos = config.todos.some((todo) => {
+            const todoDate = new Date(todo.createdAt)
+            todoDate.setHours(0, 0, 0, 0)
+
+            return todoDate < today
+        })
+
+        if (!hasOldTodos) return
+
+        void handleSave([])
+    }, [config.todos, handleSave, settings?.config.autoClearTodos])
+
     const enterInput = useCallback(async () => {
         const input = inputRef.current!
         if (input?.value.trim()) {
@@ -76,6 +95,7 @@ const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({widget, config, updateCo
                 id: crypto.randomUUID(),
                 text: input.value.trim(),
                 checked: false,
+                createdAt: new Date().toISOString()
             }
             const updatedTodos = [...config.todos, newTodo]
             await handleSave(updatedTodos)
@@ -168,7 +188,7 @@ const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({widget, config, updateCo
     )
 }
 
-const Todo = ({id, checked, text, onDelete, onCheckChange}: Todo & { onDelete: () => void; onCheckChange: (checked: boolean) => void }) => {
+const Todo = ({id, checked, text, onDelete, onCheckChange}: Omit<Todo, "createdAt"> & { onDelete: () => void; onCheckChange: (checked: boolean) => void }) => {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: id })
 
     const toggleChecked = () => onCheckChange(!checked)
