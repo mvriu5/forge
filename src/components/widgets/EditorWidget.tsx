@@ -145,7 +145,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig
                             <Import size={16} />
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent align={"start"} className={"h-full w-40 overflow-hidden p-2"}>
+                    <PopoverContent align={"start"} className={"h-full w-40 max-w-60 overflow-hidden p-2"}>
                         <ScrollArea className={"h-60"}>
                             <p className="text-xs text-tertiary mb-2">Pages</p>
                             {isLoadingNotionData ? (
