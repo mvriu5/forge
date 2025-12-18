@@ -14,6 +14,7 @@ type NotionPage = {
     id: string
     title: string
     isChild: boolean
+    parentId: string | null
 }
 
 async function fetchChildPages(accessToken: string, pageId: string): Promise<NotionPage[]> {
@@ -45,7 +46,8 @@ async function fetchChildPages(accessToken: string, pageId: string): Promise<Not
             .map((block: any) => ({
                 id: block.id as string,
                 title: block.child_page?.title ?? "Untitled",
-                isChild: true
+                isChild: true,
+                parentId: pageId
             }))
 
         childPages.push(...pages)
@@ -93,7 +95,8 @@ export async function GET(req: Request) {
         const initialPages = (data.results ?? []).map((result: any) => ({
             id: result.id as string,
             title: getTitleFromProperties(result.properties),
-            isChild: false
+            isChild: false,
+            parentId: result.parent?.page_id ?? null
         }))
 
         const allPages: NotionPage[] = []
@@ -119,8 +122,6 @@ export async function GET(req: Request) {
             }
         }
 
-        console.log(allPages)
-        console.log(queue)
         return NextResponse.json({ pages: allPages }, { status: 200 })
     } catch (error) {
         posthog.captureException(error, { route: routePath, method: "GET", userId })

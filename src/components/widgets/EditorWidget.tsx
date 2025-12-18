@@ -8,11 +8,12 @@ import { WidgetHeader } from "@/components/widgets/base/WidgetHeader"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 import { Import, Plus } from "lucide-react"
 import { JSONContent } from "novel"
-import React, { Suspense, useCallback, useState } from "react"
+import React, { Suspense, useCallback, useMemo, useState } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover"
-import { useNotion } from "@/hooks/useNotion"
+import { NotionPage, useNotion } from "@/hooks/useNotion"
 import { ScrollArea } from "../ui/ScrollArea"
 import { Skeleton } from "../ui/Skeleton"
+import { cn } from "@/lib/utils"
 
 const LazyNoteDialog = React.lazy(() => import("../../components/dialogs/NoteDialog").then(mod => ({ default: mod.NoteDialog })))
 
@@ -28,6 +29,8 @@ export type Note = {
         syncedAt: Date
     } | null
 }
+
+type PageNode = NotionPage & { children: PageNode[] }
 
 export interface EditorConfig {
     notes: Note[]
@@ -74,6 +77,8 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig
     }, [config.notes, handleSave])
 
     const handleNotionImport = useCallback(async (pageId: string) => {
+        setNotionPopoverOpen(false)
+
         const pageContent = await fetchPageContent(pageId)
         if (!pageContent) return
 
@@ -91,11 +96,41 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig
         }
 
         await updateConfig({notes: [...config.notes, newNote]})
-        setNotionPopoverOpen(false)
         setOpenNoteId(newNote.id)
     }, [fetchPageContent])
 
-    console.log(pages)
+    const buildPageTree = useCallback((notionPages: NotionPage[]): PageNode[] => {
+        const nodeMap = new Map<string, PageNode>()
+        notionPages.map((page) => nodeMap.set(page.id, {...page, children: []}))
+
+        const roots: PageNode[] = []
+
+        notionPages.map((page) => {
+            const node = nodeMap.get(page.id)!
+            if (page.parentId && nodeMap.has(page.parentId)) nodeMap.get(page.parentId)!.children.push(node)
+            else roots.push(node)
+        })
+
+        return roots
+    }, [])
+
+    const pageTree = useMemo(() => buildPageTree(pages), [buildPageTree, pages])
+
+    const renderPageButtons = useCallback((nodes: PageNode[], depth = 1): React.ReactNode => (
+        nodes.map((node) => (
+            <React.Fragment key={node.id}>
+                <Button
+                    variant={"ghost"}
+                    className={cn("justify-start h-6 px-2 text-sm shadow-none dark:shadow-none font-normal text-primary", depth > 1 && "text-secondary")}
+                    style={{ paddingLeft: depth * 16 }}
+                    onClick={() => void handleNotionImport(node.id)}
+                >
+                    {node.title}
+                </Button>
+                {node.children.length > 0 && renderPageButtons(node.children, depth + 1)}
+            </React.Fragment>
+        ))
+    ), [handleNotionImport])
 
     return (
         <>
@@ -110,37 +145,25 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig
                             <Import size={16} />
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent align={"end"} className={"h-60 w-60 overflow-hidden p-1"}>
+                    <PopoverContent align={"start"} className={"h-full w-40 overflow-hidden p-2"}>
                         <ScrollArea className={"h-60"}>
-                            <div className={"p-1"}>
-                                <p className="text-xs text-tertiary mb-2">Pages</p>
-                                {isLoadingNotionData ? (
-                                    <div className="flex flex-col gap-2">
-                                        <Skeleton className={"h-6 w-full"} />
-                                        <Skeleton className={"h-6 w-full"} />
-                                        <Skeleton className={"h-6 w-full"} />
-                                        <Skeleton className={"h-6 w-full"} />
-                                        <Skeleton className={"h-6 w-full"} />
-                                        <Skeleton className={"h-6 w-full"} />
-                                        <Skeleton className={"h-6 w-full"} />
-                                    </div>
-                                ) : pages.length === 0 ? (
-                                    <p className="text-xs text-secondary px-2 py-1">No pages found.</p>
-                                ) : (
-                                    <div className={"flex flex-col gap-1"}>
-                                        {pages.map((page) => (
-                                            <Button
-                                                key={page.id}
-                                                variant={"ghost"}
-                                                className={"justify-start h-6 px-2 text-sm shadow-none dark:shadow-none"}
-                                                onClick={() => void handleNotionImport(page.id)}
-                                            >
-                                                {page.title}
-                                            </Button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            <p className="text-xs text-tertiary mb-2">Pages</p>
+                            {isLoadingNotionData ? (
+                                <div className="flex flex-col gap-2">
+                                    <Skeleton className={"h-6 w-full"} />
+                                    <Skeleton className={"h-6 w-full"} />
+                                    <Skeleton className={"h-6 w-full"} />
+                                    <Skeleton className={"h-6 w-full"} />
+                                    <Skeleton className={"h-6 w-full"} />
+                                    <Skeleton className={"h-6 w-full"} />
+                                </div>
+                            ) : pages.length === 0 ? (
+                                <p className="text-xs text-secondary p-2">No pages found.</p>
+                            ) : (
+                                <div className={"flex flex-col gap-1"}>
+                                    {renderPageButtons(pageTree)}
+                                </div>
+                            )}
                         </ScrollArea>
                     </PopoverContent>
                 </Popover>

@@ -12,6 +12,8 @@ import {plainTextToJSONContent} from "@/lib/notion"
 export type NotionPage = {
     id: string
     title: string
+    isChild: boolean
+    parentId: string | null
 }
 
 export type NotionPageContent = {

@@ -48,15 +48,3 @@ export function plainTextToJSONContent(text: string): JSONContent {
         }))
     }
 }
-
-function flattenJSONContent(node?: JSONContent): string {
-    if (!node) return ""
-    if (node.type === "text" && typeof node.text === "string") {
-        return node.text
-    }
-
-    if (!node.content) return ""
-    return node.content
-        .map((child) => flattenJSONContent(child))
-        .join(node.type === "paragraph" ? "\n" : "")
-}
