@@ -2,7 +2,7 @@
 
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import React, {useMemo} from "react"
-import {Github, Google} from "@/components/svg/Icons"
+import {Github, Google, Notion} from "@/components/svg/Icons"
 import {cn} from "@/lib/utils"
 import {Button} from "@/components/ui/Button"
 import {Check, X} from "lucide-react"
@@ -13,6 +13,7 @@ function IntegrationSection({handleClose}: {handleClose: () => void}) {
     const {integrations, removeIntegration, handleIntegrate} = useIntegrations(userId)
     const githubIntegration = useMemo(() => getIntegrationByProvider(integrations, "github"), [integrations])
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
+    const notionIntegration = useMemo(() => getIntegrationByProvider(integrations, "notion"), [integrations])
 
     const integrationList = [
         {
@@ -34,6 +35,16 @@ function IntegrationSection({handleClose}: {handleClose: () => void}) {
                 handleClose()
             },
             onDisconnect: () => removeIntegration("google")
+        },
+        {
+            name: "Notion",
+            icon: Notion,
+            active: !!notionIntegration,
+            onConnect: async () => {
+                void handleIntegrate("notion", false)
+                handleClose()
+            },
+            onDisconnect: () => removeIntegration("notion")
         }
     ]
 
