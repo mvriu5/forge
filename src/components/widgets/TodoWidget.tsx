@@ -48,22 +48,42 @@ const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({widget, config, updateCo
         anchor: "tc"
     })
 
+    const hasOldTodos = useCallback(() => {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        return config.todos.some((todo) => {
+            const todoDate = new Date(todo.createdAt)
+            todoDate.setHours(0, 0, 0, 0)
+
+            return todoDate < today
+        })
+    }, [config.todos])
+
     useEffect(() => {
         if (!settings?.config.todoReminder) return
         if (hasSentReminderRef.current) return
 
-        const hasPendingTodos = config.todos.some((todo) => !todo.checked)
-        if (!hasPendingTodos) return
+        if (settings?.config.deleteTodos && hasOldTodos()) return
+
+        const pendingTodos = config.todos.filter((todo) => !todo.checked)
+        if (pendingTodos.length === 0) return
 
         hasSentReminderRef.current = true
 
         void sendReminderNotification({
-            message: `You have ${config.todos.length} pending ${config.todos.length == 1 ? "todo" : "todos"} for today!`,
+            message: `You have ${pendingTodos.length} pending ${pendingTodos.length == 1 ? "todo" : "todos"} for today!`,
             type: "reminder",
         }).catch(() => {
             hasSentReminderRef.current = false
         })
-    }, [sendReminderNotification])
+    }, [sendReminderNotification, settings?.config.deleteTodos, settings?.config.todoReminder])
+
+    useEffect(() => {
+        if (config.todos.length === 0) {
+            hasSentReminderRef.current = false
+        }
+    }, [config.todos.length])
 
     const handleSave = useCallback(async (updatedTodos: Todo[]) => {
         await updateConfig({ todos: updatedTodos })
@@ -73,20 +93,10 @@ const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({widget, config, updateCo
         if (!settings?.config.deleteTodos) return
         if (config.todos.length === 0) return
 
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
-
-        const hasOldTodos = config.todos.some((todo) => {
-            const todoDate = new Date(todo.createdAt)
-            todoDate.setHours(0, 0, 0, 0)
-
-            return todoDate < today
-        })
-
-        if (!hasOldTodos) return
+        if (!hasOldTodos()) return
 
         void handleSave([])
-    }, [config.todos, handleSave, settings?.config.autoClearTodos])
+    }, [config.todos, handleSave, hasOldTodos, settings?.config.deleteTodos])
 
     const enterInput = useCallback(async () => {
         const input = inputRef.current!

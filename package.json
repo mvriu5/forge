@@ -16,6 +16,7 @@
     "@ferrucc-io/emoji-picker": "^0.0.48",
     "@hookform/resolvers": "^5.2.2",
     "@octokit/rest": "^22.0.1",
+    "@phantom/react-sdk": "^1.0.0",
     "@react-email/components": "^1.0.1",
     "@scalar/nextjs-api-reference": "^0.9.5",
     "@tailwindcss/postcss": "^4.1.4",
