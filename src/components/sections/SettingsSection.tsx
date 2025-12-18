@@ -18,6 +18,7 @@ import {Switch} from "@/components/ui/Switch"
 import {useTheme} from "next-themes"
 import {cn} from "@/lib/utils"
 import {useTooltip} from "@/components/ui/TooltipProvider"
+import {AppWindow, Settings as SettingsIcon} from "lucide-react"
 
 const TIMEZONES = [
     "UTC",
@@ -117,7 +118,10 @@ function SettingsSection({handleClose}: {handleClose: () => void}) {
                     <div className="flex flex-col justify-between gap-4 h-full">
                         <ScrollArea className={"h-full pr-4"}>
                             <div className={"flex flex-col gap-2"}>
-                        <p className={"font-mono text-primary"}>General</p>
+                                <div className={"flex items-center gap-2"}>
+                                    <SettingsIcon className={"p-1 bg-secondary rounded-md border border-main/40 text-tertiary"}/>
+                                    <p className={"font-mono text-primary"}>General</p>
+                                </div>
                         <div className="w-full flex flex-col gap-2 p-2 bg-secondary rounded-md border border-main/40">
                             <FormField
                                 control={form.control}
@@ -235,7 +239,10 @@ function SettingsSection({handleClose}: {handleClose: () => void}) {
                             />
                         </div>
 
-                        <p className={"font-mono text-primary mt-2"}>Widget</p>
+                        <div className={"flex items-center gap-2 mt-2"}>
+                            <AppWindow className={"p-1 bg-secondary rounded-md border border-main/40 text-tertiary"}/>
+                            <p className={"font-mono text-primary"}>Widget</p>
+                        </div>
                         <div className="w-full flex flex-col gap-2 items-center p-2 bg-secondary rounded-md border border-main/40">
                             <FormField
                                 control={form.control}
