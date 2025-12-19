@@ -1,6 +1,5 @@
 import {useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Session} from "@/lib/auth"
-import {useMemo} from "react"
 
 const SESSION_QUERY_KEY = ["session"] as const
 

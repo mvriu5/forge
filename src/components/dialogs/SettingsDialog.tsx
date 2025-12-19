@@ -1,7 +1,9 @@
 "use client"
 
-import React, {useState} from "react"
-import {Blocks, LayoutDashboard, Settings as SettingsIcon, User, Wrench} from "lucide-react"
+import { DashboardSection } from "@/components/sections/DashboardSection"
+import { IntegrationSection } from "@/components/sections/IntegrationSection"
+import { ProfileSection } from "@/components/sections/ProfileSection"
+import { SettingsSection } from "@/components/sections/SettingsSection"
 import {
     Dialog,
     DialogContent,
@@ -10,12 +12,10 @@ import {
     DialogTitle,
     DialogTrigger
 } from "@/components/ui/Dialog"
-import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
-import {IntegrationSection} from "@/components/sections/IntegrationSection"
-import {ProfileSection} from "@/components/sections/ProfileSection"
-import {DashboardSection} from "@/components/sections/DashboardSection"
-import {SettingsSection} from "@/components/sections/SettingsSection"
-import {VisuallyHidden} from "@radix-ui/react-visually-hidden"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+import { Blocks, LayoutDashboard, Settings as SettingsIcon, User, Wrench } from "lucide-react"
+import { useState } from "react"
 
 function SettingsDialog() {
     const [open, setOpen] = useState(false)
@@ -35,7 +35,7 @@ function SettingsDialog() {
                     <p>Settings</p>
                 </button>
             </DialogTrigger>
-            <DialogContent className={"p-0 w-[800px] max-w-[90vw]"}>
+            <DialogContent className={"p-0 w-200 max-w-[90vw]"}>
                 <VisuallyHidden>
                     <DialogHeader>
                         <DialogTitle>
@@ -44,11 +44,9 @@ function SettingsDialog() {
                         <DialogDescription className={"sr-only"}/>
                     </DialogHeader>
                 </VisuallyHidden>
-                <div className={"flex h-[520px] max-h-[520px]"}>
+                <div className={"flex h-130 max-h-130"}>
                     <div className={"flex flex-col bg-secondary w-max h-full rounded-l-md border-r border-main/40 p-2"}>
-                        <p className={"font-mono text-tertiary text-sm mb-2"}>
-                            Settings
-                        </p>
+
                         <ToggleGroup
                             type="single"
                             className={"flex flex-col gap-2 border-0 bg-transparent px-0 justify-start items-start"}
@@ -87,4 +85,4 @@ function SettingsDialog() {
     )
 }
 
-export {SettingsDialog}
+export { SettingsDialog }

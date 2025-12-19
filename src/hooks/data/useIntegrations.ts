@@ -129,9 +129,6 @@ export function useIntegrations(userId: string | undefined) {
             onRequest: (ctx) => {
                 void refetchIntegrations()
             },
-            onSuccess: (ctx) => {
-                toast.success(`Successfully integrated ${capitalizeFirstLetter(provider)}.`)
-            },
             onError: (ctx) => {
                 toast.error("Something went wrong.")
                 posthog.captureException(ctx.error, {method: "handleIntegrate", userId, provider})

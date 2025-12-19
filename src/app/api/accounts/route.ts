@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server"
-import {Account, getGithubAccount, getGoogleAccount, updateAccount} from "@/database"
+import {Account, getGithubAccount, getGoogleAccount, getNotionAccount, updateAccount} from "@/database"
 import posthog from "posthog-js"
 
 const routePath = "/api/accounts"
@@ -21,6 +21,7 @@ export async function GET(req: Request) {
         const accounts: Account[] = []
         accounts.push((await getGoogleAccount(userId))[0])
         accounts.push((await getGithubAccount(userId))[0])
+        accounts.push((await getNotionAccount(userId))[0])
 
         return NextResponse.json(accounts, { status: 200 })
     } catch (error) {

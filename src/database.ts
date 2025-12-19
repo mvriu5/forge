@@ -178,6 +178,16 @@ export const getGithubAccount = async (userId: string): Promise<Account[]> => {
         ))
 }
 
+export const getNotionAccount = async (userId: string): Promise<Account[]> => {
+    return db
+        .select()
+        .from(account)
+        .where(and(
+            eq(account.userId, userId),
+            eq(account.providerId, "notion")
+        ))
+}
+
 export const updateAccount = async (userId: string, provider: string, data: Partial<AccountInsert>) => {
     const now = new Date()
     return db

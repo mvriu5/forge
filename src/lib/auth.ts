@@ -20,7 +20,7 @@ export const auth = betterAuth({
     account: {
         accountLinking: {
             enabled: true,
-            trustedProviders: ["github", "google"]
+            trustedProviders: ["github", "google", "notion"]
         }
     },
     emailVerification: {
@@ -61,7 +61,12 @@ export const auth = betterAuth({
             accessType: "offline",
             prompt: "select_account consent",
             redirectUri: `${process.env.BETTER_AUTH_URL}/api/auth/callback/google`,
-        }
+        },
+        notion: {
+            clientId: process.env.NOTION_CLIENT_ID as string,
+            clientSecret: process.env.NOTION_CLIENT_SECRET as string,
+            redirectURI: `${process.env.BETTER_AUTH_URL}/api/auth/callback/notion`,
+        },
     },
     session: {
         cookieCache: {

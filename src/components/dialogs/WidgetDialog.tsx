@@ -124,12 +124,12 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                     {title}
                 </Button>
             </DialogTrigger>
-            <DialogContent className={"md:min-w-[800px] pl-8 pt-8"}>
+            <DialogContent className={"md:min-w-200 pl-8 pt-8"}>
                 <DialogHeader className={"flex flex-row justify-between items-center pr-4"}>
                     <DialogTitle>
                         <div className={"flex items-center gap-2"}>
                             <p>Select a widget</p>
-                            <span className={"inline break-words text-tertiary font-normal bg-tertiary rounded-md px-1 py-1"}>{filteredWidgets.length}</span>
+                            <span className={"inline wrap-break-word text-tertiary font-normal bg-tertiary rounded-md px-1 py-1"}>{filteredWidgets.length}</span>
                         </div>
                     </DialogTitle>
                     <DialogDescription className={"sr-only"}/>
@@ -141,6 +141,7 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder={"Search widgets"}
                         className={"w-full border-main/60 -mb-2"}
+                        autoFocus
                     />
                 </div>
                 <div className={"flex"}>
