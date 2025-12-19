@@ -55,15 +55,25 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
     const titleSaveTimeout = useRef<NodeJS.Timeout | null>(null)
     const contentSaveTimeout = useRef<NodeJS.Timeout | null>(null)
 
+    const saveNote = useCallback((updates: Partial<Note>) => {
+        onSave({
+            ...note,
+            ...updates,
+            lastUpdated: updates.lastUpdated ?? new Date()
+        })
+    }, [note, onSave])
+
     useEffect(() => {
         setTitle(note.title)
         setEmoji(note.emoji)
     }, [note.title, note.emoji])
 
     useEffect(() => {
-        if (contentSaveTimeout.current) {
-            clearTimeout(contentSaveTimeout.current)
-            contentSaveTimeout.current = null
+        return () => {
+            if (contentSaveTimeout.current) {
+                clearTimeout(contentSaveTimeout.current)
+                contentSaveTimeout.current = null
+            }
         }
     }, [])
 
@@ -97,7 +107,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
         }
 
         titleSaveTimeout.current = setTimeout(() => {
-            onSave({id: note.id, title, content: note.content as any, emoji, lastUpdated: new Date()})
+            saveNote({title})
             titleSaveTimeout.current = null
         }, 500)
 
@@ -107,7 +117,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                 titleSaveTimeout.current = null
             }
         }
-    }, [title, note.title, note.id, note.content, emoji, onSave])
+    }, [title, note.title, saveNote])
 
     const handleTitleBlur = useCallback(() => {
         if (titleSaveTimeout.current) {
@@ -117,26 +127,26 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
         if (title !== note.title) {
             onSave({id: note.id, title, content: note.content as any, emoji, lastUpdated: new Date()})
         }
-    }, [title, note.title, note.id, note.content, emoji, onSave])
+    }, [title, note.title, saveNote])
 
     const handleEmojiSelect = useCallback((emoji: string) => {
         setEmoji(emoji)
-        onSave({id: note.id, title, content: note.content as any, emoji, lastUpdated: new Date()})
+        saveNote({emoji})
         setEmojiPickerOpen(false)
-    }, [note.id, title, onSave])
+    }, [saveNote])
 
     const handleRemoveEmoji = useCallback(() => {
         setEmoji("")
-        onSave({id: note.id, title, content: note.content as any, emoji: "", lastUpdated: new Date()})
+        saveNote({emoji: ""})
         setEmojiPickerOpen(false)
-    }, [note.id, title, onSave])
+    }, [saveNote])
 
     const persistContent = useCallback(async (editor: EditorInstance) => {
         const json = editor.getJSON()
         const html = highlightCodeblocks(editor.getHTML())
         window.localStorage.setItem("html-content", highlightCodeblocks(html))
-        onSave({id: note.id, title, content: json, emoji, lastUpdated: new Date()})
-    }, [note.id, title, emoji, onSave])
+        saveNote({content: json, title, emoji})
+    }, [highlightCodeblocks, saveNote, title, emoji])
 
     const handleSave = useCallback((editor: EditorInstance) => {
         if (contentSaveTimeout.current) {
@@ -147,7 +157,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
             void persistContent(editor)
             contentSaveTimeout.current = null
         }, 300)
-    }, [])
+    }, [persistContent])
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
@@ -241,59 +251,61 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                     </div>
                 ) : (
                     <EditorRoot>
-                        <div className={"rounded-md h-[72vh]"}>
-                            <EditorContent
-                                autofocus={title.length !== 0 && "end"}
-                                extensions={extensions}
-                                initialContent={note.content ?? {}}
-                                immediatelyRender={false}
-                                onBlur={(params) => handleSave(params.editor)}
-                                onUpdate={(params) => handleSave(params.editor)}
-                                className="p-2 rounded-md max-h-full min-h-full w-full bg-primary"
-                                editorProps={{
-                                    handleDOMEvents: {
-                                        keydown: (_view, event) => handleCommandNavigation(event)
-                                    },
-                                    attributes: { class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full min-h-full cursor-text" },
-                                }}
-                            >
-                                <EditorCommand
-                                    className={cn(
-                                        "z-60 w-72 rounded-md border border-main/60 bg-primary transition-all",
-                                        "shadow-[10px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)]")}
+                        <div className={"rounded-md h-full"}>
+                            <ScrollArea className="h-[72vh]">
+                                <EditorContent
+                                    autofocus={title.length !== 0 && "end"}
+                                    extensions={extensions}
+                                    initialContent={note.content ?? {}}
+                                    immediatelyRender={false}
+                                    onBlur={(params) => handleSave(params.editor)}
+                                    onUpdate={(params) => handleSave(params.editor)}
+                                    className="p-2 rounded-md max-h-full min-h-full w-full bg-primary"
+                                    editorProps={{
+                                        handleDOMEvents: {
+                                            keydown: (_view, event) => handleCommandNavigation(event)
+                                        },
+                                        attributes: { class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full min-h-full cursor-text" },
+                                    }}
                                 >
-                                    <EditorCommandEmpty className="flex items-center justify-center px-2 text-tertiary">
-                                        No results
-                                    </EditorCommandEmpty>
-                                    <ScrollArea className="h-80">
-                                        <EditorCommandList className={"p-2 pr-4"}>
-                                            {suggestionItems.map((item) => (
-                                                <EditorCommandItem
-                                                    value={item.title}
-                                                    onCommand={(val) => item.command?.(val)}
-                                                    className="group cursor-pointer flex w-full items-center gap-2 rounded-md py-1 px-2 text-left text-sm hover:bg-tertiary aria-selected:bg-tertiary"
-                                                    key={item.title}
-                                                >
-                                                    <div className="flex h-10 w-10 items-center justify-center rounded-md border border-main/40 bg-primary group-hover:text-brand group-aria-selected:text-brand">
-                                                        {item.icon}
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-medium text-primary">{item.title}</p>
-                                                        <p className="text-xs text-secondary">{item.description}</p>
-                                                    </div>
-                                                </EditorCommandItem>
-                                            ))}
-                                        </EditorCommandList>
-                                    </ScrollArea>
-                                </EditorCommand>
-                                <EditorBubble
-                                    tippyOptions={{ placement: "top" }}
-                                    className='flex overflow-hidden rounded-md border border-main bg-primary shadow-lg'
-                                >
-                                    <NodeSelector open={openNode} onOpenChange={setOpenNode} />
-                                    <TextButtons />
-                                </EditorBubble>
-                            </EditorContent>
+                                    <EditorCommand
+                                        className={cn(
+                                            "z-60 w-72 rounded-md border border-main/60 bg-primary transition-all",
+                                            "shadow-[10px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)]")}
+                                    >
+                                        <EditorCommandEmpty className="flex items-center justify-center px-2 text-tertiary">
+                                            No results
+                                        </EditorCommandEmpty>
+                                        <ScrollArea className="h-80">
+                                            <EditorCommandList className={"p-2 pr-4"}>
+                                                {suggestionItems.map((item) => (
+                                                    <EditorCommandItem
+                                                        value={item.title}
+                                                        onCommand={(val) => item.command?.(val)}
+                                                        className="group cursor-pointer flex w-full items-center gap-2 rounded-md py-1 px-2 text-left text-sm hover:bg-tertiary aria-selected:bg-tertiary"
+                                                        key={item.title}
+                                                    >
+                                                        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-main/40 bg-primary group-hover:text-brand group-aria-selected:text-brand">
+                                                            {item.icon}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-primary">{item.title}</p>
+                                                            <p className="text-xs text-secondary">{item.description}</p>
+                                                        </div>
+                                                    </EditorCommandItem>
+                                                ))}
+                                            </EditorCommandList>
+                                        </ScrollArea>
+                                    </EditorCommand>
+                                    <EditorBubble
+                                        tippyOptions={{ placement: "top" }}
+                                        className='flex overflow-hidden rounded-md border border-main bg-primary shadow-lg'
+                                    >
+                                        <NodeSelector open={openNode} onOpenChange={setOpenNode} />
+                                        <TextButtons />
+                                    </EditorBubble>
+                                </EditorContent>
+                            </ScrollArea>
                         </div>
                     </EditorRoot>
                 )}
