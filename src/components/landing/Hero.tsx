@@ -34,8 +34,7 @@ function Hero() {
                     width={"1904"}
                     height={"1025"}
                     className={"rounded-xl md:rounded-md"}
-                    quality={100}
-                    priority
+                    quality={80}
                 />
             </div>
         </div>

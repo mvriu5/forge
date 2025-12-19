@@ -2,7 +2,6 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Dashboard, DashboardInsert, Settings} from "@/database"
 import {useMemo} from "react"
 import posthog from "posthog-js"
-import {context} from "esbuild"
 
 const DASHBOARD_QUERY_KEY = (userId: string | undefined) => ["dashboards", userId] as const
 
