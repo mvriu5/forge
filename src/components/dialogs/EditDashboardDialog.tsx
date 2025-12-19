@@ -70,7 +70,7 @@ function EditDashboardDialog({dashboard}: {dashboard: Dashboard}) {
                     Edit
                 </Button>
             </DialogTrigger>
-            <DialogContent className={"md:min-w-[300px] p-4"}>
+            <DialogContent className={"md:min-w-75 p-4"}>
                 <DialogHeader className={"flex flex-row justify-between items-start"}>
                     <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
                         Edit dashboard

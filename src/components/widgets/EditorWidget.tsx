@@ -14,6 +14,8 @@ import { NotionPage, useNotion } from "@/hooks/useNotion"
 import { ScrollArea } from "../ui/ScrollArea"
 import { Skeleton } from "../ui/Skeleton"
 import { cn } from "@/lib/utils"
+import { Notion } from "../svg/Icons"
+import { useIntegrations } from "@/hooks/data/useIntegrations"
 
 const LazyNoteDialog = React.lazy(() => import("../../components/dialogs/NoteDialog").then(mod => ({ default: mod.NoteDialog })))
 
@@ -36,8 +38,9 @@ export interface EditorConfig {
     notes: Note[]
 }
 
-const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig}) => {
+const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, updateConfig}) => {
     const {isConnected, isLoadingPages, isLoadingPageContent, pages, fetchPageContent} = useNotion()
+    const {handleIntegrate} = useIntegrations(widget.userId)
 
     const isLoadingNotionData = isLoadingPages || isLoadingPageContent
 
@@ -82,6 +85,8 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig
         const pageContent = await fetchPageContent(pageId)
         if (!pageContent) return
 
+        console.log("Fetched Notion page content:", pageContent)
+
         const newNote: Note = {
             id: crypto.randomUUID(),
             title: pageContent.title ?? "",
@@ -97,7 +102,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig
 
         await updateConfig({notes: [...config.notes, newNote]})
         setOpenNoteId(newNote.id)
-    }, [fetchPageContent])
+    }, [fetchPageContent, updateConfig, config.notes])
 
     const buildPageTree = useCallback((notionPages: NotionPage[]): PageNode[] => {
         const nodeMap = new Map<string, PageNode>()
@@ -136,7 +141,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig
         <>
             <WidgetHeader title={"Notes"}>
                 <Popover open={notionPopoverOpen} onOpenChange={setNotionPopoverOpen}>
-                    <PopoverTrigger asChild disabled={!isConnected}>
+                    <PopoverTrigger asChild>
                         <Button
                             variant={"widget"}
                             className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
@@ -145,26 +150,37 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({config, updateConfig
                             <Import size={16} />
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent align={"start"} className={"h-full w-40 max-w-60 overflow-hidden p-2"}>
-                        <ScrollArea className={"h-60"}>
-                            <p className="text-xs text-tertiary mb-2">Pages</p>
-                            {isLoadingNotionData ? (
-                                <div className="flex flex-col gap-2">
-                                    <Skeleton className={"h-6 w-full"} />
-                                    <Skeleton className={"h-6 w-full"} />
-                                    <Skeleton className={"h-6 w-full"} />
-                                    <Skeleton className={"h-6 w-full"} />
-                                    <Skeleton className={"h-6 w-full"} />
-                                    <Skeleton className={"h-6 w-full"} />
-                                </div>
-                            ) : pages.length === 0 ? (
-                                <p className="text-xs text-secondary p-2">No pages found.</p>
-                            ) : (
-                                <div className={"flex flex-col gap-1"}>
-                                    {renderPageButtons(pageTree)}
-                                </div>
-                            )}
-                        </ScrollArea>
+                    <PopoverContent align={"start"} className={"h-full min-w-40 w-full max-w-60 overflow-hidden p-2"}>
+                        {!isConnected ? (
+                            <Button
+                                className="gap-2 border-0 shadow-none dark:shadow-none px-2 rounded-sm"
+                                onClick={() => void handleIntegrate("notion")}
+                            >
+                                <Notion className="size-4 fill-secondary"/>
+                                Connect Notion
+                            </Button>
+                        ) : (
+                            <ScrollArea className={"h-60"}>
+                                <p className="text-xs text-tertiary mb-2">Pages</p>
+                                {isLoadingNotionData ? (
+                                    <div className="flex flex-col gap-2">
+                                        <Skeleton className={"h-6 w-full"} />
+                                        <Skeleton className={"h-6 w-full"} />
+                                        <Skeleton className={"h-6 w-full"} />
+                                        <Skeleton className={"h-6 w-full"} />
+                                        <Skeleton className={"h-6 w-full"} />
+                                        <Skeleton className={"h-6 w-full"} />
+                                        <Skeleton className={"h-6 w-full"} />
+                                    </div>
+                                ) : pages.length === 0 ? (
+                                    <p className="text-xs text-secondary p-2">No pages found.</p>
+                                ) : (
+                                    <div className={"flex flex-col gap-1"}>
+                                        {renderPageButtons(pageTree)}
+                                    </div>
+                                )}
+                            </ScrollArea>
+                        )}
                     </PopoverContent>
                 </Popover>
                 <Button

@@ -1,13 +1,13 @@
 "use client"
 
-import {useMutation, useQuery} from "@tanstack/react-query"
-import {useEffect, useMemo, useRef, useState} from "react"
-import {JSONContent} from "novel"
-import {useSession} from "@/hooks/data/useSession"
-import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import {authClient} from "@/lib/auth-client"
-import {toast} from "@/components/ui/Toast"
-import {plainTextToJSONContent} from "@/lib/notion"
+import { toast } from "@/components/ui/Toast"
+import { getIntegrationByProvider, useIntegrations } from "@/hooks/data/useIntegrations"
+import { useSession } from "@/hooks/data/useSession"
+import { authClient } from "@/lib/auth-client"
+import { blocksToJSONContent, plainTextToJSONContent } from "@/lib/notion"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { JSONContent } from "novel"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 export type NotionPage = {
     id: string
@@ -35,6 +35,13 @@ async function fetchPages(userId: string | null): Promise<NotionPage[]> {
     return data.pages ?? []
 }
 
+function ensureJsonContent(doc: any, plainText: string): JSONContent {
+    if (doc && typeof doc === "object" && doc.type === "doc") {
+        return doc as JSONContent
+    }
+    return plainTextToJSONContent(plainText ?? "")
+}
+
 async function fetchPageContent(userId: string | null, pageId: string): Promise<NotionPageContent | null> {
     if (!userId) return null
 
@@ -47,7 +54,7 @@ async function fetchPageContent(userId: string | null, pageId: string): Promise<
     return {
         id: data.id,
         title: data.title,
-        content: plainTextToJSONContent(data.plainText ?? "")
+        content: blocksToJSONContent(data.blocks ?? [])
     }
 }
 

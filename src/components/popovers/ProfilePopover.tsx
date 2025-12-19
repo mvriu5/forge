@@ -49,12 +49,12 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 </Button>
             </PopoverTrigger>
             <PopoverContent
-                className={"p-1 w-max md:w-36 gap-1"}
+                className={"p-1 w-max md:w-35 gap-1"}
                 align={"end"}
             >
                 <p className={"md:hidden flex items-center gap-1.5 mb-1 text-tertiary text-xs text-wrap font-mono px-2 py-1 rounded-md bg-tertiary"}>
                     Logged in as:
-                    <span className={"inline break-words text-secondary font-sans"}>{session?.user?.name}</span>
+                    <span className={"inline wrap-break-word text-secondary font-sans"}>{session?.user?.name}</span>
                 </p>
                 <Link
                     href={"https://github.com/mvriu5/forge/issues"}

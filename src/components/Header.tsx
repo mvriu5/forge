@@ -1,20 +1,19 @@
 "use client"
 
-import {Button} from "@/components/ui/Button"
-import {LayoutTemplate, Save, Undo2} from "lucide-react"
-import {ProfilePopover} from "@/components/popovers/ProfilePopover"
-import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
-import {useTooltip} from "@/components/ui/TooltipProvider"
-import {ForgeLogo} from "@/components/svg/ForgeLogo"
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
-import React, {useState} from "react"
 import DashboardDialog from "@/components/dialogs/DashboardDialog"
-import {Skeleton} from "./ui/Skeleton"
+import { WidgetDialog } from "@/components/dialogs/WidgetDialog"
+import { NotificationPopover } from "@/components/popovers/NotificationPopover"
+import { ProfilePopover } from "@/components/popovers/ProfilePopover"
+import { ForgeLogo } from "@/components/svg/ForgeLogo"
+import { Button } from "@/components/ui/Button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select"
+import { Spinner } from "@/components/ui/Spinner"
+import { useTooltip } from "@/components/ui/TooltipProvider"
+import { Dashboard, DashboardInsert } from "@/database"
+import { LayoutTemplate, Save, Undo2 } from "lucide-react"
 import Link from "next/link"
-import {Spinner} from "@/components/ui/Spinner"
-import {Dashboard, DashboardInsert} from "@/database"
-import {NotificationPopover} from "@/components/popovers/NotificationPopover"
-import {useNotifications} from "@/hooks/data/useNotifications"
+import { useState } from "react"
+import { Skeleton } from "./ui/Skeleton"
 
 interface HeaderProps {
     editMode: boolean
@@ -71,7 +70,7 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                     :
                     <div className={"flex gap-2"}>
                         <WidgetDialog editMode={editMode}/>
-                        <Button className={"size-8 bg-secondary border-main/60 hidden xl:flex"} {...layoutTooltip} onClick={onEdit} disabled={editMode || widgetsEmpty}>
+                        <Button className={"size-8 bg-secondary border-main/60 hidden xl:flex"} {...layoutTooltip} onClick={onEdit} disabled={editMode || widgetsEmpty || isLoading}>
                             <LayoutTemplate size={16}/>
                         </Button>
                         <div className={"flex"}>
@@ -80,7 +79,7 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                                 onValueChange={handleSelectDashboard}
                                 disabled={dashboards?.length === 0 || editMode}
                             >
-                                <SelectTrigger className={"max-w-[280px] bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary flex lg:rounded-r-none gap-0.5"} disabled={editMode}>
+                                <SelectTrigger className={"max-w-70 bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary flex lg:rounded-r-none gap-0.5"} disabled={editMode}>
                                     <div className={"w-full flex items-center gap-1 overflow-hidden text-xs"}>
                                         <p className={"text-tertiary text-xs font-mono"}>Dashboard:</p>
                                         {isLoading ?
@@ -117,4 +116,4 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
     )
 }
 
-export {Header}
+export { Header }
