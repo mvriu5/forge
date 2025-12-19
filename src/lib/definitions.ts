@@ -10,7 +10,6 @@ import {githubheatmapWidgetDefinition} from "@/components/widgets/GithubHeatmapW
 import {githubWidgetDefinition} from "@/components/widgets/GithubWidget"
 import {kanbanWidgetDefinition} from "@/components/widgets/KanbanWidget"
 import {meetingsWidgetDefinition} from "@/components/widgets/MeetingsWidget"
-import {phantomWidgetDefinition} from "@/components/widgets/PhantomWidget"
 import {todoWidgetDefinition} from "@/components/widgets/TodoWidget"
 import {weatherWidgetDefinition} from "@/components/widgets/WeatherWidget"
 
@@ -23,7 +22,6 @@ export const definitions: WidgetDefinition[] = [
     githubWidgetDefinition,
     kanbanWidgetDefinition,
     meetingsWidgetDefinition,
-    phantomWidgetDefinition,
     todoWidgetDefinition,
     weatherWidgetDefinition
 ] as const satisfies WidgetDefinition[]

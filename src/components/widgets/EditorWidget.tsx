@@ -16,6 +16,9 @@ import { Skeleton } from "../ui/Skeleton"
 import { cn } from "@/lib/utils"
 import { Notion } from "../svg/Icons"
 import { useIntegrations } from "@/hooks/data/useIntegrations"
+import { Spinner } from "../ui/Spinner"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/Dialog"
+import { toast } from "../ui/Toast"
 
 const LazyNoteDialog = React.lazy(() => import("../../components/dialogs/NoteDialog").then(mod => ({ default: mod.NoteDialog })))
 
@@ -82,26 +85,44 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
     const handleNotionImport = useCallback(async (pageId: string) => {
         setNotionPopoverOpen(false)
 
-        const pageContent = await fetchPageContent(pageId)
-        if (!pageContent) return
-
-        console.log("Fetched Notion page content:", pageContent)
-
-        const newNote: Note = {
-            id: crypto.randomUUID(),
-            title: pageContent.title ?? "",
-            content: pageContent.content,
+        const pendingNoteId = crypto.randomUUID()
+        const pendingNote: Note = {
+            id: pendingNoteId,
+            title: "",
+            content: {} as JSONContent,
             emoji: "",
-            notionSync: {
-                pageId: pageContent.id,
-                title: pageContent.title,
-                syncedAt: new Date(),
-            },
             lastUpdated: new Date(),
+            notionSync: null
         }
 
-        await updateConfig({notes: [...config.notes, newNote]})
-        setOpenNoteId(newNote.id)
+        const notesWithPending = [...config.notes, pendingNote]
+        await updateConfig({notes: notesWithPending})
+        setOpenNoteId(pendingNoteId)
+
+        const pageContent = await fetchPageContent(pageId)
+        if (!pageContent) {
+            await updateConfig({notes: config.notes})
+            setOpenNoteId(null)
+            toast.error("Failed to load Notion page.")
+            return
+        }
+
+        const updatedNotes = notesWithPending.map((note) =>
+            note.id === pendingNoteId ? {
+                ...note,
+                title: pageContent.title ?? "",
+                content: pageContent.content,
+                lastUpdated: new Date(),
+                notionSync: {
+                    pageId: pageContent.id,
+                    title: pageContent.title,
+                    syncedAt: new Date(),
+                }
+            }: note
+        )
+
+        await updateConfig({notes: updatedNotes})
+        setOpenNoteId(pendingNoteId)
     }, [fetchPageContent, updateConfig, config.notes])
 
     const buildPageTree = useCallback((notionPages: NotionPage[]): PageNode[] => {
@@ -205,6 +226,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
                                     onOpenChange={(isOpen) => setOpenNoteId(isOpen ? note.id : null)}
                                     onSave={(note) => handleSave(config.notes.map((n) => n.id === note.id ? note : n))}
                                     onDelete={(id) => handleDelete(id)}
+                                    isPending={isLoadingPageContent}
                                 />
                             </Suspense>
                         ))}
