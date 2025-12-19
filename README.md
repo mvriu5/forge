@@ -40,4 +40,4 @@ This project is licensed under the **MIT License**.
 
 ---
 
-*Maintainer: [@mvriu5](https://github.com/mvriu5)*  
+*Maintainer: [@mvriu5](https://github.com/mvriu5)*

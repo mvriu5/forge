@@ -16,6 +16,7 @@ import {DashboardEmpty} from "@/components/empty/DashboardEmpty"
 import {DashboardGrid} from "@/components/DashboardGrid"
 
 const LazyDashboardDialog = React.lazy(() => import("@/components/dialogs/DashboardDialog"))
+const LazyOnboardingDialog = React.lazy(() => import("@/components/dialogs/OnboardingDialog"))
 
 export default function Dashboard() {
     const {userId, isLoading: sessionLoading} = useSession()
@@ -28,6 +29,7 @@ export default function Dashboard() {
     const [editMode, setEditMode] = useState<boolean>(false)
     const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
     const [dialogOpen, setDialogOpen] = useState(false)
+    const [onboardingOpen, setOnboardingOpen] = useState(false)
 
     const currentDashboardId = currentDashboard?.id ?? null
     const currentWidgets = useMemo(() => widgets.filter((widget) => widget.dashboardId === currentDashboardId), [widgets, currentDashboardId])
@@ -44,12 +46,28 @@ export default function Dashboard() {
     }, [currentWidgets])
 
     useEffect(() => {
-        if (!userId || dashboardsLoading) return
+        if (!userId || dashboardsLoading || settingsLoading || !settings) return
+        const onboardingCompleted = settings.config?.onboardingCompleted === true
+        if (!onboardingCompleted) {
+            const timer = setTimeout(() => setOnboardingOpen(true), 500)
+            return () => clearTimeout(timer)
+        }
         if (dashboards && dashboards.length === 0) {
             const timer = setTimeout(() => setDialogOpen(true), 500)
             return () => clearTimeout(timer)
         }
-    }, [userId, dashboards, dashboardsLoading])
+    }, [userId, dashboards, dashboardsLoading, settings, settingsLoading])
+
+    const handleOnboardingComplete = useCallback(async () => {
+        if (!settings) return
+        await updateSettings({
+            ...settings,
+            config: {...settings.config, onboardingCompleted: true}
+        })
+        if (dashboards && dashboards.length === 0) {
+            setTimeout(() => setDialogOpen(true), 300)
+        }
+    }, [settings, updateSettings, dashboards])
 
     const handleDashboardChange = useCallback(async (dashboardId: string | null) => {
         if (!settings) return
@@ -151,6 +169,13 @@ export default function Dashboard() {
                     addDashboard={addDashboard}
                     addDashboardStatus={addDashboardStatus}
                     userId={userId}
+                />
+            </Suspense>
+            <Suspense fallback={null}>
+                <LazyOnboardingDialog
+                    open={onboardingOpen}
+                    onOpenChange={setOnboardingOpen}
+                    onComplete={handleOnboardingComplete}
                 />
             </Suspense>
         </div>

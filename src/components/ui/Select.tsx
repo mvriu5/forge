@@ -22,7 +22,7 @@ const SelectTrigger = ({ className, children, ...props }: ComponentPropsWithRef<
         >
             {children}
             <SelectPrimitive.Icon asChild>
-                <ChevronDown size={14} className="text-tertiary group-data-[state=open]:rotate-180 group-data-[state=open]:mt-0 transition-all mt-0.5" />
+                <ChevronDown size={14} className="text-tertiary group-data-[state=open]:rotate-180 group-data-[state=open]:mt-0 transition-all md:mt-0.5" />
             </SelectPrimitive.Icon>
         </SelectPrimitive.Trigger>
     )
@@ -61,7 +61,7 @@ const SelectContent = ({ className, children, ...props }: ComponentPropsWithRef<
         <SelectPrimitive.Portal>
             <SelectPrimitive.Content
                 className={cn(
-                    "max-h-96 z-50 min-w-[8rem] rounded-md border border-main/40",
+                    "max-h-96 z-50 min-w-32 rounded-md border border-main/40",
                     "bg-primary text-secondary shadow-[10px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)] data-[side=bottom]:slide-in-from-top-2",
                     "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
                     CONTAINER_STYLES.animation,
@@ -73,9 +73,9 @@ const SelectContent = ({ className, children, ...props }: ComponentPropsWithRef<
                 <SelectScrollUpButton />
                 <SelectPrimitive.Viewport
                     className={cn(
-                        "flex flex-col gap-1 p-1 max-h-[200px]",
-                        "h-[var(--radix-select-trigger-height)] w-full",
-                        "min-w-[var(--radix-select-trigger-width)]"
+                        "flex flex-col gap-1 p-1 max-h-50",
+                        "h-(--radix-select-trigger-height w-full",
+                        "min-w-(--radix-select-trigger-width)"
                     )}
                 >
                     {children}
@@ -100,8 +100,8 @@ const SelectItem = ({ className, children, checkIcon = true, ...props }: Compone
         <SelectPrimitive.Item
             className={cn(
                 "relative flex w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-2",
-                "text-sm outline-none focus:bg-secondary focus:text-primary data-[disabled]:pointer-events-none data-[state=checked]:bg-brand/5 data-[state=checked]:text-brand",
-                "data-[disabled]:opacity-50",
+                "text-sm outline-none focus:bg-secondary focus:text-primary data-disabled:pointer-events-none data-[state=checked]:bg-brand/5 data-[state=checked]:text-brand",
+                "data-disabled:opacity-50",
                 className
             )}
             {...props}
@@ -141,4 +141,3 @@ export {
     SelectScrollUpButton,
     SelectScrollDownButton,
 }
-
