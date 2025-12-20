@@ -23,6 +23,7 @@ interface HeaderProps {
     onEdit: () => void
     widgetsEmpty: boolean
     isLoading: boolean
+    isOnboarding: boolean
     dashboards: Dashboard[] | null
     currentDashboard: Dashboard | null
     onDashboardChange: (dashboardId: string | null) => Promise<void> | void
@@ -31,7 +32,7 @@ interface HeaderProps {
     userId?: string
 }
 
-function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, onDashboardChange, addDashboard, addDashboardStatus, userId}: HeaderProps) {
+function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, isOnboarding, onDashboardChange, addDashboard, addDashboardStatus, userId}: HeaderProps) {
     const [dialogOpen, setDialogOpen] = useState(false)
 
     const layoutTooltip = useTooltip<HTMLButtonElement>({
@@ -69,7 +70,7 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                     </div>
                     :
                     <div className={"flex gap-2"}>
-                        <WidgetDialog editMode={editMode}/>
+                        <WidgetDialog editMode={editMode} isOnboarding={isOnboarding} />
                         <Button className={"size-8 bg-secondary border-main/60 hidden xl:flex"} {...layoutTooltip} onClick={onEdit} disabled={editMode || widgetsEmpty || isLoading}>
                             <LayoutTemplate size={16}/>
                         </Button>

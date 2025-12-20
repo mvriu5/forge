@@ -114,10 +114,10 @@ export const transformLayout = (widgets: Widget[], breakpoint: Breakpoint): Widg
 export const getGridClasses = (breakpoint: Breakpoint): string => {
     switch (breakpoint) {
         case "mobile":
-            return "grid grid-cols-1 auto-rows-max gap-4 p-4"
+            return "grid grid-cols-1 auto-rows-[200px] gap-4 p-4"
         case "tablet":
             return "grid grid-cols-2 auto-rows-[200px] gap-4 p-4"
         default:
-            return "grid grid-cols-4 grid-rows-4 gap-4 p-4"
+            return "h-screen grid grid-cols-4 grid-rows-4 gap-4 p-4"
     }
 }

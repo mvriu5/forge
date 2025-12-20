@@ -17,9 +17,15 @@ type Repository = UserRepository | OrganizationRepository
 type IssuesListResponse = Awaited<ReturnType<Octokit["issues"]["listForRepo"]>>
 type Issue = IssuesListResponse["data"][number]
 
-type OpenItemsResponse = {
+interface OpenItemsResponse {
     allIssues: Issue[]
     allPullRequests: Issue[]
+}
+
+interface Label {
+    id?: number
+    name?: string
+    color?: string
 }
 
 async function fetchPaginated<T>(fetchFunction: (page: number) => Promise<{ data: T[] }>, perPage = 100): Promise<T[]> {
@@ -57,9 +63,9 @@ async function getAllRepositories(accessToken: string): Promise<{repos: Reposito
     return {repos: uniqueRepositories, octokit}
 }
 
-async function fetchOpenIssuesAndPullsFromAllRepos(accessToken: string): Promise<OpenItemsResponse | undefined> {
+async function fetchOpenIssuesAndPullsFromAllRepos(accessToken: string): Promise<OpenItemsResponse> {
     const {repos, octokit} = await getAllRepositories(accessToken)
-    if (!octokit) return
+    if (!octokit) return { allIssues: [], allPullRequests: [] }
 
     const userResponse = await octokit.request("GET /user", {
         headers: {"X-GitHub-Api-Version": "2022-11-28"},
@@ -98,7 +104,6 @@ async function fetchOpenIssuesAndPullsFromAllRepos(accessToken: string): Promise
     }
 }
 
-
 export const useGithub = () => {
     const {userId} = useSession()
     const {integrations} = useIntegrations(userId)
@@ -108,12 +113,12 @@ export const useGithub = () => {
     const [selectedLabels, setSelectedLabels] = useState<string[]>([])
     const [activeTab, setActiveTab] = useState<string>("issues")
 
-    const {data, isLoading, isFetching, isError, refetch} = useQuery({
+    const {data, isLoading, isFetching, isError, refetch} = useQuery<OpenItemsResponse, Error>({
         queryKey: GITHUB_QUERY_KEY(githubIntegration?.accessToken ?? null),
         queryFn: () => fetchOpenIssuesAndPullsFromAllRepos(githubIntegration?.accessToken!),
         enabled: Boolean(githubIntegration?.accessToken),
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        refetchInterval: 5 * 60 * 1000, // 5 minutes
+        staleTime: 5 * 60 * 1000,
+        refetchInterval: 5 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnMount: false
     })
@@ -121,36 +126,42 @@ export const useGithub = () => {
     const issues = data?.allIssues ?? []
     const pullRequests = data?.allPullRequests ?? []
 
-    const allLabels = Array.from(new Set(issues
-        .flatMap((issue: any) => issue.labels || [])
-        .filter((label: { name: any }, index: any, self: any[]) => index === self.findIndex((l: any) => l.name === label.name))))
+    const allLabels = useMemo(() => {
+        const labels = issues.flatMap((issue) => (issue.labels || []) as Label[])
+        const uniqueLabels = new Map<string, Label>()
+        labels.forEach(label => {
+            if (label.name && !uniqueLabels.has(label.name)) {
+                uniqueLabels.set(label.name, label)
+            }
+        })
+        return Array.from(uniqueLabels.values())
+    }, [issues])
 
     const filteredIssues = useMemo(() => {
-        return issues.filter((issue: any) => {
+        return issues.filter((issue) => {
             const matchesSearch =
                 issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 issue.repository_url
                     .split('/')
                     .pop()
-                    .toLowerCase()
+                    ?.toLowerCase()
                     .includes(searchQuery.toLowerCase())
 
-            const matchesLabels = selectedLabels.length === 0 || issue.labels?.some((label: any) => selectedLabels.includes(label.name))
+            const issueLabels = (issue.labels || []) as Label[]
+            const matchesLabels = selectedLabels.length === 0 || issueLabels.some((label) => label.name && selectedLabels.includes(label.name))
             return matchesSearch && matchesLabels
         })
     }, [issues, searchQuery, selectedLabels])
 
-
     const filteredPRs = useMemo(() => {
-        return pullRequests.filter((pr: any) =>
+        return pullRequests.filter((pr) =>
             pr.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             pr.repository_url
                 .split('/')
                 .pop()
-                .toLowerCase()
+                ?.toLowerCase()
                 .includes(searchQuery.toLowerCase()))
     }, [pullRequests, searchQuery])
-
 
     return {
         activeTab,

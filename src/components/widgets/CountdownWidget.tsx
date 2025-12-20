@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useCallback, useEffect, useRef, useState} from "react"
+import React, {useCallback, useEffect, useState} from "react"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Plus, TimerReset} from "lucide-react"
@@ -52,12 +52,10 @@ const formSchema = z.object({
 
 const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config, updateConfig}) => {
     const {settings} = useSettings(widget.userId)
-    const {notifications, sendReminderNotification} = useNotifications(widget.userId)
+    const {sendReminderNotification} = useNotifications(widget.userId)
 
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
     const [now, setNow] = useState(new Date())
-
-    const hasSentReminderRef = useRef(false)
 
     const addTooltip = useTooltip<HTMLButtonElement>({
         message: config.countdown ? "Delete the current countdown" : "Add a new countdown",
@@ -79,26 +77,15 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config
         if (!config.countdown) return
 
         const reminderMessage = `Your countdown "${config.countdown.title}" ended!`
-
-        if (!hasSentReminderRef.current) {
-            hasSentReminderRef.current = notifications.some((notification) =>
-                notification.type === "reminder" && notification.message === reminderMessage
-            )
-        }
-
-        if (hasSentReminderRef.current) return
+        const reminderKey = `countdown-${config.countdown.title}-${config.countdown.date}`
 
         const targetDate = new Date(config.countdown.date)
 
         const notify = () => {
-            if (hasSentReminderRef.current) return
-            hasSentReminderRef.current = true
-
             void sendReminderNotification({
                 message: reminderMessage,
                 type: "reminder",
-            }).catch(() => {
-                hasSentReminderRef.current = false
+                key: reminderKey,
             })
         }
 
@@ -111,7 +98,7 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config
 
         const timeout = setTimeout(notify, delay)
         return () => clearTimeout(timeout)
-    }, [sendReminderNotification, settings?.config.countdownReminder, config.countdown, notifications])
+    }, [sendReminderNotification, settings?.config.countdownReminder, config.countdown])
 
     useEffect(() => {
         if (!config.countdown) return
@@ -212,7 +199,7 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config
                                                             {field.value}
                                                         </Button>
                                                     </PopoverTrigger>
-                                                    <PopoverContent className={"p-0 z-[60]"} onWheel={(e) => e.stopPropagation()}>
+                                                    <PopoverContent className={"p-0 z-60"} onWheel={(e) => e.stopPropagation()}>
                                                         <EmojiPicker
                                                             emojisPerRow={6}
                                                             emojiSize={32}
