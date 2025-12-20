@@ -2,9 +2,7 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Account} from "@/database"
 import {authClient} from "@/lib/auth-client"
 import {toast} from "@/components/ui/Toast"
-import {capitalizeFirstLetter} from "@better-auth/core/utils"
 import posthog from "posthog-js"
-import {useEffect} from "react"
 
 interface Integration {
     id: string
@@ -79,21 +77,16 @@ async function updateIntegrationRequest({provider, userId, data}: UpdateIntegrat
 export function useIntegrations(userId: string | undefined) {
     const queryClient = useQueryClient()
 
-    const integrationsQuery = useQuery({
+    const integrationsQuery = useQuery<Integration[], Error>({
         queryKey: INTEGRATIONS_QUERY_KEY(userId),
         queryFn: () => fetchIntegrations(userId!),
         enabled: !!userId,
-        initialData: [] as Integration[],
+        staleTime: 5 * 60 * 1000, // 5 minutes
     })
 
-    const { refetch: refetchIntegrations } = integrationsQuery
+    const { refetch: refetchIntegrations, data, isLoading } = integrationsQuery
 
-    useEffect(() => {
-        if (!userId) return
-        void refetchIntegrations()
-    }, [userId])
-
-    const isLoadingIntegrations = integrationsQuery.isLoading || integrationsQuery.isFetching || !userId
+    const isLoadingIntegrations = isLoading && !data
 
     const removeIntegrationMutation = useMutation({
         mutationFn: unlinkIntegration,
@@ -137,7 +130,7 @@ export function useIntegrations(userId: string | undefined) {
     }
 
     return {
-        integrations: integrationsQuery.data ?? [],
+        integrations: data ?? [],
         isLoading: isLoadingIntegrations,
         handleIntegrate,
         refetchIntegrations,

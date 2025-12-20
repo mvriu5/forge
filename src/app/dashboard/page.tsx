@@ -16,6 +16,7 @@ import {DashboardEmpty} from "@/components/empty/DashboardEmpty"
 import {DashboardGrid} from "@/components/DashboardGrid"
 
 const LazyDashboardDialog = React.lazy(() => import("@/components/dialogs/DashboardDialog"))
+const LazyOnboardingDialog = React.lazy(() => import("@/components/dialogs/OnboardingDialog"))
 
 export default function Dashboard() {
     const {userId, isLoading: sessionLoading} = useSession()
@@ -28,11 +29,12 @@ export default function Dashboard() {
     const [editMode, setEditMode] = useState<boolean>(false)
     const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
     const [dialogOpen, setDialogOpen] = useState(false)
+    const [onboardingOpen, setOnboardingOpen] = useState(false)
 
     const currentDashboardId = currentDashboard?.id ?? null
     const currentWidgets = useMemo(() => widgets.filter((widget) => widget.dashboardId === currentDashboardId), [widgets, currentDashboardId])
-    const widgetsToRemoveSet = useMemo(() => new Set(widgetsToRemove.map((widget) => widget.id)), [widgetsToRemove])
-    const visibleWidgets = useMemo(() => currentWidgets.filter((widget) => !widgetsToRemoveSet.has(widget.id)), [currentWidgets, widgetsToRemoveSet])
+    const widgetsToRemoveIds = useMemo(() => new Set(widgetsToRemove.map((widget) => widget.id)), [widgetsToRemove])
+    const visibleWidgets = useMemo(() => currentWidgets.filter((widget) => !widgetsToRemoveIds.has(widget.id)), [currentWidgets, widgetsToRemoveIds])
 
     const {isDesktop} = useResponsiveLayout(visibleWidgets)
 
@@ -44,12 +46,28 @@ export default function Dashboard() {
     }, [currentWidgets])
 
     useEffect(() => {
-        if (!userId || dashboardsLoading) return
+        if (!userId || dashboardsLoading || settingsLoading || !settings) return
+        if (!settings.onboardingCompleted) {
+            const timer = setTimeout(() => setOnboardingOpen(true), 500)
+            return () => clearTimeout(timer)
+        }
         if (dashboards && dashboards.length === 0) {
             const timer = setTimeout(() => setDialogOpen(true), 500)
             return () => clearTimeout(timer)
         }
-    }, [userId, dashboards, dashboardsLoading])
+    }, [userId, dashboards, dashboardsLoading, settings, settingsLoading])
+
+    const handleOnboardingComplete = useCallback(async () => {
+        if (!settings) return
+
+        await updateSettings({
+            ...settings,
+            onboardingCompleted: true
+        })
+        if (dashboards && dashboards.length === 0) {
+            setTimeout(() => setDialogOpen(true), 300)
+        }
+    }, [settings, updateSettings, dashboards])
 
     const handleDashboardChange = useCallback(async (dashboardId: string | null) => {
         if (!settings) return
@@ -114,6 +132,7 @@ export default function Dashboard() {
                 handleEditModeSave={handleEditModeSave}
                 handleEditModeCancel={handleEditModeCancel}
                 isLoading={dataLoading}
+                isOnboarding={onboardingOpen}
                 widgetsEmpty={visibleWidgets.length === 0 && currentDashboard !== null}
                 dashboards={dashboards ?? []}
                 currentDashboard={currentDashboard}
@@ -122,26 +141,21 @@ export default function Dashboard() {
                 addDashboardStatus={addDashboardStatus}
                 userId={userId}
             />
-            {dataLoading ? (
-                <div className={"h-screen w-screen flex items-center justify-center"}>
-                    <SpinnerDotted size={56} thickness={160} speed={100} color="rgba(237, 102, 49, 1)" />
-                </div>
-            ) : (visibleWidgets.length === 0 && currentDashboard && !editMode ? (
+            {visibleWidgets.length === 0 && currentDashboard && !editMode ? (
                 <DashboardEmpty/>
             ) : (
                 <DashboardGrid
                     editMode={editMode}
                     activeWidgetId={activeWidget?.id ?? null}
-                    onWidgetDelete={handleEditModeDelete}
-                    onWidgetUpdate={updateWidget}
                     currentDashboardId={currentDashboardId}
-                    currentWidgets={currentWidgets}
-                    updateWidgetPosition={updateWidgetPosition}
-                    visibleWidgets={visibleWidgets}
+                    widgets={visibleWidgets}
                     activeWidget={activeWidget}
                     setActiveWidget={setActiveWidget}
+                    updateWidgetPosition={updateWidgetPosition}
+                    onWidgetDelete={handleEditModeDelete}
+                    onWidgetUpdate={updateWidget}
                 />
-            ))}
+            )}
             <Suspense fallback={null}>
                 <LazyDashboardDialog
                     open={dialogOpen}
@@ -151,6 +165,13 @@ export default function Dashboard() {
                     addDashboard={addDashboard}
                     addDashboardStatus={addDashboardStatus}
                     userId={userId}
+                />
+            </Suspense>
+            <Suspense fallback={null}>
+                <LazyOnboardingDialog
+                    open={onboardingOpen}
+                    onOpenChange={setOnboardingOpen}
+                    onComplete={handleOnboardingComplete}
                 />
             </Suspense>
         </div>

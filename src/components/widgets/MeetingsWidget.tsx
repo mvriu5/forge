@@ -1,6 +1,6 @@
 "use client"
 
-import React, {Suspense, useCallback, useEffect, useMemo, useRef, useState} from "react"
+import React, {Suspense, useCallback, useEffect, useMemo, useState} from "react"
 import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {CalendarEvent, useGoogleCalendar} from "@/hooks/useGoogleCalendar"
@@ -24,8 +24,6 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
     const {sendMeetingNotification} = useNotifications(widget.userId)
     const {calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars} = useGoogleCalendar()
 
-    const sentRemindersRef = useRef<Set<string>>(new Set())
-
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
     const refreshTooltip = useTooltip<HTMLButtonElement>({
@@ -48,8 +46,8 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
     }) || [], [events])
 
     const sortedEvents = useMemo(() => [...validEvents].sort((a, b) => {
-        const firstDate = new Date(a.start.dateTime ?? a.start.date).getTime()
-        const secondDate = new Date(b.start.dateTime ?? b.start.date).getTime()
+        const firstDate = new Date(a.start.dateTime || a.start.date || 0).getTime()
+        const secondDate = new Date(b.start.dateTime || b.start.date || 0).getTime()
 
         return firstDate - secondDate
     }), [validEvents])
@@ -77,10 +75,10 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
                 const dueReminders = reminderMinutes
                     .map((minutes: number) => ({
                         minutes,
-                        key: `${event.id}-${minutes}`,
+                        key: `meeting-${event.id}-${minutes}`,
                         reminderTime: startTime - minutes * 60_000,
                     }))
-                    .filter(({key, reminderTime}: {key: any, reminderTime: any}) => reminderTime <= now && !sentRemindersRef.current.has(key))
+                    .filter(({reminderTime}: {reminderTime: any}) => reminderTime <= now)
 
                 if (!dueReminders.length) return
 
@@ -88,18 +86,15 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
                     current.minutes < closest.minutes ? current : closest
                 ))
 
-                dueReminders.map(({key}: {key: any}) => sentRemindersRef.current.add(key))
-
-                const startLabel = formatTime(startTimeString, settings.config.hourFormat ?? "24")
+                const startLabel = formatTime(startTimeString, (settings.config.hourFormat as string) ?? "24")
                 const timingLabel = nearestReminder.minutes === 0 ? "now" : `in ${nearestReminder.minutes} minutes`
                 const message = `"${event.summary}"${event.hangoutLink ? "meeting" : ""} starts ${timingLabel} (${startLabel})`
 
                 void sendMeetingNotification({
                     message,
                     type: "reminder",
-                    url: nearestReminder.minutes === 0 ? event.hangoutLink : null,
-                }).catch(() => {
-                    dueReminders.map(({key}: {key: any}) => sentRemindersRef.current.delete(key))
+                    url: nearestReminder.minutes === 0 && event.hangoutLink ? event.hangoutLink : "",
+                    key: nearestReminder.key,
                 })
             })
         }
@@ -125,7 +120,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
         let currentDate: Date | null = null
 
         return sortedEvents.map((event) => {
-            const eventDate = new Date(event.start.dateTime)
+            const eventDate = new Date(event.start.dateTime || event.start.date || 0)
             const showDateHeader = !currentDate || !isSameDay(currentDate, eventDate)
 
             if (showDateHeader) {
@@ -270,6 +265,6 @@ export const meetingsWidgetDefinition = defineWidget({
     sizes: {
         desktop: { width: 1, height: 2},
         tablet: { width: 1, height: 2 },
-        mobile: { width: 1, height: 1 }
+        mobile: { width: 1, height: 2 }
     }
 })

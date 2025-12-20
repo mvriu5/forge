@@ -1,7 +1,7 @@
 "use client"
 
 import {AnimatePresence, motion} from "framer-motion"
-import {Check, Share2} from "lucide-react"
+import {Check, Copy, Share2} from "lucide-react"
 import React, {HTMLAttributes, ReactNode, useEffect, useState} from "react"
 import {Button} from "@/components/ui/Button"
 import {cn} from "@/lib/utils"
@@ -11,9 +11,11 @@ interface CopyButtonProps extends HTMLAttributes<HTMLDivElement> {
     copyText: string
     copyIcon?: ReactNode
     tooltip?: any
+    size?: number
+    strokeWidth?: number
 }
 
-const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, copyIcon, className, ...props }) => {
+const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, copyIcon, size = 16, strokeWidth = 2.5, className, ...props }) => {
     const [isChecked, setIsChecked] = useState(false)
 
     useEffect(() => {
@@ -41,7 +43,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, copyIcon, cl
                         exit={{ opacity: 0, scale: 0.4, y: '100%'}}
                         transition={{ duration: 0.2 }}
                     >
-                        <Check size={16} />
+                        <Check size={size} strokeWidth={strokeWidth} />
                     </motion.div>
                 ) : (
                     <motion.div
@@ -50,7 +52,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ copyText, tooltip, copyIcon, cl
                         exit={{ opacity: 0, scale: 0.4, y: '100%' }}
                         transition={{ duration: 0.2 }}
                     >
-                        {copyIcon ? copyIcon : <Share2 size={16} /> }
+                        {copyIcon ? copyIcon : <Copy size={size} strokeWidth={strokeWidth}/> }
                     </motion.div>
                 )}
             </AnimatePresence>

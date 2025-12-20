@@ -1,6 +1,8 @@
 "use client"
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover"
+import { useSession } from "@/hooks/data/useSession"
+import { useSettings } from "@/hooks/data/useSettings"
 import { defaultExtensions } from "@/lib/extensions"
 import { cn, formatDate, getUpdateTimeLabel } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
@@ -23,15 +25,12 @@ import { Button } from "../ui/Button"
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/Dialog"
 import { EmojiPicker } from "../ui/EmojiPicker"
 import { Input } from "../ui/Input"
-import { slashCommand, suggestionItems } from "../widgets/components/SlashCommand"
-import { Note } from "../widgets/EditorWidget"
 import { ScrollArea } from "../ui/ScrollArea"
-import { NodeSelector } from "../widgets/components/NodeSelector"
-import { TextButtons } from "../widgets/components/TextButtons"
-import { useSettings } from "@/hooks/data/useSettings"
-import { useSession } from "@/hooks/data/useSession"
 import { Skeleton } from "../ui/Skeleton"
-import { Spinner } from "../ui/Spinner"
+import { NodeSelector } from "../widgets/components/NodeSelector"
+import { slashCommand, suggestionItems } from "../widgets/components/SlashCommand"
+import { TextButtons } from "../widgets/components/TextButtons"
+import { Note } from "../widgets/EditorWidget"
 
 
 interface NoteDialogProps {
@@ -234,7 +233,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                     <DialogClose iconSize={16} className={"absolute top-2 right-2 p-1 rounded-md hover:bg-white/5"}/>
                 </DialogHeader>
                 {isPending ? (
-                    <div className="flex flex-col gap-4 rounded-md bg-primary/20">
+                    <div className="h-full flex flex-col justify-between rounded-md bg-primary/20">
                         <Skeleton className={"h-8 w-1/3 rounded-md mt-6"} />
                         <Skeleton className={"h-6 w-full rounded-md"} />
                         <Skeleton className={"h-6 w-full rounded-md"} />

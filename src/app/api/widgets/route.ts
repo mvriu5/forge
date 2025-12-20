@@ -1,20 +1,22 @@
-import {createWidget, deleteWidget, getWidgetsFromDashboard, getWidgetsFromUser, updateWidget} from "@/database"
+import {createWidget, deleteWidget, getWidgetsFromDashboard, getWidgetsFromUser, updateWidget, getWidgetFromId, getDashboardFromId} from "@/database"
 import {NextResponse} from "next/server"
-import posthog from "posthog-js"
+import PostHogClient from "@/app/posthog"
+import { requireServerUserId } from "@/lib/serverAuth"
+const posthog = PostHogClient()
 
 const routePath = "/api/widgets"
 
 export async function POST(req: Request) {
-    let userId: string | null = null
+    let userId: string | undefined = undefined
 
     try {
+        const auth = await requireServerUserId(req)
+        userId = auth.userId
+
         const body = await req.json()
         const { dashboardId, widgetType, height, width, positionX, positionY } = body
-        userId = body.userId
 
-        if (!userId) {
-            return NextResponse.json({ error: "userId is required" }, { status: 400 })
-        }
+        if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
         const newWidget = await createWidget({
             userId,
@@ -30,50 +32,58 @@ export async function POST(req: Request) {
 
         return NextResponse.json(newWidget, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "POST", userId })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, userId, { route: routePath, method: "POST" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function GET(req: Request) {
-    let userId: string | null = null
-    let dashboardId: string | null = null
+    let userId: string | undefined = undefined
+    let dashboardId: string | undefined = undefined
 
     try {
-        const { searchParams } = new URL(req.url)
-        userId = searchParams.get('userId')
-        dashboardId = searchParams.get('dashboardId')
+        const auth = await requireServerUserId(req)
+        userId = auth.userId
 
-        if (!userId && !dashboardId) {
-            return NextResponse.json({ error: "userId or dashboardId is required as a query parameter" }, { status: 400 })
-        }
+        const { searchParams } = new URL(req.url)
+        dashboardId = searchParams.get('dashboardId') ?? undefined
 
         if (dashboardId) {
+            const dashboard = (await getDashboardFromId(dashboardId))[0]
+
+            if (!dashboard) return NextResponse.json({ error: "Dashboard not found" }, { status: 404 })
+            if (dashboard.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+
             const widgets = await getWidgetsFromDashboard(dashboardId)
             return NextResponse.json(widgets, { status: 200 })
         }
 
-        if (userId) {
-            const widgets = await getWidgetsFromUser(userId)
-            return NextResponse.json(widgets, { status: 200 })
-        }
+        const widgets = await getWidgetsFromUser(userId)
+        return NextResponse.json(widgets, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "GET", userId, dashboardId })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, dashboardId, { route: routePath, method: "GET", userId })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function PUT(req: Request) {
-    let id: string | null = null
+    let id: string | undefined = undefined
 
     try {
-        const body = await req.json()
-        const { height, width, positionX, positionY, config } = body
-        id = body.id
+        const auth = await requireServerUserId(req)
+        const userId = auth.userId
 
-        if (!id) {
-            return NextResponse.json({ error: "Widget id is required" }, { status: 400 })
-        }
+        const body = await req.json()
+        const { height, width, positionX, positionY, config, id: bodyId } = body
+        id = bodyId ?? undefined
+
+        if (!id) return NextResponse.json({ error: "Widget id is required" }, { status: 400 })
+
+        const existing = (await getWidgetFromId(id))[0]
+        if (!existing) return NextResponse.json({ error: "Widget not found" }, { status: 404 })
+        if (existing.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
         const updateData = {
             height,
@@ -85,37 +95,39 @@ export async function PUT(req: Request) {
 
         const updatedWidget = await updateWidget(id, updateData)
 
-        if (!updatedWidget) {
-            return NextResponse.json({ error: "Widget not found or could not be updated" }, { status: 404 })
-        }
+        if (!updatedWidget) return NextResponse.json({ error: "Widget not found or could not be updated" }, { status: 404 })
 
         return NextResponse.json(updatedWidget, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "PUT", id })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, id, { route: routePath, method: "PUT" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function DELETE(req: Request) {
-    let id: string | null = null
+    let id: string | undefined = undefined
 
     try {
-        const { searchParams } = new URL(req.url)
-        id = searchParams.get('id')
+        const auth = await requireServerUserId(req)
+        const userId = auth.userId
 
-        if (!id) {
-            return NextResponse.json({ error: "Widget id is required" }, { status: 400 })
-        }
+        const { searchParams } = new URL(req.url)
+        id = searchParams.get('id') ?? undefined
+
+        if (!id) return NextResponse.json({ error: "Widget id is required" }, { status: 400 })
+
+        const existing = (await getWidgetFromId(id))[0]
+        if (!existing) return NextResponse.json({ error: "Widget not found" }, { status: 404 })
+        if (existing.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
         const deletedWidget = await deleteWidget(id)
-
-        if (!deletedWidget) {
-            return NextResponse.json({ error: "Widget not found or could not be deleted" }, { status: 404 })
-        }
+        if (!deletedWidget) return NextResponse.json({ error: "Widget not found or could not be deleted" }, { status: 404 })
 
         return NextResponse.json(deletedWidget, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "DELETE", id })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, id, { route: routePath, method: "DELETE" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

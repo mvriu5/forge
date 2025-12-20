@@ -1,6 +1,6 @@
 "use client"
 
-import {Button} from "@/components/ui/Button"
+import { Button } from "@/components/ui/Button"
 import {
     Dialog,
     DialogClose,
@@ -10,45 +10,45 @@ import {
     DialogTitle,
     DialogTrigger
 } from "@/components/ui/Dialog"
-import {Input} from "@/components/ui/Input"
-import {Grid2x2Plus} from "lucide-react"
-import React, {useMemo, useState} from "react"
-import {cn} from "@/lib/utils"
-import Image from "next/image"
-import {useTooltip} from "@/components/ui/TooltipProvider"
-import {ToggleGroup, ToggleGroupItem} from "@/components/ui/ToggleGroup"
-import {ScrollArea} from "@/components/ui/ScrollArea"
-import {useHotkeys} from "react-hotkeys-hook"
-import {Spinner} from "@/components/ui/Spinner"
-import {useWidgets} from "@/hooks/data/useWidgets"
-import {useSession} from "@/hooks/data/useSession"
-import {useDashboards} from "@/hooks/data/useDashboards"
-import {useSettings} from "@/hooks/data/useSettings"
-import {toast} from "@/components/ui/Toast"
-import {definitions} from "@/lib/definitions"
+import { Input } from "@/components/ui/Input"
+import { ScrollArea } from "@/components/ui/ScrollArea"
+import { Spinner } from "@/components/ui/Spinner"
+import { toast } from "@/components/ui/Toast"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup"
+import { useTooltip } from "@/components/ui/TooltipProvider"
+import { useDashboards } from "@/hooks/data/useDashboards"
+import { useSession } from "@/hooks/data/useSession"
+import { useSettings } from "@/hooks/data/useSettings"
+import { useWidgets } from "@/hooks/data/useWidgets"
+import { definitions } from "@/lib/definitions"
+import { cn } from "@/lib/utils"
+import { capitalizeFirstLetter } from "@better-auth/core/utils"
 import { WidgetDefinition } from "@tryforgeio/sdk"
-import {capitalizeFirstLetter} from "@better-auth/core/utils"
+import { Grid2x2Plus } from "lucide-react"
+import Image from "next/image"
+import { useMemo, useState } from "react"
+import { useHotkeys } from "react-hotkeys-hook"
 
 interface WidgetDialogProps {
     editMode: boolean
+    isOnboarding: boolean
     title?: string
 }
 
-function WidgetDialog({editMode, title}: WidgetDialogProps) {
+function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
     const {userId} = useSession()
     const {settings} = useSettings(userId)
     const {currentDashboard} = useDashboards(userId, settings)
     const {widgets, addWidget, addWidgetStatus} = useWidgets(userId)
 
     const [selectedWidgets, setSelectedWidgets] = useState<WidgetDefinition[]>([])
-    const [allWidgets] = useState<WidgetDefinition[]>(definitions)
     const [query, setQuery] = useState("")
     const [tagValue, setTagValue] = useState("")
     const [dialogOpen, setDialogOpen] = useState(false)
 
     useHotkeys("mod+s", (event) => {
         event.preventDefault()
-        if (!title) return
+        if (!title || editMode || isOnboarding) return
         if (!dialogOpen) setDialogOpen(true)
     }, [dialogOpen, title])
 
@@ -65,12 +65,12 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
     }, [])
 
     const filteredWidgets = useMemo(() => {
-        return allWidgets.filter((widget) => {
+        return definitions.filter((widget) => {
             const matchesSearch = widget.name.toLowerCase().includes(query.toLowerCase())
             const matchesTags = tagValue === "" || widget.tags?.some((tag: any) => tag === tagValue)
             return matchesSearch && matchesTags
         })
-    }, [allWidgets, query, tagValue])
+    }, [query, tagValue])
 
     const handleSelect = (widgetPreview: WidgetDefinition) => {
         if (!currentDashboard) return
@@ -209,4 +209,4 @@ function WidgetDialog({editMode, title}: WidgetDialogProps) {
     )
 }
 
-export {WidgetDialog}
+export { WidgetDialog }

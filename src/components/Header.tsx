@@ -23,6 +23,7 @@ interface HeaderProps {
     onEdit: () => void
     widgetsEmpty: boolean
     isLoading: boolean
+    isOnboarding: boolean
     dashboards: Dashboard[] | null
     currentDashboard: Dashboard | null
     onDashboardChange: (dashboardId: string | null) => Promise<void> | void
@@ -31,7 +32,7 @@ interface HeaderProps {
     userId?: string
 }
 
-function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, onDashboardChange, addDashboard, addDashboardStatus, userId}: HeaderProps) {
+function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, isOnboarding, onDashboardChange, addDashboard, addDashboardStatus, userId}: HeaderProps) {
     const [dialogOpen, setDialogOpen] = useState(false)
 
     const layoutTooltip = useTooltip<HTMLButtonElement>({
@@ -54,7 +55,7 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                     <Link href={"/"} className={"cursor-default"}>
                         <ForgeLogo/>
                     </Link>
-                    <span className={"text-xl text-primary font-mono font-semibold"}>forge</span>
+                    <span className={"hidden md:flex text-xl text-primary font-mono font-semibold"}>forge</span>
                 </div>
                 <div className={"h-6 w-px border-r-2 border-main/40"}/>
                 {editMode ?
@@ -69,7 +70,7 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                     </div>
                     :
                     <div className={"flex gap-2"}>
-                        <WidgetDialog editMode={editMode}/>
+                        <WidgetDialog editMode={editMode} isOnboarding={isOnboarding} />
                         <Button className={"size-8 bg-secondary border-main/60 hidden xl:flex"} {...layoutTooltip} onClick={onEdit} disabled={editMode || widgetsEmpty || isLoading}>
                             <LayoutTemplate size={16}/>
                         </Button>
@@ -81,10 +82,10 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                             >
                                 <SelectTrigger className={"max-w-70 bg-primary data-[state=open]:bg-inverted/10 data-[state=open]:text-primary flex lg:rounded-r-none gap-0.5"} disabled={editMode}>
                                     <div className={"w-full flex items-center gap-1 overflow-hidden text-xs"}>
-                                        <p className={"text-tertiary text-xs font-mono"}>Dashboard:</p>
+                                        <p className={"hidden md:flex text-tertiary text-xs font-mono"}>Dashboard:</p>
                                         {isLoading ?
                                             <Skeleton className={"w-10 h-4"}/> :
-                                            <SelectValue className={" truncate"}/>
+                                            <SelectValue className={"truncate"}/>
                                         }
                                     </div>
                                 </SelectTrigger>

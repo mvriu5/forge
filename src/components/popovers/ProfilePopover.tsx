@@ -31,7 +31,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                     data-state={open ? "open" : "closed"}
                     className={cn(
                         "h-8 md:border border-main/60 flex items-center gap-2 md:bg-secondary md:hover:bg-inverted/10 md:data-[state=open]:bg-inverted/10",
-                        "rounded-md md:px-2 md:group-data-[state=disabled]:bg-secondary",
+                        "rounded-md px-1 md:px-2 md:group-data-[state=disabled]:bg-secondary",
                         "md:group-data-[state=disabled]:hover:bg-secondary shadow-xs dark:shadow-md"
                     )}
                 >

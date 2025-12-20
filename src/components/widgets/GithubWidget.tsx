@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useEffect, useRef, useState} from "react"
+import React, {useEffect, useState} from "react"
 import {CircleDashed, Filter, FolderOpen, GitPullRequest, RefreshCw} from "lucide-react"
 import {Button} from "@/components/ui/Button"
 import {Badge} from "@/components/ui/Badge"
@@ -33,8 +33,6 @@ const GithubWidget: React.FC<WidgetProps> = ({widget}) => {
 
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
-    const hasSentReminderRef = useRef(false)
-
     const filterTooltip = useTooltip<HTMLButtonElement>({
         message: "Filter your issues",
         anchor: "tc",
@@ -45,36 +43,33 @@ const GithubWidget: React.FC<WidgetProps> = ({widget}) => {
         anchor: "tc",
     })
 
-    const dropdownFilterItems: MenuItem[] = allLabels.map((label) => ({
-        type: "checkbox",
-        icon: <div className={"size-3 rounded-sm"} style={{backgroundColor: `#${label.color}`}}/>,
-        key: label.id,
-        label: label.name,
-        checked: selectedLabels.includes(label.name),
-        onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label.name) ? prev.filter((name) => name !== label.name) : [...prev, label.name]))
-    }))
+    const dropdownFilterItems: MenuItem[] = allLabels
+        .filter((label): label is typeof label & { name: string } => !!label.name)
+        .map((label) => ({
+            type: "checkbox",
+            icon: <div className={"size-3 rounded-sm"} style={{backgroundColor: `#${label.color}`}}/>,
+            key: label.id,
+            label: label.name,
+            checked: selectedLabels.includes(label.name),
+            onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label.name) ? prev.filter((name) => name !== label.name) : [...prev, label.name]))
+        }))
 
     useEffect(() => {
         if (isLoading) return
         if (!settings?.config.todoReminder) return
-        if (hasSentReminderRef.current) return
 
         const hasPendingIssues = filteredIssues.length > 0
         const hasPendingPRs = filteredPRs.length > 0
 
         if (!hasPendingIssues && !hasPendingPRs) return
 
-        hasSentReminderRef.current = true
-
         void sendGithubNotification({
             message: "You have pending GitHub items to review.",
             type: "reminder",
             issues: filteredIssues.length,
             pullRequests: filteredPRs.length
-        }).catch(() => {
-            hasSentReminderRef.current = false
         })
-    }, [sendGithubNotification, isLoading])
+    }, [sendGithubNotification, isLoading, settings?.config.todoReminder])
 
     return (
         <>
@@ -229,6 +224,6 @@ export const githubWidgetDefinition = defineWidget({
     sizes: {
         desktop: { width: 1, height: 2 },
         tablet: { width: 1, height: 2 },
-        mobile: { width: 1, height: 1 }
+        mobile: { width: 1, height: 2 }
     }
 })

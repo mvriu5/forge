@@ -1,12 +1,12 @@
+import PostHogClient from "@/app/posthog"
 import { getNotionAccount } from "@/database"
 import {
     NOTION_VERSION,
-    blocksToJSONContent,
     blocksToPlainText,
     getTitleFromProperties
 } from "@/lib/notion"
 import { NextResponse } from "next/server"
-import posthog from "posthog-js"
+const posthog = PostHogClient()
 
 const routePath = "/api/notion/pages/[pageId]"
 
@@ -62,12 +62,12 @@ async function fetchPage(accessToken: string, pageId: string) {
 }
 
 export async function GET(req: Request, { params }: { params: Promise<{ pageId: string }> }) {
-    let userId: string | null = null
+    let userId: string | undefined = undefined
     const { pageId } = await params
 
     try {
         const { searchParams } = new URL(req.url)
-        userId = searchParams.get("userId")
+        userId = searchParams.get("userId") ?? undefined
 
         if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 })
 
@@ -79,7 +79,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ pageId: 
 
         return NextResponse.json(page, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "GET", userId, pageId })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, pageId, { route: routePath, method: "GET", userId })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

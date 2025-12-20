@@ -3,31 +3,67 @@ import {useCallback, useEffect, useMemo, useRef, useState} from "react"
 import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {authClient} from "@/lib/auth-client"
+import posthog from "posthog-js"
 
 const GOOGLE_CALENDAR_QUERY_KEY = (accessToken: string | null) => ["googleCalendarList", accessToken] as const
 const GOOGLE_EVENT_QUERY_KEY = (accessToken: string | null, calendars: string[]) => ["googleCalendarEvents", accessToken, calendars] as const
 
-async function fetchCalendarList(accessToken: string | null) {
-    if (!accessToken) return
+interface GoogleCalendar {
+    id: string
+    summary: string
+    accessRole: string
+    backgroundColor?: string
+    primary?: boolean
+}
+
+export interface CalendarEvent {
+    id: string
+    summary: string
+    start: { dateTime?: string; date?: string }
+    end: { dateTime?: string; date?: string }
+    location?: string
+    hangoutLink?: string
+    calendarId?: string
+    conferenceData?: {
+        createRequest?: {
+            requestId?: string
+            conferenceSolutionKey?: { type?: string }
+        }
+    }
+}
+
+interface CalendarListResponse {
+    items?: GoogleCalendar[]
+    nextPageToken?: string
+}
+
+interface EventsListResponse {
+    items?: CalendarEvent[]
+    nextPageToken?: string
+}
+
+async function fetchCalendarList(accessToken: string | null): Promise<GoogleCalendar[]> {
+    if (!accessToken) return []
+
     const res = await fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList", {
         headers: {Authorization: `Bearer ${accessToken}`},
     })
 
     if (!res.ok) throw new Error("Failed to fetch calendar list")
 
-    const data = await res.json()
-    return data.items
+    const data: CalendarListResponse = await res.json()
+    return data.items ?? []
 }
 
-async function fetchCalendarEvents(accessToken: string | null, calendarId: string) {
-    if (!accessToken) return
+async function fetchCalendarEvents(accessToken: string | null, calendarId: string): Promise<CalendarEvent[]> {
+    if (!accessToken) return []
 
     const baseParams = new URLSearchParams({
         maxResults: "1000",
         orderBy: "updated",
     })
 
-    let events: any[] = []
+    let events: CalendarEvent[] = []
     let nextPageToken: string | undefined
 
     do {
@@ -40,7 +76,7 @@ async function fetchCalendarEvents(accessToken: string | null, calendarId: strin
 
         if (!res.ok) return []
 
-        const data: { items?: any[]; nextPageToken?: string } = await res.json()
+        const data: EventsListResponse = await res.json()
         events = [...events, ...(data.items ?? [])]
         if (events.length > 1000) events = events.slice(-1000)
         nextPageToken = data.nextPageToken
@@ -49,7 +85,7 @@ async function fetchCalendarEvents(accessToken: string | null, calendarId: strin
     return events
 }
 
-async function createCalendarEvent(accessToken: string | null, calendarId: string, eventData: Partial<CalendarEvent>) {
+async function createCalendarEvent(accessToken: string | null, calendarId: string, eventData: Partial<CalendarEvent>): Promise<CalendarEvent> {
     if (!accessToken) throw new Error("Missing access token")
 
     const baseUrl = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`
@@ -70,21 +106,6 @@ async function createCalendarEvent(accessToken: string | null, calendarId: strin
     if (!res.ok) throw new Error("Failed to create calendar event")
 
     return res.json()
-}
-
-export interface CalendarEvent {
-    id: string
-    summary: string
-    start: { dateTime: string }
-    end: { dateTime: string }
-    location?: string
-    hangoutLink?: string
-    conferenceData?: {
-        createRequest?: {
-            requestId?: string
-            conferenceSolutionKey?: { type?: string }
-        }
-    }
 }
 
 export const useGoogleCalendar = () => {
@@ -135,7 +156,7 @@ export const useGoogleCalendar = () => {
                         userId,
                     })
                     await refetchIntegrations()
-                } catch (error) {
+                } catch {
                     setAccessToken(googleIntegration.accessToken ?? null)
                 } finally {
                     isRefreshingToken.current = false
@@ -149,13 +170,9 @@ export const useGoogleCalendar = () => {
         setAccessToken(googleIntegration.accessToken)
     }, [googleIntegration, refetchIntegrations, userId])
 
-    const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError} = useQuery({
+    const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError} = useQuery<GoogleCalendar[], Error>({
         queryKey: GOOGLE_CALENDAR_QUERY_KEY(accessToken),
-        queryFn: async () => {
-            if (!accessToken) return
-            const calendarItems = await fetchCalendarList(accessToken)
-            return calendarItems ?? []
-        },
+        queryFn: () => fetchCalendarList(accessToken),
         enabled: Boolean(accessToken),
         staleTime: 15 * 60 * 1000,
         gcTime: 30 * 60 * 1000,
@@ -166,20 +183,22 @@ export const useGoogleCalendar = () => {
 
     useEffect(() => {
         if (calendars?.length && selectedCalendars.length === 0) {
-            setSelectedCalendars(calendars.map((c: any) => c.id))
+            setSelectedCalendars(calendars.map((c) => c.id))
         }
     }, [calendars, selectedCalendars])
 
-    const {data: events, isLoading: eventsLoading, isFetching: eventsFetching, isError: eventsError} = useQuery({
+    const {data: events, isLoading: eventsLoading, isFetching: eventsFetching, isError: eventsError} = useQuery<CalendarEvent[], Error>({
         queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars),
         queryFn: async () => {
             if (!accessToken || !calendars) return []
-            const selectedCalendarObjects = calendars.filter((cal: any) => selectedCalendars.includes(cal.id))
 
-            const calendarPromises = selectedCalendarObjects.map(async (calendar: any) => {
+            const selectedCalendarObjects = calendars.filter((cal) => selectedCalendars.includes(cal.id))
+
+            const calendarPromises = selectedCalendarObjects.map(async (calendar) => {
                 const calendarEvents = await fetchCalendarEvents(accessToken, calendar.id)
-                return (calendarEvents ?? []).map((event: any) => ({...event, calendarId: calendar.id}))
+                return calendarEvents.map((event) => ({...event, calendarId: calendar.id}))
             })
+
             const results = await Promise.all(calendarPromises)
             return results.flat()
         },
@@ -192,14 +211,14 @@ export const useGoogleCalendar = () => {
     })
 
     const getColor = useCallback((eventId: string) => {
-        const event = events?.find((e: { id: string }) => e.id === eventId)
+        const event = events?.find((e) => e.id === eventId)
         if (!event?.calendarId) return null
-        const calendar = calendars?.find((c: any) => c.id === event.calendarId)
+        const calendar = calendars?.find((c) => c.id === event.calendarId)
         return calendar?.backgroundColor ?? null
     }, [events, calendars])
 
     const filteredEvents = useMemo(() => (
-        events?.filter((event: { calendarId: string }) => selectedCalendars.includes(event.calendarId)) || []
+        events?.filter((event) => event.calendarId && selectedCalendars.includes(event.calendarId)) ?? []
     ), [events, selectedCalendars])
 
     const createEventMutation = useMutation({
@@ -208,6 +227,9 @@ export const useGoogleCalendar = () => {
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars) })
         },
+        onError: (error, cal) => posthog.captureException(error, {
+            hook: "useGoogleCalendar.createEventMutation", userId, cal
+        })
     })
 
     const manualRefresh = useCallback(async () => {
@@ -218,11 +240,8 @@ export const useGoogleCalendar = () => {
     }, [queryClient, accessToken, selectedCalendars])
 
     useEffect(() => {
-        if (hasSeenInitialSelection.current) {
-            setFilterLoading(true)
-        } else {
-            hasSeenInitialSelection.current = true
-        }
+        if (hasSeenInitialSelection.current) setFilterLoading(true)
+        else hasSeenInitialSelection.current = true
     }, [selectedCalendars])
 
     useEffect(() => {
@@ -230,7 +249,7 @@ export const useGoogleCalendar = () => {
     }, [calendarLoading, eventsLoading, filterLoading])
 
     return {
-        calendars,
+        calendars: calendars ?? [],
         events: filteredEvents,
         isLoading: calendarLoading || eventsLoading,
         isFetching: calendarFetching || eventsFetching,

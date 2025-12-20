@@ -40,7 +40,6 @@ const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({widget, config, updateCo
     const {settings} = useSettings(widget.userId)
     const {sendReminderNotification} = useNotifications(widget.userId)
 
-    const hasSentReminderRef = useRef(false)
     const inputRef = useRef<HTMLInputElement>(null)
 
     const clearTodosTooltip = useTooltip<HTMLButtonElement>({
@@ -62,28 +61,18 @@ const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({widget, config, updateCo
 
     useEffect(() => {
         if (!settings?.config.todoReminder) return
-        if (hasSentReminderRef.current) return
 
         if (settings?.config.deleteTodos && hasOldTodos()) return
 
         const pendingTodos = config.todos.filter((todo) => !todo.checked)
         if (pendingTodos.length === 0) return
 
-        hasSentReminderRef.current = true
-
         void sendReminderNotification({
             message: `You have ${pendingTodos.length} pending ${pendingTodos.length == 1 ? "todo" : "todos"} for today!`,
             type: "reminder",
-        }).catch(() => {
-            hasSentReminderRef.current = false
+            key: "todo-reminder",
         })
-    }, [sendReminderNotification, settings?.config.deleteTodos, settings?.config.todoReminder])
-
-    useEffect(() => {
-        if (config.todos.length === 0) {
-            hasSentReminderRef.current = false
-        }
-    }, [config.todos.length])
+    }, [sendReminderNotification, settings?.config.deleteTodos, settings?.config.todoReminder, config.todos, hasOldTodos])
 
     const handleSave = useCallback(async (updatedTodos: Todo[]) => {
         await updateConfig({ todos: updatedTodos })

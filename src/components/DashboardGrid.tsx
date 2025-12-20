@@ -1,55 +1,46 @@
-import { DndContext } from "@dnd-kit/core"
+import {DndContext} from "@dnd-kit/core"
 import {WidgetRenderer} from "@/components/WidgetRenderer"
 import {useDragAndDrop} from "@/hooks/useDragAndDrop"
 import {Widget} from "@/database"
 import {useGrid} from "@/hooks/useGrid"
-import React, {useMemo} from "react"
+import React from "react"
 import {Grid} from "@/components/Grid"
 import {cn} from "@/lib/utils"
 import {useResponsiveLayout} from "@/hooks/media/useResponsiveLayout"
 
-type DashboardGridProps = {
+interface DashboardGridProps {
     editMode: boolean
     activeWidgetId: string | null
     currentDashboardId: string | null
-    currentWidgets: Widget[]
-    onWidgetDelete: (id: string) => void
-    onWidgetUpdate: (widget: Widget) => Promise<Widget>
-    updateWidgetPosition: (id: string, x: number, y: number) => void
-    visibleWidgets: Widget[]
+    widgets: Widget[]
     activeWidget: Widget | null
     setActiveWidget: React.Dispatch<React.SetStateAction<Widget | null>>
+    updateWidgetPosition: (id: string, x: number, y: number) => void
+    onWidgetDelete: (id: string) => void
+    onWidgetUpdate: (widget: Widget) => Promise<Widget>
 }
 
-const DashboardGrid = React.memo<DashboardGridProps>(function DashboardGrid({editMode, activeWidgetId, onWidgetDelete, onWidgetUpdate, currentDashboardId, currentWidgets, updateWidgetPosition, visibleWidgets, activeWidget, setActiveWidget}) {
-    const { transformedWidgets, gridClasses, isDesktop } = useResponsiveLayout(visibleWidgets)
-    const { sensors, handleDragStart, handleDragEnd, handleDragOver } = useDragAndDrop(
+const DashboardGrid = React.memo<DashboardGridProps>(function DashboardGrid({
+    editMode,
+    activeWidgetId,
+    currentDashboardId,
+    widgets,
+    activeWidget,
+    setActiveWidget,
+    updateWidgetPosition,
+    onWidgetDelete,
+    onWidgetUpdate
+}) {
+    const {transformedWidgets, gridClasses, isDesktop} = useResponsiveLayout(widgets)
+    const gridCells = useGrid(activeWidget, widgets)
+
+    const {sensors, handleDragStart, handleDragEnd, handleDragOver} = useDragAndDrop(
         editMode,
-        currentWidgets,
+        widgets,
         currentDashboardId,
         updateWidgetPosition,
-        setActiveWidget,
+        setActiveWidget
     )
-
-    const gridCells = useGrid(activeWidget, visibleWidgets)
-
-    const widgetElements = useMemo(() => transformedWidgets?.map((widget) => (
-        <WidgetRenderer
-            key={widget.id}
-            widget={widget}
-            editMode={editMode}
-            onWidgetDelete={onWidgetDelete}
-            onWidgetUpdate={onWidgetUpdate}
-            isDragging={activeWidgetId === widget.id}
-        />
-    )), [transformedWidgets, editMode, onWidgetDelete, onWidgetUpdate, activeWidgetId])
-
-    const content = useMemo(() => (
-        <div className={cn("relative w-full h-screen", gridClasses)}>
-            <Grid cells={gridCells} enabled={isDesktop}/>
-            {widgetElements}
-        </div>
-    ), [gridClasses, gridCells, isDesktop, widgetElements])
 
     return (
         <DndContext
@@ -58,20 +49,21 @@ const DashboardGrid = React.memo<DashboardGridProps>(function DashboardGrid({edi
             onDragEnd={editMode ? handleDragEnd : undefined}
             onDragOver={editMode ? handleDragOver : undefined}
         >
-            {content}
+            <div className={cn("relative w-full", gridClasses)}>
+                <Grid cells={gridCells} enabled={isDesktop}/>
+                {transformedWidgets?.map(widget => (
+                    <WidgetRenderer
+                        key={widget.id}
+                        widget={widget}
+                        editMode={editMode}
+                        isDragging={activeWidgetId === widget.id}
+                        onWidgetDelete={onWidgetDelete}
+                        onWidgetUpdate={onWidgetUpdate}
+                    />
+                ))}
+            </div>
         </DndContext>
     )
-}, (prev, next) => (
-    prev.editMode === next.editMode
-    && prev.activeWidgetId === next.activeWidgetId
-    && prev.onWidgetDelete === next.onWidgetDelete
-    && prev.onWidgetUpdate === next.onWidgetUpdate
-    && prev.currentDashboardId === next.currentDashboardId
-    && prev.currentWidgets === next.currentWidgets
-    && prev.updateWidgetPosition === next.updateWidgetPosition
-    && prev.visibleWidgets === next.visibleWidgets
-    && prev.activeWidget === next.activeWidget
-    && prev.setActiveWidget === next.setActiveWidget
-))
+})
 
-export { DashboardGrid }
+export {DashboardGrid}

@@ -1,11 +1,11 @@
 import {useQuery} from "@tanstack/react-query"
-import {useSession, } from "@/hooks/data/useSession"
+import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {Octokit} from "@octokit/rest"
 
 const GITHUB_QUERY_KEY = (accessToken: string | null, name: string | undefined) => ["githubHeatmap", accessToken, name] as const
 
-type GitHubContribution = {
+interface GitHubContribution {
     date: string
     count: number
 }
@@ -27,27 +27,30 @@ const CONTRIBUTIONS_QUERY = `
   }
 `
 
-async function getContributions(accessToken: string | null, username: string | undefined, fromDate?: Date, toDate?: Date): Promise<GitHubContribution[] | undefined> {
-    if (!accessToken || !username) return undefined
-    const octokit = new Octokit({auth: accessToken})
-
-    const to = toDate ?? new Date()
-    const from = fromDate ?? new Date(to.getFullYear() - 1, to.getMonth(), to.getDate())
-
-    const response = await octokit.graphql<{
-        user: {
-            contributionsCollection: {
-                contributionCalendar: {
-                    weeks: Array<{
-                        contributionDays: Array<{
-                            date: string
-                            contributionCount: number
-                        }>
+interface ContributionsResponse {
+    user: {
+        contributionsCollection: {
+            contributionCalendar: {
+                weeks: Array<{
+                    contributionDays: Array<{
+                        date: string
+                        contributionCount: number
                     }>
-                }
+                }>
             }
         }
-    }>(CONTRIBUTIONS_QUERY, {
+    }
+}
+
+async function getContributions(accessToken: string | null, username: string | undefined): Promise<GitHubContribution[]> {
+    if (!accessToken || !username) return []
+
+    const octokit = new Octokit({auth: accessToken})
+
+    const to = new Date()
+    const from = new Date(to.getFullYear() - 1, to.getMonth(), to.getDate())
+
+    const response = await octokit.graphql<ContributionsResponse>(CONTRIBUTIONS_QUERY, {
         username,
         from: from.toISOString(),
         to: to.toISOString(),
@@ -58,14 +61,14 @@ async function getContributions(accessToken: string | null, username: string | u
     const contributions: GitHubContribution[] = []
     const weeks = response.user.contributionsCollection.contributionCalendar.weeks
 
-    weeks.map((week) => {
-        week.contributionDays.map((day) => {
+    for (const week of weeks) {
+        for (const day of week.contributionDays) {
             contributions.push({
                 date: day.date,
                 count: day.contributionCount,
             })
-        })
-    })
+        }
+    }
 
     return contributions
 }
@@ -75,18 +78,18 @@ export const useGithubHeatmap = () => {
     const {integrations} = useIntegrations(userId)
     const githubIntegration = getIntegrationByProvider(integrations, "github")
 
-    const {data, isLoading, isFetching, isError, refetch} = useQuery({
+    const {data, isLoading, isFetching, isError, refetch} = useQuery<GitHubContribution[], Error>({
         queryKey: GITHUB_QUERY_KEY(githubIntegration?.accessToken ?? null, session?.user?.name),
         queryFn: () => getContributions(githubIntegration?.accessToken ?? null, session?.user?.name),
         enabled: Boolean(githubIntegration?.accessToken),
-        staleTime: 30 * 60 * 1000, // 30 minutes
-        refetchInterval: 30 * 60 * 1000, // 30 minutes
+        staleTime: 30 * 60 * 1000,
+        refetchInterval: 30 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnMount: false
     })
 
     return {
-        data,
+        data: data ?? [],
         isLoading,
         isFetching,
         isError,

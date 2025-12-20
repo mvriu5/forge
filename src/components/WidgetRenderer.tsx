@@ -1,13 +1,14 @@
 "use client"
 
-import React, {useCallback, useMemo} from "react"
-import { WidgetContainer } from "@/components/widgets/base/WidgetContainer"
-import { useSession } from "@/hooks/data/useSession"
+import React, {Suspense, useCallback, useMemo} from "react"
+import {WidgetContainer} from "@/components/widgets/base/WidgetContainer"
+import {useSession} from "@/hooks/data/useSession"
 import {getWidgetDefinition} from "@/lib/definitions"
 import {BaseWidget, WidgetRuntimeProps} from "@tryforgeio/sdk"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {ErrorBoundary} from "react-error-boundary"
+import {Skeleton} from "@/components/ui/Skeleton"
 
 const areWidgetsEqual = (a: BaseWidget, b: BaseWidget): boolean => (
     a === b
@@ -26,20 +27,34 @@ const areWidgetsEqual = (a: BaseWidget, b: BaseWidget): boolean => (
     )
 )
 
-export const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete, onWidgetUpdate}) => {
-    const { userId, isLoading: isLoadingSession } = useSession()
-    const { integrations, isLoading: isLoadingIntegrations, handleIntegrate } = useIntegrations(userId)
+const WidgetSkeleton = () => (
+    <div className="h-full w-full flex flex-col gap-2 p-2">
+        <Skeleton className="h-6 w-24"/>
+        <Skeleton className="h-full w-full"/>
+    </div>
+)
+
+const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete, onWidgetUpdate}) => {
+    const {userId, isLoading: isLoadingSession} = useSession()
+    const {integrations, isLoading: isLoadingIntegrations, handleIntegrate} = useIntegrations(userId)
 
     const definition = useMemo(() => getWidgetDefinition(widget.widgetType), [widget.widgetType])
-    const { Component, defaultConfig, name, integration: requiredIntegration } = definition
+    const {Component, defaultConfig, name, integration: requiredIntegration, sizes} = definition
     const config = (widget.config ?? defaultConfig) as typeof defaultConfig
 
-    const integrationAccount = useMemo(() => getIntegrationByProvider(integrations, requiredIntegration), [integrations, requiredIntegration])
+    const integrationAccount = useMemo(
+        () => getIntegrationByProvider(integrations, requiredIntegration),
+        [integrations, requiredIntegration]
+    )
     const missingIntegration = requiredIntegration && !integrationAccount?.accessToken
 
-    const updateConfig = useCallback(async (updater: | typeof defaultConfig | ((prev: typeof defaultConfig) => typeof defaultConfig)) => {
+    const updateConfig = useCallback(async (
+        updater: typeof defaultConfig | ((prev: typeof defaultConfig) => typeof defaultConfig)
+    ) => {
         const current = (widget.config ?? defaultConfig) as typeof defaultConfig
-        const next = typeof updater === "function" ? (updater as (prev: typeof defaultConfig) => typeof defaultConfig)(current) : updater
+        const next = typeof updater === "function"
+            ? (updater as (prev: typeof defaultConfig) => typeof defaultConfig)(current)
+            : updater
 
         await onWidgetUpdate?.({
             id: widget.id,
@@ -52,22 +67,38 @@ export const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, e
             positionY: widget.positionY,
             createdAt: widget.createdAt,
             updatedAt: widget.updatedAt,
-            config: next as Record<string, any>,
+            config: next as Record<string, unknown>,
         })
     }, [defaultConfig, onWidgetUpdate, widget])
 
-    if (missingIntegration && !(isLoadingIntegrations || isLoadingSession)) {
+    // Loading state
+    if (isLoadingSession || isLoadingIntegrations) {
         return (
             <WidgetContainer
-                id={widget.id}
                 widget={widget}
-                name={definition.name}
+                name={name}
+                sizes={sizes}
+                editMode={editMode}
+                onWidgetDelete={onWidgetDelete}
+            >
+                <WidgetSkeleton/>
+            </WidgetContainer>
+        )
+    }
+
+    // Missing integration
+    if (missingIntegration) {
+        return (
+            <WidgetContainer
+                widget={widget}
+                name={name}
+                sizes={sizes}
                 editMode={editMode}
                 onWidgetDelete={onWidgetDelete}
             >
                 <WidgetError
-                    message={`If you want to use the ${name} widget, please integrate your ${requiredIntegration} account first.`}
-                    actionLabel={"Integrate"}
+                    message={`To use the ${name} widget, please integrate your ${requiredIntegration} account first.`}
+                    actionLabel="Integrate"
                     onAction={() => requiredIntegration && handleIntegrate(requiredIntegration)}
                 />
             </WidgetContainer>
@@ -76,15 +107,15 @@ export const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, e
 
     return (
         <WidgetContainer
-            id={widget.id}
             widget={widget}
-            name={definition.name}
+            name={name}
+            sizes={sizes}
             editMode={editMode}
             onWidgetDelete={onWidgetDelete}
         >
             <ErrorBoundary
                 resetKeys={[widget.id, widget.updatedAt]}
-                fallbackRender={({ error, resetErrorBoundary }) => (
+                fallbackRender={({error, resetErrorBoundary}) => (
                     <WidgetError
                         message={`The ${name} widget failed to load.`}
                         details={error.message}
@@ -93,15 +124,17 @@ export const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, e
                     />
                 )}
             >
-                <Component
-                    widget={widget as BaseWidget}
-                    config={config}
-                    updateConfig={updateConfig}
-                    editMode={editMode}
-                    isDragging={isDragging}
-                    onWidgetDelete={onWidgetDelete}
-                    onWidgetUpdate={onWidgetUpdate}
-                />
+                <Suspense fallback={<WidgetSkeleton/>}>
+                    <Component
+                        widget={widget as BaseWidget}
+                        config={config}
+                        updateConfig={updateConfig}
+                        editMode={editMode}
+                        isDragging={isDragging}
+                        onWidgetDelete={onWidgetDelete}
+                        onWidgetUpdate={onWidgetUpdate}
+                    />
+                </Suspense>
             </ErrorBoundary>
         </WidgetContainer>
     )

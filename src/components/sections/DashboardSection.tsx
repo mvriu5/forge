@@ -44,7 +44,7 @@ function DashboardSection({handleClose}: {handleClose?: () => void}) {
                                     }
                                 >
                                     <LazyDeleteDashboardDialog
-                                        dashboardId={dashboard.id}
+                                        dashboard={dashboard}
                                         onDelete={handleClose}
                                         onAllDeleted={handleClose}
                                     />

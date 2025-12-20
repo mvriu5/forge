@@ -12,6 +12,7 @@ export function DashboardEmpty() {
                 </p>
                 <WidgetDialog
                     editMode={false}
+                    isOnboarding={false}
                     title={"Widget-Store"}
                 />
             </div>

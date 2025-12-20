@@ -59,6 +59,7 @@ export function useSettings(userId: string | undefined) {
         queryKey: SETTINGS_QUERY_KEY(userId),
         queryFn: () => fetchSettings(userId!),
         enabled: !!userId,
+        staleTime: 5 * 60 * 1000
     })
 
     const updateSettingsMutation = useMutation({

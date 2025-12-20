@@ -1,25 +1,36 @@
 "use client"
 
-import { toast } from "@/components/ui/Toast"
-import { getIntegrationByProvider, useIntegrations } from "@/hooks/data/useIntegrations"
-import { useSession } from "@/hooks/data/useSession"
-import { authClient } from "@/lib/auth-client"
-import { blocksToJSONContent, plainTextToJSONContent } from "@/lib/notion"
-import { useMutation, useQuery } from "@tanstack/react-query"
-import { JSONContent } from "novel"
-import { useEffect, useMemo, useRef, useState } from "react"
+import {toast} from "@/components/ui/Toast"
+import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
+import {useSession} from "@/hooks/data/useSession"
+import {authClient} from "@/lib/auth-client"
+import {blocksToJSONContent, plainTextToJSONContent} from "@/lib/notion"
+import {useMutation, useQuery} from "@tanstack/react-query"
+import {JSONContent} from "novel"
+import posthog from "posthog-js"
+import {useEffect, useMemo, useRef, useState} from "react"
 
-export type NotionPage = {
+export interface NotionPage {
     id: string
     title: string
     isChild: boolean
     parentId: string | null
 }
 
-export type NotionPageContent = {
+export interface NotionPageContent {
     id: string
     title: string
     content: JSONContent
+}
+
+interface NotionPagesResponse {
+    pages?: NotionPage[]
+}
+
+interface NotionPageResponse {
+    id: string
+    title: string
+    blocks?: unknown[]
 }
 
 const NOTION_PAGES_QUERY_KEY = (userId: string | undefined) => ["notionPages", userId] as const
@@ -31,15 +42,8 @@ async function fetchPages(userId: string | null): Promise<NotionPage[]> {
 
     if (!response.ok) throw new Error("Failed to load Notion pages")
 
-    const data = await response.json()
+    const data: NotionPagesResponse = await response.json()
     return data.pages ?? []
-}
-
-function ensureJsonContent(doc: any, plainText: string): JSONContent {
-    if (doc && typeof doc === "object" && doc.type === "doc") {
-        return doc as JSONContent
-    }
-    return plainTextToJSONContent(plainText ?? "")
 }
 
 async function fetchPageContent(userId: string | null, pageId: string): Promise<NotionPageContent | null> {
@@ -49,7 +53,7 @@ async function fetchPageContent(userId: string | null, pageId: string): Promise<
 
     if (!response.ok) throw new Error("Unable to load the Notion page")
 
-    const data = await response.json()
+    const data: NotionPageResponse = await response.json()
 
     return {
         id: data.id,
@@ -60,7 +64,7 @@ async function fetchPageContent(userId: string | null, pageId: string): Promise<
 
 export const useNotion = () => {
     const {userId} = useSession()
-    const {integrations, refetchIntegrations, handleIntegrate} = useIntegrations(userId)
+    const {integrations, refetchIntegrations} = useIntegrations(userId)
     const notionIntegration = useMemo(() => getIntegrationByProvider(integrations, "notion"), [integrations])
     const [accessToken, setAccessToken] = useState<string | null>(null)
     const isRefreshingToken = useRef(false)
@@ -70,6 +74,7 @@ export const useNotion = () => {
             setAccessToken(null)
             return
         }
+
         if (!notionIntegration) {
             setAccessToken(null)
             return
@@ -85,9 +90,9 @@ export const useNotion = () => {
             isRefreshingToken.current = true
             const refresh = async () => {
                 try {
-                    await authClient.refreshToken({ providerId: "notion", userId })
+                    await authClient.refreshToken({providerId: "notion", userId})
                     await refetchIntegrations()
-                } catch (error) {
+                } catch {
                     toast.error("Unable to refresh Notion access. Try reconnecting.")
                 } finally {
                     isRefreshingToken.current = false
@@ -102,7 +107,7 @@ export const useNotion = () => {
 
     const hasAccess = Boolean(accessToken)
 
-    const {data: pages = [], isLoading: isLoadingPages, isFetching: isFetchingPages, refetch: refetchPages} = useQuery({
+    const {data: pages, isLoading: isLoadingPages, isFetching: isFetchingPages, refetch: refetchPages} = useQuery<NotionPage[], Error>({
         queryKey: NOTION_PAGES_QUERY_KEY(userId),
         queryFn: () => fetchPages(userId ?? null),
         enabled: Boolean(userId && hasAccess),
@@ -114,14 +119,16 @@ export const useNotion = () => {
 
     const fetchPageContentMutation = useMutation({
         mutationFn: (pageId: string) => fetchPageContent(userId ?? null, pageId),
-        onError: () => toast.error("Unable to load the Notion page"),
+        onError:  (error, pageId) => {
+            toast.error("Unable to load the Notion page")
+            posthog.captureException(error, { hook: "useNotion.fetchPageContentMutation", userId, pageId })
+        }
     })
-
 
     return {
         isConnected: Boolean(accessToken),
         isRefreshing: isRefreshingToken.current,
-        pages,
+        pages: pages ?? [],
         isLoadingPages: isLoadingPages || isFetchingPages,
         refetchPages,
         fetchPageContent: fetchPageContentMutation.mutateAsync,

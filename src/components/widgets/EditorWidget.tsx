@@ -245,8 +245,8 @@ export const editorWidgetDefinition = defineWidget({
     tags: ["productivity"],
     sizes: {
         desktop: { width: 1, height: 2 },
-        tablet: { width: 1, height: 1 },
-        mobile: { width: 1, height: 1 }
+        tablet: { width: 1, height: 2 },
+        mobile: { width: 1, height: 2 }
     },
     defaultConfig: {
         notes: [],
