@@ -65,6 +65,12 @@ export const getWidgetsFromDashboard = async (dashboardId: string): Promise<Widg
         .where(eq(widget.dashboardId, dashboardId))
 }
 
+export const getWidgetFromId = async (id: string): Promise<WidgetSelect[]> => {
+    return db
+        .select()
+        .from(widget)
+        .where(eq(widget.id, id))
+}
 
 //Dashboards
 export type Dashboard = {
@@ -151,6 +157,13 @@ export const getSettingsFromUser = async (userId: string): Promise<SettingsSelec
         .select()
         .from(settings)
         .where(eq(settings.userId, userId))
+}
+
+export const getSettingsFromId = async (id: string): Promise<SettingsSelect[]> => {
+    return db
+        .select()
+        .from(settings)
+        .where(eq(settings.id, id))
 }
 
 

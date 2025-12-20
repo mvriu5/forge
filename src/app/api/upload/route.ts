@@ -1,37 +1,59 @@
 import {NextResponse} from "next/server"
 import {put, del} from "@vercel/blob"
-import posthog from "posthog-js"
+import PostHogClient from "@/app/posthog"
+import { requireServerUserId } from "@/lib/serverAuth"
+const posthog = PostHogClient()
 
 const routePath = "/api/upload"
 
 export async function POST(request: Request) {
-    const { searchParams } = new URL(request.url)
-    const filename = searchParams.get('filename')
-
-    if (!filename || !request.body) return NextResponse.json({ error: "Filename is required" }, { status: 400 })
+    let userId: string | undefined = undefined
 
     try {
-        const blob = await put(filename, request.body, { access: 'public' })
-        return NextResponse.json(blob, { status: 200 })
-    } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "POST", filename })
-        return NextResponse.json({ error: "Uploading failed" }, { status: 500 })
-    }
+        const auth = await requireServerUserId(request)
+        userId = auth.userId
 
+        const { searchParams } = new URL(request.url)
+        const filename = searchParams.get('filename')
+
+        if (!filename || !request.body) return NextResponse.json({ error: "Filename is required" }, { status: 400 })
+
+        try {
+            const blob = await put(filename, request.body, { access: 'public' })
+            return NextResponse.json(blob, { status: 200 })
+        } catch (error) {
+            posthog.captureException(error, userId ?? undefined,  { route: routePath, method: "POST" })
+            return NextResponse.json({ error: "Uploading failed" }, { status: 500 })
+        }
+    } catch (authError) {
+        if ((authError as any)?.status === 401) return authError as any
+        posthog.captureException(authError, userId ?? undefined, { route: routePath, method: "POST" })
+        return NextResponse.json({ error: "Unauthorized or Internal Server Error" }, { status: 500 })
+    }
 }
 
 export async function DELETE(request: Request) {
-    const { searchParams } = new URL(request.url)
-    const filename = searchParams.get('filename')
-
-    if (!filename) return NextResponse.json({ error: "Filename is required" }, { status: 400 });
+    let userId: string | undefined = undefined
 
     try {
-        await del(filename)
-        return NextResponse.json({ status: 200 })
-    } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "DELETE", filename })
-        return NextResponse.json({ error: "Deletion failed" }, { status: 500 })
+        const auth = await requireServerUserId(request)
+        userId = auth.userId
+
+        const { searchParams } = new URL(request.url)
+        const filename = searchParams.get('filename')
+
+        if (!filename) return NextResponse.json({ error: "Filename is required" }, { status: 400 });
+
+        try {
+            await del(filename)
+            return NextResponse.json({ status: 200 })
+        } catch (error) {
+            posthog.captureException(error, userId, { route: routePath, method: "DELETE" })
+            return NextResponse.json({ error: "Deletion failed" }, { status: 500 })
+        }
+    } catch (authError) {
+        if ((authError as any)?.status === 401) return authError as any
+        posthog.captureException(authError, userId, { route: routePath, method: "DELETE" })
+        return NextResponse.json({ error: "Unauthorized or Internal Server Error" }, { status: 500 })
     }
 }
-

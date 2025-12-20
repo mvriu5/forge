@@ -118,6 +118,6 @@ export const getGridClasses = (breakpoint: Breakpoint): string => {
         case "tablet":
             return "grid grid-cols-2 auto-rows-[200px] gap-4 p-4"
         default:
-            return "h-screen grid grid-cols-4 grid-rows-4 gap-4 p-4"
+            return "h-[calc(100vh-48px)] grid grid-cols-4 grid-rows-4 gap-4 p-4"
     }
 }

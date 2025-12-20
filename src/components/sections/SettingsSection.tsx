@@ -173,8 +173,8 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
             updatedAt: settings.updatedAt,
         }
 
-        setTheme(values.theme)
         await updateSettings(newSettings)
+        setTheme(values.theme)
         toast.success("Successfully updated your settings!")
         handleClose()
    }
@@ -278,7 +278,7 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
                             <Button type="button" className="w-max" onClick={handleClose}>
                                 Cancel
                             </Button>
-                            <Button variant="brand" className="w-max" type="submit" disabled={form.formState.isSubmitting || updateSettingsStatus === "pending"}>
+                            <Button variant="brand" className="w-max" type="submit" disabled={!form.formState.isDirty || form.formState.isSubmitting || updateSettingsStatus === "pending"}>
                                 {(form.formState.isSubmitting || updateSettingsStatus === "pending") && <Spinner />}
                                 Save
                             </Button>

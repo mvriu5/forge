@@ -1,25 +1,26 @@
-import {NextResponse} from "next/server"
+import PostHogClient from "@/app/posthog"
 import {
     createDashboard,
     deleteDashboard,
     deleteWidgetsFromDashboard, getDashboardFromId,
-    getDashboardsFromUser, getWidgetsFromDashboard, getWidgetsFromUser,
+    getDashboardsFromUser,
     updateDashboard
 } from "@/database"
-import posthog from "posthog-js"
+import { requireServerUserId } from "@/lib/serverAuth"
+import { NextResponse } from "next/server"
+const posthog = PostHogClient()
 
 const routePath = "/api/dashboards"
 
 export async function POST(req: Request) {
-    let userId: string | null = null
+    let userId: string | undefined = undefined
+
     try {
+        const auth = await requireServerUserId(req)
+        userId = auth.userId
+
         const body = await req.json()
         const { name } = body
-        userId = body.userId
-
-        if (!userId) {
-            return NextResponse.json({ error: "userId is required" }, { status: 400 })
-        }
 
         const newDashboard = await createDashboard({
             userId,
@@ -28,87 +29,93 @@ export async function POST(req: Request) {
             updatedAt: new Date()
         })
 
-        return NextResponse.json(newDashboard, { status: 201 })
+        return NextResponse.json(newDashboard, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "POST", userId })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, userId, { route: routePath, method: "POST" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function GET(req: Request) {
-    let userId: string | null = null
-    let id: string | null = null
+    let userId: string | undefined = undefined
+    let id: string | undefined = undefined
 
     try {
-        const { searchParams } = new URL(req.url)
-        userId = searchParams.get("userId")
-        id = searchParams.get("id")
+        const auth = await requireServerUserId(req)
+        userId = auth.userId
 
-        if (!userId && !id) {
-            return NextResponse.json({ error: "userId or id is required as a query parameter" }, { status: 400 })
-        }
+        const { searchParams } = new URL(req.url)
+        id = searchParams.get("id") ?? undefined
 
         if (id) {
             const dashboards = await getDashboardFromId(id)
             return NextResponse.json(dashboards, { status: 200 })
         }
 
-        if (userId) {
-            const dashboards = await getDashboardsFromUser(userId)
-            return NextResponse.json(dashboards, { status: 200 })
-        }
+        const dashboards = await getDashboardsFromUser(userId)
+        return NextResponse.json(dashboards, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "GET", userId, id })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, id, { route: routePath, method: "GET", userId })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function PUT(req: Request) {
-    let id: string | null = null
+    let id: string | undefined = undefined
 
     try {
-        const body = await req.json()
-        const { name } = body
-        id = body.id
+        const auth = await requireServerUserId(req)
+        const userId = auth.userId
 
-        if (!id) {
-            return NextResponse.json({ error: "Dashboard id is required" }, { status: 400 })
-        }
+        const body = await req.json()
+        const { name, id: bodyId } = body
+        id = bodyId ?? undefined
+
+        if (!id) return NextResponse.json({ error: "Dashboard id is required" }, { status: 400 })
+
+        const existing = (await getDashboardFromId(id))[0]
+        if (!existing) return NextResponse.json({ error: "Dashboard not found" }, { status: 404 })
+        if (existing.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
         const updatedDashboard = await updateDashboard(id, { name })
 
-        if (!updatedDashboard) {
-            return NextResponse.json({ error: "Dashboard not found or could not be updated" }, { status: 404 })
-        }
+        if (!updatedDashboard) return NextResponse.json({ error: "Dashboard not found or could not be updated" }, { status: 404 })
 
         return NextResponse.json(updatedDashboard, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "PUT", id })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, id, { route: routePath, method: "PUT" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function DELETE(req: Request) {
-    let id: string | null = null
+    let id: string | undefined = undefined
 
     try {
-        const { searchParams } = new URL(req.url)
-        id = searchParams.get('id')
+        const auth = await requireServerUserId(req)
+        const userId = auth.userId
 
-        if (!id) {
-            return NextResponse.json({ error: "Dashboard id is required" }, { status: 400 })
-        }
+        const { searchParams } = new URL(req.url)
+        id = searchParams.get('id') ?? undefined
+
+        if (!id) return NextResponse.json({ error: "Dashboard id is required" }, { status: 400 })
+
+        const existing = (await getDashboardFromId(id))[0]
+        if (!existing) return NextResponse.json({ error: "Dashboard not found" }, { status: 404 })
+        if (existing.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
         const deletedDashboard = await deleteDashboard(id)
         await deleteWidgetsFromDashboard(id)
 
-        if (!deletedDashboard) {
-            return NextResponse.json({ error: "Dashboard not found or could not be deleted" }, { status: 404 })
-        }
+        if (!deletedDashboard) return NextResponse.json({ error: "Dashboard not found or could not be deleted" }, { status: 404 })
 
         return NextResponse.json(deletedDashboard, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "DELETE", id })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, id, { route: routePath, method: "DELETE" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

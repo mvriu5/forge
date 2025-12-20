@@ -1,4 +1,5 @@
 import posthog from "posthog-js"
+import { requireServerUserId } from "@/lib/serverAuth"
 
 export const runtime = "edge"
 export const dynamic = "force-dynamic"
@@ -15,15 +16,11 @@ const isTerminatedFetchError = (error: unknown) => {
 }
 
 export async function GET(req: Request) {
-    let userId: string | null = null
+    let userId: string | undefined = undefined
 
     try {
-        const { searchParams } = new URL(req.url)
-        userId = searchParams.get("userId")
-
-        if (!userId) {
-            return new Response(JSON.stringify({ error: "userId is required as a query parameter" }), { status: 400, headers: { "Content-Type": "application/json" } })
-        }
+        const auth = await requireServerUserId(req)
+        userId = auth.userId
 
         const channel = `notifications:live:${userId}`
         const url = `${process.env.UPSTASH_REDIS_REST_URL}/subscribe/${encodeURIComponent(channel)}`

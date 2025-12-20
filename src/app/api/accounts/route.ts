@@ -1,22 +1,17 @@
 import {NextResponse} from "next/server"
 import {Account, getGithubAccount, getGoogleAccount, getNotionAccount, updateAccount} from "@/database"
-import posthog from "posthog-js"
+import PostHogClient from "@/app/posthog"
+import { requireServerUserId } from "@/lib/serverAuth"
+const posthog = PostHogClient()
 
 const routePath = "/api/accounts"
 
 export async function GET(req: Request) {
-    let userId: string | null = null
+    let userId: string | undefined = undefined
 
     try {
-        const { searchParams } = new URL(req.url)
-        userId = searchParams.get('userId')
-
-        if (!userId) {
-            return NextResponse.json(
-                { error: "userId is required as a query parameter" },
-                { status: 400 }
-            )
-        }
+        const auth = await requireServerUserId(req)
+        userId = auth.userId
 
         const accounts: Account[] = []
         accounts.push((await getGoogleAccount(userId))[0])
@@ -25,31 +20,32 @@ export async function GET(req: Request) {
 
         return NextResponse.json(accounts, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "GET", userId })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, userId, { route: routePath, method: "GET" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function PUT(req: Request) {
-    let userId: string | null = null
+    let userId: string | undefined = undefined
+
     try {
+        const auth = await requireServerUserId(req)
+        userId = auth.userId
+
         const body = await req.json()
         const { provider, refreshToken } = body
-        userId = body.userId
 
-        if (!userId || !provider) {
-            return NextResponse.json({ error: "UserId and Integration are required" }, { status: 400 })
-        }
+        if (!provider) return NextResponse.json({ error: "Integration provider is required" }, { status: 400 })
 
         const updatedAccount = await updateAccount(userId, provider, {refreshToken})
 
-        if (!updatedAccount) {
-            return NextResponse.json({ error: "Account not found or could not be updated" }, { status: 404 })
-        }
+        if (!updatedAccount) return NextResponse.json({ error: "Account not found or could not be updated" }, { status: 404 })
 
         return NextResponse.json(updatedAccount, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "PUT", userId })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, userId, { route: routePath, method: "PUT" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

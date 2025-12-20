@@ -1,24 +1,31 @@
 import {NextResponse} from "next/server"
 import {getUserFromId} from "@/database"
-import posthog from "posthog-js"
+import PostHogClient from "@/app/posthog"
+import { requireServerUserId } from "@/lib/serverAuth"
+const posthog = PostHogClient()
 
 const routePath = "/api/users"
 
 export async function GET(req: Request) {
-    let id: string | null = null
+    let id: string | undefined = undefined
 
     try {
         const { searchParams } = new URL(req.url)
-        id = searchParams.get('id')
+        id = searchParams.get('id') ?? undefined
 
-        if (!id) {
-            return NextResponse.json({ error: "id is required as a query parameter" }, { status: 400 })
+        if (id) {
+            const users = await getUserFromId(id)
+            return NextResponse.json(users, { status: 200 })
         }
 
-        const users = await getUserFromId(id)
+        const auth = await requireServerUserId(req)
+        const userId = auth.userId
+
+        const users = await getUserFromId(userId)
         return NextResponse.json(users, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "GET", id })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, id, { route: routePath, method: "GET" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

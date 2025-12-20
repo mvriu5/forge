@@ -1,6 +1,7 @@
 import {NextResponse} from "next/server"
 import {getNotionAccount} from "@/database"
-import posthog from "posthog-js"
+import PostHogClient from "@/app/posthog"
+const posthog = PostHogClient()
 import {NOTION_VERSION, getTitleFromProperties} from "@/lib/notion"
 
 const routePath = "/api/notion/pages"
@@ -58,20 +59,16 @@ async function fetchChildPages(accessToken: string, pageId: string): Promise<Not
 }
 
 export async function GET(req: Request) {
-    let userId: string | null = null
+    let userId: string | undefined = undefined
 
     try {
         const { searchParams } = new URL(req.url)
-        userId = searchParams.get("userId")
+        userId = searchParams.get("userId") ?? undefined
 
-        if (!userId) {
-            return NextResponse.json({ error: "userId is required" }, { status: 400 })
-        }
+        if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 })
 
         const accessToken = await getAccessToken(userId)
-        if (!accessToken) {
-            return NextResponse.json({ error: "Notion integration missing or expired" }, { status: 401 })
-        }
+        if (!accessToken) return NextResponse.json({ error: "Notion integration missing or expired" }, { status: 401 })
 
         const response = await fetch("https://api.notion.com/v1/search", {
             method: "POST",
@@ -118,13 +115,14 @@ export async function GET(req: Request) {
                     }
                 }
             } catch (error) {
-                posthog.captureException(error, { route: routePath, method: "GET", userId, pageId: current.id })
+                posthog.captureException(error, current.id, { route: routePath, method: "GET", userId })
             }
         }
 
         return NextResponse.json({ pages: allPages }, { status: 200 })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "GET", userId })
+        if (error instanceof NextResponse) throw error
+        posthog.captureException(error, userId, { route: routePath, method: "GET" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
