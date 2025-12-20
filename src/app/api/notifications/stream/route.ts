@@ -1,7 +1,6 @@
-import posthog from "posthog-js"
 import { requireServerUserId } from "@/lib/serverAuth"
 
-export const runtime = "edge"
+export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 const routePath = "/api/notifications/stream"
@@ -40,7 +39,7 @@ export async function GET(req: Request) {
                 return new Response(null, { status: 499 })
             }
 
-            posthog.captureException(error, { route: routePath, method: "GET", userId })
+            console.error("api/notifications/stream upstream subscribe failed", error, { route: routePath, method: "GET", userId })
             return new Response("Upstream subscribe failed", { status: 502 })
         }
 
@@ -62,7 +61,7 @@ export async function GET(req: Request) {
                 await reader.cancel()
             } catch (error) {
                 if (isAbortError(error)) return
-                posthog.captureException(error, { route: routePath, method: "GET", userId })
+                console.error("api/notifications/stream cancelUpstream error", error, { route: routePath, method: "GET", userId })
             }
         }
 
@@ -141,7 +140,7 @@ export async function GET(req: Request) {
                                 const normalized = `data: ${JSON.stringify(parsed)}\n\n`
                                 controller.enqueue(encoder.encode(normalized))
                             } catch (error) {
-                                posthog.captureException(error, { route: routePath, method: "GET", userId })
+                                console.error("api/notifications/stream parse error", error, { route: routePath, method: "GET", userId })
                             }
 
                             boundary = buffer.indexOf("\n\n")
@@ -154,7 +153,7 @@ export async function GET(req: Request) {
                             return
                         }
 
-                        posthog.captureException(error, { route: routePath, method: "GET", userId })
+                        console.error("api/notifications/stream stream error", error, { route: routePath, method: "GET", userId })
                         streamClosed = true
                         controller.error(error)
                         await cancelUpstream()
@@ -175,7 +174,7 @@ export async function GET(req: Request) {
             }
         })
     } catch (error) {
-        posthog.captureException(error, { route: routePath, method: "GET", userId })
+        console.error("api/notifications/stream fatal error", error, { route: routePath, method: "GET", userId })
         return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500, headers: { "Content-Type": "application/json" } })
     }
 }

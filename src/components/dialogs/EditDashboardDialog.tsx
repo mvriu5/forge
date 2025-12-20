@@ -111,7 +111,7 @@ function EditDashboardDialog({dashboard}: {dashboard: Dashboard}) {
                                     variant={"brand"}
                                     className={"w-max"}
                                     type={"submit"}
-                                    disabled={form.formState.isSubmitting || dashboard.name === form.getValues().name}
+                                    disabled={form.formState.isSubmitting || !form.formState.isDirty}
                                 >
                                     {(form.formState.isSubmitting) && <Spinner/>}
                                     Save

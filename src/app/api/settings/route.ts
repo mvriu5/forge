@@ -51,7 +51,7 @@ export async function PUT(req: Request) {
 
     try {
         const body = await req.json()
-        const { lastDashboardId, config, id: bodyId } = body
+        const { lastDashboardId, config, onboardingCompleted, id: bodyId } = body
         id = bodyId ?? undefined
 
         if (!id) {
@@ -62,7 +62,7 @@ export async function PUT(req: Request) {
         if (!existing) return NextResponse.json({ error: "Settings not found" }, { status: 404 })
         if (existing.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
-        const updatedSettings = await updateSettings(id, { lastDashboardId, config })
+        const updatedSettings = await updateSettings(id, { lastDashboardId, config, onboardingCompleted })
 
         if (!updatedSettings) return NextResponse.json({ error: "Settings not found or could not be updated" }, { status: 404 })
 

@@ -1,20 +1,20 @@
 "use client"
 
-import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
-import {CalendarPlus, Info} from "lucide-react"
-import {Button} from "@/components/ui/Button"
-import React, {useEffect, useMemo, useState} from "react"
-import {useTooltip} from "@/components/ui/TooltipProvider"
-import {z} from "zod"
-import {SubmitHandler, useForm} from "react-hook-form"
-import {zodResolver} from "@hookform/resolvers/zod"
-import {Form, FormDescription, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
-import {Spinner} from "@/components/ui/Spinner"
-import {DatePicker} from "@/components/ui/Datepicker"
-import {TimePicker} from "@/components/ui/TimePicker"
-import {useGoogleCalendar} from "@/hooks/useGoogleCalendar"
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select"
-import {Switch} from "@/components/ui/Switch"
+import { Button } from "@/components/ui/Button"
+import { DatePicker } from "@/components/ui/Datepicker"
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/Dialog"
+import { Form, FormDescription, FormField, FormInput, FormItem, FormLabel, FormMessage } from "@/components/ui/Form"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select"
+import { Spinner } from "@/components/ui/Spinner"
+import { Switch } from "@/components/ui/Switch"
+import { TimePicker } from "@/components/ui/TimePicker"
+import { useTooltip } from "@/components/ui/TooltipProvider"
+import { useGoogleCalendar } from "@/hooks/useGoogleCalendar"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { CalendarPlus, Info } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { SubmitHandler, useForm } from "react-hook-form"
+import { z } from "zod"
 
 const formSchema = z.object({
     calendarId: z.string(),
@@ -123,7 +123,7 @@ function CreateMeetingDialog() {
                     <CalendarPlus size={16} />
                 </Button>
             </DialogTrigger>
-            <DialogContent className={"md:min-w-[300px] p-4"}>
+            <DialogContent className={"md:min-w-75 p-4"}>
                 <DialogHeader className={"flex flex-row justify-between items-start"}>
                     <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
                         New meeting
@@ -148,7 +148,7 @@ function CreateMeetingDialog() {
                                                     <SelectValue/>
                                                 </SelectTrigger>
                                                 <SelectContent className={"border-main/40"}>
-                                                    {calendarsWithAccess?.map((cal: { id: string, summary: string, backgroundColor: string }) => (
+                                                    {calendarsWithAccess?.map((cal) => (
                                                         <SelectItem key={cal.id} value={cal.id} className={"px-2"} checkIcon={false}>
                                                             <div className={"flex items-center gap-2"}>
                                                                 <div className={"size-3 rounded-sm"} style={{backgroundColor: cal.backgroundColor ?? "white"}}/>
@@ -278,4 +278,4 @@ function CreateMeetingDialog() {
     )
 }
 
-export {CreateMeetingDialog}
+export { CreateMeetingDialog }

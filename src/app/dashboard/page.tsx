@@ -47,8 +47,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (!userId || dashboardsLoading || settingsLoading || !settings) return
-        const onboardingCompleted = settings.config?.onboardingCompleted === true
-        if (!onboardingCompleted) {
+        if (!settings.onboardingCompleted) {
             const timer = setTimeout(() => setOnboardingOpen(true), 500)
             return () => clearTimeout(timer)
         }
@@ -60,9 +59,10 @@ export default function Dashboard() {
 
     const handleOnboardingComplete = useCallback(async () => {
         if (!settings) return
+
         await updateSettings({
             ...settings,
-            config: {...settings.config, onboardingCompleted: true}
+            onboardingCompleted: true
         })
         if (dashboards && dashboards.length === 0) {
             setTimeout(() => setDialogOpen(true), 300)

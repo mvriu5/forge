@@ -1,4 +1,4 @@
-import {createWidget, deleteWidget, getWidgetsFromDashboard, getWidgetsFromUser, updateWidget, getWidgetFromId} from "@/database"
+import {createWidget, deleteWidget, getWidgetsFromDashboard, getWidgetsFromUser, updateWidget, getWidgetFromId, getDashboardFromId} from "@/database"
 import {NextResponse} from "next/server"
 import PostHogClient from "@/app/posthog"
 import { requireServerUserId } from "@/lib/serverAuth"
@@ -43,16 +43,21 @@ export async function GET(req: Request) {
     let dashboardId: string | undefined = undefined
 
     try {
+        const auth = await requireServerUserId(req)
+        userId = auth.userId
+
         const { searchParams } = new URL(req.url)
         dashboardId = searchParams.get('dashboardId') ?? undefined
 
         if (dashboardId) {
+            const dashboard = (await getDashboardFromId(dashboardId))[0]
+
+            if (!dashboard) return NextResponse.json({ error: "Dashboard not found" }, { status: 404 })
+            if (dashboard.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+
             const widgets = await getWidgetsFromDashboard(dashboardId)
             return NextResponse.json(widgets, { status: 200 })
         }
-
-        const auth = await requireServerUserId(req)
-        userId = auth.userId
 
         const widgets = await getWidgetsFromUser(userId)
         return NextResponse.json(widgets, { status: 200 })

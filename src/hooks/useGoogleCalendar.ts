@@ -11,6 +11,7 @@ const GOOGLE_EVENT_QUERY_KEY = (accessToken: string | null, calendars: string[])
 interface GoogleCalendar {
     id: string
     summary: string
+    accessRole: string
     backgroundColor?: string
     primary?: boolean
 }

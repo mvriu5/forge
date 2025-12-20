@@ -74,6 +74,7 @@ export const settings = pgTable("settings", {
     userId: text('user_id').notNull().references(()=> user.id, { onDelete: 'cascade' }),
     lastDashboardId: uuid('last_dashboard_id').references(()=> dashboard.id, { onDelete: 'set null' }),
     config: jsonb('config'),
+    onboardingCompleted: boolean('onboarding_completed').notNull().default(false),
     createdAt: timestamp('created_at').notNull(),
     updatedAt: timestamp('updated_at').notNull()
 })

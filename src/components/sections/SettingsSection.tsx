@@ -161,13 +161,14 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
             countdownReminder: values.countdownReminder,
             githubReminder: values.githubReminder,
             meetingReminders: values.meetingReminders,
-            deleteTodos: values.deleteTodos,
+            deleteTodos: values.deleteTodos
         }
 
         const newSettings: Settings = {
             id: settings.id,
             userId: settings.userId,
             lastDashboardId: settings.lastDashboardId,
+            onboardingCompleted: settings.onboardingCompleted,
             config: newConfig,
             createdAt: settings.createdAt,
             updatedAt: settings.updatedAt,

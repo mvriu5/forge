@@ -237,7 +237,7 @@ function OnboardingDialog({open, onOpenChange, onComplete}: OnboardingDialogProp
                 </DialogHeader>
 
                 <div className={"relative flex items-center px-4"}>
-                    <DotPattern className="z-0 inset-0 absolute opacity-25 -my-4 h-70"/>
+                    <DotPattern className="z-0 inset-0 absolute opacity-65 dark:opacity-25 -my-4 h-70"/>
                     <button
                         type={"button"}
                         onClick={handlePrevious}

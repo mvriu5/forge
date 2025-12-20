@@ -49,8 +49,12 @@ export async function GET(req: Request) {
         id = searchParams.get("id") ?? undefined
 
         if (id) {
-            const dashboards = await getDashboardFromId(id)
-            return NextResponse.json(dashboards, { status: 200 })
+            const dashboard = (await getDashboardFromId(id))[0]
+
+            if (!dashboard) return NextResponse.json({ error: "Dashboard not found" }, { status: 404 })
+            if (dashboard.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+
+            return NextResponse.json([dashboard], { status: 200 })
         }
 
         const dashboards = await getDashboardsFromUser(userId)

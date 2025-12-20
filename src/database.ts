@@ -129,6 +129,7 @@ export type Settings = {
     userId: string
     lastDashboardId: string | null
     config: Record<string, any>
+    onboardingCompleted: boolean
     createdAt: Date
     updatedAt: Date
 }

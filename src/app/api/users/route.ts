@@ -13,15 +13,12 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url)
         id = searchParams.get('id') ?? undefined
 
-        if (id) {
-            const users = await getUserFromId(id)
-            return NextResponse.json(users, { status: 200 })
-        }
+        const { userId } = await requireServerUserId(req)
+        const requestedUserId = id ?? userId
 
-        const auth = await requireServerUserId(req)
-        const userId = auth.userId
+        if (id && id !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
-        const users = await getUserFromId(userId)
+        const users = await getUserFromId(requestedUserId)
         return NextResponse.json(users, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
