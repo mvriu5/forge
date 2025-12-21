@@ -185,7 +185,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                     </Button>
                 </div>
             </DialogTrigger>
-            <DialogContent className={"md:min-w-200 h-[80vh] max-h-[80vh] w-full overflow-hidden gap-0 p-2 flex flex-col"}>
+            <DialogContent className={"md:min-w-200 max-w-[90vw] h-[80vh] max-h-[80vh] w-full overflow-hidden gap-0 p-2 flex flex-col"}>
                 <DialogHeader className={"flex flex-row items-center gap-2"}>
                     {isPending ? (
                         <div className="flex items-center gap-2">

@@ -17,9 +17,9 @@ function ThemeOption({ variant, selected = false, className, onClick, ...rest }:
                 role="button"
                 aria-pressed={selected}
                 className={cn(
-                "shadow-xs dark:shadow-md rounded-lg bg-[#ebebeb] border border-main/40 h-12 w-16 p-1 flex flex-col gap-1",
-                selected && "ring-2 ring-brand",
-                className
+                    "shadow-xs dark:shadow-md rounded-lg bg-[#ebebeb] border border-main/40 h-12 w-16 p-1 flex flex-col gap-1",
+                    selected && "ring-2 ring-brand",
+                    className
                 )}
                 onClick={onClick}
                 {...rest}

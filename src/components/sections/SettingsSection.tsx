@@ -279,7 +279,7 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
                                     <p className="font-mono text-primary">General</p>
                                 </div>
 
-                                <div className="w-full flex flex-col gap-2 p-2 bg-secondary rounded-md border border-main/40">
+                                <div className="w-full flex flex-col gap-4 sm:gap-2 p-2 bg-secondary rounded-md border border-main/40">
                                     {fields.filter((f) => f.section === "general").map(renderField)}
                                 </div>
 
@@ -288,7 +288,7 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
                                     <p className="font-mono text-primary">Widget</p>
                                 </div>
 
-                                <div className="w-full flex flex-col gap-2 items-center p-2 bg-secondary rounded-md border border-main/40">
+                                <div className="w-full flex flex-col gap-4 sm:gap-2 items-center p-2 bg-secondary rounded-md border border-main/40">
                                 {fields.filter((f) => f.section === "widget").map(renderField)}
                                 </div>
                             </div>

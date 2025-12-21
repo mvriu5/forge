@@ -17,7 +17,7 @@ const PopoverContent = ({ className, align = "center", sideOffset = 4, ...props 
                 align={align}
                 sideOffset={sideOffset}
                 className={cn(
-                    "z-50 w-72 rounded-md bg-primary p-4 text-secondary border border-main/40 shadow-[10px_10px_20px_rgba(0,0,0,0.1)]",
+                    "max-h-96 z-50 w-auto min-w-[--radix-popover-trigger-width] rounded-md bg-primary p-2 text-secondary border border-main/40 shadow-[10px_10px_20px_rgba(0,0,0,0.1)]",
                     "dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)] outline-none data-[side=bottom]:slide-in-from-top-2",
                     CONTAINER_STYLES.animation,
                     className

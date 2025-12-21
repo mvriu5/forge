@@ -218,7 +218,7 @@ function OnboardingDialog({open, onOpenChange, onComplete}: OnboardingDialogProp
             }}
         >
             <DialogContent
-                className={"md:min-w-130 p-0"}
+                className={"md:min-w-130 max-w-[90vw] p-0"}
                 onPointerDownOutside={(e) => e.preventDefault()}
                 onEscapeKeyDown={(e) => e.preventDefault()}
             >

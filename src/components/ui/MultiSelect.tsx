@@ -25,7 +25,7 @@ interface MultiSelectProps extends Omit<React.ComponentPropsWithoutRef<typeof Po
 }
 
 const triggerStyles = cn(
-    "group flex h-8 w-42 items-center justify-between gap-2 rounded-md border border-main/60 bg-secondary px-2 py-1 text-sm",
+    "group flex h-8 w-full sm:w-42 items-center justify-between gap-2 rounded-md border border-main/60 bg-secondary px-2 py-1 text-sm",
     "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 focus:outline-0 shadow-xs dark:shadow-md"
 )
 
@@ -68,9 +68,8 @@ const MultiSelect = forwardRef<React.ComponentRef<"button">, MultiSelectProps>((
             </PopoverTrigger>
             <PopoverContent
                 align="end"
-                sideOffset={4}
                 className={cn(
-                    "p-0 min-w-42 w-(--radix-select-trigger-width) max-w-[18rem] border border-main/40",
+                    "p-0 min-w-32 border border-main/40",
                     "bg-primary text-secondary shadow-[10px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)]",
                     "max-h-72 overflow-hidden data-[side=bottom]:slide-in-from-top-2",
                     CONTAINER_STYLES.animation,

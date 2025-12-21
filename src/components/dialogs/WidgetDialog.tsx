@@ -124,7 +124,7 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
                     {title}
                 </Button>
             </DialogTrigger>
-            <DialogContent className={"md:min-w-200 pl-8 pt-8"}>
+            <DialogContent className={"md:min-w-200 max-w-[90vw] pl-8 pt-8"}>
                 <DialogHeader className={"flex flex-row justify-between items-center pr-4"}>
                     <DialogTitle>
                         <div className={"flex items-center gap-2"}>

@@ -35,7 +35,7 @@ function SettingsDialog() {
                     <p>Settings</p>
                 </button>
             </DialogTrigger>
-            <DialogContent className={"p-0 w-200 max-w-[90vw]"}>
+            <DialogContent className={"p-0 w-200  max-w-[90vw] overflow-hidden"}>
                 <VisuallyHidden>
                     <DialogHeader>
                         <DialogTitle>
@@ -49,23 +49,23 @@ function SettingsDialog() {
 
                         <ToggleGroup
                             type="single"
-                            className={"flex flex-row sm:flex-col gap-2 border-0 bg-transparent px-0 justify-start items-start text-sm sm:text-md"}
+                            className={"flex flex-row sm:flex-col gap-0 sm:gap-2 border-0 bg-transparent px-0 justify-start items-start"}
                             value={tab}
                             onValueChange={(value) => value && setTab(value)}
                         >
-                            <ToggleGroupItem value="profile" className={"w-full flex items-center justify-center sm:justify-start gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                            <ToggleGroupItem value="profile" className={"w-full flex items-center justify-center sm:justify-start gap-1 text-left px-1 sm:px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
                                 <User size={14}/>
                                 Profile
                             </ToggleGroupItem>
-                            <ToggleGroupItem value="integrations" className={"w-full flex items-center justify-center sm:justify-start gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                            <ToggleGroupItem value="integrations" className={"w-full flex items-center justify-center sm:justify-start gap-1 text-left sm:px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
                                 <Blocks size={14}/>
                                 Integrations
                             </ToggleGroupItem>
-                            <ToggleGroupItem value="dashboards" className={"w-full flex items-center justify-center sm:justify-start gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                            <ToggleGroupItem value="dashboards" className={"w-full flex items-center justify-center sm:justify-start gap-1 text-left sm:px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
                                 <LayoutDashboard size={14}/>
                                 Dashboards
                             </ToggleGroupItem>
-                            <ToggleGroupItem value="settings" className={"w-full flex items-center justify-center sm:justify-start gap-1 text-left text-md px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
+                            <ToggleGroupItem value="settings" className={"w-full flex items-center justify-center sm:justify-start gap-1 text-left sm:px-2 h-8 data-[state=on]:bg-brand/5 border border-transparent data-[state=on]:border-brand/20 data-[state=on]:text-brand"}>
                                 <Wrench size={14}/>
                                 Settings
                             </ToggleGroupItem>

@@ -24,13 +24,13 @@ function SelectField({ name, label, description, options, control, className }: 
             render={({ field }) => (
                 <FieldRow label={label} description={description} className={className}>
                     <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="w-42">
-                        <SelectValue placeholder="Select…" />
+                        <SelectTrigger className="w-full sm:w-42">
+                            <SelectValue placeholder="Select…" />
                         </SelectTrigger>
-                        <SelectContent className="border-main/40">
+                        <SelectContent className="border-main/40" align="end">
                         {options.map((o) => (
                             <SelectItem key={o.value} value={o.value}>
-                            {o.label}
+                                {o.label}
                             </SelectItem>
                         ))}
                         </SelectContent>
