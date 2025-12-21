@@ -21,7 +21,7 @@ const LazyOnboardingDialog = React.lazy(() => import("@/components/dialogs/Onboa
 export default function Dashboard() {
     const {userId, isLoading: sessionLoading} = useSession()
     const {settings, isLoading: settingsLoading, updateSettings} = useSettings(userId)
-    const {dashboards, currentDashboard, isLoading: dashboardsLoading, addDashboard, addDashboardStatus} = useDashboards(userId, settings)
+    const {dashboards, currentDashboard, isLoading: dashboardsLoading, addDashboard, addDashboardStatus,setSelectedDashboard} = useDashboards(userId, settings)
     const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidget, updateWidgetPosition, setWidgets} = useWidgets(userId)
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
@@ -71,6 +71,7 @@ export default function Dashboard() {
 
     const handleDashboardChange = useCallback(async (dashboardId: string | null) => {
         if (!settings) return
+        setSelectedDashboard(dashboardId)
         await updateSettings({ ...settings, lastDashboardId: dashboardId })
     }, [settings, updateSettings])
 

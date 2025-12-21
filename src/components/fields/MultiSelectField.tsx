@@ -1,6 +1,5 @@
 "use client"
 
-import React from "react"
 import { FormField } from "@/components/ui/Form"
 import { MultiSelect } from "@/components/ui/MultiSelect"
 import { FieldRow } from "./FieldRow"
@@ -30,11 +29,11 @@ function MultiSelectField({name, label, description, options, control, placehold
                 return (
                 <FieldRow label={label} description={description} className={className}>
                     <MultiSelect
-                    options={options}
-                    displayValue={displayValue}
-                    value={value}
-                    onValueChange={field.onChange}
-                    placeholder={placeholder}
+                        options={options}
+                        displayValue={displayValue}
+                        value={value}
+                        onValueChange={field.onChange}
+                        placeholder={placeholder}
                     />
                 </FieldRow>
                 )

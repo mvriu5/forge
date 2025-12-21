@@ -1,6 +1,6 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Dashboard, DashboardInsert, Settings} from "@/database"
-import {useMemo} from "react"
+import {useMemo, useState} from "react"
 import posthog from "posthog-js"
 
 const DASHBOARD_QUERY_KEY = (userId: string | undefined) => ["dashboards", userId] as const
@@ -101,14 +101,26 @@ export function useDashboards(userId: string | undefined, settings: Settings | n
         })
     })
 
+    const [localSelectedDashboardId, setLocalSelectedDashboardId] = useState<string | null>(null)
+
     const currentDashboard = useMemo(() => {
-        if (!settings) return null
         if (!dashboardsQuery.data || dashboardsQuery.data.length === 0) return null
-        if (settings.lastDashboardId) {
+
+        if (localSelectedDashboardId) {
+            return dashboardsQuery.data.find((d) => d.id === localSelectedDashboardId) ?? dashboardsQuery.data[0]
+        }
+
+        const openId = settings?.config?.openDashboard
+        if (openId && openId !== "None") {
+            return dashboardsQuery.data.find((d) => d.id === openId) ?? dashboardsQuery.data[0]
+        }
+
+        if (settings?.lastDashboardId) {
             return dashboardsQuery.data.find((d) => d.id === settings.lastDashboardId) ?? dashboardsQuery.data[0]
         }
+
         return dashboardsQuery.data[0]
-    }, [dashboardsQuery.data, settings])
+    }, [dashboardsQuery.data, settings, localSelectedDashboardId])
 
     return {
         dashboards: dashboardsQuery.data ?? null,
@@ -118,6 +130,7 @@ export function useDashboards(userId: string | undefined, settings: Settings | n
         addDashboard: (input: DashboardInsert) => addDashboardMutation.mutateAsync(input),
         updateDashboard: (dashboard: Dashboard) => refreshDashboardMutation.mutateAsync(dashboard),
         removeDashboard: (dashboardId: string) => removeDashboardMutation.mutateAsync(dashboardId),
+        setSelectedDashboard: (id: string | null) => setLocalSelectedDashboardId(id),
         addDashboardStatus: addDashboardMutation.status,
         updateDashboardStatus: refreshDashboardMutation.status,
         removeDashboardStatus: removeDashboardMutation.status,

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AppWindow, Settings as SettingsIcon } from "lucide-react"
 import { useTheme } from "next-themes"
-import { Suspense, useMemo } from "react"
+import { Suspense, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -24,6 +24,7 @@ import { FieldRow } from "@/components/fields/FieldRow"
 import { MultiSelectField } from "@/components/fields/MultiSelectField"
 import { SelectField } from "@/components/fields/SelectField"
 import { SwitchField } from "@/components/fields/SwitchField"
+import { useDashboards } from "@/hooks/data/useDashboards"
 
 const TIMEZONES = [
     "UTC",
@@ -39,6 +40,7 @@ const TIMEZONES = [
 
 const formSchema = z.object({
     theme: z.enum(["light", "dark", "system"]),
+    openDashboard: z.string(),
     hourFormat: z.enum(["12", "24"]),
     timezone: z.enum(TIMEZONES),
     todoReminder: z.boolean(),
@@ -68,13 +70,21 @@ const FIELDS: {
     },
     {
         section: "general",
+        name: "openDashboard",
+        type: "select",
+        label: "Dashboard on open",
+        description: "Select which dashboard you prefer to open when you start the application. 'None': Your last used dashboard will be opened after your next login.",
+        options: [],
+    },
+    {
+        section: "general",
         name: "hourFormat",
         type: "select",
         label: "Hour Format",
         description: "Select which hour format you prefer to use in the application.",
         options: [
-        { label: "12-Hour Clock", value: "12" },
-        { label: "24-Hour Clock", value: "24" },
+            { label: "12-Hour Clock", value: "12" },
+            { label: "24-Hour Clock", value: "24" },
         ],
     },
     {
@@ -126,20 +136,23 @@ const FIELDS: {
 function SettingsSection({ handleClose }: { handleClose: () => void }) {
     const { userId } = useSession()
     const { settings, updateSettings, updateSettingsStatus } = useSettings(userId)
+    const { dashboards } = useDashboards(userId, settings)
     const { theme, setTheme } = useTheme()
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-        theme: (settings?.config?.theme as FormValues["theme"]) ?? (theme as FormValues["theme"]) ?? "system",
-        hourFormat: (settings?.config?.hourFormat as FormValues["hourFormat"]) ?? "24",
-        timezone: (settings?.config?.timezone as FormValues["timezone"]) ?? "UTC",
-        todoReminder: settings?.config?.todoReminder ?? false,
-        countdownReminder: settings?.config?.countdownReminder ?? false,
-        githubReminder: settings?.config?.githubReminder ?? false,
-        meetingReminders: settings?.config?.meetingReminders ?? [],
-        deleteTodos: settings?.config?.deleteTodos ?? false,
-    }})
+            theme: (settings?.config?.theme as FormValues["theme"]) ?? (theme as FormValues["theme"]) ?? "system",
+            openDashboard: settings?.config?.openDashboard as FormValues["openDashboard"] ?? "None",
+            hourFormat: (settings?.config?.hourFormat as FormValues["hourFormat"]) ?? "24",
+            timezone: (settings?.config?.timezone as FormValues["timezone"]) ?? "UTC",
+            todoReminder: settings?.config?.todoReminder ?? false,
+            countdownReminder: settings?.config?.countdownReminder ?? false,
+            githubReminder: settings?.config?.githubReminder ?? false,
+            meetingReminders: settings?.config?.meetingReminders ?? [],
+            deleteTodos: settings?.config?.deleteTodos ?? false,
+        }
+    })
 
     const lightTooltip = useTooltip<HTMLDivElement>({ message: "Light Theme", anchor: "tc" })
     const darkTooltip = useTooltip<HTMLDivElement>({ message: "Dark Theme", anchor: "tc" })
@@ -150,11 +163,17 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
         value: minutes,
     })), [])
 
+    const fields = useMemo(() => {
+        const dashboardOptions = [...(dashboards ?? []).map(d => ({ label: d.name, value: d.id })), ({ label: "None", value: "None"})]
+        return FIELDS.map(f => f.name === "openDashboard" ? { ...f, options: dashboardOptions } : f)
+    }, [dashboards])
+
     const onSubmit = async (values: FormValues) => {
         if (!settings) return
 
         const newConfig = {
             theme: values.theme,
+            openDashboard: values.openDashboard,
             hourFormat: values.hourFormat,
             timezone: values.timezone,
             todoReminder: values.todoReminder,
@@ -186,13 +205,13 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
         if (fieldDef.type === "select") {
             return (
             <SelectField
-                    key={name}
-                    name={name}
-                    label={fieldDef.label}
-                    description={fieldDef.description}
-                    options={fieldDef.options ?? []}
-                    control={form.control}
-                    className={fieldDef.className}
+                key={name}
+                name={name}
+                label={fieldDef.label}
+                description={fieldDef.description}
+                options={fieldDef.options ?? []}
+                control={form.control}
+                className={fieldDef.className}
             />
             )
         }
@@ -261,7 +280,7 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
                                 </div>
 
                                 <div className="w-full flex flex-col gap-2 p-2 bg-secondary rounded-md border border-main/40">
-                                    {FIELDS.filter((f) => f.section === "general").map(renderField)}
+                                    {fields.filter((f) => f.section === "general").map(renderField)}
                                 </div>
 
                                 <div className="flex items-center gap-2 mt-2">
@@ -270,7 +289,7 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
                                 </div>
 
                                 <div className="w-full flex flex-col gap-2 items-center p-2 bg-secondary rounded-md border border-main/40">
-                                {FIELDS.filter((f) => f.section === "widget").map(renderField)}
+                                {fields.filter((f) => f.section === "widget").map(renderField)}
                                 </div>
                             </div>
                         </ScrollArea>

@@ -1,12 +1,11 @@
 "use client"
 
+import { Checkbox } from "@/components/ui/Checkbox"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover"
+import { cn, CONTAINER_STYLES } from "@/lib/utils"
+import { ChevronDown } from "lucide-react"
 import * as React from "react"
-import {ChevronDown} from "lucide-react"
-import {cn, CONTAINER_STYLES} from "@/lib/utils"
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
-import {Checkbox} from "@/components/ui/Checkbox"
-import {forwardRef, useCallback, useMemo, useState} from "react"
-import {Button} from "@/components/ui/Button"
+import { forwardRef, useCallback, useMemo, useState } from "react"
 
 interface MultiSelectOption {
     value: string
@@ -71,7 +70,7 @@ const MultiSelect = forwardRef<React.ComponentRef<"button">, MultiSelectProps>((
                 align="end"
                 sideOffset={4}
                 className={cn(
-                    "p-0 min-w-42 w-[var(--radix-select-trigger-width)] max-w-[18rem] border border-main/40",
+                    "p-0 min-w-42 w-(--radix-select-trigger-width) max-w-[18rem] border border-main/40",
                     "bg-primary text-secondary shadow-[10px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)]",
                     "max-h-72 overflow-hidden data-[side=bottom]:slide-in-from-top-2",
                     CONTAINER_STYLES.animation,
