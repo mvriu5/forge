@@ -115,7 +115,7 @@ function ProfileSection({handleClose}: {handleClose: () => void}) {
             <div className={"flex flex-col gap-4 h-full"}>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col justify-between gap-4 h-full">
-                        <div className="w-full flex gap-4 bg-secondary border border-main/40 p-2 rounded-md">
+                        <div className="w-full flex flex-col sm:flex-row gap-4 bg-secondary border border-main/40 p-2 rounded-md">
                             <div className="relative w-min inline-flex">
                                 <Button
                                     type={"button"}

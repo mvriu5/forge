@@ -166,7 +166,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                         <div className={"text-2xl p-1 ml-1 rounded-md bg-black/5 dark:bg-white/5 text-primary flex items-center justify-center"}>
                             {emoji?.length > 0 ? emoji : <div className={"size-8 flex items-center justify-center"}><File size={24}/></div>}
                         </div>
-                        <div className={"flex flex-col gap-1"}>
+                        <div className={"flex flex-col"}>
                             {note.title && note.title.trim().length > 0 ? note.title : "No title"}
                             <p className={"text-tertiary font-mono text-sm"}>
                                 {getUpdateTimeLabel(note.lastUpdated)}
@@ -212,7 +212,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                                     />
                                 </PopoverContent>
                             </Popover>
-                            <div className={"flex flex-col"}>
+                            <div className={"flex flex-col items-start"}>
                                 <Input
                                     placeholder={"New note"}
                                     value={title ?? ""}

@@ -79,20 +79,26 @@ export const transformLayout = (widgets: Widget[], breakpoint: Breakpoint): Widg
     const sortedWidgets = sortWidgetsByPosition(widgets)
 
     if (breakpoint === "mobile") {
-        return sortedWidgets.map((widget, index) => {
+        const placedWidgets: Widget[] = []
+        let currentRow = 0
+
+        for (const widget of sortedWidgets) {
             const definition = getWidgetDefinition(widget.widgetType)
-            if (!definition || !definition.sizes) return widget
+            if (!definition || !definition.sizes) continue
 
             const responsiveSize = definition.sizes[breakpoint]
 
-            return {
+            placedWidgets.push({
                 ...widget,
                 positionX: 0,
-                positionY: index,
+                positionY: currentRow,
                 width: responsiveSize.width,
                 height: responsiveSize.height,
-            }
-        })
+            })
+
+            currentRow += responsiveSize.height
+        }
+        return placedWidgets
     }
 
     if (breakpoint === "tablet") {
