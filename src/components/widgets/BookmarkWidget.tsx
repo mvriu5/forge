@@ -3,7 +3,7 @@
 import React, {useCallback, useState} from "react"
 import {getLogoFromLink} from "@/components/svg/BookmarkIcons"
 import {Button} from "@/components//ui/Button"
-import {Link, Plus, Trash} from "lucide-react"
+import {Link as LinkIcon, Plus, Trash} from "lucide-react"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
@@ -26,6 +26,7 @@ import {arrayMove, SortableContext, useSortable, verticalListSortingStrategy,} f
 import {CSS} from "@dnd-kit/utilities"
 import {restrictToVerticalAxis} from "@dnd-kit/modifiers"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
+import Link from "next/link"
 
 interface BookmarkItem {
     id: string
@@ -193,36 +194,42 @@ const BookmarkItem = ({id, title, link, onDelete}: BookmarkItem & {onDelete: (ti
     })
 
     return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            {...attributes}
-            {...listeners}
-            className={"group w-full flex items-center gap-2 justify-between rounded-md hover:bg-secondary p-2 cursor-pointer overflow-hidden"}
-            onClick={() => window.open(link, '_blank', 'noopener,noreferrer')}
+        <Link
+            href={link}
+            target={"_blank"}
+            rel={"noopener noreferrer"}
         >
-            <div className={"flex items-center gap-2"}>
-                <div className={"flex justify-center items-center p-1 rounded-md bg-white/50 dark:bg-white/10"}>
-                    {getLogoFromLink(link)}
-                </div>
-                <p className={"text-primary truncate"}>{title}</p>
-                <div className={"h-4 w-px border-r border-main"}/>
-                <div {...linkTooltip}>
-                    <Link size={12}/>
-                </div>
-
-            </div>
-
-            <Button
-                className={"hidden group-hover:flex px-1 h-6"}
-                onClick={(e) => {
-                    e.stopPropagation()
-                    onDelete(title)
-                }}
+            <div
+                ref={setNodeRef}
+                style={style}
+                {...attributes}
+                {...listeners}
+                className={"group w-full flex items-center gap-2 justify-between rounded-md hover:bg-secondary p-2 cursor-pointer overflow-hidden"}
             >
-                <Trash size={14}/>
-            </Button>
-        </div>
+                <div className={"flex items-center gap-2"}>
+                    <div className={"flex justify-center items-center p-1 rounded-md bg-white/50 dark:bg-white/10"}>
+                        {getLogoFromLink(link)}
+                    </div>
+                    <p className={"text-primary truncate"}>{title}</p>
+                    <div className={"h-4 w-px border-r border-main"}/>
+                    <div {...linkTooltip}>
+                        <LinkIcon size={12}/>
+                    </div>
+
+                </div>
+
+                <Button
+                    className={"hidden group-hover:flex px-1 h-6"}
+                    onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        onDelete(title)
+                    }}
+                >
+                    <Trash size={14}/>
+                </Button>
+            </div>
+        </Link>
     )
 }
 

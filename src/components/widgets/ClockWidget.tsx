@@ -73,4 +73,3 @@ export const clockWidgetDefinition = defineWidget({
         mobile: { width: 1, height: 1 }
     }
 })
-

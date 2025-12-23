@@ -161,6 +161,30 @@ export function useNotifications(userId: string | undefined) {
         toast.github(input.message, input.issues, input.pullRequests)
     }, [userId, addNotification])
 
+    const sendMailNotification = useCallback(async (input: { type: Notification["type"], id: string,  message: string, snippet: string, key?: string }) => {
+        if (!userId) return
+
+        const notificationKey = input.key ?? `mail-${input.id}`
+        if (hasNotificationBeenSent(notificationKey)) return
+
+        markNotificationSent(notificationKey)
+
+        const res = await fetch("/api/notifications", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId: userId,
+                type: input.type,
+                message: input.message,
+            })
+        })
+        if (res.ok) {
+            const created = await res.json() as Notification
+            addNotification({...created, createdAt: new Date(created.createdAt)})
+        }
+        toast.mail(input.message, input.snippet)
+    }, [userId, addNotification])
+
     const clearNotifications = useCallback(async () => {
         if (!userId) return
 
@@ -174,6 +198,7 @@ export function useNotifications(userId: string | undefined) {
         sendReminderNotification,
         sendMeetingNotification,
         sendGithubNotification,
+        sendMailNotification,
         clearNotifications
     }
 }

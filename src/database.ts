@@ -214,6 +214,16 @@ export const updateAccount = async (userId: string, provider: string, data: Part
         .returning()
 }
 
+export const deleteAccount = async (userId: string, provider: string) => {
+    return db
+        .delete(account)
+        .where(and(
+            eq(account.userId, userId),
+            eq(account.providerId, provider)
+        ))
+        .returning()
+}
+
 //Users
 export type User = typeof user.$inferSelect
 

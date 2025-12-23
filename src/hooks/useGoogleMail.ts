@@ -1,3 +1,5 @@
+"use client"
+
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useSession } from "@/hooks/data/useSession"
@@ -36,9 +38,12 @@ export interface GmailMessage {
     raw?: string
 }
 
-/**
- * Fetch available labels for the signed-in Gmail account.
- */
+export function getHeaderValue(message: GmailMessage | null, name: string): string | null {
+    if (!message?.payload?.headers) return null
+    const header = (message.payload.headers as { name: string; value: string }[]).find((h) => h.name?.toLowerCase() === name.toLowerCase())
+    return header?.value ?? null
+}
+
 async function fetchGmailLabels(accessToken: string | null): Promise<GmailLabel[]> {
     if (!accessToken) return []
 
@@ -52,27 +57,19 @@ async function fetchGmailLabels(accessToken: string | null): Promise<GmailLabel[
     return (data.labels ?? []) as GmailLabel[]
 }
 
-/**
- * Fetch a single page of message ids for a label.
- * Returns the raw API response (which may contain nextPageToken).
- */
 async function fetchMessageListPage(accessToken: string, labelId: string, pageToken?: string, pageSize = 10): Promise<GmailListResponse> {
     const params = new URLSearchParams({ maxResults: String(Math.min(pageSize, 500)) })
     if (labelId) params.set("labelIds", labelId)
     if (pageToken) params.set("pageToken", pageToken)
 
     const url = `https://www.googleapis.com/gmail/v1/users/me/messages?${params.toString()}`
+
     const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } })
-    if (!res.ok) {
-        // return empty shape so caller can mark label as exhausted or handle it
-        return {}
-    }
+    if (!res.ok) return {}
+
     return res.json()
 }
 
-/**
- * Fetch full message details for a single message id.
- */
 async function fetchMessageDetails(accessToken: string, messageId: string): Promise<GmailMessage | null> {
     const res = await fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(messageId)}?format=full`, {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -82,10 +79,6 @@ async function fetchMessageDetails(accessToken: string, messageId: string): Prom
     return res.json()
 }
 
-/**
- * Helper: run worker over items with bounded concurrency.
- * Returns an array of results in the same order as `items`. Errors are returned as null entries.
- */
 async function fetchWithConcurrency<T, R>(items: T[], worker: (item: T) => Promise<R>, concurrency = 8): Promise<(R | null)[]> {
     if (!items.length) return []
     const results: (R | null)[] = new Array(items.length).fill(null)
@@ -108,15 +101,6 @@ async function fetchWithConcurrency<T, R>(items: T[], worker: (item: T) => Promi
     return results
 }
 
-/**
- * Hook: useGoogleMail
- * - Uses the existing Google integration from `useIntegrations`.
- * - Loads labels via react-query.
- * - Implements on-scroll pagination for messages: `loadMore()` will fetch more message ids and then fetch details.
- *
- * API:
- * const { labels, messages, isLoading, isFetchingMore, hasMore, loadMore, refetch, selectedLabels, setSelectedLabels } = useGoogleMail(pageSize?)
- */
 export const useGoogleMail = (pageSize = 50) => {
     const { userId } = useSession()
     const { integrations, refetchIntegrations } = useIntegrations(userId)
@@ -131,7 +115,6 @@ export const useGoogleMail = (pageSize = 50) => {
     const isRefreshingToken = useRef(false)
     const hasSeenInitialSelection = useRef(false)
 
-    // Manage token refresh & access token state (mirrors useGoogleCalendar approach)
     useEffect(() => {
         if (!userId) {
             previousUserId.current = undefined
@@ -175,7 +158,6 @@ export const useGoogleMail = (pageSize = 50) => {
         setAccessToken(googleIntegration.accessToken)
     }, [googleIntegration, refetchIntegrations, userId])
 
-    // Labels via react-query (cached, refetchable)
     const { data: labels, isLoading: labelsLoading, isFetching: labelsFetching, isError: labelsError } = useQuery<GmailLabel[], Error>({
         queryKey: GMAIL_LABELS_QUERY_KEY(accessToken),
         queryFn: () => fetchGmailLabels(accessToken),
@@ -187,7 +169,6 @@ export const useGoogleMail = (pageSize = 50) => {
         retry: (failureCount) => failureCount < 3,
     })
 
-    // initialize selectedLabels to INBOX only (fallback to inbox-like or first label)
     useEffect(() => {
         if (labels?.length && selectedLabels.length === 0) {
             const inboxLabel = labels.find((l) => l.id === "INBOX")
@@ -200,29 +181,19 @@ export const useGoogleMail = (pageSize = 50) => {
                 setSelectedLabels([inboxByName.id])
                 return
             }
-            // fallback to first label id
             setSelectedLabels([labels[0].id])
         }
     }, [labels, selectedLabels])
 
-    // --- On-scroll pagination implementation ---
-
-    // Stored messages (details)
     const [messages, setMessages] = useState<GmailMessage[]>([])
     const [isLoadingMore, setIsLoadingMore] = useState(false)
     const [hasMore, setHasMore] = useState(true)
 
-    // Internal queue and pagination state:
-    // - `messageIdQueue` holds ids that are ready to be fetched for details.
-    // - `fetchedIds` prevents duplicate detail fetches.
-    // - `labelNextPage` holds nextPageToken for each label (null = exhausted).
-    // - `labelIndexPointer` rotates through labels to fetch pages round-robin.
     const messageIdQueue = useRef<string[]>([])
     const fetchedIds = useRef<Set<string>>(new Set())
     const labelNextPage = useRef<Record<string, string | null>>({})
     const labelIndexPointer = useRef(0)
 
-    // Reset pagination when token or label selection changes
     useEffect(() => {
         messageIdQueue.current = []
         fetchedIds.current = new Set()
@@ -232,10 +203,6 @@ export const useGoogleMail = (pageSize = 50) => {
         setHasMore(true)
     }, [accessToken, selectedLabels.join(",")])
 
-    /**
-     * Ensure the messageIdQueue has at least `count` ids (or exhausts available ids).
-     * This fetches pages of ids per selected label in a round-robin manner.
-     */
     const ensureQueueHas = useCallback(async (count: number) => {
         if (!accessToken || !labels) return
 
@@ -265,31 +232,23 @@ export const useGoogleMail = (pageSize = 50) => {
                         if (!fetchedIds.current.has(id) && !messageIdQueue.current.includes(id)) messageIdQueue.current.push(id)
                     }
 
-                    // nextPageToken undefined => exhausted => mark null so we don't hit it again
                     labelNextPage.current[labelId] = res.nextPageToken ?? null
                     fetchedAny = true
 
                     if (messageIdQueue.current.length >= count) break
                 } catch (err) {
-                    // Log to telemetry and mark label exhausted to avoid tight loops on error
                     posthog.captureException(err, { hook: "useGoogleMail.ensureQueueHas", userId })
                     labelNextPage.current[labelId] = null
                 }
             }
 
             if (!fetchedAny) {
-                // No new ids could be fetched -> exhausted
                 setHasMore(false)
                 break
             }
         }
     }, [accessToken, labels, pageSize, selectedLabels, userId])
 
-    /**
-     * Public: loadMore
-     * - Ensures `requested` message ids are available in the queue then fetches details for them.
-     * - Appends resulting message details to `messages` state.
-     */
     const loadMore = useCallback(async (requested = pageSize) => {
         if (!accessToken || !labels) return
         if (!hasMore && messageIdQueue.current.length === 0) return
@@ -312,19 +271,15 @@ export const useGoogleMail = (pageSize = 50) => {
                 return
             }
 
-            // Fetch message details with bounded concurrency to avoid hitting API rate limits.
-            // Use `fetchWithConcurrency` (defaults to 8 concurrent requests).
             const details = await fetchWithConcurrency(idsToFetch, (id) => fetchMessageDetails(accessToken, id), 8)
             const parsed = details.filter(Boolean) as GmailMessage[]
 
-            // Append and keep messages sorted by internalDate desc
             setMessages((prev) => {
                 const merged = [...prev, ...parsed]
                 merged.sort((a, b) => Number(b.internalDate ?? 0) - Number(a.internalDate ?? 0))
                 return merged
             })
 
-            // If no label has a next token and queue is empty -> exhausted
             const anyLabelHasNext = Object.values(labelNextPage.current).some((t) => t !== null && t !== undefined)
             if (!anyLabelHasNext && messageIdQueue.current.length === 0) setHasMore(false)
         } catch (err) {
@@ -334,9 +289,6 @@ export const useGoogleMail = (pageSize = 50) => {
         }
     }, [accessToken, ensureQueueHas, labels, pageSize, hasMore, userId])
 
-    /**
-     * Refresh: reset internal state and load first page.
-     */
     const refresh = useCallback(async () => {
         messageIdQueue.current = []
         fetchedIds.current = new Set()
@@ -347,14 +299,12 @@ export const useGoogleMail = (pageSize = 50) => {
         await loadMore(pageSize)
     }, [loadMore, pageSize])
 
-    // Load initial page when ready
     useEffect(() => {
         if (accessToken && labels && selectedLabels.length) {
             void loadMore(pageSize)
         }
     }, [accessToken, labels, selectedLabels.join(",")])
 
-    // keep UI filter loading state similar to calendar hook behavior
     useEffect(() => {
         if (hasSeenInitialSelection.current) setFilterLoading(true)
         else hasSeenInitialSelection.current = true
@@ -366,12 +316,8 @@ export const useGoogleMail = (pageSize = 50) => {
 
     const getSnippet = useCallback((messageId: string) => messages.find((m) => m.id === messageId)?.snippet ?? null, [messages])
 
-    // optional: manual invalidation for labels/messages
     const manualRefresh = useCallback(async () => {
-        await Promise.all([
-            queryClient.invalidateQueries({ queryKey: GMAIL_LABELS_QUERY_KEY(accessToken) }),
-        ])
-        // reset and load again
+        await Promise.all([ queryClient.invalidateQueries({ queryKey: GMAIL_LABELS_QUERY_KEY(accessToken) }),])
         await refresh()
     }, [queryClient, accessToken, refresh])
 

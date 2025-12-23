@@ -46,6 +46,7 @@ const formSchema = z.object({
     todoReminder: z.boolean(),
     countdownReminder: z.boolean(),
     githubReminder: z.boolean(),
+    mailReminder: z.boolean(),
     meetingReminders: z.array(z.enum(["0", "5", "10", "15", "30", "60"])),
     deleteTodos: z.boolean(),
 })
@@ -126,6 +127,13 @@ const FIELDS: {
     },
     {
         section: "widget",
+        name: "mailReminder",
+        type: "switch",
+        label: "E-Mail Reminder",
+        description: "Do you want a reminder when you receive a new email?",
+    },
+    {
+        section: "widget",
         name: "deleteTodos",
         type: "switch",
         label: "Auto Delete Todos",
@@ -149,6 +157,7 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
             todoReminder: settings?.config?.todoReminder ?? false,
             countdownReminder: settings?.config?.countdownReminder ?? false,
             githubReminder: settings?.config?.githubReminder ?? false,
+            mailReminder: settings?.config?.mailReminder ?? false,
             meetingReminders: settings?.config?.meetingReminders ?? [],
             deleteTodos: settings?.config?.deleteTodos ?? false,
         }
@@ -179,6 +188,7 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
             todoReminder: values.todoReminder,
             countdownReminder: values.countdownReminder,
             githubReminder: values.githubReminder,
+            mailReminder: values.mailReminder,
             meetingReminders: values.meetingReminders,
             deleteTodos: values.deleteTodos
         }

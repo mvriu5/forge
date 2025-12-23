@@ -211,6 +211,24 @@ const Soundcloud = () => {
     )
 }
 
+const LinkedIn = () => {
+    return (
+        <svg role="img" width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill={"#0A66C2"}>
+            <title>LinkedIn</title>
+            <path d="M4.98 3.5C4.98 4.88 3.86 6 2.48 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.3 8h4.36V24H.3zM8.8 8h4.18v2.16h.06c.58-1.1 2-2.26 4.12-2.26 4.4 0 5.22 2.9 5.22 6.66V24h-4.36v-7.76c0-1.85-.03-4.24-2.58-4.24-2.58 0-2.97 2.01-2.97 4.09V24H8.8z"/>
+        </svg>
+    )
+}
+
+const Pinterest = () => {
+    return (
+        <svg role="img" width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill={"#E60023"}>
+            <title>Pinterest</title>
+            <path d="M12 0C5.37 0 0 4.93 0 11c0 4.87 3.11 8.99 7.44 10.45-.1-.89-.19-2.25.04-3.22.21-.9 1.36-5.75 1.36-5.75s-.35-.7-.35-1.73c0-1.62.94-2.83 2.11-2.83.99 0 1.47.74 1.47 1.63 0 .99-.63 2.47-.96 3.84-.27 1.13.57 2.05 1.68 2.05 2.02 0 3.59-2.13 3.59-5.2 0-2.71-1.95-4.61-4.74-4.61-3.23 0-5.14 2.43-5.14 4.95 0 .99.38 2.05.86 2.62.09.11.1.2.07.31-.08.33-.26 1-.3 1.14-.05.18-.17.22-.4.13-1.49-.69-2.42-2.87-2.42-4.62 0-3.77 2.74-7.23 7.9-7.23 4.15 0 7.37 2.96 7.37 6.9 0 4.13-2.6 7.45-6.2 7.45-1.21 0-2.35-.62-2.74-1.35l-.75 2.86c-.27 1.05-1.01 2.36-1.51 3.16C9.87 23.86 11.88 24 12 24c6.63 0 12-4.93 12-11s-5.37-13-12-13z" />
+        </svg>
+    )
+}
+
 const getLogoFromLink = (link: string) => {
     switch (true) {
         case link.includes("docs.google.com/spreadsheets"): return <GoogleSheets />
@@ -221,11 +239,13 @@ const getLogoFromLink = (link: string) => {
         case link.includes("github.com"): return <Github/>
         case link.includes("amazon.com"): return <Amazon/>
         case link.includes("twitch.tv"): return <Twitch/>
-        case link.includes("x.com"): return <X/>
+        case link.includes("x.com") || link.includes("twitter.com"): return <X/>
         case link.includes("instagram.com"): return <Instagram/>
         case link.includes("drive.google.com"): return <GoogleDrive/>
         case link.includes("spotify.com"): return <Spotify/>
         case link.includes("soundcloud.com"): return <Soundcloud/>
+        case link.includes("linkedin.com"): return <LinkedIn/>
+        case link.includes("pinterest.com"): return <Pinterest/>
         default: return <File size={16}/>
     }
 }
@@ -245,4 +265,6 @@ export {
     GoogleDrive,
     Spotify,
     Soundcloud,
+    LinkedIn,
+    Pinterest,
 }

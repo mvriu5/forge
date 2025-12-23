@@ -15,6 +15,7 @@ import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 import {useSettings} from "@/hooks/data/useSettings"
 import {useNotifications} from "@/hooks/data/useNotifications"
+import Link from "next/link"
 
 const formatShortDate = (iso?: string | number | Date | null) => {
     if (!iso) return ""
@@ -189,28 +190,33 @@ const IssueCard = ({issue}: { issue: any }) => {
 
 const PulLRequestCard = ({pr}: {pr: any}) => {
     return (
-        <div
-            key={pr.id}
-            className="flex items-start gap-2 p-2 pr-4 mb-2 rounded-md hover:bg-secondary cursor-pointer"
-            onClick={() => window.open(pr.html_url, '_blank', 'noopener,noreferrer')}
+        <Link
+            href={pr.html_url}
+            target={"_blank"}
+            rel={"noopener noreferrer"}
         >
-            <GitPullRequest className={"h-5 w-5 text-info-500 mt-0.5"}/>
-            <div className="flex-1 space-y-1">
-                <p className="font-medium text-sm text-primary">{pr.title}</p>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center">
-                        <FolderOpen size={14} className="mr-1" />
-                        {pr.repository_url.split('/').pop()}
+            <div
+                key={pr.id}
+                className="flex items-start gap-2 p-2 pr-4 mb-2 rounded-md hover:bg-second"
+            >
+                <GitPullRequest className={"h-5 w-5 text-info-500 mt-0.5"}/>
+                <div className="flex-1 space-y-1">
+                    <p className="font-medium text-sm text-primary">{pr.title}</p>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center">
+                            <FolderOpen size={14} className="mr-1" />
+                            {pr.repository_url.split('/').pop()}
+                        </div>
+                        <span className={"text-tertiary font-mono"}>{formatShortDate(pr.created_at)}</span>
                     </div>
-                    <span className={"text-tertiary font-mono"}>{formatShortDate(pr.created_at)}</span>
-                </div>
-                <div className="flex flex-wrap gap-1 mt-1">
-                    {pr.labels.map((label: any) => (
-                        <Badge key={label.id} title={label.name} variant={"default"} className="text-xs px-1.5 py-0" style={{color: `#${label.color}`}}/>
-                    ))}
+                    <div className="flex flex-wrap gap-1 mt-1">
+                        {pr.labels.map((label: any) => (
+                            <Badge key={label.id} title={label.name} variant={"default"} className="text-xs px-1.5 py-0" style={{color: `#${label.color}`}}/>
+                        ))}
+                    </div>
                 </div>
             </div>
-        </div>
+        </Link>
     )
 }
 

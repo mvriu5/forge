@@ -5,19 +5,17 @@ import { useTooltip } from "@/components/ui/TooltipProvider"
 import { WidgetContent } from "@/components/widgets/base/WidgetContent"
 import { WidgetEmpty } from "@/components/widgets/base/WidgetEmpty"
 import { WidgetHeader } from "@/components/widgets/base/WidgetHeader"
+import { useIntegrations } from "@/hooks/data/useIntegrations"
+import { NotionPage, useNotion } from "@/hooks/useNotion"
+import { cn } from "@/lib/utils"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 import { Import, Plus } from "lucide-react"
 import { JSONContent } from "novel"
 import React, { Suspense, useCallback, useMemo, useState } from "react"
+import { Notion } from "../svg/Icons"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover"
-import { NotionPage, useNotion } from "@/hooks/useNotion"
 import { ScrollArea } from "../ui/ScrollArea"
 import { Skeleton } from "../ui/Skeleton"
-import { cn } from "@/lib/utils"
-import { Notion } from "../svg/Icons"
-import { useIntegrations } from "@/hooks/data/useIntegrations"
-import { Spinner } from "../ui/Spinner"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/Dialog"
 import { toast } from "../ui/Toast"
 
 const LazyNoteDialog = React.lazy(() => import("../../components/dialogs/NoteDialog").then(mod => ({ default: mod.NoteDialog })))
@@ -59,6 +57,10 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
         message: "Import from Notion",
         anchor: "tc"
     })
+
+    const sortedNotes = useMemo(() => (
+        config.notes.sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime())
+    ), [config.notes])
 
     const createNewNote = useCallback(async () => {
         const newNote: Note = {
@@ -142,8 +144,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
 
     const pageTree = useMemo(() => buildPageTree(pages), [buildPageTree, pages])
 
-    const renderPageButtons = useCallback((nodes: PageNode[], depth = 1): React.ReactNode => (
-        nodes.map((node) => (
+    const renderPageButtons = useCallback((nodes: PageNode[], depth = 1): React.ReactNode => (nodes.map((node) => (
             <React.Fragment key={node.id}>
                 <Button
                     variant={"ghost"}
@@ -213,12 +214,12 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
                     <Plus size={16}/>
                 </Button>
             </WidgetHeader>
-            {config.notes.length === 0 ? (
+            {sortedNotes.length === 0 ? (
                 <WidgetEmpty message={"No notes yet."}/>
             ) : (
                 <WidgetContent scroll>
                     <div className={"flex flex-col gap-2"}>
-                        {config.notes.map((note: Note) => (
+                        {sortedNotes.map((note: Note) => (
                             <Suspense fallback={null} key={note.id}>
                                 <LazyNoteDialog
                                     note={note}
