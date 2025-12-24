@@ -12,19 +12,22 @@ import { useTooltip } from "../ui/TooltipProvider"
 import { WidgetContent } from "./base/WidgetContent"
 import { WidgetHeader } from "./base/WidgetHeader"
 import { useNotifications } from "@/hooks/data/useNotifications"
+import { Spinner } from "../ui/Spinner"
 
 const LazyInboxDialog = React.lazy(() => import("../../components/dialogs/InboxDialog").then(mod => ({ default: mod.InboxDialog })))
 
 const InboxWidget: React.FC<WidgetProps> = ({widget}) => {
     const {settings} = useSettings(widget.userId)
     const {sendMailNotification} = useNotifications(widget.userId)
-    const {labels, messages, isFetchingMore, isLoading, isError, refetch, getSnippet, selectedLabels, setSelectedLabels} = useGoogleMail()
+    const {labels, messages, isFetchingMore, isLoading, refetch, selectedLabels, setSelectedLabels, hasMore, loadMore, filterLoading} = useGoogleMail()
 
     const [openMailId, setOpenMailId] = useState<string | null>(null)
     const [dropdownOpen, setDropdownOpen] = useState(false)
+    const [isRefreshing, setIsRefreshing] = useState(false)
 
     const latestSeenIdRef = useRef<string | null>(null)
     const hasInitializedRef = useRef(false)
+    const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null)
 
     const filterTooltip = useTooltip<HTMLButtonElement>({
         message: "Filter your issues",
@@ -82,6 +85,21 @@ const InboxWidget: React.FC<WidgetProps> = ({widget}) => {
         }
     }, [messages, settings?.config.mailReminder, sendMailNotification])
 
+    useEffect(() => {
+        if (!loadMoreTriggerRef.current) return
+        const el = loadMoreTriggerRef.current
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting && hasMore && !isFetchingMore) {
+                    void loadMore()
+                }
+            })
+        }, { root: null, rootMargin: "200px", threshold: 0.1 })
+
+        observer.observe(el)
+        return () => observer.disconnect()
+    }, [hasMore, isFetchingMore, loadMore])
+
     return (
         <>
             <WidgetHeader title={"Inbox"}>
@@ -96,7 +114,7 @@ const InboxWidget: React.FC<WidgetProps> = ({widget}) => {
                         data-state={dropdownOpen ? "open" : "closed"}
                         variant={"widget"}
                         className={"data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"}
-                        disabled={labels.length === 0 || isLoading || isFetchingMore}
+                        disabled={labels.length === 0 || isLoading || isFetchingMore || isRefreshing || filterLoading}
                         {...filterTooltip}
                     >
                         <Filter size={16} />
@@ -104,16 +122,24 @@ const InboxWidget: React.FC<WidgetProps> = ({widget}) => {
                 </DropdownMenu>
                 <Button
                     variant={"widget"}
-                    onClick={() => refetch()}
-                    data-loading={(isLoading || isFetchingMore) ? "true" : "false"}
+                    onClick={() => {
+                        void (async () => {
+                            setIsRefreshing(true)
+                            await refetch()
+                            setIsRefreshing(false)
+                        })()
+                    }}
+                    data-loading={(isLoading || isFetchingMore || isRefreshing || filterLoading) ? "true" : "false"}
                     {...refreshTooltip}
                 >
                     <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
                 </Button>
             </WidgetHeader>
             <WidgetContent scroll>
-                {(isLoading || isFetchingMore) ? (
-                    <div className="flex flex-col justify-between gap-4 pt-2">
+                {(messages.length === 0 && (isLoading || isFetchingMore || filterLoading || isRefreshing)) ? (
+                    <div className="flex flex-col gap-2">
+                        <Skeleton className={"h-17 w-full px-2"} />
+                        <Skeleton className={"h-17 w-full px-2"} />
                         <Skeleton className={"h-17 w-full px-2"} />
                         <Skeleton className={"h-17 w-full px-2"} />
                         <Skeleton className={"h-17 w-full px-2"} />
@@ -122,7 +148,7 @@ const InboxWidget: React.FC<WidgetProps> = ({widget}) => {
                 ) : (
                     <div className={"flex flex-col gap-2"}>
                         {messages.map((m, index) => (
-                            <Suspense fallback={null}  key={`email-${index}-${m.id}`}>
+                            <Suspense fallback={<Skeleton className={"h-17 w-full px-2"} />}  key={`email-${index}-${m.id}`}>
                                 <LazyInboxDialog
                                     message={m}
                                     labels={labels.filter((l) => m.labelIds?.includes(l.id))}
@@ -131,6 +157,22 @@ const InboxWidget: React.FC<WidgetProps> = ({widget}) => {
                                 />
                             </Suspense>
                         ))}
+
+                        <div className="flex flex-col items-center mt-2">
+                            {hasMore ? (
+                                <Button
+                                    variant={"widget"}
+                                    onClick={() => void loadMore()}
+                                    disabled={isFetchingMore}
+                                >
+                                    {isFetchingMore && <Spinner/>}
+                                    {isFetchingMore ? "Loading" : "Load more"}
+                                </Button>
+                            ) : (
+                                <div className="text-sm">No more messages</div>
+                            )}
+                        </div>
+                        <div ref={loadMoreTriggerRef} />
                     </div>
                 )}
             </WidgetContent>

@@ -110,7 +110,6 @@ export const useGoogleMail = (pageSize = 50) => {
     const [accessToken, setAccessToken] = useState<string | null>(null)
     const [filterLoading, setFilterLoading] = useState<boolean>(false)
 
-    const queryClient = useQueryClient()
     const previousUserId = useRef<string | undefined>(undefined)
     const isRefreshingToken = useRef(false)
     const hasSeenInitialSelection = useRef(false)
@@ -222,8 +221,8 @@ export const useGoogleMail = (pageSize = 50) => {
                 labelIndexPointer.current = (labelIndexPointer.current + 1) % labelIds.length
                 attempts++
 
-                const nextToken = labelNextPage.current[labelId] // undefined = not fetched yet, null = exhausted
-                if (nextToken === null) continue // exhausted
+                const nextToken = labelNextPage.current[labelId]
+                if (nextToken === null) continue
 
                 try {
                     const res = await fetchMessageListPage(accessToken, labelId, nextToken ?? undefined, Math.max(50, pageSize))
@@ -316,18 +315,13 @@ export const useGoogleMail = (pageSize = 50) => {
 
     const getSnippet = useCallback((messageId: string) => messages.find((m) => m.id === messageId)?.snippet ?? null, [messages])
 
-    const manualRefresh = useCallback(async () => {
-        await Promise.all([ queryClient.invalidateQueries({ queryKey: GMAIL_LABELS_QUERY_KEY(accessToken) }),])
-        await refresh()
-    }, [queryClient, accessToken, refresh])
-
     return {
         labels: labels ?? [],
         messages,
         isLoading: labelsLoading && messages.length === 0,
         isFetchingMore: isLoadingMore,
         isError: labelsError,
-        refetch: manualRefresh,
+        refetch: refresh,
         googleIntegration,
         selectedLabels,
         setSelectedLabels,

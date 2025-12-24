@@ -173,8 +173,8 @@ function InboxDialog({ open, onOpenChange, message, labels = [], isPending = fal
     return (
         <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
             <DialogTrigger asChild>
-                <div className="flex flex-col p-2 border border-main/40 rounded-md cursor-pointer">
-                    <div className="flex items-center gap-2">
+                <div className="flex flex-col p-2 rounded-md cursor-pointer bg-secondary/50 hover:bg-secondary">
+                    <div className="flex flex-wrap items-center gap-x-2">
                         <p className="text-primary font-semibold">{senderTitle}</p>
                         <p className="text-tertiary font-mono text-xs">{senderMail}</p>
                     </div>
