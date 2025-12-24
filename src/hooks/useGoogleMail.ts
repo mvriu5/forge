@@ -301,7 +301,9 @@ export const useGoogleMail = (pageSize = 50) => {
 
     useEffect(() => {
         if (accessToken && labels && selectedLabels.length) {
-            void loadMore(pageSize)
+            // schedule loadMore to the next tick so the reset effect (which clears queues/messages)
+            // runs first and avoids a race where loaded pages look like the latest data
+            setTimeout(() => void loadMore(pageSize), 0)
         }
     }, [accessToken, labels, selectedLabels.join(",")])
 
