@@ -106,6 +106,8 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
 
         setDialogOpen(false)
         setSelectedWidgets([])
+        setQuery("")
+        setTagValue("")
     }
 
     const isAddDisabled =  selectedWidgets.length <= 0 || !userId || !currentDashboard || addWidgetStatus === "pending"
@@ -115,7 +117,9 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
             open={dialogOpen}
             onOpenChange={(prev) => {
                 setDialogOpen(prev)
-                if (selectedWidgets) setSelectedWidgets([])
+                setSelectedWidgets([])
+                setQuery("")
+                setTagValue("")
             }}
         >
             <DialogTrigger asChild>
@@ -124,7 +128,7 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
                     {title}
                 </Button>
             </DialogTrigger>
-            <DialogContent className={"md:min-w-200 max-w-[90vw] pl-8 pt-8"}>
+            <DialogContent className={"md:min-w-200 max-w-[90vw] sm:w-max  pl-8 pt-8"}>
                 <DialogHeader className={"flex flex-row justify-between items-center pr-4"}>
                     <DialogTitle>
                         <div className={"flex items-center gap-2"}>
@@ -170,7 +174,7 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
                                 onClick={() => handleSelect(widget)}
                             >
                                 <div className={"flex justify-between items-center"}>
-                                    <p className={"text-primary"}>{widget.name}</p>
+                                    <p className={"text-primary relative z-10"}>{widget.name}</p>
                                     <div className={"px-2 rounded-md bg-white/5 border border-main/40 group-data-[used=true]:bg-success/10 group-data-[used=true]:text-success group-data-[used=true]:border-success/20"}>
                                         {widgets?.find((w) => w.widgetType === widget.name && w.dashboardId === currentDashboard?.id) ?
                                             "In use" :
@@ -178,15 +182,15 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
                                         }
                                     </div>
                                 </div>
-                                <p className={"text-sm text-secondary"}>{widget.description}</p>
-                                <div className={"absolute -right-2 -bottom-16 rounded-md shadow-md pt-0.5 pl-0.5 ml-4 border border-main/40 bg-secondary"}>
+                                <p className={"text-sm text-secondary relative z-10"}>{widget.description}</p>
+                                <div className={"absolute left-4 -bottom-32 sm:-bottom-8 md:-bottom-16 rounded-md shadow-md pt-0.5 pl-0.5 ml-4 border border-main/40 bg-secondary pointer-events-none z-0"}>
                                     <Image
                                         src={widget.image}
                                         alt={widget.name}
                                         width="0"
                                         height="0"
                                         sizes="100vw"
-                                        className="w-full h-auto"
+                                        className="w-full h-full object-cover"
                                     />
                                 </div>
                             </div>

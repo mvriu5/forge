@@ -7,7 +7,7 @@ import {StarsCount} from "@/components/landing/StarsCount"
 
 export default function Navbar() {
     return (
-        <header className="z-50 inset-0 sticky max-w-screen border-b border-main/20 backdrop-blur-2xl">
+        <header className="z-50 fixed top-0 left-0 right-0 max-w-screen border-b border-main/20 backdrop-blur-2xl">
             <div className="flex items-center gap-2 justify-between p-4 bg-secondary/40">
                 <div className="flex items-center gap-4">
                     <ForgeLogo/>

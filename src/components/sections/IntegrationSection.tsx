@@ -1,12 +1,13 @@
 "use client"
 
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import React, {useMemo} from "react"
+import React, {useCallback, useMemo} from "react"
 import {Github, Google, Notion} from "@/components/svg/Icons"
 import {cn} from "@/lib/utils"
 import {Button} from "@/components/ui/Button"
 import {Check, X} from "lucide-react"
 import {useSession} from "@/hooks/data/useSession"
+import { toast } from "../ui/Toast"
 
 function IntegrationSection({handleClose}: {handleClose: () => void}) {
     const {userId} = useSession()
@@ -15,37 +16,21 @@ function IntegrationSection({handleClose}: {handleClose: () => void}) {
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
     const notionIntegration = useMemo(() => getIntegrationByProvider(integrations, "notion"), [integrations])
 
+    const handleConnect = useCallback(async (provider: string) => {
+        handleIntegrate(provider, false)
+        handleClose()
+    }, [])
+
+    const handleDisconnect = useCallback((provider: string) => {
+        removeIntegration(provider)
+        handleClose()
+        toast.success("Successfully disconnected the integration!")
+    }, [])
+
     const integrationList = [
-        {
-            name: "Github",
-            icon: Github,
-            active: !!githubIntegration,
-            onConnect: async () => {
-                void handleIntegrate("github", false)
-                handleClose()
-            },
-            onDisconnect: () => removeIntegration("github")
-        },
-        {
-            name: "Google",
-            icon: Google,
-            active: !!googleIntegration,
-            onConnect: async () => {
-                void handleIntegrate("google", false)
-                handleClose()
-            },
-            onDisconnect: () => removeIntegration("google")
-        },
-        {
-            name: "Notion",
-            icon: Notion,
-            active: !!notionIntegration,
-            onConnect: async () => {
-                void handleIntegrate("notion", false)
-                handleClose()
-            },
-            onDisconnect: () => removeIntegration("notion")
-        }
+        { name: "Github", icon: Github, active: !!githubIntegration },
+        { name: "Google", icon: Google, active: !!googleIntegration },
+        { name: "Notion", icon: Notion, active: !!notionIntegration }
     ]
 
     return (
@@ -75,7 +60,7 @@ function IntegrationSection({handleClose}: {handleClose: () => void}) {
                     <Button
                         variant={"ghost"}
                         className={"text-xs text-tertiary font-normal font-mono shadow-none p-1"}
-                        onClick={() => integration.active ? integration.onDisconnect() : integration.onConnect()}
+                        onClick={() => integration.active ? handleDisconnect(integration.name) : handleConnect(integration.name)}
                     >
                         {integration.active ? "Disconnect" : "Connect"}
                     </Button>
