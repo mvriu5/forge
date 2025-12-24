@@ -12,6 +12,7 @@ import {kanbanWidgetDefinition} from "@/components/widgets/KanbanWidget"
 import {meetingsWidgetDefinition} from "@/components/widgets/MeetingsWidget"
 import {todoWidgetDefinition} from "@/components/widgets/TodoWidget"
 import {weatherWidgetDefinition} from "@/components/widgets/WeatherWidget"
+import { inboxWidgetDefinition } from "@/components/widgets/InboxWidget"
 
 export const definitions: WidgetDefinition[] = [
     bookmarkWidgetDefinition,
@@ -23,7 +24,8 @@ export const definitions: WidgetDefinition[] = [
     kanbanWidgetDefinition,
     meetingsWidgetDefinition,
     todoWidgetDefinition,
-    weatherWidgetDefinition
+    weatherWidgetDefinition,
+    inboxWidgetDefinition
 ] as const satisfies WidgetDefinition[]
 
 export const getWidgetDefinition = (name: string): WidgetDefinition => {

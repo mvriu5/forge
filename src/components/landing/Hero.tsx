@@ -7,7 +7,7 @@ import {Discord} from "@/components/svg/Icons"
 
 function Hero() {
     return (
-        <div className={"flex flex-col items-center sm:items-start gap-4 w-full pt-16"}>
+        <div className={"flex flex-col items-center sm:items-start gap-4 w-full pt-32"}>
             <div className={"flex items-center gap-4 mb-4"}>
                 <Badge variant={"brand"} title={"v1.0 Alpha"}/>
             </div>
@@ -34,7 +34,7 @@ function Hero() {
                     width={"1904"}
                     height={"1025"}
                     className={"rounded-xl md:rounded-md"}
-                    quality={80}
+                    quality={75}
                 />
             </div>
         </div>

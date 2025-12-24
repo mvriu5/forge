@@ -6,7 +6,7 @@ import { useSettings } from "@/hooks/data/useSettings"
 import { defaultExtensions } from "@/lib/extensions"
 import { cn, formatDate, getUpdateTimeLabel } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
-import { File, Trash } from "lucide-react"
+import { ChevronDown, File, Trash } from "lucide-react"
 import {
     EditorBubble,
     EditorCommand,
@@ -16,7 +16,8 @@ import {
     EditorContent,
     EditorInstance,
     EditorRoot,
-    handleCommandNavigation
+    handleCommandNavigation,
+    useEditor
 } from "novel"
 import { useCallback, useEffect, useRef, useState } from "react"
 import AutoJoiner from "tiptap-extension-auto-joiner"
@@ -31,6 +32,7 @@ import { NodeSelector } from "../widgets/components/NodeSelector"
 import { slashCommand, suggestionItems } from "../widgets/components/SlashCommand"
 import { TextButtons } from "../widgets/components/TextButtons"
 import { Note } from "../widgets/EditorWidget"
+import { createPortal } from "react-dom"
 
 
 interface NoteDialogProps {
@@ -269,32 +271,31 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                                 >
                                     <EditorCommand
                                         className={cn(
-                                            "z-60 w-72 rounded-md border border-main/60 bg-primary transition-all",
-                                            "shadow-[10px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)]")}
+                                            "z-100 w-56 rounded-md border border-main/60 bg-primary transition-all",
+                                            "shadow-[10px_10px_20px_rgba(0,0,0,0.1)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)]"
+                                        )}
                                     >
                                         <EditorCommandEmpty className="flex items-center justify-center px-2 text-tertiary">
                                             No results
                                         </EditorCommandEmpty>
-                                        <ScrollArea className="h-80">
-                                            <EditorCommandList className={"p-2 pr-4"}>
-                                                {suggestionItems.map((item) => (
-                                                    <EditorCommandItem
-                                                        value={item.title}
-                                                        onCommand={(val) => item.command?.(val)}
-                                                        className="group cursor-pointer flex w-full items-center gap-2 rounded-md py-1 px-2 text-left text-sm hover:bg-tertiary aria-selected:bg-tertiary"
-                                                        key={item.title}
-                                                    >
-                                                        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-main/40 bg-primary group-hover:text-brand group-aria-selected:text-brand">
-                                                            {item.icon}
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-medium text-primary">{item.title}</p>
-                                                            <p className="text-xs text-secondary">{item.description}</p>
-                                                        </div>
-                                                    </EditorCommandItem>
-                                                ))}
-                                            </EditorCommandList>
-                                        </ScrollArea>
+                                        <EditorCommandList className={"p-1"}>
+                                            {suggestionItems.map((item) => (
+                                                <EditorCommandItem
+                                                    key={item.title}
+                                                    value={item.title}
+                                                    onCommand={(val) => item.command?.(val)}
+                                                    className="group cursor-pointer flex w-full items-center gap-2 rounded-md p-1 text-left text-sm hover:bg-tertiary aria-selected:bg-tertiary"
+                                                >
+                                                    <div className="flex size-8 items-center justify-center rounded-md border border-main/40 bg-primary group-hover:text-brand group-aria-selected:text-brand">
+                                                        {item.icon}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-primary">{item.title}</p>
+                                                        <p className="text-xs text-secondary">{item.description}</p>
+                                                    </div>
+                                                </EditorCommandItem>
+                                            ))}
+                                        </EditorCommandList>
                                     </EditorCommand>
                                     <EditorBubble
                                         tippyOptions={{ placement: "top" }}

@@ -277,7 +277,7 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config
                     </div>
 
                     <div className={"flex-1 flex items-center overflow-hidden"}>
-                        <p className={"text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-primary font-semibold font-mono truncate"}>
+                        <p className={"text-2xl md:text-3xl text-primary font-semibold font-mono truncate"}>
                             {formatCountdown()}
                         </p>
                     </div>

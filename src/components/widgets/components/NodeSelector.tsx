@@ -106,7 +106,7 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
                     <ChevronDown className='h-4 w-4' />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent sideOffset={5} align='start' className={cn('flex flex-col gap-1 w-48 p-1')}>
+            <PopoverContent sideOffset={4} align='start' className={cn('flex flex-col gap-1 w-48 p-1')}>
                 {SelectorItems.map((item) => (
                     <EditorBubbleItem
                         key={item.name}
@@ -116,7 +116,7 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
                         }}
                         data-state={activeItem.name === item.name ? "active" : "inactive"}
                         className='group flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-sm data-[state=active]:bg-tertiary hover:bg-tertiary'>
-                        <div className='flex items-center space-x-2'>
+                        <div className='flex items-center gap-2'>
                             <div className='group-data-[state=active]:text-brand rounded-sm border border-main/60 p-1 group-hover:text-brand'>
                                 <item.icon className='h-3 w-3 ' />
                             </div>

@@ -44,13 +44,11 @@ async function fetchIntegrations(userId: string): Promise<Integration[]> {
 }
 
 async function unlinkIntegration(provider: string) {
-    await authClient.unlinkAccount({ providerId: provider }, {
-        onError: (error) => {
-             posthog.captureException(error, {
-                method: "unlinkIntegration", provider
-             })
-        }
-    })
+    const response = await fetch(`/api/accounts?provider=${provider}`, { method: "DELETE" })
+
+    if (!response.ok) {
+        throw new Error("Failed to unlink integration")
+    }
 }
 
 interface UpdateIntegrationArgs {
@@ -96,9 +94,12 @@ export function useIntegrations(userId: string | undefined) {
                 return previous.filter((integration) => integration.provider !== provider)
             })
         },
-        onError: (error, provider) => posthog.captureException(error, {
-            hook: "useIntegrations.deleteIntegration", userId, provider
-        })
+        onError: (error, provider) => {
+            toast.error("Could not disconnect integration.")
+            posthog.captureException(error, {
+                hook: "useIntegrations.deleteIntegration", userId, provider
+            })
+        }
     })
 
     const updateIntegrationMutation = useMutation({
