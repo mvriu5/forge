@@ -178,7 +178,7 @@ const TodoWidget: React.FC<WidgetProps<TodoConfig>> = ({widget, config, updateCo
                 />
                 <Button
                     className={"px-2 border-0 hover:bg-inverted/10 shadow-none dark:shadow-none"}
-                    onClick={ () => void enterInput()}
+                    onClick={() => void enterInput()}
                 >
                     <Forward size={16}/>
                 </Button>
