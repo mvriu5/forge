@@ -1,5 +1,3 @@
-import {JSONContent} from "novel"
-
 export const NOTION_VERSION = "2025-09-03"
 
 export function getTitleFromProperties(properties: Record<string, any> | undefined) {
@@ -29,7 +27,7 @@ export function blocksToPlainText(blocks: any[]): string {
         .join("\n\n")
 }
 
-function reduceBlockToJSON(block: any): JSONContent | null {
+function reduceBlockToJSON(block: any): any | null {
     if (!block?.type) return null
 
     const richText = block[block.type]?.rich_text ?? []
@@ -56,10 +54,10 @@ function reduceBlockToJSON(block: any): JSONContent | null {
     }
 }
 
-export function blocksToJSONContent(blocks: any[]): JSONContent {
+export function blocksToJSONContent(blocks: any[]): any {
     const nodes = blocks
         .map(reduceBlockToJSON)
-        .filter(Boolean) as JSONContent[]
+        .filter(Boolean) as any[]
 
     if (nodes.length === 0) {
         return { type: "doc", content: [{ type: "paragraph", content: [] }] }
@@ -71,7 +69,7 @@ export function blocksToJSONContent(blocks: any[]): JSONContent {
     }
 }
 
-function richTextToTextNodes(richText: any[] | undefined): JSONContent[] {
+function richTextToTextNodes(richText: any[] | undefined): any[] {
     if (!Array.isArray(richText) || richText.length === 0) return []
 
     return richText
@@ -79,7 +77,7 @@ function richTextToTextNodes(richText: any[] | undefined): JSONContent[] {
             const text = item?.plain_text ?? item?.text?.content
             if (!text) return null
 
-            const marks: JSONContent[] = []
+            const marks: any[] = []
             const annotations = item?.annotations ?? {}
 
             if (annotations.bold) marks.push({ type: "bold" })
@@ -98,10 +96,10 @@ function richTextToTextNodes(richText: any[] | undefined): JSONContent[] {
                 ...(marks.length > 0 ? { marks } : {})
             }
         })
-        .filter(Boolean) as JSONContent[]
+        .filter(Boolean) as any[]
 }
 
-function paragraphFromRichText(richText: any[] | undefined, prefixText?: string): JSONContent {
+function paragraphFromRichText(richText: any[] | undefined, prefixText?: string): any {
     const content = richTextToTextNodes(richText)
 
     if (prefixText) {
@@ -114,9 +112,9 @@ function paragraphFromRichText(richText: any[] | undefined, prefixText?: string)
     }
 }
 
-function buildListItem(block: any): JSONContent {
+function buildListItem(block: any): any {
     const blockData = block?.[block.type] ?? {}
-    const itemContent: JSONContent[] = [paragraphFromRichText(blockData.rich_text)]
+    const itemContent: any[] = [paragraphFromRichText(blockData.rich_text)]
 
     const children = Array.isArray(block?.children) ? block.children : []
     const childNodes = blocksToNodes(children)
@@ -125,7 +123,7 @@ function buildListItem(block: any): JSONContent {
     return { type: "listItem", content: itemContent }
 }
 
-function convertBlock(block: any): JSONContent | JSONContent[] | null {
+function convertBlock(block: any): any | any[] | null {
     if (!block?.type) return null
 
     const blockData = block[block.type] ?? {}
@@ -144,7 +142,7 @@ function convertBlock(block: any): JSONContent | JSONContent[] | null {
     }
 
     if (block.type === "quote") {
-        const quoteContent: JSONContent[] = [paragraphFromRichText(blockData.rich_text)]
+        const quoteContent: any[] = [paragraphFromRichText(blockData.rich_text)]
         const children = blocksToNodes(block.children ?? [])
         if (children.length > 0) quoteContent.push(...children)
         return { type: "blockquote", content: quoteContent }
@@ -171,7 +169,7 @@ function convertBlock(block: any): JSONContent | JSONContent[] | null {
     if (block.type === "callout") {
         const emoji = blockData.icon?.emoji
         const prefix = emoji ? `${emoji} ` : "💡 "
-        const calloutContent: JSONContent[] = [paragraphFromRichText(blockData.rich_text, prefix)]
+        const calloutContent: any[] = [paragraphFromRichText(blockData.rich_text, prefix)]
         const children = blocksToNodes(block.children ?? [])
         if (children.length > 0) calloutContent.push(...children)
         return { type: "blockquote", content: calloutContent }
@@ -188,8 +186,8 @@ function convertBlock(block: any): JSONContent | JSONContent[] | null {
     return null
 }
 
-function blocksToNodes(blocks: any[]): JSONContent[] {
-    const nodes: JSONContent[] = []
+function blocksToNodes(blocks: any[]): any[] {
+    const nodes: any[] = []
     let index = 0
 
     while (index < blocks.length) {
@@ -198,7 +196,7 @@ function blocksToNodes(blocks: any[]): JSONContent[] {
 
         if (type === "bulleted_list_item" || type === "numbered_list_item") {
             const listType = type === "bulleted_list_item" ? "bulletList" : "orderedList"
-            const listItems: JSONContent[] = []
+            const listItems: any[] = []
 
             while (index < blocks.length && blocks[index]?.type === type) {
                 listItems.push(buildListItem(blocks[index]))
@@ -210,18 +208,17 @@ function blocksToNodes(blocks: any[]): JSONContent[] {
         }
 
         const node = convertBlock(block)
-        if (Array.isArray(node)) {
-            nodes.push(...node)
-        } else if (node) {
-            nodes.push(node)
-        }
+
+        if (Array.isArray(node)) nodes.push(...node)
+        else if (node) nodes.push(node)
+
         index += 1
     }
 
     return nodes
 }
 
-export function plainTextToJSONContent(text: string): JSONContent {
+export function plainTextToJSONContent(text: string): any {
     const paragraphs = text.split(/\n\n+/).map((paragraph) => paragraph.trim()).filter(Boolean)
     if (paragraphs.length === 0) {
         return { type: "doc", content: [{ type: "paragraph", content: [] }] }

@@ -1,12 +1,11 @@
-import { cn } from "@/lib/utils";
-import { EditorBubbleItem, useEditor } from "novel";
-import {BoldIcon, ItalicIcon, StrikethroughIcon, CodeIcon, UnderlineIcon} from "lucide-react";
+import { cn } from "@/lib/utils"
+import type { Editor } from "@tiptap/core"
+import {BoldIcon, ItalicIcon, StrikethroughIcon, CodeIcon, UnderlineIcon} from "lucide-react"
 import {SelectorItem} from "@/components/widgets/components/NodeSelector"
 import {Button} from "@/components/ui/Button"
 
-export const TextButtons = () => {
-    const { editor } = useEditor();
-    if (!editor) return null;
+export const TextButtons = ({ editor }: { editor?: Editor | any }) => {
+    if (!editor) return null
     const items: SelectorItem[] = [
         {
             name: "bold",
@@ -20,12 +19,12 @@ export const TextButtons = () => {
             command: (editor: any) => editor.chain().focus().toggleItalic().run(),
             icon: ItalicIcon,
         },
-        /*{
+        {
             name: "underline",
             isActive: (editor: any) => editor.isActive("underline"),
             command: (editor: any) => editor.chain().focus().toggle().run(),
             icon: UnderlineIcon,
-        },*/
+        },
         {
             name: "strike",
             isActive: (editor: any) => editor.isActive("strike"),
@@ -37,25 +36,24 @@ export const TextButtons = () => {
             isActive: (editor: any) => editor.isActive("code"),
             command: (editor: any) => editor.chain().focus().toggleCode().run(),
             icon: CodeIcon,
-        },
-    ];
+        }
+    ]
     return (
-        <div className="flex">
+        <div className="flex rounded-md bg-primary shadow-xs dark:shadow-md border border-main/40">
             {items.map((item) => (
-                <EditorBubbleItem
+                <Button
                     key={item.name}
-                    className={"group"}
-                    onSelect={(editor) => {
-                        item.command(editor);
-                    }}>
-                    <Button className="rounded-none group:last:rounded-r-md px-2" variant="ghost">
-                        <item.icon
-                            className={cn(item.isActive(editor) && "text-brand")}
-                            size={16}
-                        />
-                    </Button>
-                </EditorBubbleItem>
+                    className={cn("rounded-md px-2", item.isActive(editor) && "bg-tertiary text-primary")}
+                    variant="ghost"
+                    onClick={() => item.command(editor)}
+                    aria-pressed={item.isActive(editor) ? "true" : "false"}
+                >
+                    <item.icon
+                        className={cn(item.isActive(editor) && "text-brand")}
+                        size={16}
+                    />
+                </Button>
             ))}
         </div>
-    );
-};
+    )
+}

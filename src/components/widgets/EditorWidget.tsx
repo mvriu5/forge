@@ -10,7 +10,6 @@ import { NotionPage, useNotion } from "@/hooks/useNotion"
 import { cn } from "@/lib/utils"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 import { Import, Plus } from "lucide-react"
-import { JSONContent } from "novel"
 import React, { Suspense, useCallback, useMemo, useState } from "react"
 import { Notion } from "../svg/Icons"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover"
@@ -23,7 +22,7 @@ const LazyNoteDialog = React.lazy(() => import("../../components/dialogs/NoteDia
 export type Note = {
     id: string
     title: string
-    content: JSONContent
+    content: any
     emoji: string
     lastUpdated: Date
     notionSync?: {
@@ -66,7 +65,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
         const newNote: Note = {
             id: crypto.randomUUID(),
             title: "",
-            content: {} as JSONContent,
+            content: {} as any,
             emoji: "",
             lastUpdated: new Date(),
             notionSync: null
@@ -91,7 +90,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
         const pendingNote: Note = {
             id: pendingNoteId,
             title: "",
-            content: {} as JSONContent,
+            content: {} as any,
             emoji: "",
             lastUpdated: new Date(),
             notionSync: null

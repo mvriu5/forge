@@ -6,7 +6,6 @@ import {useSession} from "@/hooks/data/useSession"
 import {authClient} from "@/lib/auth-client"
 import {blocksToJSONContent, plainTextToJSONContent} from "@/lib/notion"
 import {useMutation, useQuery} from "@tanstack/react-query"
-import {JSONContent} from "novel"
 import posthog from "posthog-js"
 import {useEffect, useMemo, useRef, useState} from "react"
 
@@ -20,7 +19,7 @@ export interface NotionPage {
 export interface NotionPageContent {
     id: string
     title: string
-    content: JSONContent
+    content: any
 }
 
 interface NotionPagesResponse {
