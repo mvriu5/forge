@@ -153,7 +153,7 @@ export const useGoogleMail = (pageSize = 50) => {
             void refreshAccessToken()
             return
         }
-
+        
         setAccessToken(googleIntegration.accessToken)
     }, [googleIntegration, refetchIntegrations, userId])
 
@@ -162,6 +162,7 @@ export const useGoogleMail = (pageSize = 50) => {
         queryFn: () => fetchGmailLabels(accessToken),
         enabled: Boolean(accessToken),
         staleTime: 15 * 60 * 1000,
+        refetchInterval: 5 * 60 * 1000,
         gcTime: 30 * 60 * 1000,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
