@@ -1,67 +1,78 @@
-import { Editor, ReactRenderer } from "@tiptap/react";
-import tippy, { Instance as TippyInstance } from "tippy.js";
-import { SuggestionKeyDownProps } from "@tiptap/suggestion";
-import CommandList from "./CommandList";
+import { Editor, ReactRenderer } from "@tiptap/react"
+import tippy, { Instance as TippyInstance } from "tippy.js"
+import { SuggestionKeyDownProps } from "@tiptap/suggestion"
+import NodeCommandList from "./NodeCommandList"
+
+export interface Range {
+    from: number
+    to: number
+}
 
 export interface CommandItem {
-  title: string;
-  icon?: React.ReactNode;
-  command?: (props: { editor: Editor; range: Range }) => void;
-  disabled?: boolean;
+    title: string
+    description: string
+    searchTerms: string[]
+    icon: React.ReactNode
+    command: (props: { editor: Editor, range: Range }) => void
+    disabled?: boolean
 }
 
 export interface RenderSuggestionsProps {
-  editor: Editor;
-  clientRect: () => DOMRect;
-  items: CommandItem[];
-  command: (item: CommandItem) => void;
+    editor: Editor
+    clientRect?: (() => DOMRect) | null
+    items: CommandItem[]
+    command: (item: CommandItem) => void
+    range: Range
 }
 
 const RenderSuggestions = () => {
-  let reactRenderer: ReactRenderer;
-  let popup: TippyInstance[];
+  let reactRenderer: ReactRenderer | null = null
+  let popup: TippyInstance | null = null
 
-  return {
-    onStart: (props: RenderSuggestionsProps) => {
-      reactRenderer = new ReactRenderer(CommandList, {
-        props,
-        editor: props.editor,
-      });
+    return {
+        onStart: (props: RenderSuggestionsProps) => {
+            if (!props || !props.items || props.items.length === 0 || !props.clientRect) return
 
-      if (!props.clientRect) return;
+            try {
+                reactRenderer = new ReactRenderer(NodeCommandList, { editor: props.editor, props })
+            } catch (err) {
+                return
+            }
 
-      popup = tippy("body", {
-        getReferenceClientRect: props.clientRect,
-        appendTo: () => document.body,
-        content: reactRenderer.element,
-        showOnCreate: true,
-        interactive: true,
-        trigger: "manual",
-        placement: "bottom-start",
-      });
-    },
-    onUpdate(props: RenderSuggestionsProps) {
-      reactRenderer.updateProps(props);
+            const instances = tippy(document.body as Element, {
+                getReferenceClientRect: props.clientRect,
+                appendTo: () => document.body,
+                content: reactRenderer.element,
+                showOnCreate: true,
+                interactive: true,
+                trigger: "manual",
+                placement: "bottom-start",
+            })
 
-      if (!props.clientRect) return;
+            popup = Array.isArray(instances) ? instances[0] : (instances as unknown as TippyInstance)
+        },
 
-      popup[0].setProps({
-        getReferenceClientRect: props.clientRect,
-      });
-    },
-    onKeyDown(props: SuggestionKeyDownProps): boolean {
-      if (props.event.key === "Escape") {
-        popup[0].hide();
-        return true;
-      }
+        onUpdate: (props: RenderSuggestionsProps) => {
+            if (reactRenderer) reactRenderer.updateProps(props)
+            if (popup && props.clientRect) popup.setProps({getReferenceClientRect: props.clientRect})
+        },
 
-      return (reactRenderer.ref as any)?.onKeyDown(props);
-    },
-    onExit() {
-      popup[0].destroy();
-      reactRenderer.destroy();
-    },
-  };
-};
+        onKeyDown: (props: SuggestionKeyDownProps): boolean => {
+            if (props.event.key === "Escape") {
+                popup?.hide()
+                return true
+            }
 
-export default RenderSuggestions;
+            return (reactRenderer?.ref as any)?.onKeyDown?.(props) ?? false
+        },
+
+        onExit: () => {
+            popup?.destroy()
+            reactRenderer?.destroy()
+            popup = null
+            reactRenderer = null
+        }
+    }
+}
+
+export default RenderSuggestions

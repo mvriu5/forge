@@ -14,7 +14,7 @@ import TaskList from "@tiptap/extension-task-list"
 import { BubbleMenu, EditorContent, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import { File, Trash } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { Activity, useCallback, useEffect, useRef, useState } from "react"
 import { Button } from "../ui/Button"
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/Dialog"
 import { EmojiPicker } from "../ui/EmojiPicker"
@@ -41,6 +41,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
     const [title, setTitle] = useState(note.title)
     const [emoji, setEmoji] = useState(note.emoji)
     const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
+    const [selectionRange, setSelectionRange] = useState<{ from: number, to: number } | null>(null)
 
     const titleSaveTimeout = useRef<NodeJS.Timeout | null>(null)
     const contentSaveTimeout = useRef<NodeJS.Timeout | null>(null)
@@ -72,6 +73,11 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
     }, [])
 
     const extensions = [
+        SlashSuggestion.configure({
+            suggestion: {
+                items: ({ query }: { query: string }) => filterCommandItems(query),
+            },
+        }),
         StarterKit.configure({
             bulletList: { HTMLAttributes: { class: "list-disc list-outside leading-3 -mt-2" } },
             orderedList: { HTMLAttributes: { class: "list-decimal list-outside leading-3 -mt-2" } },
@@ -139,13 +145,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
     }, [saveNote])
 
     const editor = useEditor({
-        extensions: [...extensions,
-            SlashSuggestion.configure({
-              suggestion: {
-                items: ({ query }: { query: string }) => filterCommandItems(query),
-              },
-            })
-        ],
+        extensions: extensions,
         content: note.content ?? "",
         editorProps: {
             attributes: { class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full min-h-full cursor-text p-2" }
@@ -157,6 +157,28 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
             handleSave(editor)
         }
     })
+
+    useEffect(() => {
+        if (!editor) {
+            setSelectionRange(null)
+            return
+        }
+
+        const updateRange = () => {
+            const sel = editor.state.selection
+            setSelectionRange({ from: sel.from, to: sel.to })
+        }
+
+        updateRange()
+
+        editor.on('selectionUpdate', updateRange)
+        editor.on('transaction', updateRange)
+
+        return () => {
+            editor.off('selectionUpdate', updateRange)
+            editor.off('transaction', updateRange)
+        }
+    }, [editor])
 
     const persistContent = useCallback(async (editorInstance: TipTapEditor) => {
         const json = editorInstance.getJSON()
@@ -181,6 +203,16 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
             contentSaveTimeout.current = null
         }, 300)
     }, [persistContent])
+
+    const effectiveRange = (() => {
+        if (selectionRange) return selectionRange
+
+        if (editor && (editor as any).state && (editor as any).state.selection) {
+            const s = (editor as any).state.selection
+            return { from: s.from, to: s.to }
+        }
+        return { from: 0, to: 0 }
+    })()
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
@@ -278,14 +310,12 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                     <div className={"rounded-md h-full"}>
                         <ScrollArea className="h-[72vh]">
                             <div className="p-2 rounded-md max-h-full min-h-full w-full bg-primary">
-                                {editor ? (
-                                    <>
-                                        <EditorContent editor={editor} />
-                                        <BubbleMenu editor={editor} tippyOptions={{ placement: "top" }}>
-                                            <TextButtons editor={editor} />
-                                        </BubbleMenu>
-                                    </>
-                                ) : null}
+                                <Activity mode={editor ? "visible" : "hidden"}>
+                                    <EditorContent editor={editor} />
+                                    <BubbleMenu editor={editor} tippyOptions={{ placement: "top" }}>
+                                        <TextButtons editor={editor} range={effectiveRange} />
+                                    </BubbleMenu>
+                                </Activity>
                             </div>
                         </ScrollArea>
                     </div>
