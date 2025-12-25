@@ -53,26 +53,7 @@ const SlashSuggestion = Extension.create<SlashSuggestionOptions>({
                 items: ({ query }: { query: string }) => {
                     return filterCommandItems(query)
                 },
-                render: () => {
-                    let component: ReturnType<typeof RenderSuggestions>
-
-                    return {
-                        onStart: (props: any) => {
-                            component = RenderSuggestions()
-                            component.onStart(props)
-                        },
-                        onUpdate(props: any) {
-                            component.onUpdate(props)
-                        },
-                        onKeyDown(props: any) {
-                            if (props.event.key === "Escape") return true
-                            return component.onKeyDown?.(props) ?? false
-                        },
-                        onExit() {
-                            component.onExit()
-                        }
-                    }
-                }
+                render: RenderSuggestions as any,
             }
         }
     },
@@ -82,7 +63,6 @@ const SlashSuggestion = Extension.create<SlashSuggestionOptions>({
             Suggestion({
                 editor: this.editor,
                 ...this.options.suggestion,
-                render: RenderSuggestions,
             } as SuggestionOptions)
         ]
     }

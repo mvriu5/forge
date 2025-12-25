@@ -309,7 +309,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                 ) : (
                     <div className={"rounded-md h-full"}>
                         <ScrollArea className="h-[72vh]">
-                            <div className="p-2 rounded-md max-h-full min-h-full w-full bg-primary">
+                            <div className="sp-2 rounded-md max-h-full min-h-full w-full bg-primary">
                                 <Activity mode={editor ? "visible" : "hidden"}>
                                     <EditorContent editor={editor} />
                                     <BubbleMenu editor={editor} tippyOptions={{ placement: "top" }}>

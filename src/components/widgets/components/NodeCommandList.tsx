@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { CommandItem } from "./RenderSuggestions"
 import {
     CheckSquare,
@@ -16,7 +16,9 @@ import { cn } from "@/lib/utils"
 export interface NodeCommandListProps {
     command?: (item: CommandItem) => void
     editor: any
-    range: { from: number, to: number }
+    range: { from: number; to: number }
+    items?: CommandItem[]
+    close?: () => void
 }
 
 export const defaultCommandItems: CommandItem[] = [
@@ -89,7 +91,13 @@ export const defaultCommandItems: CommandItem[] = [
         searchTerms: ["blockquote"],
         icon: <TextQuote size={18} />,
         command: ({ editor, range }) => {
-            editor.chain().focus().deleteRange(range).toggleNode("paragraph", "paragraph").toggleBlockquote().run()
+            editor
+                .chain()
+                .focus()
+                .deleteRange(range)
+                .toggleNode("paragraph", "paragraph")
+                .toggleBlockquote()
+                .run()
         },
     },
     {
@@ -103,96 +111,214 @@ export const defaultCommandItems: CommandItem[] = [
     },
 ]
 
-const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, range }) => {
+const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, range, items: itemsProp, close }) => {
+    const items = itemsProp && itemsProp.length > 0 ? itemsProp : defaultCommandItems
+
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
     const [isKeyboardActive, setIsKeyboardActive] = useState(false)
-    const itemsRef = useRef<HTMLDivElement>(null)
+    const containerRef = useRef<HTMLDivElement | null>(null)
 
     const scrollToItem = useCallback((index: number) => {
-        if (itemsRef.current && itemsRef.current.children[index]) {
-            (itemsRef.current.children[index] as HTMLElement).scrollIntoView({
+        const el = containerRef.current
+        if (!el) return
+        const child = el.children[index] as HTMLElement | undefined
+        if (child) {
+            child.scrollIntoView({
                 behavior: "smooth",
                 block: "nearest",
             })
         }
     }, [])
 
-    const selectItem = useCallback((index: number) => {
-        if (defaultCommandItems.length > 0 && defaultCommandItems[0].title !== "No results found") {
+    const selectItem = useCallback(
+        (index: number) => {
+            if (items.length === 0) return
             setSelectedIndex(index)
             scrollToItem(index)
-        }
-    }, [scrollToItem])
+        },
+        [items.length, scrollToItem],
+    )
 
     const upHandler = useCallback(() => {
         setIsKeyboardActive(true)
-        if (selectedIndex !== null) selectItem((selectedIndex - 1 + defaultCommandItems.length) % defaultCommandItems.length)
-        else if (defaultCommandItems.length > 0) selectItem(defaultCommandItems.length - 1)
-    }, [selectedIndex, selectItem])
+        setSelectedIndex((prev) => (prev !== null ? (prev - 1 + items.length) % items.length : items.length - 1))
+    }, [items.length])
 
     const downHandler = useCallback(() => {
         setIsKeyboardActive(true)
-        if (selectedIndex !== null) selectItem((selectedIndex + 1) % defaultCommandItems.length)
-        else if (defaultCommandItems.length > 0) selectItem(0)
-    }, [selectedIndex, selectItem])
+        setSelectedIndex((prev) => (prev !== null ? (prev + 1) % items.length : 0))
+    }, [items.length])
 
-    const enterHandler = () => {
+    const enterHandler = useCallback(() => {
         if (selectedIndex === null) return false
-
-        const item = defaultCommandItems[selectedIndex]
+        const item = items[selectedIndex]
         if (!item || item.disabled) return false
 
-        if (typeof item.command === "function") item.command({ editor, range })
-        else if (typeof command === "function") command(item)
+        try {
+            if (typeof item.command === "function") {
+                item.command({ editor, range })
+            } else if (typeof command === "function") {
+                command(item)
+            }
+        } catch (err) {
+            // intentionally silent in production
+        } finally {
+            try {
+                close?.()
+            } catch (err) {
+                // ignore
+            }
+        }
         return true
-    }
+    }, [selectedIndex, items, editor, range, command, close])
 
     useEffect(() => {
-        const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === "ArrowUp") {
-                event.preventDefault()
+        if (selectedIndex !== null) scrollToItem(selectedIndex)
+    }, [selectedIndex, scrollToItem])
+
+    useEffect(() => {
+        const onKeyDown = (ev: KeyboardEvent) => {
+            if (ev.key === "ArrowUp") {
+                ev.preventDefault()
                 upHandler()
-            } else if (event.key === "ArrowDown") {
-                event.preventDefault()
+            } else if (ev.key === "ArrowDown") {
+                ev.preventDefault()
                 downHandler()
-            } else if (event.key === "Enter") {
-                event.preventDefault()
+            } else if (ev.key === "Enter") {
+                ev.preventDefault()
                 if (enterHandler()) {
-                    event.stopPropagation()
+                    ev.stopPropagation()
+                }
+            } else if (ev.key === "Escape") {
+                // parent handles escape
+            }
+        }
+        document.addEventListener("keydown", onKeyDown, true)
+        return () => document.removeEventListener("keydown", onKeyDown, true)
+    }, [upHandler, downHandler, enterHandler])
+
+    useEffect(() => {
+        const el = containerRef.current
+        if (!el) return
+
+        const onPointerDown = (ev: PointerEvent) => {
+            const target = ev.target as HTMLElement | null
+            const btn = target?.closest("button[role='menuitem']") as HTMLButtonElement | null
+            if (!btn || !el.contains(btn)) return
+
+            ev.preventDefault()
+            ev.stopPropagation()
+
+            const children = Array.from(el.children)
+            const index = children.indexOf(btn)
+            if (index === -1) return
+
+            const item = items[index]
+            if (!item || item.disabled) return
+
+            try {
+                if (typeof item.command === "function") {
+                    item.command({ editor, range })
+                } else if (typeof command === "function") {
+                    command(item)
+                }
+            } catch (err) {
+                // intentionally silent in production
+            } finally {
+                try {
+                    close?.()
+                } catch (err) {
+                    // ignore
                 }
             }
         }
 
-        document.addEventListener("keydown", onKeyDown, true)
-        return () => document.removeEventListener("keydown", onKeyDown, true)
-    }, [upHandler, downHandler])
+        const onPointerEnter = (ev: PointerEvent) => {
+            const target = ev.target as HTMLElement | null
+            const btn = target?.closest("button[role='menuitem']") as HTMLButtonElement | null
+            if (!btn || !el.contains(btn)) return
+
+            const children = Array.from(el.children)
+            const index = children.indexOf(btn)
+            if (index === -1) return
+
+            setIsKeyboardActive(false)
+            setSelectedIndex(index)
+        }
+
+        const onPointerLeave = (ev: PointerEvent) => {
+            const related = ev.relatedTarget as Node | null
+            if (!el.contains(related)) {
+                if (!isKeyboardActive) setSelectedIndex(null)
+            }
+        }
+
+        el.addEventListener("pointerdown", onPointerDown, true)
+        el.addEventListener("pointerenter", onPointerEnter, true)
+        el.addEventListener("pointerleave", onPointerLeave, true)
+
+        return () => {
+            el.removeEventListener("pointerdown", onPointerDown, true)
+            el.removeEventListener("pointerenter", onPointerEnter, true)
+            el.removeEventListener("pointerleave", onPointerLeave, true)
+        }
+    }, [items, editor, range, command, close, isKeyboardActive])
 
     return (
-        <div className="flex flex-col bg-primary border border-main/40 rounded-md shadow-xs dark:shadow-md p-1 w-56" ref={itemsRef}>
-            {defaultCommandItems.map((item, index) => (
-                <button
-                    className={cn(
-                        "flex items-center gap-2 px-2 py-1",
-                        isKeyboardActive && index === selectedIndex && "bg-brand/5 text-brand",
-                        item.disabled && ""
-                    )}
-                    key={item.title}
-                    onClick={() => {
-                        setIsKeyboardActive(false)
-                        if (typeof item.command === "function") item.command({ editor, range })
-                        else if (typeof command === "function") command(item)
-                    }}
-                    onMouseEnter={() => {
-                        if (!isKeyboardActive) return
-                        setIsKeyboardActive(false)
-                        setSelectedIndex(null)
-                    }}
-                    disabled={item.disabled}
-                >
-                    {item.icon && item.icon}
-                    <span className="text-sm text-secondary">{item.title}</span>
-                </button>
-            ))}
+        <div
+            ref={containerRef}
+            role="menu"
+            aria-label="Block menu"
+            className="flex flex-col bg-primary hover:bg-tertiary border border-main/40 rounded-md shadow-xs dark:shadow-md p-1 w-56"
+        >
+            {items.map((item, index) => {
+                const isSelected = index === selectedIndex
+                return (
+                    <button
+                        key={item.title + index}
+                        type="button"
+                        role="menuitem"
+                        data-index={index}
+                        className={cn(
+                            "flex items-center gap-2 px-2 py-1 text-left w-full",
+                            isSelected && "bg-brand/5 text-brand",
+                            item.disabled && "opacity-50 cursor-not-allowed",
+                        )}
+                        onMouseDown={(e) => {
+                            e.preventDefault()
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            try {
+                                if (typeof item.command === "function") {
+                                    item.command({ editor, range })
+                                } else if (typeof command === "function") {
+                                    command(item)
+                                }
+                            } catch (err) {
+                                // intentionally silent in production
+                            } finally {
+                                try {
+                                    close?.()
+                                } catch (err) {
+                                    // ignore
+                                }
+                            }
+                        }}
+                        onMouseEnter={() => {
+                            setIsKeyboardActive(false)
+                            setSelectedIndex(index)
+                        }}
+                        onMouseLeave={() => {
+                            if (!isKeyboardActive) setSelectedIndex(null)
+                        }}
+                        disabled={item.disabled}
+                    >
+                        {item.icon}
+                        <span className="text-sm text-secondary">{item.title}</span>
+                    </button>
+                )
+            })}
         </div>
     )
 }
