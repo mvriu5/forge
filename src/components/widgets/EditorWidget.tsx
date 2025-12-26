@@ -24,7 +24,7 @@ export type Note = {
     title: string
     content: any
     emoji: string
-    lastUpdated: Date
+    lastUpdated: Date | string
     notionSync?: {
         pageId: string
         title: string
@@ -57,9 +57,16 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
         anchor: "tc"
     })
 
+    const getNoteTime = useCallback((note: Note) => {
+        const time = note.lastUpdated instanceof Date
+            ? note.lastUpdated.getTime()
+            : new Date(note.lastUpdated).getTime()
+        return Number.isFinite(time) ? time : 0
+    }, [])
+
     const sortedNotes = useMemo(() => (
-        config.notes.sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime())
-    ), [config.notes])
+        [...config.notes].sort((a, b) => getNoteTime(b) - getNoteTime(a))
+    ), [config.notes, getNoteTime])
 
     const createNewNote = useCallback(async () => {
         const newNote: Note = {

@@ -2,6 +2,7 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Widget, WidgetInsert} from "@/database"
 import posthog from "posthog-js"
 import {useCallback, useMemo, useRef} from "react"
+import { queryOptions } from "@/lib/queryOptions"
 
 const WIDGETS_QUERY_KEY = (userId: string | undefined) => ["widgets", userId] as const
 
@@ -123,7 +124,7 @@ export function useWidgets(userId: string | undefined) {
     const queryClient = useQueryClient()
     const previousWidgetsRef = useRef<Widget[] | null>(null)
 
-    const widgetsQuery = useQuery<Widget[], Error>({
+    const widgetsQuery = useQuery<Widget[], Error>(queryOptions({
         queryKey: WIDGETS_QUERY_KEY(userId),
         queryFn: () => fetchWidgets(userId!),
         enabled: !!userId,
@@ -154,7 +155,7 @@ export function useWidgets(userId: string | undefined) {
             previousWidgetsRef.current = result
             return result
         },
-    })
+    }))
 
     const addWidgetMutation = useMutation({
         mutationFn: async (widget: WidgetInsert) => {

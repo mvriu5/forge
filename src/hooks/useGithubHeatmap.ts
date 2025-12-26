@@ -1,7 +1,8 @@
-import {useQuery} from "@tanstack/react-query"
-import {useSession} from "@/hooks/data/useSession"
-import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import {Octokit} from "@octokit/rest"
+import { getIntegrationByProvider, useIntegrations } from "@/hooks/data/useIntegrations"
+import { useSession } from "@/hooks/data/useSession"
+import { queryOptions } from "@/lib/queryOptions"
+import { Octokit } from "@octokit/rest"
+import { useQuery } from "@tanstack/react-query"
 
 const GITHUB_QUERY_KEY = (accessToken: string | null, name: string | undefined) => ["githubHeatmap", accessToken, name] as const
 
@@ -78,15 +79,11 @@ export const useGithubHeatmap = () => {
     const {integrations} = useIntegrations(userId)
     const githubIntegration = getIntegrationByProvider(integrations, "github")
 
-    const {data, isLoading, isFetching, isError, refetch} = useQuery<GitHubContribution[], Error>({
+    const {data, isLoading, isFetching, isError, refetch} = useQuery<GitHubContribution[], Error>(queryOptions({
         queryKey: GITHUB_QUERY_KEY(githubIntegration?.accessToken ?? null, session?.user?.name),
         queryFn: () => getContributions(githubIntegration?.accessToken ?? null, session?.user?.name),
         enabled: Boolean(githubIntegration?.accessToken),
-        staleTime: 30 * 60 * 1000,
-        refetchInterval: 30 * 60 * 1000,
-        refetchOnWindowFocus: false,
-        refetchOnMount: false
-    })
+    }))
 
     return {
         data: data ?? [],

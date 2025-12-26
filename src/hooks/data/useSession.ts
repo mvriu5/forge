@@ -1,5 +1,6 @@
-import {useQuery, useQueryClient} from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import type {Session} from "@/lib/auth"
+import { queryOptions } from "@/lib/queryOptions"
 
 const SESSION_QUERY_KEY = ["session"] as const
 
@@ -15,10 +16,10 @@ async function fetchSession(): Promise<Session | null> {
 export function useSession() {
     const queryClient = useQueryClient()
 
-    const sessionQuery = useQuery({
+    const sessionQuery = useQuery(queryOptions({
         queryKey: SESSION_QUERY_KEY,
-        queryFn: fetchSession,
-    })
+        queryFn: fetchSession
+    }))
 
     const setSession = (session: Session | null) => {
         queryClient.setQueryData(SESSION_QUERY_KEY, session)

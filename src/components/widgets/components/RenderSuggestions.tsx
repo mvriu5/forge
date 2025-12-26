@@ -20,23 +20,13 @@ export interface CommandItem {
 export interface RenderSuggestionsProps {
     editor: Editor
     clientRect?: (() => DOMRect) | null
+    decorationNode?: Element | null
     items: CommandItem[]
     command: (item: CommandItem) => void
     range: Range
     close?: () => void
 }
 
-/**
- * RenderSuggestions
- *
- * - Mounts a ReactRenderer for NodeCommandList
- * - Creates a tippy popup when position info (clientRect) is available
- * - Attaches a pointerdown handler to the tippy popper element if available,
- *   otherwise falls back to a document-level capture handler. The handler will
- *   invoke the corresponding item command({ editor, range }) when a
- *   button[role="menuitem"] inside the popup is pointer-clicked
- * - Cleans up handlers and destroys popup/renderer on exit
- */
 const RenderSuggestions = () => {
     let reactRenderer: ReactRenderer | null = null
     let popup: TippyInstance | null = null
@@ -66,30 +56,22 @@ const RenderSuggestions = () => {
             try {
                 const pev = ev as PointerEvent
                 const props = latestProps
-                if (!props) {
-                    return
-                }
+                if (!props) return
 
                 const targetEl = pev.target as HTMLElement | null
                 if (!targetEl) return
 
                 const tippyRoot = targetEl.closest("[data-tippy-root]") as HTMLElement | null
                 const rootEl = (tippyRoot ?? reactRenderer?.element) as HTMLElement | null
-                if (!rootEl) {
-                    return
-                }
+                if (!rootEl) return
 
                 if (!rootEl.contains(targetEl)) return
 
                 const btn = targetEl.closest('button[role="menuitem"]') as HTMLButtonElement | null
                 if (!btn) return
 
-                try {
-                    pev.preventDefault()
-                    pev.stopPropagation()
-                } catch (e) {
-                    // ignore
-                }
+                pev.preventDefault()
+                pev.stopPropagation()
 
                 const buttons = Array.from(rootEl.querySelectorAll('button[role="menuitem"]'))
                 const index = buttons.indexOf(btn)
@@ -98,20 +80,10 @@ const RenderSuggestions = () => {
                 const item = props.items?.[index]
                 if (!item || item.disabled) return
 
-                try {
-                    if (typeof item.command === "function") {
-                        item.command({ editor: props.editor, range: props.range })
-                    } else if (typeof props.command === "function") {
-                        props.command(item)
-                    }
-                } catch (err) {
-                    // swallow command errors
-                } finally {
-                    safeHideAndFocus(props.editor)
-                }
-            } catch (err) {
-                // swallow unexpected errors
-            }
+                if (typeof item.command === "function") item.command({ editor: props.editor, range: props.range })
+                else if (typeof props.command === "function") props.command(item)
+                safeHideAndFocus(props.editor)
+            } catch (error) {}
         }
 
         try {
@@ -126,7 +98,7 @@ const RenderSuggestions = () => {
         if (!pointerHandler) return
         try {
             if (pointerHandlerTarget && (pointerHandlerTarget as Element).removeEventListener) {
-                ;(pointerHandlerTarget as Element).removeEventListener("pointerdown", pointerHandler, true)
+                (pointerHandlerTarget as Element).removeEventListener("pointerdown", pointerHandler, true)
             } else {
                 document.removeEventListener("pointerdown", pointerHandler, true)
             }
@@ -138,38 +110,58 @@ const RenderSuggestions = () => {
         }
     }
 
+    const createReferenceClientRect = (props: RenderSuggestionsProps): (() => DOMRect) => {
+        return () => {
+            const ySpacing = 92
+            const xSpacing = 12
+
+            if (props.decorationNode) {
+                const rects = props.decorationNode.getClientRects()
+                const rect = rects[0] ?? props.decorationNode.getBoundingClientRect()
+                if (rect) return new DOMRect(rect.left + xSpacing, rect.bottom + ySpacing, 0, 0)
+            }
+
+            const decoRect = props.clientRect?.()
+            if (!decoRect) return new DOMRect()
+
+            return new DOMRect(decoRect.x + xSpacing, decoRect.y + decoRect.height + ySpacing, 0, 0)
+        }
+    }
+
     const createPopupIfNeeded = (props: RenderSuggestionsProps) => {
-        if (!props?.clientRect) return
+        if (!props?.editor.view) return
+
         try {
-            const instances = tippy(document.body as Element, {
-                getReferenceClientRect: props.clientRect,
-                appendTo: () => document.body,
+            const editorDom = props.editor?.view?.dom as HTMLElement | null
+            const dialogContent = editorDom?.closest("[data-slot='dialog-content'], [role='dialog']") as HTMLElement | null
+            const appendTarget = dialogContent ?? editorDom?.parentElement ?? null
+            const referenceElement = (props.decorationNode as HTMLElement | null) ?? editorDom ?? null
+
+            if (!appendTarget || !referenceElement) return
+
+            const getReferenceClientRect = createReferenceClientRect(props)
+
+            const instances = tippy(referenceElement, {
+                getReferenceClientRect,
+                appendTo: () => appendTarget,
                 content: reactRenderer?.element,
                 showOnCreate: true,
                 interactive: true,
                 trigger: "manual",
-                placement: "bottom-start",
+                placement: "top-start",
                 hideOnClick: false,
+                popperOptions: { strategy: dialogContent ? "fixed" : "absolute" }
             })
             popup = Array.isArray(instances) ? instances[0] : (instances as unknown as TippyInstance)
 
-            try {
-                const popperEl =
-                    (popup as any)?.popper ||
-                    (popup as any)?.popperElement ||
-                    (popup as any)?.popperInstance?.state?.elements?.popper ||
-                    null
-                if (popperEl && (popperEl as Element).addEventListener) {
-                    attachPointerHandler(popperEl as Element)
-                } else {
-                    attachPointerHandler(document)
-                }
-            } catch (err) {
-                attachPointerHandler(document)
-            }
-        } catch (err) {
-            popup = null
-        }
+            const popperEl =
+                (popup as any)?.popper ||
+                (popup as any)?.popperElement ||
+                (popup as any)?.popperInstance?.state?.elements?.popper ||
+                null
+            if (popperEl && (popperEl as Element).addEventListener) attachPointerHandler(popperEl as Element)
+            else attachPointerHandler(document)
+        } catch (error) {}
     }
 
     return {
@@ -180,12 +172,9 @@ const RenderSuggestions = () => {
                 ...props,
                 close: () => safeHideAndFocus(props.editor),
                 command: (item: CommandItem) => {
-                    try {
-                        props.command?.(item)
-                    } finally {
-                        safeHideAndFocus(props.editor)
-                    }
-                },
+                    props.command?.(item)
+                    safeHideAndFocus(props.editor)
+                }
             }
 
             reactRenderer = new ReactRenderer(NodeCommandList, {
@@ -193,35 +182,15 @@ const RenderSuggestions = () => {
                 props: wrappedProps,
             })
 
-            try {
-                const el = reactRenderer.element
-                if (el) {
-                    attachPointerHandler(el)
-                }
-            } catch (err) {
-                // ignore
-            }
-
+            const el = reactRenderer.element
+            if (el) attachPointerHandler(el)
             createPopupIfNeeded(props)
         },
 
         onUpdate: (props: RenderSuggestionsProps) => {
             latestProps = props
-            try {
-                reactRenderer?.updateProps({ ...props, close: () => safeHideAndFocus(props.editor) })
-            } catch (err) {
-                // ignore
-            }
-
-            try {
-                if (popup && props.clientRect) {
-                    popup.setProps({ getReferenceClientRect: props.clientRect })
-                } else if (!popup && props.clientRect) {
-                    createPopupIfNeeded(props)
-                }
-            } catch (err) {
-                // ignore
-            }
+            reactRenderer?.updateProps({ ...props, close: () => safeHideAndFocus(props.editor) })
+            if (!popup) createPopupIfNeeded(props)
         },
 
         onKeyDown: (props: SuggestionKeyDownProps): boolean => {
@@ -234,20 +203,12 @@ const RenderSuggestions = () => {
 
         onExit: () => {
             detachPointerHandler()
-            try {
-                popup?.destroy()
-            } catch (err) {
-                // ignore
-            }
-            try {
-                reactRenderer?.destroy()
-            } catch (err) {
-                // ignore
-            }
+            popup?.destroy()
+            reactRenderer?.destroy()
             popup = null
             reactRenderer = null
             latestProps = null
-        },
+        }
     }
 }
 

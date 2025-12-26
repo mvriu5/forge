@@ -5,6 +5,7 @@ import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegra
 import {useSession} from "@/hooks/data/useSession"
 import {authClient} from "@/lib/auth-client"
 import {blocksToJSONContent, plainTextToJSONContent} from "@/lib/notion"
+import { queryOptions } from "@/lib/queryOptions"
 import {useMutation, useQuery} from "@tanstack/react-query"
 import posthog from "posthog-js"
 import {useEffect, useMemo, useRef, useState} from "react"
@@ -106,15 +107,11 @@ export const useNotion = () => {
 
     const hasAccess = Boolean(accessToken)
 
-    const {data: pages, isLoading: isLoadingPages, isFetching: isFetchingPages, refetch: refetchPages} = useQuery<NotionPage[], Error>({
+    const {data: pages, isLoading: isLoadingPages, isFetching: isFetchingPages, refetch: refetchPages} = useQuery<NotionPage[], Error>(queryOptions({
         queryKey: NOTION_PAGES_QUERY_KEY(userId),
         queryFn: () => fetchPages(userId ?? null),
         enabled: Boolean(userId && hasAccess),
-        staleTime: 5 * 60 * 1000,
-        refetchInterval: 5 * 60 * 1000,
-        refetchOnWindowFocus: false,
-        refetchOnMount: false
-    })
+    }))
 
     const fetchPageContentMutation = useMutation({
         mutationFn: (pageId: string) => fetchPageContent(userId ?? null, pageId),

@@ -37,7 +37,7 @@ export const defaultCommandItems: CommandItem[] = [
         searchTerms: ["todo", "task", "list", "check", "checkbox"],
         icon: <CheckSquare size={18} />,
         command: ({ editor, range }) => {
-            editor.chain().focus().deleteRange(range).toggleTaskList().run()
+            editor.chain().focus().deleteRange(range).toggleTaskList().insertContent(" ").run()
         },
     },
     {
@@ -91,13 +91,7 @@ export const defaultCommandItems: CommandItem[] = [
         searchTerms: ["blockquote"],
         icon: <TextQuote size={18} />,
         command: ({ editor, range }) => {
-            editor
-                .chain()
-                .focus()
-                .deleteRange(range)
-                .toggleNode("paragraph", "paragraph")
-                .toggleBlockquote()
-                .run()
+            editor.chain().focus().deleteRange(range).toggleNode("paragraph", "paragraph").toggleBlockquote().run()
         },
     },
     {
@@ -121,23 +115,12 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
     const scrollToItem = useCallback((index: number) => {
         const el = containerRef.current
         if (!el) return
-        const child = el.children[index] as HTMLElement | undefined
-        if (child) {
-            child.scrollIntoView({
-                behavior: "smooth",
-                block: "nearest",
-            })
-        }
-    }, [])
 
-    const selectItem = useCallback(
-        (index: number) => {
-            if (items.length === 0) return
-            setSelectedIndex(index)
-            scrollToItem(index)
-        },
-        [items.length, scrollToItem],
-    )
+        const child = el.children[index] as HTMLElement | undefined
+        if (!child) return
+
+        child.scrollIntoView({ behavior: "smooth", block: "nearest" })
+    }, [])
 
     const upHandler = useCallback(() => {
         setIsKeyboardActive(true)
@@ -151,24 +134,14 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
 
     const enterHandler = useCallback(() => {
         if (selectedIndex === null) return false
+
         const item = items[selectedIndex]
         if (!item || item.disabled) return false
 
-        try {
-            if (typeof item.command === "function") {
-                item.command({ editor, range })
-            } else if (typeof command === "function") {
-                command(item)
-            }
-        } catch (err) {
-            // intentionally silent in production
-        } finally {
-            try {
-                close?.()
-            } catch (err) {
-                // ignore
-            }
-        }
+        if (typeof item.command === "function") item.command({ editor, range })
+        else if (typeof command === "function") command(item)
+
+        close?.()
         return true
     }, [selectedIndex, items, editor, range, command, close])
 
@@ -189,8 +162,6 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
                 if (enterHandler()) {
                     ev.stopPropagation()
                 }
-            } else if (ev.key === "Escape") {
-                // parent handles escape
             }
         }
         document.addEventListener("keydown", onKeyDown, true)
@@ -216,21 +187,9 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
             const item = items[index]
             if (!item || item.disabled) return
 
-            try {
-                if (typeof item.command === "function") {
-                    item.command({ editor, range })
-                } else if (typeof command === "function") {
-                    command(item)
-                }
-            } catch (err) {
-                // intentionally silent in production
-            } finally {
-                try {
-                    close?.()
-                } catch (err) {
-                    // ignore
-                }
-            }
+            if (typeof item.command === "function") item.command({ editor, range })
+            else if (typeof command === "function") command(item)
+            close?.()
         }
 
         const onPointerEnter = (ev: PointerEvent) => {
@@ -248,9 +207,7 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
 
         const onPointerLeave = (ev: PointerEvent) => {
             const related = ev.relatedTarget as Node | null
-            if (!el.contains(related)) {
-                if (!isKeyboardActive) setSelectedIndex(null)
-            }
+            if (!el.contains(related) && !isKeyboardActive) setSelectedIndex(null)
         }
 
         el.addEventListener("pointerdown", onPointerDown, true)
@@ -269,7 +226,7 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
             ref={containerRef}
             role="menu"
             aria-label="Block menu"
-            className="flex flex-col bg-primary hover:bg-tertiary border border-main/40 rounded-md shadow-xs dark:shadow-md p-1 w-56"
+            className="flex flex-col bg-primary border border-main/40 rounded-md shadow-xs dark:shadow-md p-1 w-42"
         >
             {items.map((item, index) => {
                 const isSelected = index === selectedIndex
@@ -280,42 +237,26 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
                         role="menuitem"
                         data-index={index}
                         className={cn(
-                            "flex items-center gap-2 px-2 py-1 text-left w-full",
-                            isSelected && "bg-brand/5 text-brand",
-                            item.disabled && "opacity-50 cursor-not-allowed",
+                            "flex items-center gap-2 px-2 py-1 text-left rounded-md w-full hover:bg-tertiary text-sm text-secondary",
+                            isSelected && "bg-brand/5 text-brand hover:bg-brand/5",
+                            item.disabled && "cursor-not-allowed text-tertiary hover:bg-transparent hover:text-tertiary opacity-50 ",
                         )}
-                        onMouseDown={(e) => {
-                            e.preventDefault()
-                        }}
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={(e) => {
                             e.stopPropagation()
-                            try {
-                                if (typeof item.command === "function") {
-                                    item.command({ editor, range })
-                                } else if (typeof command === "function") {
-                                    command(item)
-                                }
-                            } catch (err) {
-                                // intentionally silent in production
-                            } finally {
-                                try {
-                                    close?.()
-                                } catch (err) {
-                                    // ignore
-                                }
-                            }
+                            close?.()
+                            if (typeof item.command === "function") item.command({ editor, range })
+                            else if (typeof command === "function") command(item)
                         }}
                         onMouseEnter={() => {
                             setIsKeyboardActive(false)
                             setSelectedIndex(index)
                         }}
-                        onMouseLeave={() => {
-                            if (!isKeyboardActive) setSelectedIndex(null)
-                        }}
+                        onMouseLeave={() => !isKeyboardActive && setSelectedIndex(null)}
                         disabled={item.disabled}
                     >
                         {item.icon}
-                        <span className="text-sm text-secondary">{item.title}</span>
+                        {item.title}
                     </button>
                 )
             })}

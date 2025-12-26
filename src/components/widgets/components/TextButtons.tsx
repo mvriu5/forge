@@ -4,6 +4,7 @@ import {BoldIcon, ItalicIcon, StrikethroughIcon, CodeIcon, UnderlineIcon, Chevro
 import {Button} from "@/components/ui/Button"
 import NodeCommandList from "./NodeCommandList"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover"
+import { useCallback, useState } from "react"
 
 export type SelectorItem = {
     name: string
@@ -13,6 +14,8 @@ export type SelectorItem = {
 }
 
 export const TextButtons = ({ editor, range }: { editor: Editor | null, range: { from: number, to: number } }) => {
+    const [commandMenuOpen, setCommandMenuOpen] = useState(false)
+
     if (!editor) return null
 
     const items: SelectorItem[] = [
@@ -50,17 +53,21 @@ export const TextButtons = ({ editor, range }: { editor: Editor | null, range: {
 
     return (
         <div className="flex rounded-md bg-primary shadow-xs dark:shadow-md border border-main/40">
-            <Popover>
+            <Popover open={commandMenuOpen} onOpenChange={setCommandMenuOpen}>
                 <PopoverTrigger asChild>
                     <Button
-                        className="rounded-md px-2 border-0"
+                        className="rounded-md px-2 border-0 text-sm gap-1"
                     >
                         Command
                         <ChevronDown size={16} />
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent align={"start"} className="p-0 border-0">
-                    <NodeCommandList editor={editor} range={{ from: range.from, to: range.to }} />
+                    <NodeCommandList
+                        editor={editor}
+                        range={{ from: range.from, to: range.to }}
+                        close={() => setCommandMenuOpen(false)}
+                    />
                 </PopoverContent>
             </Popover>
             {items.map((item) => (
@@ -68,7 +75,10 @@ export const TextButtons = ({ editor, range }: { editor: Editor | null, range: {
                     key={item.name}
                     className={cn("rounded-md px-2", item.isActive(editor) && "bg-tertiary text-primary")}
                     variant="ghost"
-                    onClick={() => item.command(editor)}
+                    onClick={() => {
+                        setCommandMenuOpen(false)
+                        item.command(editor)
+                    }}
                     aria-pressed={item.isActive(editor) ? "true" : "false"}
                 >
                     <item.icon

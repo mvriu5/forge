@@ -27,7 +27,7 @@ const fallbackItem: CommandItem = {
 }
 
 
-export const filterCommandItems = (query: string | undefined,commandItems: CommandItem[] = defaultCommandItems): CommandItem[] => {
+export const filterCommandItems = (query: string | undefined, commandItems: CommandItem[] = defaultCommandItems): CommandItem[] => {
     const search = query?.toLowerCase().trim() ?? ""
     if (!search) return commandItems
 

@@ -83,7 +83,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
             orderedList: { HTMLAttributes: { class: "list-decimal list-outside leading-3 -mt-2" } },
             listItem: { HTMLAttributes: { class: "leading-normal -mb-2" } },
         }),
-        Placeholder.configure({ placeholder: "Write something..." }),
+        Placeholder.configure({ placeholder: "Write something or type '/' for commands." }),
         Link.configure({ HTMLAttributes: { class: "text-info/60 underline underline-offset-[3px] hover:text-info transition-colors cursor-pointer" } }),
         TaskList.configure({ HTMLAttributes: { class: "not-prose pl-2" } }),
         TaskItem.configure({ HTMLAttributes: { class: "flex items-start my-4" }, nested: true }),
@@ -157,6 +157,25 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
             handleSave(editor)
         }
     })
+
+    const didAutoFocus = useRef(false)
+    const initialHasTitle = useRef(false)
+
+    useEffect(() => {
+        if (!open) {
+            didAutoFocus.current = false
+            initialHasTitle.current = false
+            return
+        }
+        initialHasTitle.current = note.title.trim().length > 0
+    }, [open, note.id])
+
+    useEffect(() => {
+        if (!open || !editor || !initialHasTitle.current || didAutoFocus.current) return
+        didAutoFocus.current = true
+        const frame = requestAnimationFrame(() => editor.commands.focus("end"))
+        return () => cancelAnimationFrame(frame)
+    }, [open, editor, note.id])
 
     useEffect(() => {
         if (!editor) {
@@ -242,7 +261,10 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                 </div>
             </DialogTrigger>
 
-            <DialogContent className={"md:min-w-200 max-w-[90vw] h-[80vh] max-h-[80vh] w-full overflow-hidden gap-0 p-2 flex flex-col"}>
+            <DialogContent
+                className={"md:min-w-200 max-w-[90vw] h-[80vh] max-h-[80vh] w-full overflow-hidden gap-0 p-2 flex flex-col"}
+                onOpenAutoFocus={(e) => initialHasTitle.current && e.preventDefault()}
+            >
                 <DialogHeader className={"flex flex-row items-center gap-2"}>
                     {isPending ? (
                         <div className="flex items-center gap-2">
@@ -311,7 +333,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                         <ScrollArea className="h-[72vh]">
                             <div className="sp-2 rounded-md max-h-full min-h-full w-full bg-primary">
                                 <Activity mode={editor ? "visible" : "hidden"}>
-                                    <EditorContent editor={editor} />
+                                    <EditorContent editor={editor} autoFocus={note.title !== ""}/>
                                     <BubbleMenu editor={editor} tippyOptions={{ placement: "top" }}>
                                         <TextButtons editor={editor} range={effectiveRange} />
                                     </BubbleMenu>

@@ -2,6 +2,7 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Dashboard, DashboardInsert, Settings} from "@/database"
 import {useMemo, useState} from "react"
 import posthog from "posthog-js"
+import { queryOptions } from "@/lib/queryOptions"
 
 const DASHBOARD_QUERY_KEY = (userId: string | undefined) => ["dashboards", userId] as const
 
@@ -56,11 +57,11 @@ async function deleteDashboardRequest(id: string): Promise<void> {
 export function useDashboards(userId: string | undefined, settings: Settings | null) {
     const queryClient = useQueryClient()
 
-    const dashboardsQuery = useQuery({
+    const dashboardsQuery = useQuery(queryOptions({
         queryKey: DASHBOARD_QUERY_KEY(userId),
         queryFn: () => fetchDashboards(userId!),
-        enabled: !!userId
-    })
+        enabled: Boolean(userId)
+    }))
 
     const addDashboardMutation = useMutation({
         mutationFn: (input: DashboardInsert) => createDashboard(userId!, input),
