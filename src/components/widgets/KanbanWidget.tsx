@@ -519,7 +519,7 @@ export const kanbanWidgetDefinition = defineWidget({
     name: "Kanban",
     component: KanbanWidget,
     description: "Organize your tasks in a kanban board",
-    image: "/github_preview.svg",
+    image: "/kanban_preview.svg",
     tags: ["productivity"],
     sizes: {
         desktop: { width: 2, height: 2 },

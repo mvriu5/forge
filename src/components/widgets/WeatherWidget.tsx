@@ -106,7 +106,7 @@ export const weatherWidgetDefinition = defineWidget({
     name: "Weather",
     component: WeatherWidget,
     description: 'See the weather in your location',
-    image: "/github_preview.svg",
+    image: "/weather_preview.svg",
     tags: ["weather"],
     sizes: {
         desktop: { width: 1, height: 1 },

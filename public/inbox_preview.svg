@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="258" viewBox="0 0 480 258">
+<rect x="0" y="0" width="480" height="258" rx="16" fill="#0E0E0E"/>
+
+<text x="24" y="36" fill="#FFFFFF" font-size="18" font-family="Inter, system-ui, sans-serif" font-weight="600">
+Inbox
+</text>
+
+<rect x="16" y="56" width="448" height="84" rx="12" fill="#151515"/>
+
+<text x="32" y="84" fill="#FFFFFF" font-size="14" font-weight="600"
+font-family="Inter, system-ui, sans-serif">
+"vercel[bot]"
+</text>
+
+<text x="32" y="102" fill="#9A9A9A" font-size="12"
+font-family="Inter, system-ui, sans-serif">
+notifications@github.com · 1 hour ago
+</text>
+
+<rect x="32" y="112" width="300" height="10" rx="5" fill="#2A2A2A"/>
+<rect x="32" y="128" width="260" height="10" rx="5" fill="#2A2A2A"/>
+
+<rect x="16" y="152" width="448" height="84" rx="12" fill="#151515"/>
+
+<text x="32" y="180" fill="#FFFFFF" font-size="14" font-weight="600"
+font-family="Inter, system-ui, sans-serif">
+Jane Doe
+</text>
+
+<text x="32" y="198" fill="#9A9A9A" font-size="12"
+font-family="Inter, system-ui, sans-serif">
+jane.doe@gmail.com · 1 hour ago
+</text>
+
+<rect x="32" y="210" width="220" height="10" rx="5" fill="#2A2A2A"/>
+</svg>

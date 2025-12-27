@@ -62,7 +62,7 @@ export const githubheatmapWidgetDefinition = defineWidget({
     integration: "github",
     component: GithubHeatmapWidget,
     description: "Show off your commit streak.",
-    image: "/github_preview.svg",
+    image: "/githubheatmap_preview.svg",
     tags: ["github"],
     sizes: {
         desktop: { width: 2, height: 1 },
@@ -70,4 +70,3 @@ export const githubheatmapWidgetDefinition = defineWidget({
         mobile: { width: 1, height: 1 }
     }
 })
-

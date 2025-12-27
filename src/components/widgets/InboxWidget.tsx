@@ -185,7 +185,7 @@ export const inboxWidgetDefinition = defineWidget({
     integration: "google",
     component: InboxWidget,
     description: "See your received google mails.",
-    image: "/github_preview.svg",
+    image: "/inbox_preview.svg",
     tags: ["productivity"],
     sizes: {
         desktop: { width: 1, height: 2 },

@@ -248,7 +248,7 @@ export const editorWidgetDefinition = defineWidget({
     name: "Editor",
     component: EditorWidget,
     description: "A simple text editor widget",
-    image: "/github_preview.svg",
+    image: "/editor_preview.svg",
     tags: ["productivity"],
     sizes: {
         desktop: { width: 1, height: 2 },

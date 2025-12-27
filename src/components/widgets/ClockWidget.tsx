@@ -65,7 +65,7 @@ export const clockWidgetDefinition = defineWidget({
     name: "Clock",
     component: ClockWidget,
     description: 'Beautiful clock to display your current time',
-    image: '/github_preview.svg',
+    image: '/clock_preview.svg',
     tags: ["productivity"],
     sizes: {
         desktop: { width: 1, height: 1 },

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="258" viewBox="0 0 480 258">
+  <!-- Background -->
+  <rect x="0" y="0" width="480" height="258" rx="16" fill="#0E0E0E"/>
+
+  <!-- Time -->
+  <text x="240" y="128"
+        text-anchor="middle"
+        fill="#FFFFFF"
+        font-size="56"
+        font-weight="700"
+        font-family="Inter, system-ui, sans-serif"
+        letter-spacing="2">
+    14:11:50
+  </text>
+
+  <!-- Date -->
+  <text x="240" y="164"
+        text-anchor="middle"
+        fill="#9A9A9A"
+        font-size="14"
+        font-weight="500"
+        font-family="Inter, system-ui, sans-serif">
+    Saturday, December 27th 2025
+  </text>
+</svg>
