@@ -1,10 +1,11 @@
 "use client"
 
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useSession } from "@/hooks/data/useSession"
 import { getIntegrationByProvider, useIntegrations } from "@/hooks/data/useIntegrations"
 import { authClient } from "@/lib/auth-client"
+import { queryOptions } from "@/lib/queryOptions"
 import posthog from "posthog-js"
 
 const GMAIL_LABELS_QUERY_KEY = (accessToken: string | null) => ["googleGmailLabels", accessToken] as const
@@ -153,21 +154,15 @@ export const useGoogleMail = (pageSize = 50) => {
             void refreshAccessToken()
             return
         }
-        
+
         setAccessToken(googleIntegration.accessToken)
     }, [googleIntegration, refetchIntegrations, userId])
 
-    const { data: labels, isLoading: labelsLoading, isFetching: labelsFetching, isError: labelsError } = useQuery<GmailLabel[], Error>({
+    const { data: labels, isLoading: labelsLoading, isFetching: labelsFetching, isError: labelsError } = useQuery<GmailLabel[], Error>(queryOptions({
         queryKey: GMAIL_LABELS_QUERY_KEY(accessToken),
         queryFn: () => fetchGmailLabels(accessToken),
-        enabled: Boolean(accessToken),
-        staleTime: 15 * 60 * 1000,
-        refetchInterval: 5 * 60 * 1000,
-        gcTime: 30 * 60 * 1000,
-        refetchOnWindowFocus: false,
-        refetchOnMount: false,
-        retry: (failureCount) => failureCount < 3,
-    })
+        enabled: Boolean(accessToken)
+    }))
 
     useEffect(() => {
         if (labels?.length && selectedLabels.length === 0) {

@@ -60,7 +60,7 @@ function IntegrationSection({handleClose}: {handleClose: () => void}) {
                     <Button
                         variant={"ghost"}
                         className={"text-xs text-tertiary font-normal font-mono shadow-none p-1"}
-                        onClick={() => integration.active ? handleDisconnect(integration.name) : handleConnect(integration.name)}
+                        onClick={() => integration.active ? handleDisconnect(integration.name.toLowerCase()) : handleConnect(integration.name.toLowerCase())}
                     >
                         {integration.active ? "Disconnect" : "Connect"}
                     </Button>

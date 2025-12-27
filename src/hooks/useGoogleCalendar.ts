@@ -3,6 +3,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from "react"
 import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {authClient} from "@/lib/auth-client"
+import { queryOptions } from "@/lib/queryOptions"
 import posthog from "posthog-js"
 
 const GOOGLE_CALENDAR_QUERY_KEY = (accessToken: string | null) => ["googleCalendarList", accessToken] as const
@@ -170,16 +171,11 @@ export const useGoogleCalendar = () => {
         setAccessToken(googleIntegration.accessToken)
     }, [googleIntegration, refetchIntegrations, userId])
 
-    const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError} = useQuery<GoogleCalendar[], Error>({
+    const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError} = useQuery<GoogleCalendar[], Error>(queryOptions({
         queryKey: GOOGLE_CALENDAR_QUERY_KEY(accessToken),
         queryFn: () => fetchCalendarList(accessToken),
-        enabled: Boolean(accessToken),
-        staleTime: 15 * 60 * 1000,
-        gcTime: 30 * 60 * 1000,
-        refetchOnWindowFocus: false,
-        refetchOnMount: false,
-        retry: (failureCount) => failureCount < 3,
-    })
+        enabled: Boolean(accessToken)
+    }))
 
     useEffect(() => {
         if (calendars?.length && selectedCalendars.length === 0) {
@@ -187,9 +183,9 @@ export const useGoogleCalendar = () => {
         }
     }, [calendars, selectedCalendars])
 
-    const {data: events, isLoading: eventsLoading, isFetching: eventsFetching, isError: eventsError} = useQuery<CalendarEvent[], Error>({
+    const {data: events, isLoading: eventsLoading, isFetching: eventsFetching, isError: eventsError} = useQuery<CalendarEvent[], Error>(queryOptions({
         queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars),
-        queryFn: async () => {
+        queryFn: async (): Promise<CalendarEvent[]> => {
             if (!accessToken || !calendars) return []
 
             const selectedCalendarObjects = calendars.filter((cal) => selectedCalendars.includes(cal.id))
@@ -202,13 +198,8 @@ export const useGoogleCalendar = () => {
             const results = await Promise.all(calendarPromises)
             return results.flat()
         },
-        enabled: Boolean(accessToken) && Boolean(calendars?.length),
-        staleTime: 5 * 60 * 1000,
-        gcTime: 15 * 60 * 1000,
-        refetchOnMount: false,
-        refetchOnWindowFocus: false,
-        retry: (failureCount) => failureCount < 3,
-    })
+        enabled: Boolean(accessToken) && Boolean(calendars?.length)
+    }))
 
     const getColor = useCallback((eventId: string) => {
         const event = events?.find((e) => e.id === eventId)

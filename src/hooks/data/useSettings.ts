@@ -1,6 +1,7 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Settings} from "@/database"
 import posthog from "posthog-js"
+import { queryOptions } from "@/lib/queryOptions"
 
 const SETTINGS_QUERY_KEY = (userId: string | undefined) => ["settings", userId] as const
 
@@ -55,12 +56,11 @@ async function updateSettingsRequest(settings: Settings): Promise<Settings> {
 export function useSettings(userId: string | undefined) {
     const queryClient = useQueryClient()
 
-    const settingsQuery = useQuery({
+    const settingsQuery = useQuery(queryOptions({
         queryKey: SETTINGS_QUERY_KEY(userId),
         queryFn: () => fetchSettings(userId!),
-        enabled: !!userId,
-        staleTime: 5 * 60 * 1000
-    })
+        enabled: Boolean(userId)
+    }))
 
     const updateSettingsMutation = useMutation({
         mutationFn: updateSettingsRequest,

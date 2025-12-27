@@ -10,7 +10,6 @@ import { NotionPage, useNotion } from "@/hooks/useNotion"
 import { cn } from "@/lib/utils"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 import { Import, Plus } from "lucide-react"
-import { JSONContent } from "novel"
 import React, { Suspense, useCallback, useMemo, useState } from "react"
 import { Notion } from "../svg/Icons"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover"
@@ -23,9 +22,9 @@ const LazyNoteDialog = React.lazy(() => import("../../components/dialogs/NoteDia
 export type Note = {
     id: string
     title: string
-    content: JSONContent
+    content: any
     emoji: string
-    lastUpdated: Date
+    lastUpdated: Date | string
     notionSync?: {
         pageId: string
         title: string
@@ -58,15 +57,22 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
         anchor: "tc"
     })
 
+    const getNoteTime = useCallback((note: Note) => {
+        const time = note.lastUpdated instanceof Date
+            ? note.lastUpdated.getTime()
+            : new Date(note.lastUpdated).getTime()
+        return Number.isFinite(time) ? time : 0
+    }, [])
+
     const sortedNotes = useMemo(() => (
-        config.notes.sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime())
-    ), [config.notes])
+        [...config.notes].sort((a, b) => getNoteTime(b) - getNoteTime(a))
+    ), [config.notes, getNoteTime])
 
     const createNewNote = useCallback(async () => {
         const newNote: Note = {
             id: crypto.randomUUID(),
             title: "",
-            content: {} as JSONContent,
+            content: {} as any,
             emoji: "",
             lastUpdated: new Date(),
             notionSync: null
@@ -91,7 +97,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
         const pendingNote: Note = {
             id: pendingNoteId,
             title: "",
-            content: {} as JSONContent,
+            content: {} as any,
             emoji: "",
             lastUpdated: new Date(),
             notionSync: null

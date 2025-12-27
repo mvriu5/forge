@@ -5,7 +5,7 @@ import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTr
 import { ScrollArea } from "@/components/ui/ScrollArea"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { getHeaderValue, GmailLabel, GmailMessage } from "@/hooks/useGoogleMail"
-import { cn, formatDate } from "@/lib/utils"
+import { cn, formatDate, getTimeLabel } from "@/lib/utils"
 import { Link } from "@react-email/components"
 import { CircleDashed, CircleFadingArrowUp, ExternalLink, File, Loader, MessageSquareDot, Send, Speech, ThumbsUp, Trash2, TriangleAlert, UserLock } from "lucide-react"
 import { useCallback, useMemo } from "react"
@@ -173,14 +173,13 @@ function InboxDialog({ open, onOpenChange, message, labels = [], isPending = fal
     return (
         <Dialog open={open} onOpenChange={onOpenChange} modal={true}>
             <DialogTrigger asChild>
-                <div className="flex flex-col p-2 rounded-md cursor-pointer bg-secondary/50 hover:bg-secondary">
+                <div className="h-max flex flex-col p-2 rounded-md cursor-pointer bg-secondary/50 hover:bg-secondary">
                     <div className="flex flex-wrap items-center gap-x-2">
                         <p className="text-primary font-semibold">{senderTitle}</p>
                         <p className="text-tertiary font-mono text-xs">{senderMail}</p>
                     </div>
-                    <p className="text-xs text-secondary">
-                        {message?.snippet}
-                    </p>
+                    <p className="text-xs text-tertiary/50 font-mono mb-1">{getTimeLabel(date)}</p>
+                    <p className="text-xs text-secondary">{message?.snippet}</p>
                     {renderLabels()}
                 </div>
             </DialogTrigger>

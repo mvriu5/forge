@@ -3,6 +3,7 @@ import type {Account} from "@/database"
 import {authClient} from "@/lib/auth-client"
 import {toast} from "@/components/ui/Toast"
 import posthog from "posthog-js"
+import { queryOptions } from "@/lib/queryOptions"
 
 interface Integration {
     id: string
@@ -75,12 +76,11 @@ async function updateIntegrationRequest({provider, userId, data}: UpdateIntegrat
 export function useIntegrations(userId: string | undefined) {
     const queryClient = useQueryClient()
 
-    const integrationsQuery = useQuery<Integration[], Error>({
+    const integrationsQuery = useQuery<Integration[], Error>(queryOptions({
         queryKey: INTEGRATIONS_QUERY_KEY(userId),
         queryFn: () => fetchIntegrations(userId!),
-        enabled: !!userId,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-    })
+        enabled: Boolean(userId),
+    }))
 
     const { refetch: refetchIntegrations, data, isLoading } = integrationsQuery
 

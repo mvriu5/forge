@@ -27,13 +27,13 @@ function Hero() {
                     Join our discord
                 </Button>
             </Link>
-            <div className={"flex items-center justify-center rounded-xl shadow-xl border border-main/40"}>
+            <div className={"flex items-center justify-center rounded-md shadow-xl border border-main/40"}>
                 <Image
                     src={"/mockup.png"}
                     alt={"Example Layout"}
                     width={"1904"}
                     height={"1025"}
-                    className={"rounded-xl md:rounded-md"}
+                    className={"rounded-md"}
                     quality={75}
                 />
             </div>

@@ -1,8 +1,9 @@
-import {useMemo, useState} from "react"
-import {useQuery} from "@tanstack/react-query"
-import {useSession} from "@/hooks/data/useSession"
-import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
-import {Octokit} from "@octokit/rest"
+import { getIntegrationByProvider, useIntegrations } from "@/hooks/data/useIntegrations"
+import { useSession } from "@/hooks/data/useSession"
+import { queryOptions } from "@/lib/queryOptions"
+import { Octokit } from "@octokit/rest"
+import { useQuery } from "@tanstack/react-query"
+import { useMemo, useState } from "react"
 
 const GITHUB_QUERY_KEY = (accessToken: string | null) => ["githubIssues", accessToken] as const
 
@@ -113,15 +114,11 @@ export const useGithub = () => {
     const [selectedLabels, setSelectedLabels] = useState<string[]>([])
     const [activeTab, setActiveTab] = useState<string>("issues")
 
-    const {data, isLoading, isFetching, isError, refetch} = useQuery<OpenItemsResponse, Error>({
+    const {data, isLoading, isFetching, isError, refetch} = useQuery<OpenItemsResponse, Error>(queryOptions({
         queryKey: GITHUB_QUERY_KEY(githubIntegration?.accessToken ?? null),
         queryFn: () => fetchOpenIssuesAndPullsFromAllRepos(githubIntegration?.accessToken!),
         enabled: Boolean(githubIntegration?.accessToken),
-        staleTime: 5 * 60 * 1000,
-        refetchInterval: 5 * 60 * 1000,
-        refetchOnWindowFocus: false,
-        refetchOnMount: false
-    })
+    }))
 
     const issues = data?.allIssues ?? []
     const pullRequests = data?.allPullRequests ?? []
