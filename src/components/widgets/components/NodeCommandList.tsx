@@ -12,10 +12,11 @@ import {
     TextQuote,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Editor } from "@tiptap/react"
 
 export interface NodeCommandListProps {
     command?: (item: CommandItem) => void
-    editor: any
+    editor: Editor
     range: { from: number; to: number }
     items?: CommandItem[]
     close?: () => void
@@ -176,12 +177,14 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
     const getActiveIndex = useCallback(() => {
         if (!editor) return null
 
+        console.log(items.map(i => i.title))
+
         const index = items.findIndex((item) => {
             switch (item.title) {
                 case "Text":
                     return editor.isActive("paragraph")
                 case "To-do List":
-                    return editor.isActive("taskList")
+                    return editor.isActive("taskList") || editor.isActive("taskItem")
                 case "Heading 1":
                     return editor.isActive("heading", { level: 1 })
                 case "Heading 2":
@@ -234,10 +237,10 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
             ref={containerRef}
             role="menu"
             aria-label="Block menu"
-            className="flex flex-col bg-primary border border-main/40 rounded-md shadow-xs dark:shadow-md p-1 w-42"
+            className="flex flex-col gap-1 bg-primary border border-main/40 rounded-md shadow-xs dark:shadow-md p-1 w-42"
+            onMouseLeave={() => setSelectedIndex(getActiveIndex())}
         >
             {items.map((item, index) => {
-                const isSelected = index === selectedIndex
                 return (
                     <button
                         key={item.title + index}
@@ -246,7 +249,7 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
                         data-index={index}
                         className={cn(
                             "flex items-center gap-2 px-2 py-1 text-left rounded-md w-full hover:bg-tertiary text-sm text-secondary outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
-                            isSelected && "bg-brand/5 text-brand hover:bg-brand/5",
+                            index === selectedIndex  && "bg-brand/5 text-brand hover:bg-brand/5",
                             item.disabled && "cursor-not-allowed text-tertiary hover:bg-transparent hover:text-tertiary opacity-50 ",
                         )}
                         onMouseDown={(e) => e.preventDefault()}
@@ -257,6 +260,7 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
                             pointerDownHandledRef.current = true
                             if (typeof item.command === "function") item.command({ editor, range })
                             else if (typeof command === "function") command(item)
+                            setSelectedIndex(index)
                             onSelect?.(item)
                             close?.()
                         }}
@@ -268,6 +272,7 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
                             }
                             if (typeof item.command === "function") item.command({ editor, range })
                             else if (typeof command === "function") command(item)
+                            setSelectedIndex(index)
                             onSelect?.(item)
                             close?.()
                         }}
@@ -275,7 +280,6 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
                             setIsKeyboardActive(false)
                             setSelectedIndex(index)
                         }}
-                        onMouseLeave={() => !isKeyboardActive && setSelectedIndex(getActiveIndex())}
                         disabled={item.disabled}
                     >
                         {item.icon}

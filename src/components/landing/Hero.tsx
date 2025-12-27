@@ -27,15 +27,19 @@ function Hero() {
                     Join our discord
                 </Button>
             </Link>
-            <div className={"flex items-center justify-center rounded-md shadow-xl border border-main/40"}>
-                <Image
-                    src={"/mockup.png"}
-                    alt={"Example Layout"}
-                    width={"1904"}
-                    height={"1025"}
-                    className={"rounded-md"}
-                    quality={75}
-                />
+            <div className={"w-full overflow-hidden rounded-md shadow-xl border border-main/40"}>
+                <div className={"relative w-full"} style={{aspectRatio: "2159 / 1247"}}>
+                    <Image
+                        src={"/mockup.png"}
+                        alt={"Example Layout"}
+                        fill
+                        className={"rounded-md object-contain"}
+                        sizes="100vw"
+                        quality={75}
+                        priority
+                        unoptimized
+                    />
+                </div>
             </div>
         </div>
     )

@@ -22,7 +22,7 @@ function ForgotPasswordCard() {
     })
 
     return (
-        <div className={"w-80 h-max rounded-md border border-main/30 bg-linear-to-br from-primary from-30% to-tertiary shadow-[0_10px_10px_rgba(0,0,0,0.2)] p-8 pt-4 flex flex-col gap-8 z-50"}>
+        <div className={"min-w-80 max-w-120 h-max rounded-md border border-main/30 bg-linear-to-br from-primary from-30% to-tertiary shadow-[0_10px_10px_rgba(0,0,0,0.2)] p-8 pt-4 flex flex-col gap-8 z-50"}>
             <div className={"flex flex-col gap-2"}>
                 <Link href="/signin">
                     <Button
