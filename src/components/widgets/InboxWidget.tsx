@@ -1,18 +1,18 @@
 "use client"
 
+import { useNotifications } from "@/hooks/data/useNotifications"
 import { useSettings } from "@/hooks/data/useSettings"
 import { getHeaderValue, useGoogleMail } from "@/hooks/useGoogleMail"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 import { Filter, RefreshCw } from "lucide-react"
-import React, { Suspense, useEffect, useMemo, useState, useRef } from "react"
+import React, { Suspense, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "../ui/Button"
 import { DropdownMenu, MenuItem } from "../ui/Dropdown"
 import { Skeleton } from "../ui/Skeleton"
+import { Spinner } from "../ui/Spinner"
 import { useTooltip } from "../ui/TooltipProvider"
 import { WidgetContent } from "./base/WidgetContent"
 import { WidgetHeader } from "./base/WidgetHeader"
-import { useNotifications } from "@/hooks/data/useNotifications"
-import { Spinner } from "../ui/Spinner"
 
 const LazyInboxDialog = React.lazy(() => import("../../components/dialogs/InboxDialog").then(mod => ({ default: mod.InboxDialog })))
 
@@ -56,8 +56,8 @@ const InboxWidget: React.FC<WidgetProps> = ({widget}) => {
             type: "checkbox",
             key: label.id,
             label: label.displayName,
-            checked: selectedLabels.includes(label.name),
-            onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label.name) ? prev.filter((name) => name !== label.name) : [...prev, label.name]))
+            checked: selectedLabels.includes(label.id),
+            onCheckedChange: () => setSelectedLabels((prev) => (prev.includes(label.id) ? prev.filter((id) => id !== label.id) : [...prev, label.id]))
         }))
 
     useEffect(() => {
