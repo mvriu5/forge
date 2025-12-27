@@ -1,14 +1,14 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useSession } from "@/hooks/data/useSession"
 import { getIntegrationByProvider, useIntegrations } from "@/hooks/data/useIntegrations"
+import { useSession } from "@/hooks/data/useSession"
 import { authClient } from "@/lib/auth-client"
 import { queryOptions } from "@/lib/queryOptions"
-import posthog from "posthog-js"
+import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-const GMAIL_LABELS_QUERY_KEY = (accessToken: string | null) => ["googleGmailLabels", accessToken] as const
+const GMAIL_LABELS_QUERY_KEY = (accessToken: string | null) => ["gmailLabels", accessToken] as const
+const GMAIL_MESSAGES_QUERY_KEY = (accessToken: string | null, selectedLabels: string[]) => ["gmailMessages", accessToken, selectedLabels] as const
 
 export interface GmailLabel {
     id: string
@@ -39,6 +39,11 @@ export interface GmailMessage {
     raw?: string
 }
 
+interface GmailMessagesPage {
+    messages: GmailMessage[]
+    nextPageToken?: string
+}
+
 export function getHeaderValue(message: GmailMessage | null, name: string): string | null {
     if (!message?.payload?.headers) return null
     const header = (message.payload.headers as { name: string; value: string }[]).find((h) => h.name?.toLowerCase() === name.toLowerCase())
@@ -58,9 +63,9 @@ async function fetchGmailLabels(accessToken: string | null): Promise<GmailLabel[
     return (data.labels ?? []) as GmailLabel[]
 }
 
-async function fetchMessageListPage(accessToken: string, labelId: string, pageToken?: string, pageSize = 10): Promise<GmailListResponse> {
+async function fetchMessageListPage(accessToken: string, labelQuery?: string | null, pageToken?: string, pageSize = 10): Promise<GmailListResponse> {
     const params = new URLSearchParams({ maxResults: String(Math.min(pageSize, 500)) })
-    if (labelId) params.set("labelIds", labelId)
+    if (labelQuery) params.set("q", labelQuery)
     if (pageToken) params.set("pageToken", pageToken)
 
     const url = `https://www.googleapis.com/gmail/v1/users/me/messages?${params.toString()}`
@@ -102,10 +107,17 @@ async function fetchWithConcurrency<T, R>(items: T[], worker: (item: T) => Promi
     return results
 }
 
+function formatLabelQuery(labelName: string): string {
+    const safeLabel = labelName.replace(/"/g, '\\"')
+    if (safeLabel.match(/\s/)) return `label:"${safeLabel}"`
+    return `label:${safeLabel}`
+}
+
 export const useGoogleMail = (pageSize = 50) => {
     const { userId } = useSession()
     const { integrations, refetchIntegrations } = useIntegrations(userId)
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
+    const queryClient = useQueryClient()
 
     const [selectedLabels, setSelectedLabels] = useState<string[]>([])
     const [accessToken, setAccessToken] = useState<string | null>(null)
@@ -158,7 +170,7 @@ export const useGoogleMail = (pageSize = 50) => {
         setAccessToken(googleIntegration.accessToken)
     }, [googleIntegration, refetchIntegrations, userId])
 
-    const { data: labels, isLoading: labelsLoading, isFetching: labelsFetching, isError: labelsError } = useQuery<GmailLabel[], Error>(queryOptions({
+    const { data: labels, isLoading: labelsLoading, isError: labelsError } = useQuery<GmailLabel[], Error>(queryOptions({
         queryKey: GMAIL_LABELS_QUERY_KEY(accessToken),
         queryFn: () => fetchGmailLabels(accessToken),
         enabled: Boolean(accessToken)
@@ -180,127 +192,51 @@ export const useGoogleMail = (pageSize = 50) => {
         }
     }, [labels, selectedLabels])
 
-    const [messages, setMessages] = useState<GmailMessage[]>([])
-    const [isLoadingMore, setIsLoadingMore] = useState(false)
-    const [hasMore, setHasMore] = useState(true)
+    const labelQuery = useMemo(() => {
+        if (!labels || selectedLabels.length === 0) return null
+        const labelNames = labels
+            .filter((label) => selectedLabels.includes(label.id))
+            .map((label) => label.name ?? label.id)
+            .filter(Boolean)
+        if (labelNames.length === 0) return null
+        return labelNames.map((labelName) => formatLabelQuery(labelName)).join(" OR ")
+    }, [labels, selectedLabels])
 
-    const messageIdQueue = useRef<string[]>([])
-    const fetchedIds = useRef<Set<string>>(new Set())
-    const labelNextPage = useRef<Record<string, string | null>>({})
-    const labelIndexPointer = useRef(0)
-
-    useEffect(() => {
-        messageIdQueue.current = []
-        fetchedIds.current = new Set()
-        labelNextPage.current = {}
-        labelIndexPointer.current = 0
-        setMessages([])
-        setHasMore(true)
-    }, [accessToken, selectedLabels.join(",")])
-
-    const ensureQueueHas = useCallback(async (count: number) => {
-        if (!accessToken || !labels) return
-
-        const labelIds = labels.filter((l) => selectedLabels.includes(l.id)).map((l) => l.id)
-        if (!labelIds.length) {
-            setHasMore(false)
-            return
-        }
-
-        while (messageIdQueue.current.length < count) {
-            let attempts = 0
-            let fetchedAny = false
-
-            while (attempts < labelIds.length) {
-                const idx = labelIndexPointer.current % labelIds.length
-                const labelId = labelIds[idx]
-                labelIndexPointer.current = (labelIndexPointer.current + 1) % labelIds.length
-                attempts++
-
-                const nextToken = labelNextPage.current[labelId]
-                if (nextToken === null) continue
-
-                try {
-                    const res = await fetchMessageListPage(accessToken, labelId, nextToken ?? undefined, Math.max(50, pageSize))
-                    const ids = (res.messages ?? []).map((m) => m.id).filter(Boolean)
-                    for (const id of ids) {
-                        if (!fetchedIds.current.has(id) && !messageIdQueue.current.includes(id)) messageIdQueue.current.push(id)
-                    }
-
-                    labelNextPage.current[labelId] = res.nextPageToken ?? null
-                    fetchedAny = true
-
-                    if (messageIdQueue.current.length >= count) break
-                } catch (err) {
-                    posthog.captureException(err, { hook: "useGoogleMail.ensureQueueHas", userId })
-                    labelNextPage.current[labelId] = null
-                }
-            }
-
-            if (!fetchedAny) {
-                setHasMore(false)
-                break
-            }
-        }
-    }, [accessToken, labels, pageSize, selectedLabels, userId])
-
-    const loadMore = useCallback(async (requested = pageSize) => {
-        if (!accessToken || !labels) return
-        if (!hasMore && messageIdQueue.current.length === 0) return
-
-        setIsLoadingMore(true)
-        try {
-            await ensureQueueHas(requested)
-
-            const idsToFetch: string[] = []
-            while (idsToFetch.length < requested && messageIdQueue.current.length > 0) {
-                const id = messageIdQueue.current.shift()!
-                if (!fetchedIds.current.has(id)) {
-                    fetchedIds.current.add(id)
-                    idsToFetch.push(id)
-                }
-            }
-
-            if (!idsToFetch.length) {
-                setIsLoadingMore(false)
-                return
-            }
-
-            const details = await fetchWithConcurrency(idsToFetch, (id) => fetchMessageDetails(accessToken, id), 8)
+    const messagesQuery = useInfiniteQuery<GmailMessagesPage, Error>({
+        queryKey: GMAIL_MESSAGES_QUERY_KEY(accessToken, selectedLabels),
+        enabled: Boolean(accessToken && labelQuery),
+        staleTime: 5 * 60 * 1000,
+        gcTime: 30 * 60 * 1000,
+        refetchInterval: 5 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+        retry: 3,
+        initialPageParam: undefined,
+        queryFn: async ({ pageParam }) => {
+            if (!accessToken || !labelQuery) return { messages: [] }
+            const res = await fetchMessageListPage(accessToken, labelQuery, pageParam as string, Math.max(50, pageSize))
+            const ids = (res.messages ?? []).map((m) => m.id).filter(Boolean)
+            const details = await fetchWithConcurrency(ids, (id) => fetchMessageDetails(accessToken, id), 8)
             const parsed = details.filter(Boolean) as GmailMessage[]
+            return { messages: parsed, nextPageToken: res.nextPageToken }
+        },
+        getNextPageParam: (lastPage) => lastPage.nextPageToken ?? undefined
+    })
 
-            setMessages((prev) => {
-                const merged = [...prev, ...parsed]
-                merged.sort((a, b) => Number(b.internalDate ?? 0) - Number(a.internalDate ?? 0))
-                return merged
-            })
+    const messages = useMemo(() => {
+        const allMessages = messagesQuery.data?.pages.flatMap((page) => page.messages) ?? []
+        return [...allMessages].sort((a, b) => Number(b.internalDate ?? 0) - Number(a.internalDate ?? 0))
+    }, [messagesQuery.data])
 
-            const anyLabelHasNext = Object.values(labelNextPage.current).some((t) => t !== null && t !== undefined)
-            if (!anyLabelHasNext && messageIdQueue.current.length === 0) setHasMore(false)
-        } catch (err) {
-            posthog.captureException(err, { hook: "useGoogleMail.loadMore", userId })
-        } finally {
-            setIsLoadingMore(false)
-        }
-    }, [accessToken, ensureQueueHas, labels, pageSize, hasMore, userId])
+    const loadMore = useCallback(async () => {
+        if (!messagesQuery.hasNextPage || messagesQuery.isFetchingNextPage) return
+        await messagesQuery.fetchNextPage()
+    }, [messagesQuery.hasNextPage, messagesQuery.fetchNextPage, messagesQuery.isFetchingNextPage])
 
     const refresh = useCallback(async () => {
-        messageIdQueue.current = []
-        fetchedIds.current = new Set()
-        labelNextPage.current = {}
-        labelIndexPointer.current = 0
-        setMessages([])
-        setHasMore(true)
-        await loadMore(pageSize)
-    }, [loadMore, pageSize])
-
-    useEffect(() => {
-        if (accessToken && labels && selectedLabels.length) {
-            // schedule loadMore to the next tick so the reset effect (which clears queues/messages)
-            // runs first and avoids a race where loaded pages look like the latest data
-            setTimeout(() => void loadMore(pageSize), 0)
-        }
-    }, [accessToken, labels, selectedLabels.join(",")])
+        await queryClient.invalidateQueries({ queryKey: GMAIL_MESSAGES_QUERY_KEY(accessToken, selectedLabels) })
+        await messagesQuery.refetch()
+    }, [accessToken, messagesQuery, queryClient, selectedLabels])
 
     useEffect(() => {
         if (hasSeenInitialSelection.current) setFilterLoading(true)
@@ -308,23 +244,23 @@ export const useGoogleMail = (pageSize = 50) => {
     }, [selectedLabels])
 
     useEffect(() => {
-        if (!labelsLoading && !isLoadingMore && filterLoading) setFilterLoading(false)
-    }, [labelsLoading, isLoadingMore, filterLoading])
+        if (!labelsLoading && !messagesQuery.isFetching && filterLoading) setFilterLoading(false)
+    }, [labelsLoading, messagesQuery.isFetching, filterLoading])
 
     const getSnippet = useCallback((messageId: string) => messages.find((m) => m.id === messageId)?.snippet ?? null, [messages])
 
     return {
         labels: labels ?? [],
         messages,
-        isLoading: labelsLoading && messages.length === 0,
-        isFetchingMore: isLoadingMore,
-        isError: labelsError,
+        isLoading: (labelsLoading || messagesQuery.isLoading) && messages.length === 0,
+        isFetchingMore: messagesQuery.isFetchingNextPage,
+        isError: labelsError || messagesQuery.isError,
         refetch: refresh,
         googleIntegration,
         selectedLabels,
         setSelectedLabels,
         filterLoading,
-        hasMore,
+        hasMore: Boolean(messagesQuery.hasNextPage),
         loadMore,
         getSnippet,
     }

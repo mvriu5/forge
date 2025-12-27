@@ -11,9 +11,6 @@ import Link from "@tiptap/extension-link"
 import Placeholder from "@tiptap/extension-placeholder"
 import TaskItem from "@tiptap/extension-task-item"
 import TaskList from "@tiptap/extension-task-list"
-import Underline from "@tiptap/extension-underline"
-import Bold from "@tiptap/extension-bold"
-import Italic from "@tiptap/extension-italic"
 import { BubbleMenu, EditorContent, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import { File, Trash } from "lucide-react"
@@ -90,7 +87,6 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
         Link.configure({ HTMLAttributes: { class: "text-info/60 underline underline-offset-[3px] hover:text-info transition-colors cursor-pointer" } }),
         TaskList.configure({ HTMLAttributes: { class: "not-prose pl-2" } }),
         TaskItem.configure({ HTMLAttributes: { class: "flex items-start my-4" }, nested: true }),
-        Underline,
     ]
 
     const highlightCodeblocks = useCallback((content: string) => {
