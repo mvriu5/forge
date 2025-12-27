@@ -53,6 +53,34 @@ export const TextButtons = ({ editor, range }: { editor: Editor | null, range: {
         }
     ]
 
+    useEffect(() => {
+        if (!editor) return
+
+        const updateSelectedTitle = () => {
+            const isHeading = editor.isActive("heading")
+            if (editor.isActive("heading", { level: 1 })) return setSelectedCommandTitle("Heading 1")
+            if (editor.isActive("heading", { level: 2 })) return setSelectedCommandTitle("Heading 2")
+            if (editor.isActive("heading", { level: 3 })) return setSelectedCommandTitle("Heading 3")
+            if (editor.isActive("taskList")) return setSelectedCommandTitle("To-do List")
+            if (editor.isActive("bulletList")) return setSelectedCommandTitle("Bullet List")
+            if (editor.isActive("orderedList")) return setSelectedCommandTitle("Numbered List")
+            if (editor.isActive("blockquote")) return setSelectedCommandTitle("Quote")
+            if (editor.isActive("codeBlock")) return setSelectedCommandTitle("Code")
+            if (!isHeading && editor.isActive("paragraph")) return setSelectedCommandTitle("Text")
+            return setSelectedCommandTitle(null)
+        }
+
+        updateSelectedTitle()
+
+        editor.on("selectionUpdate", updateSelectedTitle)
+        editor.on("transaction", updateSelectedTitle)
+
+        return () => {
+            editor.off("selectionUpdate", updateSelectedTitle)
+            editor.off("transaction", updateSelectedTitle)
+        }
+    }, [editor])
+
     return (
         <div className="flex rounded-md bg-primary shadow-xs dark:shadow-md border border-main/40">
             <Popover
@@ -67,7 +95,7 @@ export const TextButtons = ({ editor, range }: { editor: Editor | null, range: {
             >
                 <PopoverTrigger asChild>
                     <Button
-                        className="rounded-r-none px-2 border-0 text-sm gap-1"
+                        className="rounded-r-none px-2 border-0 text-sm gap-1 outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
                     >
                         {selectedCommandTitle ?? "Command"}
                         <ChevronDown size={16} />
@@ -79,8 +107,10 @@ export const TextButtons = ({ editor, range }: { editor: Editor | null, range: {
                         range={commandRange}
                         close={() => setCommandMenuOpen(false)}
                         command={(item: any) => {
-                            if (item?.title) setSelectedCommandTitle(item.title)
                             setCommandMenuOpen(false)
+                        }}
+                        onSelect={(item) => {
+                            if (item?.title) setSelectedCommandTitle(item.title)
                         }}
                     />
                 </PopoverContent>
@@ -88,7 +118,10 @@ export const TextButtons = ({ editor, range }: { editor: Editor | null, range: {
             {items.map((item) => (
                 <Button
                     key={item.name}
-                    className={cn("rounded-none px-2", item.isActive(editor) && "bg-tertiary text-primary border border-main/20")}
+                    className={cn(
+                        "rounded-none px-2 outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 border border-main/0",
+                        item.isActive(editor) && "bg-tertiary text-primary border-main/20",
+                    )}
                     variant="ghost"
                     onClick={() => {
                         setCommandMenuOpen(false)

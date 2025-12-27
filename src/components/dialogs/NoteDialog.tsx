@@ -269,7 +269,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
             </DialogTrigger>
 
             <DialogContent
-                className={"md:min-w-200 max-w-[90vw] h-[80vh] max-h-[80vh] w-full overflow-hidden gap-0 p-2 flex flex-col"}
+                className={"md:min-w-200 max-w-[90vw] h-[80vh] max-h-[80vh] w-full overflow-hidden gap-0 p-2 flex flex-col outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"}
                 onOpenAutoFocus={(e) => initialHasTitle.current && e.preventDefault()}
             >
                 <DialogHeader className={"flex flex-row items-center gap-2"}>

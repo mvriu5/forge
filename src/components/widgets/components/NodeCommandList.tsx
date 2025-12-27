@@ -20,6 +20,7 @@ export interface NodeCommandListProps {
     items?: CommandItem[]
     close?: () => void
     handlePointerDown?: boolean
+    onSelect?: (item: CommandItem) => void
 }
 
 export const defaultCommandItems: CommandItem[] = [
@@ -106,7 +107,7 @@ export const defaultCommandItems: CommandItem[] = [
     },
 ]
 
-const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, range, items: itemsProp, close, handlePointerDown = true }) => {
+const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, range, items: itemsProp, close, onSelect, handlePointerDown = true }) => {
     const items = itemsProp && itemsProp.length > 0 ? itemsProp : defaultCommandItems
 
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
@@ -144,9 +145,10 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
         if (typeof item.command === "function") item.command({ editor, range })
         else if (typeof command === "function") command(item)
 
+        onSelect?.(item)
         close?.()
         return true
-    }, [selectedIndex, items, editor, range, command, close])
+    }, [selectedIndex, items, editor, range, command, close, onSelect])
 
     useEffect(() => {
         if (selectedIndex !== null) scrollToItem(selectedIndex)
@@ -171,6 +173,62 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
         return () => document.removeEventListener("keydown", onKeyDown, true)
     }, [upHandler, downHandler, enterHandler])
 
+    const getActiveIndex = useCallback(() => {
+        if (!editor) return null
+
+        const index = items.findIndex((item) => {
+            switch (item.title) {
+                case "Text":
+                    return editor.isActive("paragraph")
+                case "To-do List":
+                    return editor.isActive("taskList")
+                case "Heading 1":
+                    return editor.isActive("heading", { level: 1 })
+                case "Heading 2":
+                    return editor.isActive("heading", { level: 2 })
+                case "Heading 3":
+                    return editor.isActive("heading", { level: 3 })
+                case "Bullet List":
+                    return editor.isActive("bulletList")
+                case "Numbered List":
+                    return editor.isActive("orderedList")
+                case "Quote":
+                    return editor.isActive("blockquote")
+                case "Code":
+                    return editor.isActive("codeBlock")
+                default:
+                    return false
+            }
+        })
+
+        return index === -1 ? null : index
+    }, [editor, items])
+
+    const syncActiveIndex = useCallback(() => {
+        if (isKeyboardActive) return
+        setSelectedIndex(getActiveIndex())
+    }, [getActiveIndex, isKeyboardActive])
+
+    useEffect(() => {
+        syncActiveIndex()
+    }, [syncActiveIndex])
+
+    useEffect(() => {
+        if (!editor?.on) return
+
+        const handleUpdate = () => {
+            syncActiveIndex()
+        }
+
+        editor.on("selectionUpdate", handleUpdate)
+        editor.on("transaction", handleUpdate)
+
+        return () => {
+            editor.off("selectionUpdate", handleUpdate)
+            editor.off("transaction", handleUpdate)
+        }
+    }, [editor, syncActiveIndex])
+
     return (
         <div
             ref={containerRef}
@@ -187,7 +245,7 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
                         role="menuitem"
                         data-index={index}
                         className={cn(
-                            "flex items-center gap-2 px-2 py-1 text-left rounded-md w-full hover:bg-tertiary text-sm text-secondary",
+                            "flex items-center gap-2 px-2 py-1 text-left rounded-md w-full hover:bg-tertiary text-sm text-secondary outline-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
                             isSelected && "bg-brand/5 text-brand hover:bg-brand/5",
                             item.disabled && "cursor-not-allowed text-tertiary hover:bg-transparent hover:text-tertiary opacity-50 ",
                         )}
@@ -199,6 +257,7 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
                             pointerDownHandledRef.current = true
                             if (typeof item.command === "function") item.command({ editor, range })
                             else if (typeof command === "function") command(item)
+                            onSelect?.(item)
                             close?.()
                         }}
                         onClick={(e) => {
@@ -209,13 +268,14 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
                             }
                             if (typeof item.command === "function") item.command({ editor, range })
                             else if (typeof command === "function") command(item)
+                            onSelect?.(item)
                             close?.()
                         }}
                         onMouseEnter={() => {
                             setIsKeyboardActive(false)
                             setSelectedIndex(index)
                         }}
-                        onMouseLeave={() => !isKeyboardActive && setSelectedIndex(null)}
+                        onMouseLeave={() => !isKeyboardActive && setSelectedIndex(getActiveIndex())}
                         disabled={item.disabled}
                     >
                         {item.icon}
