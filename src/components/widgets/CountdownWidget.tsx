@@ -294,7 +294,7 @@ export const countdownWidgetDefinition = defineWidget({
     name: "Countdown",
     component: CountdownWidget,
     description: "See how much time is left to a special event",
-    image: "/github_preview.svg",
+    image: "/countdown_preview.svg",
     tags: [],
     sizes: {
         desktop: { width: 1, height: 1 },

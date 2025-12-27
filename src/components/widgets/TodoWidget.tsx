@@ -232,7 +232,7 @@ export const todoWidgetDefinition = defineWidget({
     name: "Todo",
     component: TodoWidget,
     description: 'All your tasks in one place',
-    image: "/github_preview.svg",
+    image: "/todo_preview.svg",
     tags: ["productivity"],
     sizes: {
         desktop: { width: 1, height: 2 },
