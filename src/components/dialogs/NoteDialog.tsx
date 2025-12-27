@@ -3,27 +3,29 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover"
 import { useSession } from "@/hooks/data/useSession"
 import { useSettings } from "@/hooks/data/useSettings"
+import SlashSuggestion, { filterCommandItems } from "@/lib/extensions"
 import { formatDate, getUpdateTimeLabel } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import type { Editor as TipTapEditor } from "@tiptap/core"
-import HorizontalRule from "@tiptap/extension-horizontal-rule"
 import Link from "@tiptap/extension-link"
 import Placeholder from "@tiptap/extension-placeholder"
 import TaskItem from "@tiptap/extension-task-item"
 import TaskList from "@tiptap/extension-task-list"
+import Underline from "@tiptap/extension-underline"
+import Bold from "@tiptap/extension-bold"
+import Italic from "@tiptap/extension-italic"
 import { BubbleMenu, EditorContent, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import { File, Trash } from "lucide-react"
 import { Activity, useCallback, useEffect, useRef, useState } from "react"
 import { Button } from "../ui/Button"
-import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/Dialog"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/Dialog"
 import { EmojiPicker } from "../ui/EmojiPicker"
 import { Input } from "../ui/Input"
 import { ScrollArea } from "../ui/ScrollArea"
 import { Skeleton } from "../ui/Skeleton"
 import { Note } from "../widgets/EditorWidget"
 import { TextButtons } from "../widgets/components/TextButtons"
-import SlashSuggestion, { filterCommandItems } from "@/lib/extensions"
 
 interface NoteDialogProps {
     open: boolean
@@ -82,12 +84,13 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
             bulletList: { HTMLAttributes: { class: "list-disc list-outside leading-3 -mt-2" } },
             orderedList: { HTMLAttributes: { class: "list-decimal list-outside leading-3 -mt-2" } },
             listItem: { HTMLAttributes: { class: "leading-normal -mb-2" } },
+            horizontalRule: { HTMLAttributes: { class: "mt-4 mb-6 border-t border-main/60" } },
         }),
         Placeholder.configure({ placeholder: "Write something or type '/' for commands." }),
         Link.configure({ HTMLAttributes: { class: "text-info/60 underline underline-offset-[3px] hover:text-info transition-colors cursor-pointer" } }),
         TaskList.configure({ HTMLAttributes: { class: "not-prose pl-2" } }),
         TaskItem.configure({ HTMLAttributes: { class: "flex items-start my-4" }, nested: true }),
-        HorizontalRule.configure({ HTMLAttributes: { class: "mt-4 mb-6 border-t border-main/60" } }),
+        Underline,
     ]
 
     const highlightCodeblocks = useCallback((content: string) => {
@@ -145,18 +148,22 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
     }, [saveNote])
 
     const editor = useEditor({
+        immediatelyRender: false,
         extensions: extensions,
         content: note.content ?? "",
-        editorProps: {
-            attributes: { class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full min-h-full cursor-text p-2" }
-        },
-        onUpdate: ({ editor }) => {
-            handleSave(editor)
-        },
-        onBlur: ({ editor }) => {
-            handleSave(editor)
-        }
+        editorProps: { attributes: { class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full min-h-full cursor-text p-2" } },
+        onUpdate: ({ editor }) => handleSave(editor),
+        onBlur: ({ editor }) => handleSave(editor)
     })
+
+    useEffect(() => {
+            if (!editor || !open) return
+
+            const nextContent = note.content ?? ""
+            const currentContent = editor.getJSON()
+            const isSame = JSON.stringify(currentContent) === JSON.stringify(nextContent)
+            if (!isSame) editor.commands.setContent(nextContent, false)
+        }, [editor, note.content, note.id, open])
 
     const didAutoFocus = useRef(false)
     const initialHasTitle = useRef(false)
@@ -308,6 +315,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                     )}
                     <VisuallyHidden>
                         <DialogTitle/>
+                        <DialogDescription/>
                     </VisuallyHidden>
                     <DialogClose iconSize={16} className={"absolute top-2 right-2 p-1 rounded-md hover:bg-white/5"}/>
                 </DialogHeader>

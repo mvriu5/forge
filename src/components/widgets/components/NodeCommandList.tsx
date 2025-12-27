@@ -19,6 +19,7 @@ export interface NodeCommandListProps {
     range: { from: number; to: number }
     items?: CommandItem[]
     close?: () => void
+    handlePointerDown?: boolean
 }
 
 export const defaultCommandItems: CommandItem[] = [
@@ -105,12 +106,14 @@ export const defaultCommandItems: CommandItem[] = [
     },
 ]
 
-const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, range, items: itemsProp, close }) => {
+const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, range, items: itemsProp, close, handlePointerDown = true }) => {
     const items = itemsProp && itemsProp.length > 0 ? itemsProp : defaultCommandItems
 
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
     const [isKeyboardActive, setIsKeyboardActive] = useState(false)
+
     const containerRef = useRef<HTMLDivElement | null>(null)
+    const pointerDownHandledRef = useRef(false)
 
     const scrollToItem = useCallback((index: number) => {
         const el = containerRef.current
@@ -168,59 +171,6 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
         return () => document.removeEventListener("keydown", onKeyDown, true)
     }, [upHandler, downHandler, enterHandler])
 
-    useEffect(() => {
-        const el = containerRef.current
-        if (!el) return
-
-        const onPointerDown = (ev: PointerEvent) => {
-            const target = ev.target as HTMLElement | null
-            const btn = target?.closest("button[role='menuitem']") as HTMLButtonElement | null
-            if (!btn || !el.contains(btn)) return
-
-            ev.preventDefault()
-            ev.stopPropagation()
-
-            const children = Array.from(el.children)
-            const index = children.indexOf(btn)
-            if (index === -1) return
-
-            const item = items[index]
-            if (!item || item.disabled) return
-
-            if (typeof item.command === "function") item.command({ editor, range })
-            else if (typeof command === "function") command(item)
-            close?.()
-        }
-
-        const onPointerEnter = (ev: PointerEvent) => {
-            const target = ev.target as HTMLElement | null
-            const btn = target?.closest("button[role='menuitem']") as HTMLButtonElement | null
-            if (!btn || !el.contains(btn)) return
-
-            const children = Array.from(el.children)
-            const index = children.indexOf(btn)
-            if (index === -1) return
-
-            setIsKeyboardActive(false)
-            setSelectedIndex(index)
-        }
-
-        const onPointerLeave = (ev: PointerEvent) => {
-            const related = ev.relatedTarget as Node | null
-            if (!el.contains(related) && !isKeyboardActive) setSelectedIndex(null)
-        }
-
-        el.addEventListener("pointerdown", onPointerDown, true)
-        el.addEventListener("pointerenter", onPointerEnter, true)
-        el.addEventListener("pointerleave", onPointerLeave, true)
-
-        return () => {
-            el.removeEventListener("pointerdown", onPointerDown, true)
-            el.removeEventListener("pointerenter", onPointerEnter, true)
-            el.removeEventListener("pointerleave", onPointerLeave, true)
-        }
-    }, [items, editor, range, command, close, isKeyboardActive])
-
     return (
         <div
             ref={containerRef}
@@ -242,11 +192,24 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
                             item.disabled && "cursor-not-allowed text-tertiary hover:bg-transparent hover:text-tertiary opacity-50 ",
                         )}
                         onMouseDown={(e) => e.preventDefault()}
-                        onClick={(e) => {
+                        onPointerDown={(e) => {
+                            if (!handlePointerDown) return
+                            e.preventDefault()
                             e.stopPropagation()
-                            close?.()
+                            pointerDownHandledRef.current = true
                             if (typeof item.command === "function") item.command({ editor, range })
                             else if (typeof command === "function") command(item)
+                            close?.()
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            if (pointerDownHandledRef.current) {
+                                pointerDownHandledRef.current = false
+                                return
+                            }
+                            if (typeof item.command === "function") item.command({ editor, range })
+                            else if (typeof command === "function") command(item)
+                            close?.()
                         }}
                         onMouseEnter={() => {
                             setIsKeyboardActive(false)

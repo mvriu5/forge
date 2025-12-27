@@ -1,20 +1,22 @@
+import { Button } from "@/components/ui/Button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover"
 import { cn } from "@/lib/utils"
 import type { Editor } from "@tiptap/core"
-import {BoldIcon, ItalicIcon, StrikethroughIcon, CodeIcon, UnderlineIcon, ChevronDown} from "lucide-react"
-import {Button} from "@/components/ui/Button"
+import { BoldIcon, ChevronDown, CodeIcon, ItalicIcon, StrikethroughIcon, UnderlineIcon } from "lucide-react"
+import { useEffect, useState } from "react"
 import NodeCommandList from "./NodeCommandList"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover"
-import { useCallback, useState } from "react"
 
 export type SelectorItem = {
     name: string
-    icon: React.ComponentType<{ size?: number; className?: string }>
+    icon: React.ComponentType<{ size?: number, className?: string }>
     command: (editor: Editor) => void
     isActive: (editor: Editor) => boolean
 }
 
 export const TextButtons = ({ editor, range }: { editor: Editor | null, range: { from: number, to: number } }) => {
     const [commandMenuOpen, setCommandMenuOpen] = useState(false)
+    const [commandRange, setCommandRange] = useState(range)
+    const [selectedCommandTitle, setSelectedCommandTitle] = useState<string | null>(null)
 
     if (!editor) return null
 
@@ -34,7 +36,7 @@ export const TextButtons = ({ editor, range }: { editor: Editor | null, range: {
         {
             name: "underline",
             isActive: (editor: any) => editor.isActive("underline"),
-            command: (editor: any) => editor.chain().focus().toggle().run(),
+            command: (editor: any) => editor.chain().focus().toggleUnderline().run(),
             icon: UnderlineIcon,
         },
         {
@@ -53,27 +55,40 @@ export const TextButtons = ({ editor, range }: { editor: Editor | null, range: {
 
     return (
         <div className="flex rounded-md bg-primary shadow-xs dark:shadow-md border border-main/40">
-            <Popover open={commandMenuOpen} onOpenChange={setCommandMenuOpen}>
+            <Popover
+                open={commandMenuOpen}
+                onOpenChange={(isOpen) => {
+                    if (isOpen) {
+                        const position = editor.state.selection.to
+                        setCommandRange({ from: position, to: position })
+                    }
+                    setCommandMenuOpen(isOpen)
+                }}
+            >
                 <PopoverTrigger asChild>
                     <Button
-                        className="rounded-md px-2 border-0 text-sm gap-1"
+                        className="rounded-r-none px-2 border-0 text-sm gap-1"
                     >
-                        Command
+                        {selectedCommandTitle ?? "Command"}
                         <ChevronDown size={16} />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent align={"start"} className="p-0 border-0">
+                <PopoverContent align={"start"} className="p-0 border-0" portalled={false}>
                     <NodeCommandList
                         editor={editor}
-                        range={{ from: range.from, to: range.to }}
+                        range={commandRange}
                         close={() => setCommandMenuOpen(false)}
+                        command={(item: any) => {
+                            if (item?.title) setSelectedCommandTitle(item.title)
+                            setCommandMenuOpen(false)
+                        }}
                     />
                 </PopoverContent>
             </Popover>
             {items.map((item) => (
                 <Button
                     key={item.name}
-                    className={cn("rounded-md px-2", item.isActive(editor) && "bg-tertiary text-primary")}
+                    className={cn("rounded-none px-2", item.isActive(editor) && "bg-tertiary text-primary border border-main/20")}
                     variant="ghost"
                     onClick={() => {
                         setCommandMenuOpen(false)

@@ -25,6 +25,7 @@ export interface RenderSuggestionsProps {
     command: (item: CommandItem) => void
     range: Range
     close?: () => void
+    handlePointerDown?: boolean
 }
 
 const RenderSuggestions = () => {
@@ -170,6 +171,7 @@ const RenderSuggestions = () => {
 
             const wrappedProps: RenderSuggestionsProps = {
                 ...props,
+                handlePointerDown: false,
                 close: () => safeHideAndFocus(props.editor),
                 command: (item: CommandItem) => {
                     props.command?.(item)
@@ -189,7 +191,11 @@ const RenderSuggestions = () => {
 
         onUpdate: (props: RenderSuggestionsProps) => {
             latestProps = props
-            reactRenderer?.updateProps({ ...props, close: () => safeHideAndFocus(props.editor) })
+            reactRenderer?.updateProps({
+                ...props,
+                handlePointerDown: false,
+                close: () => safeHideAndFocus(props.editor),
+            })
             if (!popup) createPopupIfNeeded(props)
         },
 

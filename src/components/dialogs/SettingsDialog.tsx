@@ -15,7 +15,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { Blocks, LayoutDashboard, Settings as SettingsIcon, User, Wrench } from "lucide-react"
-import { useState } from "react"
+import { Activity, useState } from "react"
 
 function SettingsDialog() {
     const [open, setOpen] = useState(false)
@@ -74,10 +74,18 @@ function SettingsDialog() {
                     </div>
 
                     <div className={"flex flex-col w-full h-full p-4 gap-4"}>
-                        {tab === "profile" && <ProfileSection handleClose={() => setOpen(false)}/>}
-                        {tab === "integrations" && <IntegrationSection handleClose={() => setOpen(false)}/>}
-                        {tab === "dashboards" && <DashboardSection handleClose={() => setOpen(false)}/>}
-                        {tab === "settings" && <SettingsSection handleClose={() => setOpen(false)}/>}
+                        <Activity mode={tab === "profile" ? "visible" : "hidden"}>
+                            <ProfileSection handleClose={() => setOpen(false)}/>
+                        </Activity>
+                        <Activity mode={tab === "integrations" ? "visible" : "hidden"}>
+                            <IntegrationSection handleClose={() => setOpen(false)}/>
+                        </Activity>
+                        <Activity mode={tab === "dashboards" ? "visible" : "hidden"}>
+                            <DashboardSection handleClose={() => setOpen(false)}/>
+                        </Activity>
+                        <Activity mode={tab === "settings" ? "visible" : "hidden"}>
+                            <SettingsSection handleClose={() => setOpen(false)}/>
+                        </Activity>
                     </div>
                 </div>
             </DialogContent>
