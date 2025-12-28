@@ -97,18 +97,6 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
         TaskItem.configure({ HTMLAttributes: { class: "flex items-start my-4" }, nested: true }),
     ]
 
-    const highlightCodeblocks = useCallback((content: string) => {
-        const doc = new DOMParser().parseFromString(content, "text/html")
-        doc.querySelectorAll("pre code").forEach((el) => {
-            // @ts-ignore
-            if (typeof (window as any).hljs?.highlightElement === "function") {
-                // @ts-ignore
-                (window as any).hljs.highlightElement(el)
-            }
-        })
-        return new XMLSerializer().serializeToString(doc)
-    }, [])
-
     useEffect(() => {
         if (title === note.title) return
 
@@ -212,14 +200,9 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
 
     const persistContent = useCallback(async (editorInstance: TipTapEditor) => {
         const json = editorInstance.getJSON()
-        const html = highlightCodeblocks(editorInstance.getHTML())
-        try {
-            window.localStorage.setItem("html-content", html)
-        } catch {
-            // ignore localStorage errors
-        }
+        window.localStorage.setItem("html-content", editorInstance.getHTML())
         saveNote({content: json, title, emoji})
-    }, [highlightCodeblocks, saveNote, title, emoji])
+    }, [saveNote, title, emoji])
 
     const handleSave = useCallback((editorInstance: TipTapEditor | null) => {
         if (!editorInstance) return

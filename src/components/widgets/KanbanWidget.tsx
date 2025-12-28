@@ -1,8 +1,9 @@
 "use client"
 
-import React, {useState} from "react"
-import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
+import React, { useState, useRef, useEffect } from "react"
+import { WidgetHeader } from "@/components/widgets/base/WidgetHeader"
+import { WidgetContent } from "@/components/widgets/base/WidgetContent"
+import useResizeObserver from "@/hooks/useResizeObserver"
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
 import {Button} from "@/components/ui/Button"
 import {Forward, Plus, Trash} from "lucide-react"
@@ -63,6 +64,10 @@ const KanbanWidget: React.FC<WidgetProps<KanbanConfig>> = ({config, updateConfig
     const [columnPopoverOpen, setColumnPopoverOpen] = useState(false)
     const [activeId, setActiveId] = useState<string | null>(null)
     const [hex, setHex] = useState("#ffffff")
+
+    const containerRef = useRef<HTMLDivElement>(null)
+    const containerSize = useResizeObserver(containerRef)
+    const containerHeight = containerSize?.height ?? 0
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -332,7 +337,7 @@ const KanbanWidget: React.FC<WidgetProps<KanbanConfig>> = ({config, updateConfig
                     </PopoverContent>
                 </Popover>
             </WidgetHeader>
-            <WidgetContent>
+            <WidgetContent className="h-auto flex-1 min-h-0">
                 {config.columns.length === 0 ? (
                     <WidgetEmpty message={"No categories yet. Add a category or import from another app to get started."}/>
                 ) : (
@@ -345,12 +350,13 @@ const KanbanWidget: React.FC<WidgetProps<KanbanConfig>> = ({config, updateConfig
                         modifiers={activeId?.startsWith("column-") ? [restrictToHorizontalAxis, restrictToFirstScrollableAncestor] : [restrictToWindowEdges]}
                     >
                         <SortableContext items={config.columns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
-                            <ScrollArea className={"h-full min-w-80 "} orientation={"horizontal"} thumbClassname={"bg-white/10"}>
-                                <div className="min-h-full max-h-full flex gap-4 overflow-x-auto bg-error ">
+                            <ScrollArea className={"min-h-full min-w-80 gap-4"} orientation={"horizontal"} thumbClassname={"bg-white/10"} ref={containerRef}>
+                                <div className="min-h-full flex gap-4 overflow-x-auto">
                                     {config.columns.map((column) => (
                                         <KanbanColumn
                                             key={column.id}
                                             column={column}
+                                            height={containerHeight}
                                             onAddCardToColumn={handleAddCardToColumn}
                                             onDeleteColumn={handleColumnDelete}
                                             onDeleteCard={handleCardDelete}
@@ -368,13 +374,14 @@ const KanbanWidget: React.FC<WidgetProps<KanbanConfig>> = ({config, updateConfig
 
 interface KanbanColumnProps {
     column: Column
+    height: number
     onAddCardToColumn: (columnId: string, title: string) => void
     onDeleteColumn: (columnId: string) => void
     onDeleteCard: (cardId: string) => void
     isPlaceholder?: boolean
 }
 
-function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard, isPlaceholder = false}: KanbanColumnProps) {
+function KanbanColumn({column, height, onAddCardToColumn, onDeleteColumn, onDeleteCard, isPlaceholder = false}: KanbanColumnProps) {
     const [newCardTitle, setNewCardTitle] = useState("")
     const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
         id: column.id,
@@ -392,6 +399,7 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard, 
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
+        height: `${height}px`,
         opacity: isDragging ? 0.5 : 1,
         background: convertToRGBA(column.color, 0.2),
         border: `1px solid ${convertToRGBA(column.color, 0.2)}`,
@@ -408,7 +416,7 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard, 
     return (
         <div
             className={cn(
-                "min-h-full max-h-full overflow-hidden flex flex-col gap-2 min-w-52 max-w-80 rounded-md p-2 shadow-xs dark:shadow-md",
+                "overflow-hidden flex flex-col gap-2 min-w-52 max-w-80 rounded-md p-2 shadow-xs dark:shadow-md",
                 isPlaceholder && "pointer-events-none",
                 isDragging && "cursor-grab"
             )}
@@ -438,7 +446,7 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard, 
                     </Button>
                 </div>
 
-                <ScrollArea className="h-full" thumbClassname="bg-white/10">
+                <ScrollArea className="flex-1 min-h-0" thumbClassname="bg-white/10">
                     <SortableContext items={column.cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
                         <div className="flex flex-col gap-0.5">
                             {column.cards.map((card) => (
@@ -514,7 +522,7 @@ function KanbanCard({card, color, onCardDelete, isPlaceholder = false}: KanbanCa
                 <p className="wrap-break-word">{card.title}</p>
             </div>
             <Button
-                className={"hidden group-hover:flex px-1 h-6 absolute right-1 top-1 "}
+                className={"hidden group-hover:flex px-1 h-6 absolute right-1 top-1 border-none shadow-none dark:shadow-none"}
                 onClick={(e) => {
                     e.stopPropagation()
                     onCardDelete(card.id)
@@ -535,7 +543,7 @@ export const kanbanWidgetDefinition = defineWidget({
     sizes: {
         desktop: { width: 2, height: 2 },
         tablet: { width: 2, height: 2 },
-        mobile: { width: 1, height: 1 }
+        mobile: { width: 1, height: 2 }
     },
     defaultConfig: {
         columns: []

@@ -45,12 +45,6 @@ export const TextButtons = ({ editor, range }: { editor: Editor | null, range: {
             command: (editor: any) => editor.chain().focus().toggleStrike().run(),
             icon: StrikethroughIcon,
         },
-        {
-            name: "code",
-            isActive: (editor: any) => editor.isActive("code"),
-            command: (editor: any) => editor.chain().focus().toggleCode().run(),
-            icon: CodeIcon,
-        }
     ]
 
     useEffect(() => {

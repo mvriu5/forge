@@ -1,5 +1,6 @@
-import React, { ChangeEvent, JSX } from "react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select"
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
+import { JSX } from "react"
 
 interface CodeblockNode {
     attrs: {
@@ -33,31 +34,28 @@ export default function Codeblock({
     updateAttributes,
     extension,
 }: CodeblockProps): JSX.Element {
-    const onLanguageChange = (event: ChangeEvent<HTMLSelectElement>) => {
-        updateAttributes({ language: event.target.value })
-    }
 
     const languages = extension?.options?.lowlight?.listLanguages
         ? extension.options.lowlight.listLanguages()
         : []
 
     return (
-        <NodeViewWrapper className="code-block">
-            <select
-                contentEditable={false}
-                defaultValue={defaultLanguage ?? "null"}
-                onChange={onLanguageChange}
-            >
-                <option value="null">auto</option>
-                <option disabled>—</option>
-                {languages.map((lang, index) => (
-                    <option key={index} value={lang}>
-                        {lang}
-                    </option>
-                ))}
-            </select>
+        <NodeViewWrapper className="relative code-block border border-main/40 rounded-md bg-secondary">
+            <Select value={defaultLanguage ?? "null"} onValueChange={(value) => updateAttributes({ language: value })}>
+                <SelectTrigger className="absolute top-2 right-2 w-max h-6 text-xs" spellCheck={false}>
+                    <SelectValue />
+                </SelectTrigger>
 
-            <pre>
+                <SelectContent className={"w-32 border-main/40"} align={"end"}>
+                    <SelectItem value={"null"} className="h-6">auto</SelectItem>
+                    {languages.map((lang) => (
+                        <SelectItem key={lang} value={lang} className="h-6">
+                            {lang}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            <pre spellCheck={false}>
                 <NodeViewContent as="code" />
             </pre>
         </NodeViewWrapper>
