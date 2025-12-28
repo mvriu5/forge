@@ -15,7 +15,7 @@ import TaskList from "@tiptap/extension-task-list"
 import { BubbleMenu, EditorContent, ReactNodeViewRenderer, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import { File, Trash } from "lucide-react"
-import { Activity, useCallback, useEffect, useRef, useState } from "react"
+import { Activity, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "../ui/Button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/Dialog"
 import { EmojiPicker } from "../ui/EmojiPicker"
@@ -75,20 +75,11 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
     }, [])
 
     const codeBlockNodeViewRef = useRef<NodeViewRenderer | null>(null)
-    useEffect(() => {
-        if (typeof window === "undefined") return
-        const createRenderer = () => {
-            try {
-                codeBlockNodeViewRef.current = ReactNodeViewRenderer(Codeblock)
-            } catch (e) {
-                // ignore - if creation fails we simply leave the ref null
-            }
-        }
-        if (typeof queueMicrotask === "function") {
-            queueMicrotask(createRenderer)
-        } else {
-            Promise.resolve().then(createRenderer)
-        }
+
+    const getCodeBlockNodeViewRenderer = useCallback(() => {
+        if (codeBlockNodeViewRef.current) return codeBlockNodeViewRef.current
+        codeBlockNodeViewRef.current = ReactNodeViewRenderer(Codeblock)
+        return codeBlockNodeViewRef.current
     }, [])
 
     const extensions = [
@@ -99,11 +90,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
         }),
         CodeBlockLowlight.extend({
             addNodeView() {
-                return () => {
-                    const renderer = codeBlockNodeViewRef.current
-                    if (renderer) return renderer as any
-                    return null
-                }
+                return getCodeBlockNodeViewRenderer()
             },
         }).configure({ lowlight }),
         StarterKit.configure({
