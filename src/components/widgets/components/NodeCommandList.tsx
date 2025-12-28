@@ -12,7 +12,7 @@ import {
     TextQuote,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Editor } from "@tiptap/react"
+import { Editor, useEditorState } from "@tiptap/react"
 
 export interface NodeCommandListProps {
     command?: (item: CommandItem) => void
@@ -109,6 +109,25 @@ export const defaultCommandItems: CommandItem[] = [
 ]
 
 const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, range, items: itemsProp, close, onSelect, handlePointerDown = true }) => {
+    const editorState = useEditorState({
+        editor,
+        selector: ctx => {
+            return {
+                isCode: ctx.editor.isActive('code'),
+                isParagraph: ctx.editor.isActive('paragraph'),
+                isHeading1: ctx.editor.isActive('heading', { level: 1 }),
+                isHeading2: ctx.editor.isActive('heading', { level: 2 }),
+                isHeading3: ctx.editor.isActive('heading', { level: 3 }),
+                isBulletList: ctx.editor.isActive('bulletList'),
+                isOrderedList: ctx.editor.isActive('orderedList'),
+                isCodeBlock: ctx.editor.isActive('codeBlock'),
+                isBlockquote: ctx.editor.isActive('blockquote'),
+                isTaskList: ctx.editor.isActive('taskList'),
+                isTaskItem: ctx.editor.isActive('taskItem'),
+            }
+        },
+    })
+
     const items = itemsProp && itemsProp.length > 0 ? itemsProp : defaultCommandItems
 
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
@@ -177,35 +196,42 @@ const NodeCommandList: React.FC<NodeCommandListProps> = ({ command, editor, rang
     const getActiveIndex = useCallback(() => {
         if (!editor) return null
 
-        console.log(items.map(i => i.title))
+        const hasNonParagraphActive =
+            editorState.isTaskList
+            || editorState.isTaskItem
+            || editorState.isBulletList
+            || editorState.isOrderedList
+            || editorState.isBlockquote
+            || editorState.isCodeBlock
+            || editorState.isCode
 
         const index = items.findIndex((item) => {
             switch (item.title) {
                 case "Text":
-                    return editor.isActive("paragraph")
+                    return editorState.isParagraph && !hasNonParagraphActive
                 case "To-do List":
-                    return editor.isActive("taskList") || editor.isActive("taskItem")
+                    return editorState.isTaskList || editorState.isTaskItem
                 case "Heading 1":
-                    return editor.isActive("heading", { level: 1 })
+                    return editorState.isHeading1
                 case "Heading 2":
-                    return editor.isActive("heading", { level: 2 })
+                    return editorState.isHeading2
                 case "Heading 3":
-                    return editor.isActive("heading", { level: 3 })
+                    return editorState.isHeading3
                 case "Bullet List":
-                    return editor.isActive("bulletList")
+                    return editorState.isBulletList
                 case "Numbered List":
-                    return editor.isActive("orderedList")
+                    return editorState.isOrderedList
                 case "Quote":
-                    return editor.isActive("blockquote")
+                    return editorState.isBlockquote
                 case "Code":
-                    return editor.isActive("codeBlock")
+                    return editorState.isCodeBlock || editorState.isCode
                 default:
                     return false
             }
         })
 
         return index === -1 ? null : index
-    }, [editor, items])
+    }, [editorState, items, range.from, range.to])
 
     const syncActiveIndex = useCallback(() => {
         if (isKeyboardActive) return

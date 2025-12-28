@@ -345,8 +345,8 @@ const KanbanWidget: React.FC<WidgetProps<KanbanConfig>> = ({config, updateConfig
                         modifiers={activeId?.startsWith("column-") ? [restrictToHorizontalAxis, restrictToFirstScrollableAncestor] : [restrictToWindowEdges]}
                     >
                         <SortableContext items={config.columns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
-                            <ScrollArea className={"min-w-80"} orientation={"horizontal"} thumbClassname={"bg-white/10"}>
-                                <div className="flex gap-4 overflow-x-auto">
+                            <ScrollArea className={"h-full min-w-80 "} orientation={"horizontal"} thumbClassname={"bg-white/10"}>
+                                <div className="min-h-full max-h-full flex gap-4 overflow-x-auto bg-error ">
                                     {config.columns.map((column) => (
                                         <KanbanColumn
                                             key={column.id}
@@ -407,35 +407,39 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard, 
 
     return (
         <div
-            className={cn("flex flex-col justify-between gap-2 h-full min-w-52 rounded-md p-2 shadow-xs dark:shadow-md", isPlaceholder && "pointer-events-none")}
+            className={cn(
+                "min-h-full max-h-full overflow-hidden flex flex-col gap-2 min-w-52 max-w-80 rounded-md p-2 shadow-xs dark:shadow-md",
+                isPlaceholder && "pointer-events-none",
+                isDragging && "cursor-grab"
+            )}
             style={style}
             ref={setNodeRef}
             {...attributes}
             {...listeners}
         >
-            <div className={"flex flex-col gap-2"}>
+            <div className="flex-1 min-h-0 flex flex-col gap-2">
                 <div
-                    className={"flex items-center justify-between font-medium -mx-2 px-2 pb-2"}
+                    className="flex items-center justify-between font-medium -mx-2 px-2 pb-2 shrink-0"
                     style={{
                         color: column.color,
                         borderBottom: `1px solid ${convertToRGBA(column.color, 0.2)}`,
-                }}
+                    }}
                 >
                     {column.title}
                     <Button
-                        className={"h-6 border-0 text-tertiary shadow-none dark:shadow-none bg-0 px-2 hover:bg-inverted/10 hover:text-primary"}
+                        className="h-6 border-0 text-tertiary shadow-none dark:shadow-none bg-0 px-2 hover:bg-inverted/10 hover:text-primary"
                         onClick={(e) => {
                             e.stopPropagation()
                             onDeleteColumn(column.id)
                         }}
                         {...deleteColumnTooltip}
                     >
-                        <Trash size={16}/>
+                        <Trash size={16} />
                     </Button>
                 </div>
 
-                <ScrollArea className={"h-54"} thumbClassname={"bg-white/10"}>
-                    <SortableContext items={column.cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
+                <ScrollArea className="h-full" thumbClassname="bg-white/10">
+                    <SortableContext items={column.cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
                         <div className="flex flex-col gap-0.5">
                             {column.cards.map((card) => (
                                 <KanbanCard
@@ -450,7 +454,8 @@ function KanbanColumn({column, onAddCardToColumn, onDeleteColumn, onDeleteCard, 
                     </SortableContext>
                 </ScrollArea>
             </div>
-            <form onSubmit={handleAddCardSubmit} className="flex gap-2">
+
+            <form onSubmit={handleAddCardSubmit} className="flex gap-2 shrink-0">
                 <Input
                     type="text"
                     placeholder="Add new task..."
@@ -495,15 +500,21 @@ function KanbanCard({card, color, onCardDelete, isPlaceholder = false}: KanbanCa
 
     return (
         <div
-            className={cn("group flex gap-2 items-center justify-between rounded-md p-1 text-primary", isPlaceholder && "pointer-events-none")}
+            className={cn(
+                "group relative min-w-47 max-w-75 flex gap-2 items-center justify-between rounded-md p-1 text-primary cursor-pointer",
+                isPlaceholder && "pointer-events-none",
+                isDragging && "cursor-grab"
+            )}
             ref={setNodeRef}
             style={style}
             {...attributes}
             {...listeners}
         >
-            <p>{card.title}</p>
+            <div className="w-8/10 ">
+                <p className="wrap-break-word">{card.title}</p>
+            </div>
             <Button
-                className={"hidden group-hover:flex px-1 h-6"}
+                className={"hidden group-hover:flex px-1 h-6 absolute right-1 top-1 "}
                 onClick={(e) => {
                     e.stopPropagation()
                     onCardDelete(card.id)

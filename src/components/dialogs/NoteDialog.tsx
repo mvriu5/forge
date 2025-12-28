@@ -8,10 +8,11 @@ import { formatDate, getUpdateTimeLabel } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import type { Editor as TipTapEditor } from "@tiptap/core"
 import Link from "@tiptap/extension-link"
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight"
 import Placeholder from "@tiptap/extension-placeholder"
 import TaskItem from "@tiptap/extension-task-item"
 import TaskList from "@tiptap/extension-task-list"
-import { BubbleMenu, EditorContent, useEditor } from "@tiptap/react"
+import { BubbleMenu, EditorContent, ReactNodeViewRenderer, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import { File, Trash } from "lucide-react"
 import { Activity, useCallback, useEffect, useRef, useState } from "react"
@@ -23,6 +24,8 @@ import { ScrollArea } from "../ui/ScrollArea"
 import { Skeleton } from "../ui/Skeleton"
 import { Note } from "../widgets/EditorWidget"
 import { TextButtons } from "../widgets/components/TextButtons"
+import {lowlight} from "lowlight/lib/common.js"
+import Codeblock from "../widgets/components/Codeblock"
 
 interface NoteDialogProps {
     open: boolean
@@ -77,6 +80,11 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                 items: ({ query }: { query: string }) => filterCommandItems(query),
             },
         }),
+        CodeBlockLowlight.extend({
+            addNodeView() {
+                return ReactNodeViewRenderer(Codeblock)
+            },
+            }).configure({ lowlight }),
         StarterKit.configure({
             bulletList: { HTMLAttributes: { class: "list-disc list-outside leading-3 -mt-2" } },
             orderedList: { HTMLAttributes: { class: "list-decimal list-outside leading-3 -mt-2" } },
