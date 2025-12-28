@@ -1,6 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select"
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
-import { JSX, useEffect, useRef, useState } from "react"
+import { JSX, useCallback, useEffect, useRef, useState } from "react"
 
 interface CodeblockNode {
     attrs: {
@@ -33,11 +33,11 @@ export default function Codeblock({
     },
     updateAttributes,
     extension,
-}: CodeblockProps): JSX.Element {
+}: CodeblockProps) {
 
     const [selectedLanguage, setSelectedLanguage] = useState(defaultLanguage ?? "null")
-    const hasMountedRef = useRef(false)
     const [isMounted, setIsMounted] = useState(false)
+    const updateFrameRef = useRef<number | null>(null)
 
     const languages = extension?.options?.lowlight?.listLanguages
         ? extension.options.lowlight.listLanguages()
@@ -52,41 +52,44 @@ export default function Codeblock({
     }, [])
 
     useEffect(() => {
-        if (!hasMountedRef.current) {
-            hasMountedRef.current = true
-            return
+        return () => {
+            if (updateFrameRef.current !== null) {
+                cancelAnimationFrame(updateFrameRef.current)
+            }
         }
+    }, [])
 
-        const nextLanguage = selectedLanguage === "null" ? null : selectedLanguage
+    const handleValueChange = useCallback((value: string) => {
+        setSelectedLanguage(value)
+        const nextLanguage = value === "null" ? null : value
         if (nextLanguage === defaultLanguage) return
 
-        queueMicrotask(() => {
+        if (updateFrameRef.current !== null) {
+            cancelAnimationFrame(updateFrameRef.current)
+        }
+        updateFrameRef.current = requestAnimationFrame(() => {
+            updateFrameRef.current = null
             updateAttributes({ language: nextLanguage })
         })
-    }, [defaultLanguage, selectedLanguage, updateAttributes])
+    }, [defaultLanguage, updateAttributes])
 
     return (
         <NodeViewWrapper className="relative code-block border border-main/40 rounded-md bg-secondary">
-            {isMounted ? (
-                <Select value={defaultLanguage ?? "null"} onValueChange={(value) => setSelectedLanguage(value)}>
-                    <SelectTrigger className="absolute top-2 right-2 w-max h-6 text-xs" spellCheck={false}>
-                        <SelectValue />
-                    </SelectTrigger>
+                    <Select value={defaultLanguage ?? "null"} onValueChange={handleValueChange}>
+                        <SelectTrigger className="absolute top-2 right-2 w-max h-6 text-xs" spellCheck={false}>
+                            <SelectValue />
+                        </SelectTrigger>
 
-                    <SelectContent className={"w-32 border-main/40"} align={"end"}>
-                        <SelectItem value={"null"} className="h-6">auto</SelectItem>
-                        {languages.map((lang) => (
-                            <SelectItem key={lang} value={lang} className="h-6">
-                                {lang}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            ) : (
-                <div className="absolute top-2 right-2 h-6 px-2 text-xs text-muted-foreground">
-                    {defaultLanguage ?? "auto"}
-                </div>
-            )}
+                        <SelectContent className={"w-32 border-main/40"} align={"end"}>
+                            <SelectItem value={"null"} className="h-6">auto</SelectItem>
+                            {languages.map((lang) => (
+                                <SelectItem key={lang} value={lang} className="h-6">
+                                    {lang}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
             <pre spellCheck={false}>
                 <NodeViewContent as="code" />
             </pre>

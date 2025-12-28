@@ -6,7 +6,7 @@ import { useSettings } from "@/hooks/data/useSettings"
 import SlashSuggestion, { filterCommandItems } from "@/lib/extensions"
 import { formatDate, getUpdateTimeLabel } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
-import type { Editor as TipTapEditor } from "@tiptap/core"
+import type { NodeViewRenderer, Editor as TipTapEditor } from "@tiptap/core"
 import Link from "@tiptap/extension-link"
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight"
 import Placeholder from "@tiptap/extension-placeholder"
@@ -74,6 +74,23 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
         }
     }, [])
 
+    const codeBlockNodeViewRef = useRef<NodeViewRenderer | null>(null)
+    useEffect(() => {
+        if (typeof window === "undefined") return
+        const createRenderer = () => {
+            try {
+                codeBlockNodeViewRef.current = ReactNodeViewRenderer(Codeblock)
+            } catch (e) {
+                // ignore - if creation fails we simply leave the ref null
+            }
+        }
+        if (typeof queueMicrotask === "function") {
+            queueMicrotask(createRenderer)
+        } else {
+            Promise.resolve().then(createRenderer)
+        }
+    }, [])
+
     const extensions = [
         SlashSuggestion.configure({
             suggestion: {
@@ -82,9 +99,13 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
         }),
         CodeBlockLowlight.extend({
             addNodeView() {
-                return ReactNodeViewRenderer(Codeblock)
+                return () => {
+                    const renderer = codeBlockNodeViewRef.current
+                    if (renderer) return renderer as any
+                    return null
+                }
             },
-            }).configure({ lowlight }),
+        }).configure({ lowlight }),
         StarterKit.configure({
             bulletList: { HTMLAttributes: { class: "list-disc list-outside leading-3 -mt-2" } },
             orderedList: { HTMLAttributes: { class: "list-decimal list-outside leading-3 -mt-2" } },
