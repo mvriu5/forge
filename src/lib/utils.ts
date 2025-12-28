@@ -18,7 +18,6 @@ export const CONTAINER_STYLES = {
 export function getUpdateTimeLabel(date: Date | string | number | undefined | null): string {
     if (date == null) return 'Updated now'
 
-
     const d = date instanceof Date ? date : new Date(date as string | number)
     if (Number.isNaN(d.getTime())) return 'Updated now'
 
