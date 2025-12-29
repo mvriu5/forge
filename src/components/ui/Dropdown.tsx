@@ -7,6 +7,7 @@ import type { ReactNode } from "react"
 import {KeyboardShortcut} from "@/components/ui/KeyboardShortcut"
 import {CONTAINER_STYLES, cn} from "@/lib/utils"
 import {Side} from "@floating-ui/utils"
+import { ScrollArea } from "./ScrollArea"
 
 
 interface ItemType {
@@ -210,7 +211,9 @@ const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, a
                         className
                     )}
                 >
-                    <DropdownMenuActions items={items} />
+                    <ScrollArea className="h-80">
+                        <DropdownMenuActions items={items} />
+                    </ScrollArea>
                 </DropdownMenuPrimitive.Content>
             </DropdownMenuPrimitive.Portal>
         </DropdownMenuPrimitive.Root>

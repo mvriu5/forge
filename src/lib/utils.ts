@@ -1,5 +1,6 @@
 import clsx, { type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import crypto from "crypto"
 
 export const cn = (...classes: ClassValue[]) => twMerge(clsx(classes))
 
@@ -147,4 +148,11 @@ export function formatWeatherHour(iso?: string | number | Date | null, hourForma
     const hour = d.getHours() % 12 || 12
     const ampm = d.getHours() >= 12 ? "PM" : "AM"
     return `${hour} ${ampm}`
+}
+
+export function coinbaseSign(params: { secret: string, timestamp: string, method: string, requestPath: string, body?: string }) {
+    const body = params.body ?? ""
+    const prehash = params.timestamp + params.method.toUpperCase() + params.requestPath + body
+    const key = Buffer.from(params.secret, "base64")
+    return crypto.createHmac("sha256", key).update(prehash).digest("base64")
 }
