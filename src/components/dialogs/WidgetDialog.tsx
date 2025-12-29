@@ -183,7 +183,7 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
                                     </div>
                                 </div>
                                 <p className={"text-sm text-secondary relative z-10"}>{widget.description}</p>
-                                <div className={"absolute left-4 -bottom-32 sm:-bottom-8 md:-bottom-16 rounded-md shadow-md pt-0.5 pl-0.5 ml-4 border border-main/40 bg-secondary pointer-events-none z-0"}>
+                                <div className={"absolute left-4 -bottom-32 sm:-bottom-8 md:-bottom-16 rounded-xl shadow-md pt-0.5 pl-0.5 ml-4 border border-main/40 bg-secondary pointer-events-none z-0"}>
                                     <Image
                                         src={widget.image}
                                         alt={widget.name}
