@@ -6,24 +6,31 @@ import { WidgetHeader } from "@/components/widgets/base/WidgetHeader"
 import { CryptoCurrency, CryptoProduct, useCoinbase } from "@/hooks/useCoinbase"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 import { ArrowDownRight, ArrowUpRight, CandlestickChart, ChartCandlestick } from "lucide-react"
-import React, { useMemo, useState } from "react"
+import React, { useCallback, useDeferredValue, useMemo, useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/Select"
 import { useTooltip } from "../ui/TooltipProvider"
 import { DropdownMenu, MenuItem } from "../ui/Dropdown"
 import { Button } from "../ui/Button"
 import { cn } from "@/lib/utils"
+import { Input } from "../ui/Input"
+import { WidgetError } from "./base/WidgetError"
 
-const DEFAULT_PRODUCTS = ["BTC-USD", "ETH-USD", "SOL-USD", "ADA-USD", "XRP-USD", "AVAX-USD"]
+interface CryptoConfig {
+    timeframe: string
+    products: string[]
+}
+
+const DEFAULT_PRODUCTS = ["BTC-USD", "ETH-USD", "SOL-USD"]
 const TIMEFRAMES = [
     { key: "1h", label: "1 hour" },
-    { key: "1d", label: "1 day" },
+    { key: "24h", label: "24 hours" },
     { key: "1w", label: "1 week" },
     { key: "1m", label: "1 month" },
     { key: "3m", label: "3 months" },
     { key: "6m", label: "6 months" },
     { key: "1y", label: "1 year" }
 ] as const
-const SKELETON_KEYS = Array.from({ length: DEFAULT_PRODUCTS.length }, (_, index) => `coinbase-skeleton-${index}`)
+const SKELETON_KEYS = Array.from({ length: 6 }, (_, index) => `coinbase-skeleton-${index}`)
 
 const formatPrice = (price: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
@@ -54,17 +61,19 @@ const buildSparklinePoints = (values: number[], width: number, height: number) =
         .join(" ")
 }
 
-const CryptoWidget: React.FC<WidgetProps> = () => {
-    const [timeframe, setTimeframe] = useState("1d")
-    const [selectedProducts, setSelectedProducts] = useState(DEFAULT_PRODUCTS)
+const CryptoWidget: React.FC<WidgetProps<CryptoConfig>> = ({ config, updateConfig }) => {
+    const [timeframe, setTimeframe] = useState(config?.timeframe ?? "24h")
+    const [selectedProducts, setSelectedProducts] = useState(config?.products ?? DEFAULT_PRODUCTS)
     const [selectOpen, setSelectOpen] = useState(false)
     const [dropdownOpen, setDropdownOpen] = useState(false)
+    const [searchTerm, setSearchTerm] = useState("")
+    const deferredSearchTerm = useDeferredValue(searchTerm)
 
-    const { currencies, products, productsLoading, productsError } = useCoinbase(selectedProducts, timeframe)
+    const { currencies, products, productsLoading, productsError, currenciesError } = useCoinbase(selectedProducts, timeframe)
 
     const filteredCurrencies = useMemo(() => (currencies ?? [])
         .filter((currency) => currency.id !== "USD")
-        .map((currency) => ({ value: `${currency.id}-USD`, label: currency.id })
+        .map((currency) => ({ id: `${currency.id}-USD`, label: currency.id })
     ), [currencies])
 
     const timeframeTooltip = useTooltip<HTMLDivElement>({
@@ -77,13 +86,65 @@ const CryptoWidget: React.FC<WidgetProps> = () => {
         anchor: "tc"
     })
 
-    const dropdownCurrencyItems: MenuItem[] = useMemo(() => Array.from(new Set(filteredCurrencies?.map((currency: any) => ({
-        type: "checkbox",
-        key: currency.id,
-        label: currency.label,
-        checked: selectedProducts.includes(currency.id),
-        onCheckedChange: () => setSelectedProducts((prev) => (prev.includes(currency.id) ? prev.filter((l) => l !== currency.id) : [...prev, currency.id]))
-    })))), [currencies, selectedProducts, setSelectedProducts])
+    const dropdownCurrencyItems: MenuItem[] = useMemo(() => {
+        if (!dropdownOpen) return []
+
+        const query = deferredSearchTerm.trim().toLowerCase()
+        const seen = new Set<string>()
+        const defaultAndSelected = new Set<string>([...DEFAULT_PRODUCTS, ...selectedProducts])
+        const baseCurrencies = filteredCurrencies.filter((currency) => defaultAndSelected.has(currency.id))
+        const searchMatches = query ? filteredCurrencies.filter((currency) => (currency.id.toLowerCase().includes(query) || currency.label.toLowerCase().includes(query))) : []
+        const mergedCurrencies = query ? [...baseCurrencies, ...searchMatches] : baseCurrencies
+        const items: MenuItem[] = []
+
+        items.push(...mergedCurrencies
+            .filter((currency) => {
+                if (seen.has(currency.id)) return false
+                seen.add(currency.id)
+                return true
+            })
+            .map((currency) => {
+                const item: MenuItem = {
+                    type: "checkbox",
+                    label: currency.label,
+                    checked: selectedProducts.includes(currency.id),
+                    onCheckedChange: async () => {
+                        const newSelected = selectedProducts.includes(currency.id)
+                            ? selectedProducts.filter((item) => item !== currency.id)
+                            : [...selectedProducts, currency.id]
+                        setSelectedProducts(newSelected)
+                        if (!updateConfig) return
+                        await updateConfig({ timeframe, products: newSelected })
+                    }
+                }
+                return item
+            }))
+
+        if (items.length === 0) {
+            items.push({
+                type: "label",
+                label: query ? "No matches found." : "No currencies available."
+            })
+        }
+
+        return items
+    }, [deferredSearchTerm, dropdownOpen, filteredCurrencies, selectedProducts])
+
+    const handleTimeframeChange = useCallback(async (value: string) => {
+        setTimeframe(value)
+        if (!updateConfig) return
+        await updateConfig({ timeframe: value, products: selectedProducts })
+    }, [updateConfig, selectedProducts])
+
+    if (productsError || currenciesError) {
+        return (
+            <WidgetError message={
+                productsError
+                    ? "An error occurred, while loading the coin data. Try again later."
+                    : "An error occurred, while loading the list of currencies. Try again later."
+            }/>
+        )
+    }
 
     return (
         <>
@@ -92,8 +153,18 @@ const CryptoWidget: React.FC<WidgetProps> = () => {
                     asChild
                     items={dropdownCurrencyItems}
                     align={"start"}
-                    open={dropdownOpen}
-                    onOpenChange={setDropdownOpen}
+                    onOpenChange={(open) => {
+                        setDropdownOpen(open)
+                        if (!open) setSearchTerm("")
+                    }}
+                    header={(
+                            <Input
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Search currencies..."
+                                className="h-6 mb-1 px-2 border-none shadow-none dark:shadow-none focus:border-none focus:outline-none focus:bg-transparent"
+                            />
+                    )}
                 >
                     <Button
                         data-state={dropdownOpen ? "open" : "closed"}
@@ -105,7 +176,7 @@ const CryptoWidget: React.FC<WidgetProps> = () => {
                         <CandlestickChart size={16} />
                     </Button>
                 </DropdownMenu>
-                <Select value={timeframe} onValueChange={setTimeframe} open={selectOpen} onOpenChange={setSelectOpen}>
+                <Select value={timeframe} onValueChange={handleTimeframeChange} open={selectOpen} onOpenChange={setSelectOpen}>
                     <SelectTrigger
                         data-state={selectOpen ? "open" : "closed"}
                         className="w-max border-0 h-6 px-2 shadow-none dark:shadow-none bg-transparent hover:bg-inverted/10 text-secondary hover:text-primary gap-2 font-normal text-sm data-[state=open]:bg-inverted/10 data-[state=open]:text-primary"
@@ -146,17 +217,22 @@ const CryptoWidget: React.FC<WidgetProps> = () => {
 
 const CurrencyCard = ({product}: {product: CryptoProduct}) => {
     return (
-        <div className="flex items-center justify-between gap-2 bg-secondary rounded-md p-2">
-            <div className="w-1/4 flex flex-col">
+        <div className="flex items-center justify-between gap-2 bg-secondary rounded-md py-2 px-4">
+            <div className="w-1/5 flex flex-col">
                 <p className="text-sm font-semibold text-primary">{product.base}</p>
                 <p className="text-xs text-tertiary">{product.product}</p>
             </div>
             {product.error ? (
                 <p className="text-xs text-error">{product.error}</p>
             ) : (
-                <div className="w-3/4 flex items-center gap-3">
-                    <div className="w-1/2 hidden sm:flex">
-                        <svg width={120} height={24} viewBox="0 0 120 24" aria-hidden="true">
+                <div className="w-4/5 flex items-center gap-3">
+                    <div className="w-1/2 flex">
+                        <svg
+                            viewBox="0 0 120 24"
+                            aria-hidden="true"
+                            preserveAspectRatio="none"
+                            className="w-full h-6"
+                        >
                             <polyline
                                 fill="none"
                                 stroke={product.changePercent >= 0 ? "currentColor" : "currentColor"}
@@ -166,20 +242,22 @@ const CurrencyCard = ({product}: {product: CryptoProduct}) => {
                             />
                         </svg>
                     </div>
-                    <p className="w-1/4 text-sm font-mono text-secondary">
-                        {formatPrice(product.price, product.quote)}
-                    </p>
-                    <p
-                        className={cn(
-                            "w-1/4",
-                            product.changePercent >= 0
-                                ? "flex items-center gap-1 text-xs font-semibold text-success"
-                                : "flex items-center gap-1 text-xs font-semibold text-error"
-                        )}
-                    >
-                        {product.changePercent >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                        {formatChange(product.changePercent)}
-                    </p>
+                    <div className="w-1/2 flex flex-wrap items-center gap-x-2 justify-between">
+
+                        <p className="text-sm font-mono text-secondary">
+                            {formatPrice(product.price, product.quote)}
+                        </p>
+                        <p
+                            className={cn(
+                                product.changePercent >= 0
+                                    ? "flex items-center gap-1 text-xs font-semibold text-success"
+                                    : "flex items-center gap-1 text-xs font-semibold text-error"
+                            )}
+                        >
+                            {product.changePercent >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                            {formatChange(product.changePercent)}
+                        </p>
+                    </div>
                 </div>
             )}
         </div>
@@ -190,11 +268,15 @@ export const cryptoWidgetDefinition = defineWidget({
     name: "Crypto",
     component: CryptoWidget,
     description: "Track live crypto spot prices",
-    image: "/github_preview.svg",
+    image: "/crypto_preview.svg",
     tags: ["crypto", "finance"],
     sizes: {
         desktop: { width: 1, height: 2 },
         tablet: { width: 1, height: 2 },
         mobile: { width: 1, height: 2 }
+    },
+    defaultConfig: {
+        timeframe: "24h",
+        products: DEFAULT_PRODUCTS
     }
 })

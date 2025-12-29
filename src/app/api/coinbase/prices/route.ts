@@ -14,7 +14,7 @@ type TimeframeConfig = {
 
 const TIMEFRAMES: Record<string, TimeframeConfig> = {
     "1h": { granularity: 60, limit: 60 },
-    "1d": { granularity: 900, limit: 96 },
+    "24h": { granularity: 900, limit: 96 },
     "1w": { granularity: 21600, limit: 112 },
     "1m": { granularity: 86400, limit: 30 },
     "3m": { granularity: 86400, limit: 90 },

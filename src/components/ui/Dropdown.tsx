@@ -75,6 +75,7 @@ interface DropdownMenuProps extends React.ComponentPropsWithoutRef<typeof Dropdo
     side?: Side
     align?: "center" | "end" | "start" | undefined
     className?: string
+    header?: ReactNode
 }
 
 const DropdownMenuItem = ({ item }: DropdownMenuItemProps) => {
@@ -167,32 +168,36 @@ const DropdownMenuSubItem = ({item, width, children}: DropdownMenuSubItemProps) 
 
 const DropdownMenuActions = ({ items, width }: DropdownMenuActionsProps) => {
     return items.map((item, i) => {
-        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-        if (item.type === "separator") return <DropdownMenuSeparator key={i} />
+        // build a stable key based on item contents to avoid remounting when list changes
+        const stableKey = (() => {
+            if ((item as any).type === 'checkbox') return `checkbox-${(item as any).label}`
+            if ((item as any).type === 'item') return `item-${(item as any).label}`
+            if ((item as any).type === 'sub') return `sub-${(item as any).label}`
+            if ((item as any).type === 'label') return `label-${(item as any).label}`
+            return `sep-${i}`
+        })()
 
-        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-        if (item.type === "label") return <DropdownMenuLabel key={i} item={item} />
+        if (item.type === "separator") return <DropdownMenuSeparator key={stableKey} />
 
-        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-        if (item.type === "checkbox") return <DropdownMenuCheckboxItem key={i} item={item} />
+        if (item.type === "label") return <DropdownMenuLabel key={stableKey} item={item} />
+
+        if (item.type === "checkbox") return <DropdownMenuCheckboxItem key={stableKey} item={item} />
 
         if (item.type === "sub") {
             return (
-                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                <DropdownMenuSubItem key={i} item={item} width={width}>
+                <DropdownMenuSubItem key={stableKey} item={item} width={width}>
                     <DropdownMenuActions items={item.items} />
                 </DropdownMenuSubItem>
             )
         }
 
-        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-        return <DropdownMenuItem key={i} item={item} />
+        return <DropdownMenuItem key={stableKey} item={item} />
     })
 }
 
-const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, asChild, children, className}: DropdownMenuProps) => {
+const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, asChild, children, className, header, ...props}: DropdownMenuProps) => {
     return (
-        <DropdownMenuPrimitive.Root onOpenChange={onOpenChange}>
+        <DropdownMenuPrimitive.Root onOpenChange={onOpenChange} {...props}>
             <DropdownMenuPrimitive.Trigger asChild={asChild}>
                 {children}
             </DropdownMenuPrimitive.Trigger>
@@ -203,16 +208,18 @@ const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, a
                     side={side}
                     align={align}
                     className={cn(
-                        "focus:outline-none z-50",
-                        "max-h-[--radix-dropdown-menu-content-available-height]",
+                        "max-h-80 focus:outline-none z-50 flex flex-col",
                         "min-w-[--radix-dropdown-menu-trigger-width]",
-                        "bg-primary overflow-y-auto rounded-md border border-main/60 p-1 shadow-[10px_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)]",
+                        "bg-primary overflow-hidden rounded-md border border-main/40 p-1 shadow-[10px_10px_20px_rgba(0,0,0,0.2)] dark:shadow-[10px_10px_20px_rgba(0,0,0,0.5)]",
                         CONTAINER_STYLES.animation,
                         className
                     )}
                 >
-                    <ScrollArea className="h-80">
-                        <DropdownMenuActions items={items} />
+                    {header}
+                    <ScrollArea>
+                        <div className={cn(header ? "max-h-68" : "h-80")}>
+                            <DropdownMenuActions items={items} />
+                        </div>
                     </ScrollArea>
                 </DropdownMenuPrimitive.Content>
             </DropdownMenuPrimitive.Portal>
