@@ -1,4 +1,3 @@
-import React from "react"
 import Link from "next/link"
 import {Github} from "@/components/svg/Icons"
 import {Button} from "@/components/ui/Button"

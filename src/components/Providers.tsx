@@ -1,22 +1,21 @@
 "use client"
 
-import {ReactNode} from "react"
+import {ReactNode, useEffect, useState} from "react"
 import {TooltipProvider} from "@/components/ui/TooltipProvider"
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
-import {ThemeProvider} from "@/components/ThemeProvider"
 import {Toaster} from "sonner"
-import {Check, CircleX, Info, LoaderCircle, TriangleAlert} from "lucide-react"
+import { PostHogInit } from "./PosthogInit"
+import { ThemeProvider } from "next-themes"
 
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            staleTime: 1000 * 60 * 5, // 5 minutes
-            retry: 1,
-        },
-    },
-});
+const queryClient = new QueryClient()
 
 function Providers({children}: {children: ReactNode}) {
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
     return (
         <QueryClientProvider client={queryClient}>
             <ThemeProvider
@@ -25,7 +24,8 @@ function Providers({children}: {children: ReactNode}) {
                 disableTransitionOnChange
             >
                 <TooltipProvider>
-                    <Toaster theme="dark"/>
+                    <PostHogInit/>
+                    {mounted ? <Toaster theme="dark"/> : null}
                     {children}
                 </TooltipProvider>
             </ThemeProvider>

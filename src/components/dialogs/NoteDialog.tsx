@@ -284,7 +284,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                                         {emoji?.length > 0 ? emoji : <File size={24}/>}
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className={"p-0 z-60"} onWheel={(e) => e.stopPropagation()}>
+                                <PopoverContent className={"p-0 z-60"} align="start" onWheel={(e) => e.stopPropagation()}>
                                     <EmojiPicker
                                         emojisPerRow={6}
                                         emojiSize={40}

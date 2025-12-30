@@ -6,7 +6,7 @@ import { WidgetHeader } from "@/components/widgets/base/WidgetHeader"
 import { CryptoCurrency, CryptoProduct, useCoinbase } from "@/hooks/useCoinbase"
 import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
 import { ArrowDownRight, ArrowUpRight, CandlestickChart, ChartCandlestick } from "lucide-react"
-import React, { useCallback, useDeferredValue, useMemo, useState } from "react"
+import React, { useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/Select"
 import { useTooltip } from "../ui/TooltipProvider"
 import { DropdownMenu, MenuItem } from "../ui/Dropdown"
@@ -152,18 +152,20 @@ const CryptoWidget: React.FC<WidgetProps<CryptoConfig>> = ({ config, updateConfi
                 <DropdownMenu
                     asChild
                     items={dropdownCurrencyItems}
+                    disableFocusOnHover
                     align={"start"}
                     onOpenChange={(open) => {
                         setDropdownOpen(open)
                         if (!open) setSearchTerm("")
                     }}
                     header={(
-                            <Input
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search currencies..."
-                                className="h-6 mb-1 px-2 border-none shadow-none dark:shadow-none focus:border-none focus:outline-none focus:bg-transparent"
-                            />
+                        <Input
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            autoFocus
+                            placeholder="Search currencies..."
+                            className="h-6 mb-1 px-2 border-none shadow-none dark:shadow-none focus:border-none focus:outline-none focus:bg-transparent"
+                        />
                     )}
                 >
                     <Button

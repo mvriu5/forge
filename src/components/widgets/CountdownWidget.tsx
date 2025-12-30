@@ -199,10 +199,10 @@ const CountdownWidget: React.FC<WidgetProps<CountdownConfig>> = ({widget, config
                                                             {field.value}
                                                         </Button>
                                                     </PopoverTrigger>
-                                                    <PopoverContent className={"p-0 z-60"} onWheel={(e) => e.stopPropagation()}>
+                                                    <PopoverContent className={"w-64 p-0 z-60"} align="start" onWheel={(e) => e.stopPropagation()}>
                                                         <EmojiPicker
                                                             emojisPerRow={6}
-                                                            emojiSize={32}
+                                                            emojiSize={40}
                                                             onEmojiSelect={(value) => {
                                                                 field.onChange(value)
                                                                 setEmojiPickerOpen(false)

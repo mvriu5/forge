@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { coinbaseSign } from "@/lib/utils"
+import crypto from "crypto"
 
 const DEFAULT_PRODUCTS = ["BTC-USD", "ETH-USD", "SOL-USD"]
 const DEFAULT_TIMEFRAME = "1d"
@@ -20,6 +20,13 @@ const TIMEFRAMES: Record<string, TimeframeConfig> = {
     "3m": { granularity: 86400, limit: 90 },
     "6m": { granularity: 86400, limit: 180 },
     "1y": { granularity: 86400, limit: 365 }
+}
+
+function coinbaseSign(params: { secret: string, timestamp: string, method: string, requestPath: string, body?: string }) {
+    const body = params.body ?? ""
+    const prehash = params.timestamp + params.method.toUpperCase() + params.requestPath + body
+    const key = Buffer.from(params.secret, "base64")
+    return crypto.createHmac("sha256", key).update(prehash).digest("base64")
 }
 
 export async function GET(request: Request) {

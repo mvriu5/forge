@@ -1,24 +1,24 @@
 "use client"
 
-import {Header} from "@/components/Header"
-import React, {Suspense, useCallback, useEffect, useMemo, useRef, useState} from "react"
-import type {Widget} from "@/database"
-import {useHotkeys} from "react-hotkeys-hook"
-import {SpinnerDotted} from "spinners-react"
-import {useResponsiveLayout} from "@/hooks/media/useResponsiveLayout"
-import {cn} from "@/lib/utils"
-import {useSession} from "@/hooks/data/useSession"
-import {useDashboards} from "@/hooks/data/useDashboards"
-import {useWidgets} from "@/hooks/data/useWidgets"
-import {useSettings} from "@/hooks/data/useSettings"
-import {toast} from "@/components/ui/Toast"
-import {DashboardEmpty} from "@/components/empty/DashboardEmpty"
-import {DashboardGrid} from "@/components/DashboardGrid"
+import { DashboardGrid } from "@/components/DashboardGrid"
+import { DashboardEmpty } from "@/components/empty/DashboardEmpty"
+import { Header } from "@/components/Header"
+import { Providers } from "@/components/Providers"
+import { toast } from "@/components/ui/Toast"
+import type { Widget } from "@/database"
+import { useDashboards } from "@/hooks/data/useDashboards"
+import { useSession } from "@/hooks/data/useSession"
+import { useSettings } from "@/hooks/data/useSettings"
+import { useWidgets } from "@/hooks/data/useWidgets"
+import { useResponsiveLayout } from "@/hooks/media/useResponsiveLayout"
+import { cn } from "@/lib/utils"
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useHotkeys } from "react-hotkeys-hook"
 
 const LazyDashboardDialog = React.lazy(() => import("@/components/dialogs/DashboardDialog"))
 const LazyOnboardingDialog = React.lazy(() => import("@/components/dialogs/OnboardingDialog"))
 
-export default function Dashboard() {
+function DashboardContent() {
     const {userId, isLoading: sessionLoading} = useSession()
     const {settings, isLoading: settingsLoading, updateSettings} = useSettings(userId)
     const {dashboards, currentDashboard, isLoading: dashboardsLoading, addDashboard, addDashboardStatus,setSelectedDashboard} = useDashboards(userId, settings)
@@ -30,6 +30,7 @@ export default function Dashboard() {
     const [editModeLoading, setEditModeLoading] = useState<boolean>(false)
     const [dialogOpen, setDialogOpen] = useState(false)
     const [onboardingOpen, setOnboardingOpen] = useState(false)
+    const [mounted, setMounted] = useState(false)
 
     const currentDashboardId = currentDashboard?.id ?? null
     const currentWidgets = useMemo(() => widgets.filter((widget) => widget.dashboardId === currentDashboardId), [widgets, currentDashboardId])
@@ -44,6 +45,10 @@ export default function Dashboard() {
     useEffect(() => {
         currentWidgetsRef.current = currentWidgets
     }, [currentWidgets])
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     useEffect(() => {
         if (!userId || dashboardsLoading || settingsLoading || !settings) return
@@ -126,22 +131,26 @@ export default function Dashboard() {
 
     return (
         <div className={cn("flex flex-col w-full h-full overflow-hidden", isDesktop && "max-h-screen max-w-screen")}>
-            <Header
-                onEdit={handleEditModeEnter}
-                editMode={editMode}
-                editModeLoading={editModeLoading}
-                handleEditModeSave={handleEditModeSave}
-                handleEditModeCancel={handleEditModeCancel}
-                isLoading={dataLoading}
-                isOnboarding={onboardingOpen}
-                widgetsEmpty={visibleWidgets.length === 0 && currentDashboard !== null}
-                dashboards={dashboards ?? []}
-                currentDashboard={currentDashboard}
-                onDashboardChange={handleDashboardChange}
-                addDashboard={addDashboard}
-                addDashboardStatus={addDashboardStatus}
-                userId={userId}
-            />
+            {mounted ? (
+                <Header
+                    onEdit={handleEditModeEnter}
+                    editMode={editMode}
+                    editModeLoading={editModeLoading}
+                    handleEditModeSave={handleEditModeSave}
+                    handleEditModeCancel={handleEditModeCancel}
+                    isLoading={dataLoading}
+                    isOnboarding={onboardingOpen}
+                    widgetsEmpty={visibleWidgets.length === 0 && currentDashboard !== null}
+                    dashboards={dashboards ?? []}
+                    currentDashboard={currentDashboard}
+                    onDashboardChange={handleDashboardChange}
+                    addDashboard={addDashboard}
+                    addDashboardStatus={addDashboardStatus}
+                    userId={userId}
+                />
+            ) :(
+                <div className="h-12 w-full border-b border-main/40" />
+            )}
             {visibleWidgets.length === 0 && currentDashboard && !editMode ? (
                 <DashboardEmpty/>
             ) : (
@@ -176,5 +185,13 @@ export default function Dashboard() {
                 />
             </Suspense>
         </div>
+    )
+}
+
+export default function DashboardPage() {
+    return (
+        <Providers>
+            <DashboardContent />
+        </Providers>
     )
 }

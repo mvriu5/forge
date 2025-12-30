@@ -190,6 +190,7 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
                                         width="0"
                                         height="0"
                                         sizes="100vw"
+
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
