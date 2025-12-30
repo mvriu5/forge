@@ -46,25 +46,30 @@ type MenuItem = ItemType | SubType | LabelType | CheckboxType | SeparatorType
 
 interface DropdownMenuItemProps {
     item: ItemType
+    disableFocusOnHover?: boolean
 }
 
 interface DropdownMenuLabelProps {
     item: LabelType
+    disableFocusOnHover?: boolean
 }
 
 interface DropdownMenuCheckboxProps {
     item: CheckboxType
+    disableFocusOnHover?: boolean
 }
 
 interface DropdownMenuSubItemProps {
     item: SubType
     width?: string
     children: ReactNode
+    disableFocusOnHover?: boolean
 }
 
 interface DropdownMenuActionsProps {
     items: MenuItem[]
     width?: string
+    disableFocusOnHover?: boolean
 }
 
 interface DropdownMenuProps extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Root> {
@@ -76,11 +81,14 @@ interface DropdownMenuProps extends React.ComponentPropsWithoutRef<typeof Dropdo
     align?: "center" | "end" | "start" | undefined
     className?: string
     header?: ReactNode
+    disableFocusOnHover?: boolean
 }
 
-const DropdownMenuItem = ({ item }: DropdownMenuItemProps) => {
+const DropdownMenuItem = ({ item, disableFocusOnHover }: DropdownMenuItemProps) => {
     return (
         <DropdownMenuPrimitive.Item
+            onPointerLeave={(event) => disableFocusOnHover && event.preventDefault()}
+            onPointerMove={(event) => disableFocusOnHover && event.preventDefault()}
             onSelect={item.onSelect}
             className={cn(
                 "text-sm border-0 hover:bg-secondary outline-0 px-2 py-1 rounded-md cursor-pointer",
@@ -104,11 +112,13 @@ const DropdownMenuLabel = ({item}: DropdownMenuLabelProps) => {
     )
 }
 
-const DropdownMenuCheckboxItem = ({item, ...props}: DropdownMenuCheckboxProps) => {
+const DropdownMenuCheckboxItem = ({item, disableFocusOnHover, ...props}: DropdownMenuCheckboxProps) => {
     return (
         <DropdownMenuPrimitive.CheckboxItem
             checked={item.checked}
             onCheckedChange={item.onCheckedChange}
+            onPointerLeave={(event) => disableFocusOnHover && event.preventDefault()}
+            onPointerMove={(event) => disableFocusOnHover && event.preventDefault()}
             className={cn(
                 "flex items-center gap-2 text-sm border-0 hover:bg-secondary outline-0 px-2 py-1",
                 "rounded-md cursor-pointer hover:text-primary",
@@ -132,10 +142,12 @@ const DropdownMenuSeparator = () => {
     )
 }
 
-const DropdownMenuSubItem = ({item, width, children}: DropdownMenuSubItemProps) => {
+const DropdownMenuSubItem = ({item, width, disableFocusOnHover, children}: DropdownMenuSubItemProps) => {
     return (
         <DropdownMenuPrimitive.Sub>
             <DropdownMenuPrimitive.SubTrigger
+                onPointerLeave={(event) => disableFocusOnHover && event.preventDefault()}
+                onPointerMove={(event) => disableFocusOnHover && event.preventDefault()}
                 className={cn(
                     "text-sm border-0 hover:bg-secondary outline-0 px-2 py-1 rounded-md cursor-pointer",
                     "flex space-x-2 items-center hover:text-primary"
@@ -166,9 +178,8 @@ const DropdownMenuSubItem = ({item, width, children}: DropdownMenuSubItemProps) 
     )
 }
 
-const DropdownMenuActions = ({ items, width }: DropdownMenuActionsProps) => {
+const DropdownMenuActions = ({ items, width, disableFocusOnHover }: DropdownMenuActionsProps) => {
     return items.map((item, i) => {
-        // build a stable key based on item contents to avoid remounting when list changes
         const stableKey = (() => {
             if ((item as any).type === 'checkbox') return `checkbox-${(item as any).label}`
             if ((item as any).type === 'item') return `item-${(item as any).label}`
@@ -181,12 +192,12 @@ const DropdownMenuActions = ({ items, width }: DropdownMenuActionsProps) => {
 
         if (item.type === "label") return <DropdownMenuLabel key={stableKey} item={item} />
 
-        if (item.type === "checkbox") return <DropdownMenuCheckboxItem key={stableKey} item={item} />
+        if (item.type === "checkbox") return <DropdownMenuCheckboxItem key={stableKey} item={item} disableFocusOnHover={disableFocusOnHover} />
 
         if (item.type === "sub") {
             return (
-                <DropdownMenuSubItem key={stableKey} item={item} width={width}>
-                    <DropdownMenuActions items={item.items} />
+                <DropdownMenuSubItem key={stableKey} item={item} width={width} disableFocusOnHover={disableFocusOnHover}>
+                    <DropdownMenuActions items={item.items} disableFocusOnHover={disableFocusOnHover} />
                 </DropdownMenuSubItem>
             )
         }
@@ -195,7 +206,7 @@ const DropdownMenuActions = ({ items, width }: DropdownMenuActionsProps) => {
     })
 }
 
-const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, asChild, children, className, header, ...props}: DropdownMenuProps) => {
+const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, asChild, children, className, header, disableFocusOnHover, ...props}: DropdownMenuProps) => {
     return (
         <DropdownMenuPrimitive.Root onOpenChange={onOpenChange} {...props}>
             <DropdownMenuPrimitive.Trigger asChild={asChild}>
@@ -218,7 +229,7 @@ const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, a
                     {header}
                     <ScrollArea>
                         <div className={cn(header ? "max-h-68" : "h-80")}>
-                            <DropdownMenuActions items={items} />
+                            <DropdownMenuActions items={items} disableFocusOnHover={disableFocusOnHover} />
                         </div>
                     </ScrollArea>
                 </DropdownMenuPrimitive.Content>

@@ -1,5 +1,5 @@
-import { coinbaseSign } from "@/lib/utils"
 import { NextResponse } from "next/server"
+import crypto from "crypto"
 
 const COINBASE_API_BASE = "https://api.exchange.coinbase.com"
 
@@ -10,6 +10,13 @@ type CoinbaseCurrency = {
     details?: {
         type?: string
     }
+}
+
+function coinbaseSign(params: { secret: string, timestamp: string, method: string, requestPath: string, body?: string }) {
+    const body = params.body ?? ""
+    const prehash = params.timestamp + params.method.toUpperCase() + params.requestPath + body
+    const key = Buffer.from(params.secret, "base64")
+    return crypto.createHmac("sha256", key).update(prehash).digest("base64")
 }
 
 export async function GET() {

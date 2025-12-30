@@ -1,8 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/Button"
-import React, { useEffect } from "react"
-
 interface ErrorProps {
     error: Error
     reset: () => void
@@ -10,21 +7,23 @@ interface ErrorProps {
 
 export default function CustomError({ reset }: ErrorProps) {
     return (
-        <div className="flex w-full h-screen items-center justify-center text-center bg-primary">
-            <div className="flex-col items-center justify-center text-primary">
-
-                <div className="space-y-2">
+        <div className="flex w-full h-screen items-center justify-center text-center bg-[#0d0d0d]">
+            <div className="flex-col items-center justify-center text-[#ededed]">
+                <div className="gap-2">
                     <h2 className="text-2xl font-semibold tracking-tight">Something went wrong!</h2>
-                    <p className="text-secondary">Try again later.</p>
+                    <p className="text-[#bdbdbd]">Try again later.</p>
                 </div>
 
-                <Button
-                    variant="default"
-                    className={"mt-2"}
+                <button
+                    className={
+                        "inline-flex items-center justify-center h-8 px-4 py-2 whitespace-nowrap transition-all rounded-md shadow-md " +
+                        "test-sm font-medium disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none " +
+                        "[&_svg]:shrink-0 bg-transparent hover:bg-[#1c1c1c] text-[#bdbdbd] hover:text-primary border border-main/60"
+                    }
                     onClick={() => reset()}
                 >
                     Try Again
-                </Button>
+                </button>
             </div>
         </div>
     )

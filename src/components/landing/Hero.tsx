@@ -1,4 +1,3 @@
-import {TextAnimate} from "./TextAnimate"
 import Image from "next/image"
 import {Badge} from "@/components/ui/Badge"
 import {Button} from "@/components/ui/Button"
@@ -12,9 +11,9 @@ function Hero() {
                 <Badge variant={"brand"} title={"v1.0 Alpha"}/>
             </div>
 
-            <TextAnimate animation="blurInUp" by="character" className={"text-3xl xl:text-6xl text-center sm:text-start text-primary font-medium"} duration={0.7} once>
-                Productivity needs to feel illegal
-            </TextAnimate>
+            <h1 className={"text-3xl xl:text-6xl text-center sm:text-start text-primary font-medium"}>
+                Forge dashboards for fast, focused productivity
+            </h1>
             <p className={"text-lg text-tertiary text-center sm:text-start"}>
                 Create your own custom dashboards with a variety of widgets. Just drag and drop your widget and you are good to go! <br/>
                 Personalize layouts for different teams, track your most important metrics in real time,
@@ -28,7 +27,7 @@ function Hero() {
                 </Button>
             </Link>
             <div className={"w-full overflow-hidden rounded-md shadow-xl border border-main/40"}>
-                <div className={"relative w-full"} style={{aspectRatio: "2159 / 1247"}}>
+                <div className={"relative w-full aspect-video"}>
                     <Image
                         src={"/mockup.png"}
                         alt={"Example Layout"}
@@ -37,7 +36,6 @@ function Hero() {
                         sizes="100vw"
                         quality={75}
                         priority
-                        unoptimized
                     />
                 </div>
             </div>

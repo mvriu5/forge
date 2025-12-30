@@ -22,13 +22,14 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({onEmojiSelect, onRemove
             emojisPerRow={emojisPerRow}
             emojiSize={emojiSize}
             onEmojiSelect={onEmojiSelect}
-            className={cn("border-0 h-full", className)}
+            className={cn("border-0 max-h-80 overflow-hidden", className)}
             {...props}
         >
-            <FerruccEmojiPicker.Header className={"shadow-md dark:shadow-xl pb-1 flex items-center gap-2 px-2 pt-2"}>
+            <FerruccEmojiPicker.Header className={"pb-1 flex items-center gap-2 px-1 pt-1"}>
                 <FerruccEmojiPicker.Input
                     placeholder={searchPlaceholder}
                     hideIcon
+                    autoFocus
                     className={"px-2 py-1 bg-secondary border border-main/40 rounded-sm flex-1"}
                 />
                 {onRemove && (
@@ -42,8 +43,12 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({onEmojiSelect, onRemove
                     </Button>
                 )}
             </FerruccEmojiPicker.Header>
-            <FerruccEmojiPicker.Group>
-                <FerruccEmojiPicker.List containerHeight={320} hideStickyHeader/>
+            <FerruccEmojiPicker.Group className="-ml-1">
+                <ScrollArea thumbClassname={"bg-white/10"}>
+                    <div className={"min-h-26 max-h-70"}>
+                        <FerruccEmojiPicker.List containerHeight={11256} hideStickyHeader/>
+                    </div>
+                </ScrollArea>
             </FerruccEmojiPicker.Group>
         </FerruccEmojiPicker>
     )
