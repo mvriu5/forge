@@ -4,7 +4,7 @@ import { headers } from "next/headers"
 
 const authRoutes = ["/signin", "/signup"]
 const passwordRoutes = ["/reset", "/forgot"]
-const landingRoutes = ["/", "/privacy", "/terms", "/imprint", "/sitemap.xml"]
+const landingRoutes = ["/", "/privacy", "/terms", "/imprint", "/sitemap.xml", "/robots.txt"]
 
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl
