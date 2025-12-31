@@ -151,7 +151,7 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
                 <div className={"flex"}>
                     <ToggleGroup type="single" className={"border-0 bg-transparent px-0"} value={tagValue} onValueChange={(tag) => setTagValue(tag)}>
                         {widgetCategories.map(category => (
-                            <ToggleGroupItem key={category} value={category} className={"text-sm px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
+                            <ToggleGroupItem key={category} value={category} className={"px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
                                 {capitalizeFirstLetter((category))}
                             </ToggleGroupItem>
                         ))}

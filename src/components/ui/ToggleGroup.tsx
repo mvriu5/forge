@@ -8,7 +8,7 @@ import {ComponentPropsWithRef} from "react"
 const ToggleGroup = ({ className, children, ...props }: ComponentPropsWithRef<typeof ToggleGroupPrimitive.Root>) => {
     return (
         <ToggleGroupPrimitive.Root
-            className={cn("h-8 flex items-center justify-center gap-2 bg-secondary rounded-md p-1 border border-main text-xs sm:text-base", className)}
+            className={cn("h-8 flex items-center justify-center gap-2 bg-secondary rounded-md p-1 border border-main text-xs sm:text-sm", className)}
             {...props}
         >
             {children}
@@ -20,7 +20,7 @@ const ToggleGroupItem = ({ className, children, ...props }: ComponentPropsWithRe
     return (
         <ToggleGroupPrimitive.Item
             className={cn(
-                "px-2 rounded-md data-[state=on]:bg-primary data-[state=on]:text-primary text-xs sm:text-base",
+                "px-2 rounded-md data-[state=on]:bg-primary data-[state=on]:text-primary text-xs sm:text-sm",
                 className
             )}
             {...props}

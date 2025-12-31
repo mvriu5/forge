@@ -6,16 +6,17 @@ import { useSettings } from "@/hooks/data/useSettings"
 import SlashSuggestion, { filterCommandItems } from "@/lib/extensions"
 import { formatDate, getUpdateTimeLabel } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
-import type { NodeViewRenderer, Editor as TipTapEditor } from "@tiptap/core"
-import Link from "@tiptap/extension-link"
+import type { Editor as TipTapEditor } from "@tiptap/core"
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight"
+import Link from "@tiptap/extension-link"
 import Placeholder from "@tiptap/extension-placeholder"
 import TaskItem from "@tiptap/extension-task-item"
 import TaskList from "@tiptap/extension-task-list"
 import { BubbleMenu, EditorContent, ReactNodeViewRenderer, useEditor } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
+import { lowlight } from "lowlight/lib/common.js"
 import { File, Trash } from "lucide-react"
-import { Activity, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Activity, useCallback, useEffect, useRef, useState } from "react"
 import { Button } from "../ui/Button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/Dialog"
 import { EmojiPicker } from "../ui/EmojiPicker"
@@ -23,9 +24,8 @@ import { Input } from "../ui/Input"
 import { ScrollArea } from "../ui/ScrollArea"
 import { Skeleton } from "../ui/Skeleton"
 import { Note } from "../widgets/EditorWidget"
-import { TextButtons } from "../widgets/components/TextButtons"
-import {lowlight} from "lowlight/lib/common.js"
 import Codeblock from "../widgets/components/Codeblock"
+import { TextButtons } from "../widgets/components/TextButtons"
 
 interface NoteDialogProps {
     open: boolean
@@ -74,14 +74,6 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
         }
     }, [])
 
-    const codeBlockNodeViewRef = useRef<NodeViewRenderer | null>(null)
-
-    const getCodeBlockNodeViewRenderer = useCallback(() => {
-        if (codeBlockNodeViewRef.current) return codeBlockNodeViewRef.current
-        codeBlockNodeViewRef.current = ReactNodeViewRenderer(Codeblock)
-        return codeBlockNodeViewRef.current
-    }, [])
-
     const extensions = [
         SlashSuggestion.configure({
             suggestion: {
@@ -90,7 +82,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
         }),
         CodeBlockLowlight.extend({
             addNodeView() {
-                return getCodeBlockNodeViewRenderer()
+                return ReactNodeViewRenderer(Codeblock)
             },
         }).configure({ lowlight }),
         StarterKit.configure({
@@ -157,13 +149,14 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
     })
 
     useEffect(() => {
-            if (!editor || !open) return
+        if (!editor || !open) return
 
-            const nextContent = note.content ?? ""
-            const currentContent = editor.getJSON()
-            const isSame = JSON.stringify(currentContent) === JSON.stringify(nextContent)
-            if (!isSame) editor.commands.setContent(nextContent, false)
-        }, [editor, note.content, note.id, open])
+        const nextContent = note.content ?? ""
+        const currentContent = editor.getJSON()
+
+        const isSame = JSON.stringify(currentContent) === JSON.stringify(nextContent)
+        if (!isSame) editor.commands.setContent(nextContent, false)
+    }, [editor, note.content, note.id, open])
 
     const didAutoFocus = useRef(false)
     const initialHasTitle = useRef(false)

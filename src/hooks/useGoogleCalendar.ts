@@ -22,6 +22,8 @@ export interface CalendarEvent {
     summary: string
     start: { dateTime?: string; date?: string }
     end: { dateTime?: string; date?: string }
+    recurrence?: string[]
+    recurringEventId?: string
     location?: string
     hangoutLink?: string
     calendarId?: string
@@ -56,6 +58,35 @@ async function fetchCalendarList(accessToken: string | null): Promise<GoogleCale
     return data.items ?? []
 }
 
+async function fetchEventInstances(accessToken: string | null, calendarId: string, eventId: string, timeMin: string): Promise<CalendarEvent[]> {
+    if (!accessToken) return []
+
+    let events: CalendarEvent[] = []
+    let nextPageToken: string | undefined
+
+    do {
+        const params = new URLSearchParams({
+            maxResults: "1000",
+            timeMin,
+        })
+
+        if (nextPageToken) params.set("pageToken", nextPageToken)
+
+        const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}/instances?${params}`, {
+            headers: {Authorization: `Bearer ${accessToken}`},
+        })
+
+        if (!res.ok) return []
+
+        const data: EventsListResponse = await res.json()
+        events = [...events, ...(data.items ?? [])]
+        if (events.length > 1000) events = events.slice(-1000)
+        nextPageToken = data.nextPageToken
+    } while (nextPageToken)
+
+    return events
+}
+
 async function fetchCalendarEvents(accessToken: string | null, calendarId: string): Promise<CalendarEvent[]> {
     if (!accessToken) return []
 
@@ -83,7 +114,12 @@ async function fetchCalendarEvents(accessToken: string | null, calendarId: strin
         nextPageToken = data.nextPageToken
     } while (nextPageToken)
 
-    return events
+    const recurringEvents = events.filter((event) => (event.recurrence ?? []).length > 0)
+    const nonRecurringEvents = events.filter((event) => (event.recurrence ?? []).length === 0)
+
+    const instanceResults = await Promise.all(recurringEvents.map((event) => fetchEventInstances(accessToken, calendarId, event.id, new Date().toISOString())))
+
+    return [...nonRecurringEvents, ...instanceResults.flat()]
 }
 
 async function createCalendarEvent(accessToken: string | null, calendarId: string, eventData: Partial<CalendarEvent>): Promise<CalendarEvent> {
@@ -171,7 +207,7 @@ export const useGoogleCalendar = () => {
         setAccessToken(googleIntegration.accessToken)
     }, [googleIntegration, refetchIntegrations, userId])
 
-    const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError} = useQuery<GoogleCalendar[], Error>(queryOptions({
+    const {data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError, isFetched: calendarsFetched} = useQuery<GoogleCalendar[], Error>(queryOptions({
         queryKey: GOOGLE_CALENDAR_QUERY_KEY(accessToken),
         queryFn: () => fetchCalendarList(accessToken),
         enabled: Boolean(accessToken)
@@ -183,7 +219,7 @@ export const useGoogleCalendar = () => {
         }
     }, [calendars, selectedCalendars])
 
-    const {data: events, isLoading: eventsLoading, isFetching: eventsFetching, isError: eventsError} = useQuery<CalendarEvent[], Error>(queryOptions({
+    const {data: events, isLoading: eventsLoading, isFetching: eventsFetching, isError: eventsError, isFetched: eventsFetched} = useQuery<CalendarEvent[], Error>(queryOptions({
         queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars),
         queryFn: async (): Promise<CalendarEvent[]> => {
             if (!accessToken || !calendars) return []
@@ -245,6 +281,7 @@ export const useGoogleCalendar = () => {
         isLoading: calendarLoading || eventsLoading,
         isFetching: calendarFetching || eventsFetching,
         isError: calendarError || eventsError,
+        isReady: calendarsFetched && (calendars?.length ? eventsFetched : true),
         createEvent: createEventMutation.mutateAsync,
         refetch: manualRefresh,
         googleIntegration,

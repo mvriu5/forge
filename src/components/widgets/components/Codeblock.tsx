@@ -1,58 +1,30 @@
+"use client"
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select"
-import { NodeViewContent, NodeViewWrapper } from "@tiptap/react"
-import { JSX, useCallback, useEffect, useRef, useState } from "react"
+import { NodeViewContent, NodeViewWrapper, ReactNodeViewProps } from "@tiptap/react"
+import { useCallback, useEffect, useState } from "react"
 
-interface CodeblockNode {
-    attrs: {
-        language?: string | null
-        [key: string]: any
-    }
-    [key: string]: any
-}
-
-interface ExtensionWithLowlight {
-    options: {
-        lowlight: {
-            listLanguages: () => string[]
-        }
-        [key: string]: any
-    }
-    [key: string]: any
-}
-
-interface CodeblockProps {
-    node: CodeblockNode
+interface CodeblockProps extends ReactNodeViewProps {
     updateAttributes: (attrs: { language?: string | null } & Record<string, any>) => void
-    extension: ExtensionWithLowlight
     [key: string]: any
 }
 
-export default function Codeblock({
-    node: {
-        attrs: { language: defaultLanguage },
-    },
-    updateAttributes,
-    extension,
-}: CodeblockProps) {
-
-    const [selectedLanguage, setSelectedLanguage] = useState(defaultLanguage ?? "null")
-
-    const languages = extension?.options?.lowlight?.listLanguages
-        ? extension.options.lowlight.listLanguages()
-        : []
+export default function Codeblock({ node, updateAttributes, extension }: CodeblockProps) {
+    const [selectedLanguage, setSelectedLanguage] = useState(node.attrs.language ?? "null")
+    const languages = extension?.options?.lowlight?.listLanguages ? extension.options.lowlight.listLanguages() : []
 
     useEffect(() => {
-        setSelectedLanguage(defaultLanguage ?? "null")
-    }, [defaultLanguage])
+        setSelectedLanguage(node.attrs.language ?? "null")
+    }, [node.attrs.language])
 
     const handleValueChange = useCallback((value: string) => {
         setSelectedLanguage(value)
 
         const nextLanguage = value === "null" ? null : value
-        if (nextLanguage === defaultLanguage) return
+        if (nextLanguage === node.attrs.language) return
 
          updateAttributes({ language: nextLanguage })
-    }, [defaultLanguage, updateAttributes])
+    }, [node.attrs.language, updateAttributes])
 
     return (
         <NodeViewWrapper className="relative code-block border border-main/40 rounded-md bg-secondary">
@@ -62,7 +34,7 @@ export default function Codeblock({
                 </SelectTrigger>
                 <SelectContent className={"w-32 border-main/40"} align={"end"}>
                     <SelectItem value={"null"} className="h-6">auto</SelectItem>
-                    {languages.map((lang) => (
+                    {languages.map((lang: any) => (
                         <SelectItem key={lang} value={lang} className="h-6">
                             {lang}
                         </SelectItem>

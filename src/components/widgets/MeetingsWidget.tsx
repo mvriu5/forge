@@ -22,7 +22,7 @@ const LazyCreateMeetingDialog = React.lazy(() => import('../dialogs/CreateMeetin
 const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
     const {settings} = useSettings(widget.userId)
     const {sendMeetingNotification} = useNotifications(widget.userId)
-    const {calendars, events, isLoading, isFetching, isError, refetch, getColor, selectedCalendars, setSelectedCalendars} = useGoogleCalendar()
+    const {calendars, events, isLoading, isFetching, isReady, refetch, getColor, selectedCalendars, setSelectedCalendars} = useGoogleCalendar()
 
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -70,7 +70,10 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
                 if (!event.start.dateTime || !startTimeString) return
 
                 const startTime = new Date(startTimeString).getTime()
-                if (Number.isNaN(startTime) || startTime <= now) return
+                if (Number.isNaN(startTime)) return
+
+                const reminderGraceMs = 60_000
+                if (now > startTime + reminderGraceMs) return
 
                 const dueReminders = reminderMinutes
                     .map((minutes: number) => ({
@@ -78,7 +81,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
                         key: `meeting-${event.id}-${minutes}`,
                         reminderTime: startTime - minutes * 60_000,
                     }))
-                    .filter(({reminderTime}: {reminderTime: any}) => reminderTime <= now)
+                    .filter(({reminderTime}: {reminderTime: any}) => reminderTime <= now && now <= reminderTime + reminderGraceMs)
 
                 if (!dueReminders.length) return
 
@@ -141,8 +144,8 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
     }, [sortedEvents, getColor, settings?.config.hourFormat])
 
     const hasNoEvents = useMemo(() => {
-        return calendars && Array.isArray(events) && events.length === 0 && !isLoading
-    }, [calendars, events, isLoading])
+        return isReady && Array.isArray(events) && events.length === 0 && !isLoading
+    }, [calendars, events, isLoading, isReady])
 
     return (
         <>

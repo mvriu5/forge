@@ -260,6 +260,7 @@ export function useWidgets(userId: string | undefined) {
     return {
         widgets,
         isLoading: widgetsQuery.isLoading,
+        isReady: widgetsQuery.isFetched,
         refetchWidgets: widgetsQuery.refetch,
         addWidget: useCallback((widget: WidgetInsert) => addWidgetMutation.mutateAsync(widget), [addWidgetMutation]),
         updateWidget: useCallback((widget: Widget) => refreshWidgetMutation.mutateAsync(widget), [refreshWidgetMutation]),

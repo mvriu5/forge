@@ -22,7 +22,7 @@ function DashboardContent() {
     const {userId, isLoading: sessionLoading} = useSession()
     const {settings, isLoading: settingsLoading, updateSettings} = useSettings(userId)
     const {dashboards, currentDashboard, isLoading: dashboardsLoading, addDashboard, addDashboardStatus,setSelectedDashboard} = useDashboards(userId, settings)
-    const {widgets, isLoading: widgetsLoading, removeWidget, saveWidgetsLayout, updateWidget, updateWidgetPosition, setWidgets} = useWidgets(userId)
+    const {widgets, isLoading: widgetsLoading, isReady: widgetsReady, removeWidget, saveWidgetsLayout, updateWidget, updateWidgetPosition, setWidgets} = useWidgets(userId)
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
     const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
@@ -151,7 +151,7 @@ function DashboardContent() {
             ) :(
                 <div className="h-12 w-full border-b border-main/40" />
             )}
-            {visibleWidgets.length === 0 && currentDashboard && !editMode ? (
+            {visibleWidgets.length === 0 && currentDashboard && !editMode && widgetsReady ? (
                 <DashboardEmpty/>
             ) : (
                 <DashboardGrid
