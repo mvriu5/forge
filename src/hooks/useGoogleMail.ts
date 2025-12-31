@@ -170,7 +170,7 @@ export const useGoogleMail = (pageSize = 50) => {
         setAccessToken(googleIntegration.accessToken)
     }, [googleIntegration, refetchIntegrations, userId])
 
-    const { data: labels, isLoading: labelsLoading, isError: labelsError } = useQuery<GmailLabel[], Error>(queryOptions({
+    const { data: labels, isLoading: labelsLoading, isError: labelsError, isFetched: labelsFetched } = useQuery<GmailLabel[], Error>(queryOptions({
         queryKey: GMAIL_LABELS_QUERY_KEY(accessToken),
         queryFn: () => fetchGmailLabels(accessToken),
         enabled: Boolean(accessToken)
@@ -255,6 +255,7 @@ export const useGoogleMail = (pageSize = 50) => {
         isLoading: (labelsLoading || messagesQuery.isLoading) && messages.length === 0,
         isFetchingMore: messagesQuery.isFetchingNextPage,
         isError: labelsError || messagesQuery.isError,
+        isReady: messagesQuery.isFetched && labelsFetched,
         refetch: refresh,
         googleIntegration,
         selectedLabels,

@@ -186,7 +186,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({widget}) => {
                     <RefreshCw size={16} className="group-data-[loading=true]:animate-spin" />
                 </Button>
             </WidgetHeader>
-            {isLoading ? (
+            {!isReady ? (
                 <WidgetContent scroll>
                     <div className="flex flex-col justify-between gap-4 pt-2">
                         <Skeleton className={"w-1/2 h-6 px-2"} />

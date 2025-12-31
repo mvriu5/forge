@@ -13,13 +13,14 @@ import { Spinner } from "../ui/Spinner"
 import { useTooltip } from "../ui/TooltipProvider"
 import { WidgetContent } from "./base/WidgetContent"
 import { WidgetHeader } from "./base/WidgetHeader"
+import { WidgetEmpty } from "./base/WidgetEmpty"
 
 const LazyInboxDialog = React.lazy(() => import("../../components/dialogs/InboxDialog").then(mod => ({ default: mod.InboxDialog })))
 
 const InboxWidget: React.FC<WidgetProps> = ({widget}) => {
     const {settings} = useSettings(widget.userId)
     const {sendMailNotification} = useNotifications(widget.userId)
-    const {labels, messages, isFetchingMore, isLoading, refetch, selectedLabels, setSelectedLabels, hasMore, loadMore, filterLoading} = useGoogleMail()
+    const {labels, messages, isFetchingMore, isLoading, isReady, refetch, selectedLabels, setSelectedLabels, hasMore, loadMore, filterLoading} = useGoogleMail()
 
     const [openMailId, setOpenMailId] = useState<string | null>(null)
     const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -100,6 +101,10 @@ const InboxWidget: React.FC<WidgetProps> = ({widget}) => {
         return () => observer.disconnect()
     }, [hasMore, isFetchingMore, loadMore])
 
+    const hasNoMails = useMemo(() => {
+        return isReady && Array.isArray(messages) && messages.length === 0 && !isLoading
+    }, [messages, isLoading, isReady])
+
     return (
         <>
             <WidgetHeader title={"Inbox"}>
@@ -136,7 +141,7 @@ const InboxWidget: React.FC<WidgetProps> = ({widget}) => {
                 </Button>
             </WidgetHeader>
             <WidgetContent scroll>
-                {(messages.length === 0 && (isLoading || isFetchingMore || filterLoading || isRefreshing)) ? (
+                {!isReady ? (
                     <div className="flex flex-col gap-2">
                         <Skeleton className={"h-17 w-full px-2"} />
                         <Skeleton className={"h-17 w-full px-2"} />
@@ -145,6 +150,8 @@ const InboxWidget: React.FC<WidgetProps> = ({widget}) => {
                         <Skeleton className={"h-17 w-full px-2"} />
                         <Skeleton className={"h-17 w-full px-2"} />
                     </div>
+                ) : hasNoMails ? (
+                    <WidgetEmpty message={"No upcoming meetings"} />
                 ) : (
                     <div className={"flex flex-col gap-2"}>
                         {messages.map((m, index) => (
