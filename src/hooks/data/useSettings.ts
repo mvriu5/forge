@@ -1,6 +1,5 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Settings} from "@/database"
-import posthog from "posthog-js"
 import { queryOptions } from "@/lib/queryOptions"
 
 const SETTINGS_QUERY_KEY = (userId: string | undefined) => ["settings", userId] as const
@@ -66,10 +65,7 @@ export function useSettings(userId: string | undefined) {
         mutationFn: updateSettingsRequest,
         onSuccess: (updatedSettings) => {
             queryClient.setQueryData(SETTINGS_QUERY_KEY(userId), updatedSettings)
-        },
-        onError: (error, updatedSettings) => posthog.captureException(error, {
-            hook: "useSettings.updateSettings", userId, updatedSettings
-        })
+        }
     })
 
     return {

@@ -1,4 +1,3 @@
-import PostHogClient from "@/app/posthog"
 import { getNotionAccount } from "@/database"
 import {
     NOTION_VERSION,
@@ -6,9 +5,6 @@ import {
     getTitleFromProperties
 } from "@/lib/notion"
 import { NextResponse } from "next/server"
-const posthog = PostHogClient()
-
-const routePath = "/api/notion/pages/[pageId]"
 
 async function getAccessToken(userId: string) {
     const account = (await getNotionAccount(userId))[0]
@@ -80,7 +76,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ pageId: 
         return NextResponse.json(page, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, pageId, { route: routePath, method: "GET", userId })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

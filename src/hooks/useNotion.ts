@@ -7,7 +7,6 @@ import {authClient} from "@/lib/auth-client"
 import {blocksToJSONContent, plainTextToJSONContent} from "@/lib/notion"
 import { queryOptions } from "@/lib/queryOptions"
 import {useMutation, useQuery} from "@tanstack/react-query"
-import posthog from "posthog-js"
 import {useEffect, useMemo, useRef, useState} from "react"
 
 export interface NotionPage {
@@ -115,9 +114,8 @@ export const useNotion = () => {
 
     const fetchPageContentMutation = useMutation({
         mutationFn: (pageId: string) => fetchPageContent(userId ?? null, pageId),
-        onError:  (error, pageId) => {
+        onError: () => {
             toast.error("Unable to load the Notion page")
-            posthog.captureException(error, { hook: "useNotion.fetchPageContentMutation", userId, pageId })
         }
     })
 

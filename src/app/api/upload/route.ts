@@ -1,10 +1,6 @@
 import {NextResponse} from "next/server"
 import {put, del} from "@vercel/blob"
-import PostHogClient from "@/app/posthog"
 import { requireServerUserId } from "@/lib/serverAuth"
-const posthog = PostHogClient()
-
-const routePath = "/api/upload"
 
 export async function POST(request: Request) {
     let userId: string | undefined = undefined
@@ -21,13 +17,11 @@ export async function POST(request: Request) {
         try {
             const blob = await put(filename, request.body, { access: 'public' })
             return NextResponse.json(blob, { status: 200 })
-        } catch (error) {
-            posthog.captureException(error, userId ?? undefined,  { route: routePath, method: "POST" })
+        } catch {
             return NextResponse.json({ error: "Uploading failed" }, { status: 500 })
         }
     } catch (authError) {
         if ((authError as any)?.status === 401) return authError as any
-        posthog.captureException(authError, userId ?? undefined, { route: routePath, method: "POST" })
         return NextResponse.json({ error: "Unauthorized or Internal Server Error" }, { status: 500 })
     }
 }
@@ -47,13 +41,11 @@ export async function DELETE(request: Request) {
         try {
             await del(filename)
             return NextResponse.json({ status: 200 })
-        } catch (error) {
-            posthog.captureException(error, userId, { route: routePath, method: "DELETE" })
+        } catch {
             return NextResponse.json({ error: "Deletion failed" }, { status: 500 })
         }
     } catch (authError) {
         if ((authError as any)?.status === 401) return authError as any
-        posthog.captureException(authError, userId, { route: routePath, method: "DELETE" })
         return NextResponse.json({ error: "Unauthorized or Internal Server Error" }, { status: 500 })
     }
 }

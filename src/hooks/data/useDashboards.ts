@@ -1,7 +1,6 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Dashboard, DashboardInsert, Settings} from "@/database"
 import {useMemo, useState} from "react"
-import posthog from "posthog-js"
 import { queryOptions } from "@/lib/queryOptions"
 
 const DASHBOARD_QUERY_KEY = (userId: string | undefined) => ["dashboards", userId] as const
@@ -70,10 +69,7 @@ export function useDashboards(userId: string | undefined, settings: Settings | n
                 if (!previous) return [dashboard]
                 return [...previous, dashboard]
             })
-        },
-        onError: (error, input) => posthog.captureException(error, {
-            hook: "useDashboards.addDashboard", userId, input
-        })
+        }
     })
 
     const refreshDashboardMutation = useMutation({
@@ -83,10 +79,7 @@ export function useDashboards(userId: string | undefined, settings: Settings | n
                 if (!previous) return previous
                 return previous.map((dashboard) => dashboard.id === updatedDashboard.id ? updatedDashboard : dashboard)
             })
-        },
-        onError: (error, updatedDashboard) => posthog.captureException(error, {
-            hook: "useDashboards.updateDashboard", userId, updatedDashboard
-        })
+        }
     })
 
     const removeDashboardMutation = useMutation({
@@ -96,10 +89,7 @@ export function useDashboards(userId: string | undefined, settings: Settings | n
                 if (!previous) return previous
                 return previous.filter((dashboard) => dashboard.id !== dashboardId)
             })
-        },
-        onError: (error, dashboardId) => posthog.captureException(error, {
-            hook: "useDashboards.deleteDashboard", userId, dashboardId
-        })
+        }
     })
 
     const [localSelectedDashboardId, setLocalSelectedDashboardId] = useState<string | null>(null)

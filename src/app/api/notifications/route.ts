@@ -1,11 +1,8 @@
 import {redis} from "@/lib/redis"
 import {Notification} from "@/database"
 import {NextResponse} from "next/server"
-import posthog from "posthog-js"
 import {randomUUID} from "node:crypto"
 import { requireServerUserId } from "@/lib/serverAuth"
-
-const routePath = "/api/notifications"
 
 export async function GET(req: Request) {
     let userId: string | undefined = undefined
@@ -19,7 +16,6 @@ export async function GET(req: Request) {
         return NextResponse.json(items.reverse(), { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, { route: routePath, method: "GET", userId })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
@@ -55,7 +51,6 @@ export async function POST(req: Request) {
         return NextResponse.json(notification, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, { route: routePath, method: "POST", userId })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
@@ -73,7 +68,6 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ success: true }, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, { route: routePath, method: "DELETE", userId })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

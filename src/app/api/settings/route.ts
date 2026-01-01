@@ -1,10 +1,6 @@
 import {NextResponse} from "next/server"
 import {createSettings, getSettingsFromUser, updateSettings, getSettingsFromId} from "@/database"
-import PostHogClient from "@/app/posthog"
 import { requireServerUserId } from "@/lib/serverAuth"
-const posthog = PostHogClient()
-
-const routePath = "/api/settings"
 
 export async function POST(req: Request) {
     const auth = await requireServerUserId(req)
@@ -24,7 +20,6 @@ export async function POST(req: Request) {
         return NextResponse.json(settings, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, userId, { route: routePath, method: "POST" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
@@ -38,7 +33,6 @@ export async function GET(req: Request) {
         return NextResponse.json(settings, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, userId, { route: routePath, method: "GET" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
@@ -69,7 +63,6 @@ export async function PUT(req: Request) {
         return NextResponse.json(updatedSettings, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, userId ?? id, { route: routePath, method: "PUT" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
