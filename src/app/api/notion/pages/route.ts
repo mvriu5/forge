@@ -1,10 +1,6 @@
 import {NextResponse} from "next/server"
 import {getNotionAccount} from "@/database"
-import PostHogClient from "@/app/posthog"
-const posthog = PostHogClient()
 import {NOTION_VERSION, getTitleFromProperties} from "@/lib/notion"
-
-const routePath = "/api/notion/pages"
 
 async function getAccessToken(userId: string) {
     const account = (await getNotionAccount(userId))[0]
@@ -114,15 +110,14 @@ export async function GET(req: Request) {
                         queue.push(child)
                     }
                 }
-            } catch (error) {
-                posthog.captureException(error, current.id, { route: routePath, method: "GET", userId })
+            } catch {
+                // Ignore child page fetch failures to continue loading remaining pages.
             }
         }
 
         return NextResponse.json({ pages: allPages }, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, userId, { route: routePath, method: "GET" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

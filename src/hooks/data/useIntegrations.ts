@@ -2,7 +2,6 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Account} from "@/database"
 import {authClient} from "@/lib/auth-client"
 import {toast} from "@/components/ui/Toast"
-import posthog from "posthog-js"
 import { queryOptions } from "@/lib/queryOptions"
 
 interface Integration {
@@ -94,11 +93,8 @@ export function useIntegrations(userId: string | undefined) {
                 return previous.filter((integration) => integration.provider !== provider)
             })
         },
-        onError: (error, provider) => {
+        onError: () => {
             toast.error("Could not disconnect integration.")
-            posthog.captureException(error, {
-                hook: "useIntegrations.deleteIntegration", userId, provider
-            })
         }
     })
 
@@ -109,10 +105,7 @@ export function useIntegrations(userId: string | undefined) {
                 if (!previous) return [updatedIntegration]
                 return previous.map((integration) => integration.provider === updatedIntegration.provider ? updatedIntegration : integration)
             })
-        },
-        onError: (error, updatedIntegration) => posthog.captureException(error, {
-            hook: "useIntegrations.updateIntegration", userId, updatedIntegration
-        })
+        }
     })
 
     const handleIntegrate = async (provider: string, callback = true) => {
@@ -125,7 +118,6 @@ export function useIntegrations(userId: string | undefined) {
             },
             onError: (ctx) => {
                 toast.error("Something went wrong.")
-                posthog.captureException(ctx.error, {method: "handleIntegrate", userId, provider})
             }
         })
     }

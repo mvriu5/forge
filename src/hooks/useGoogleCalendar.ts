@@ -4,7 +4,6 @@ import {useSession} from "@/hooks/data/useSession"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {authClient} from "@/lib/auth-client"
 import { queryOptions } from "@/lib/queryOptions"
-import posthog from "posthog-js"
 
 const GOOGLE_CALENDAR_QUERY_KEY = (accessToken: string | null) => ["googleCalendarList", accessToken] as const
 const GOOGLE_EVENT_QUERY_KEY = (accessToken: string | null, calendars: string[]) => ["googleCalendarEvents", accessToken, calendars] as const
@@ -253,10 +252,7 @@ export const useGoogleCalendar = () => {
             createCalendarEvent(accessToken, variables.calendarId, variables.eventData),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars) })
-        },
-        onError: (error, cal) => posthog.captureException(error, {
-            hook: "useGoogleCalendar.createEventMutation", userId, cal
-        })
+        }
     })
 
     const manualRefresh = useCallback(async () => {

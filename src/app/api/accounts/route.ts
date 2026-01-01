@@ -1,10 +1,6 @@
 import {NextResponse} from "next/server"
 import {Account, deleteAccount, getGithubAccount, getGoogleAccount, getNotionAccount, updateAccount} from "@/database"
-import PostHogClient from "@/app/posthog"
 import { requireServerUserId } from "@/lib/serverAuth"
-const posthog = PostHogClient()
-
-const routePath = "/api/accounts"
 
 export async function GET(req: Request) {
     let userId: string | undefined = undefined
@@ -21,7 +17,6 @@ export async function GET(req: Request) {
         return NextResponse.json(accounts, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, userId, { route: routePath, method: "GET" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
@@ -44,7 +39,6 @@ export async function DELETE(req: Request) {
         return NextResponse.json(deletedAccount, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, userId, { route: routePath, method: "DELETE" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
@@ -68,7 +62,6 @@ export async function PUT(req: Request) {
         return NextResponse.json(updatedAccount, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, userId, { route: routePath, method: "PUT" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

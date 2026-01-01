@@ -1,6 +1,5 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Widget, WidgetInsert} from "@/database"
-import posthog from "posthog-js"
 import {useCallback, useMemo, useRef} from "react"
 import { queryOptions } from "@/lib/queryOptions"
 
@@ -178,10 +177,7 @@ export function useWidgets(userId: string | undefined) {
                 if (!previous) return [widget]
                 return [...previous, widget]
             })
-        },
-        onError: (error, widget) => posthog.captureException(error, {
-            hook: "useWidgets.addWidget", userId, widget
-        })
+        }
     })
 
     const refreshWidgetMutation = useMutation({
@@ -191,10 +187,7 @@ export function useWidgets(userId: string | undefined) {
                 if (!previous) return previous
                 return previous.map((widget) => widget.id === updatedWidget.id ? updatedWidget : widget)
             })
-        },
-        onError: (error, updatedWidget) => posthog.captureException(error, {
-            hook: "useWidgets.updateWidget", userId, updatedWidget
-        })
+        }
     })
 
     const removeWidgetMutation = useMutation({
@@ -204,10 +197,7 @@ export function useWidgets(userId: string | undefined) {
                 if (!previous) return previous
                 return previous.filter((widget) => widget.id !== widgetId)
             })
-        },
-        onError: (error, widgetId) => posthog.captureException(error, {
-            hook: "useWidgets.deleteWidget", userId, widgetId
-        })
+        }
     })
 
     const saveWidgetsLayoutMutation = useMutation({
@@ -227,10 +217,7 @@ export function useWidgets(userId: string | undefined) {
                     }
                 })
             )
-        },
-        onError: (error) => posthog.captureException(error, {
-            hook: "useWidgets.saveWidgetsLayout", userId
-        })
+        }
     })
 
     const updateWidgetPosition = useCallback((id: string, x: number, y: number) => {

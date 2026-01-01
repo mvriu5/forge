@@ -1,10 +1,6 @@
 import {NextResponse} from "next/server"
 import {getUserFromId} from "@/database"
-import PostHogClient from "@/app/posthog"
 import { requireServerUserId } from "@/lib/serverAuth"
-const posthog = PostHogClient()
-
-const routePath = "/api/users"
 
 export async function GET(req: Request) {
     let id: string | undefined = undefined
@@ -22,7 +18,6 @@ export async function GET(req: Request) {
         return NextResponse.json(users, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, id, { route: routePath, method: "GET" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

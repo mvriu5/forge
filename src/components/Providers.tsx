@@ -4,7 +4,6 @@ import {ReactNode, useEffect, useState} from "react"
 import {TooltipProvider} from "@/components/ui/TooltipProvider"
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
 import {Toaster} from "sonner"
-import { PostHogInit } from "./PosthogInit"
 import { ThemeProvider } from "next-themes"
 
 const queryClient = new QueryClient()
@@ -24,7 +23,6 @@ function Providers({children}: {children: ReactNode}) {
                 disableTransitionOnChange
             >
                 <TooltipProvider>
-                    <PostHogInit/>
                     {mounted ? <Toaster theme="dark"/> : null}
                     {children}
                 </TooltipProvider>

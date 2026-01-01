@@ -1,4 +1,3 @@
-import PostHogClient from "@/app/posthog"
 import {
     createDashboard,
     deleteDashboard,
@@ -8,9 +7,6 @@ import {
 } from "@/database"
 import { requireServerUserId } from "@/lib/serverAuth"
 import { NextResponse } from "next/server"
-const posthog = PostHogClient()
-
-const routePath = "/api/dashboards"
 
 export async function POST(req: Request) {
     let userId: string | undefined = undefined
@@ -32,7 +28,6 @@ export async function POST(req: Request) {
         return NextResponse.json(newDashboard, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, userId, { route: routePath, method: "POST" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
@@ -61,7 +56,6 @@ export async function GET(req: Request) {
         return NextResponse.json(dashboards, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, id, { route: routePath, method: "GET", userId })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
@@ -90,7 +84,6 @@ export async function PUT(req: Request) {
         return NextResponse.json(updatedDashboard, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, id, { route: routePath, method: "PUT" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
@@ -119,7 +112,6 @@ export async function DELETE(req: Request) {
         return NextResponse.json(deletedDashboard, { status: 200 })
     } catch (error) {
         if (error instanceof NextResponse) throw error
-        posthog.captureException(error, id, { route: routePath, method: "DELETE" })
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
