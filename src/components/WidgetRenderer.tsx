@@ -86,7 +86,6 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode
         )
     }
 
-    // Missing integration
     if (missingIntegration) {
         return (
             <WidgetContainer

@@ -6,7 +6,7 @@ import { useSettings } from "@/hooks/data/useSettings"
 import SlashSuggestion, { filterCommandItems } from "@/lib/extensions"
 import { formatDate, getUpdateTimeLabel } from "@/lib/utils"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
-import type { Editor as TipTapEditor } from "@tiptap/core"
+import type { JSONContent, Editor as TipTapEditor } from "@tiptap/core"
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight"
 import Link from "@tiptap/extension-link"
 import Placeholder from "@tiptap/extension-placeholder"
@@ -34,6 +34,30 @@ interface NoteDialogProps {
     onSave: (note: Note) => void
     onDelete: (id: string) => void
     isPending: boolean
+}
+
+const EMPTY_DOC: JSONContent = {
+  type: "doc",
+  content: [{ type: "paragraph" }],
+}
+
+function normalizeTipTapContent(value: unknown): JSONContent | string {
+    if (value == null) return EMPTY_DOC
+
+    if (typeof value === "string") return value.trim().length ? value : EMPTY_DOC
+
+    if (typeof value === "object") {
+        const v = value as any
+
+        if (Object.keys(v).length === 0) return EMPTY_DOC
+
+        if (v.type === "doc") return v
+
+        if (typeof v.type === "string") {
+            return { type: "doc", content: [v] }
+        }
+    }
+    return EMPTY_DOC
 }
 
 function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: NoteDialogProps) {
@@ -86,6 +110,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
             },
         }).configure({ lowlight }),
         StarterKit.configure({
+            codeBlock: false,
             bulletList: { HTMLAttributes: { class: "list-disc list-outside leading-3 -mt-2" } },
             orderedList: { HTMLAttributes: { class: "list-decimal list-outside leading-3 -mt-2" } },
             listItem: { HTMLAttributes: { class: "leading-normal -mb-2" } },
@@ -142,7 +167,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
     const editor = useEditor({
         immediatelyRender: false,
         extensions: extensions,
-        content: note.content ?? "",
+        content: normalizeTipTapContent(note.content),
         editorProps: { attributes: { class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full min-h-full cursor-text p-2" } },
         onUpdate: ({ editor }) => handleSave(editor),
         onBlur: ({ editor }) => handleSave(editor)
@@ -151,11 +176,14 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
     useEffect(() => {
         if (!editor || !open) return
 
-        const nextContent = note.content ?? ""
-        const currentContent = editor.getJSON()
+        const next = normalizeTipTapContent(note.content)
 
-        const isSame = JSON.stringify(currentContent) === JSON.stringify(nextContent)
-        if (!isSame) editor.commands.setContent(nextContent, false)
+        const isSame =
+            typeof next === "string"
+                ? editor.getHTML() === next
+                : JSON.stringify(editor.getJSON()) === JSON.stringify(next)
+
+        if (!isSame) editor.commands.setContent(next, false)
     }, [editor, note.content, note.id, open])
 
     const didAutoFocus = useRef(false)
@@ -179,7 +207,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
 
     useEffect(() => {
         if (!editor) {
-            setSelectionRange(null)
+            setSelectionRange({ from: 0, to: 0 })
             return
         }
 
@@ -301,10 +329,8 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                             </div>
                         </>
                     )}
-                    <VisuallyHidden>
-                        <DialogTitle/>
-                        <DialogDescription/>
-                    </VisuallyHidden>
+                    <DialogTitle className="sr-only"/>
+                    <DialogDescription className={"sr-only"}/>
                     <DialogClose iconSize={16} className={"absolute top-2 right-2 p-1 rounded-md hover:bg-white/5"}/>
                 </DialogHeader>
 

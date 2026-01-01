@@ -35,7 +35,6 @@ function Hero() {
                         className={"rounded-md object-contain"}
                         sizes="100vw"
                         quality={75}
-                        priority
                     />
                 </div>
             </div>

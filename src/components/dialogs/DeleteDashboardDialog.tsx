@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/Button"
-import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/Dialog"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/Dialog"
 import { Spinner } from "@/components/ui/Spinner"
 import { toast } from "@/components/ui/Toast"
 import { useTooltip } from "@/components/ui/TooltipProvider"
@@ -66,6 +66,7 @@ function DeleteDashboardDialog({dashboard, onDelete, onAllDeleted}: DeleteDashbo
                     <DialogTitle className={"flex flex-col gap-2 text-lg"}>
                         Delete dashboard
                     </DialogTitle>
+                    <DialogDescription className={"sr-only"}/>
                     <DialogClose/>
                 </DialogHeader>
                 <div className={"w-full flex flex-col gap-1 justify-end"}>

@@ -9,23 +9,6 @@ const landingRoutes = ["/", "/privacy", "/terms", "/imprint", "/sitemap.xml", "/
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl
 
-    if (pathname.startsWith("/ph/")) {
-        const url = request.nextUrl.clone()
-        const hostname = pathname.startsWith("/ph/static/")
-            ? "eu-assets.i.posthog.com"
-            : "eu.i.posthog.com"
-
-        const requestHeaders = new Headers(request.headers)
-        requestHeaders.set("host", hostname)
-
-        url.protocol = "https"
-        url.hostname = hostname
-        url.port = "443"
-        url.pathname = url.pathname.replace(/^\/ph/, "")
-
-        return NextResponse.rewrite(url, { headers: requestHeaders })
-    }
-
     const session = await auth.api.getSession({
         headers: await headers()
     })

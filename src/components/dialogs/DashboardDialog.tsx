@@ -1,6 +1,6 @@
 "use client"
 
-import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
+import {Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
 import React, {useCallback, useEffect} from "react"
 import {z} from "zod"
 import {useForm} from "react-hook-form"
@@ -98,6 +98,7 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode = false, das
                     <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
                         Create a new dashboard
                     </DialogTitle>
+                    <DialogDescription className={"sr-only"}/>
                     {showOnClose && <DialogClose/>}
                 </DialogHeader>
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/Button"
-import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/Dialog"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/Dialog"
 import { ScrollArea } from "@/components/ui/ScrollArea"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { getHeaderValue, GmailLabel, GmailMessage } from "@/hooks/useGoogleMail"
@@ -218,8 +218,8 @@ function InboxDialog({ open, onOpenChange, message, labels = [], isPending = fal
                             )}
                         </div>
                     </div>
+                    <DialogDescription className={"sr-only"}/>
                     <DialogClose className={"p-1"} />
-
                 </DialogHeader>
 
                 <div className="flex-1 overflow-hidden rounded-md border border-main/40 mt-2">

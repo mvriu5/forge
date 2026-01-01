@@ -1,5 +1,4 @@
-import {SpinnerDotted} from "spinners-react"
-import React from "react"
+import { SpinnerDotted } from "spinners-react"
 
 export default function Loading() {
     return (

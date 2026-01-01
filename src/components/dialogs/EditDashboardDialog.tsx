@@ -1,6 +1,6 @@
 "use client"
 
-import {Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
+import {Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
 import {Button} from "@/components/ui/Button"
 import {Pencil} from "lucide-react"
 import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
@@ -14,6 +14,7 @@ import {useTooltip} from "@/components/ui/TooltipProvider"
 import {toast} from "@/components/ui/Toast"
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {useSession} from "@/hooks/data/useSession"
+import { VisuallyHidden } from "radix-ui"
 
 const formSchema = z.object({
     name: z.string()
@@ -75,6 +76,7 @@ function EditDashboardDialog({dashboard}: {dashboard: Dashboard}) {
                     <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
                         Edit dashboard
                     </DialogTitle>
+                    <DialogDescription className={"sr-only"}/>
                     <DialogClose/>
                 </DialogHeader>
                 <div className={"flex flex-col gap-4"}>

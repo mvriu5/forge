@@ -4,6 +4,7 @@ import { DashboardGrid } from "@/components/DashboardGrid"
 import { DashboardEmpty } from "@/components/empty/DashboardEmpty"
 import { Header } from "@/components/Header"
 import { Providers } from "@/components/Providers"
+import { Spinner } from "@/components/ui/Spinner"
 import { toast } from "@/components/ui/Toast"
 import type { Widget } from "@/database"
 import { useDashboards } from "@/hooks/data/useDashboards"
@@ -12,6 +13,7 @@ import { useSettings } from "@/hooks/data/useSettings"
 import { useWidgets } from "@/hooks/data/useWidgets"
 import { useResponsiveLayout } from "@/hooks/media/useResponsiveLayout"
 import { cn } from "@/lib/utils"
+import { Loader2 } from "lucide-react"
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useHotkeys } from "react-hotkeys-hook"
 
@@ -151,7 +153,12 @@ function DashboardContent() {
             ) :(
                 <div className="h-12 w-full border-b border-main/40" />
             )}
-            {visibleWidgets.length === 0 && currentDashboard && !editMode && widgetsReady ? (
+            {dataLoading && visibleWidgets.length === 0 ? (
+                <div className="flex items-center justify-center w-full h-screen text-tertiary gap-2">
+                    <Spinner size={24}/>
+                    <span className="text-sm font-medium">Widgets loading...</span>
+                </div>
+            ) : visibleWidgets.length === 0 && currentDashboard && !editMode && widgetsReady ? (
                 <DashboardEmpty/>
             ) : (
                 <DashboardGrid

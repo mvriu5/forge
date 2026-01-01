@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/Button"
 import { DatePicker } from "@/components/ui/Datepicker"
-import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/Dialog"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/Dialog"
 import { Form, FormDescription, FormField, FormInput, FormItem, FormLabel, FormMessage } from "@/components/ui/Form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select"
 import { Spinner } from "@/components/ui/Spinner"
@@ -128,6 +128,7 @@ function CreateMeetingDialog() {
                     <DialogTitle className={"flex flex-col gap-2 text-lg font-semibold"}>
                         New meeting
                     </DialogTitle>
+                    <DialogDescription className={"sr-only"}/>
                     <DialogClose/>
                 </DialogHeader>
                 <div className={"flex flex-col gap-4"}>

@@ -1,5 +1,7 @@
 export async function StarsCount() {
-    const data = await fetch("https://api.github.com/repos/mvriu5/forge")
+    const data = await fetch("https://api.github.com/repos/mvriu5/forge", {
+        next: { revalidate: 3600 }
+    })
     const json = await data.json()
     const stars = json.stargazers_count
 

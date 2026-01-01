@@ -55,7 +55,7 @@ export const auth = betterAuth({
             redirectURI: `${process.env.BETTER_AUTH_URL}/api/auth/callback/github`
         },
         google: {
-            scope: ["https://www.googleapis.com/auth/calendar", "https://mail.google.com/"],
+            scope: ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/gmail.readonly"],
             clientId: process.env.GOOGLE_CLIENT_ID as string,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
             accessType: "offline",
