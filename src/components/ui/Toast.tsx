@@ -1,11 +1,11 @@
 "use client"
 
-import {toast as sonnerToast} from "sonner"
+import { ErrorToast } from "@/components/toasts/ErrorToast"
+import { GithubToast } from "@/components/toasts/GithubToast"
 import { MeetingToast } from "@/components/toasts/MeetingToast"
-import {ReminderToast} from "@/components/toasts/ReminderToast"
-import {SuccessToast} from "@/components/toasts/SuccessToast"
-import {ErrorToast} from "@/components/toasts/ErrorToast"
-import {GithubToast} from "@/components/toasts/GithubToast"
+import { ReminderToast } from "@/components/toasts/ReminderToast"
+import { SuccessToast } from "@/components/toasts/SuccessToast"
+import { toast as sonnerToast } from "sonner"
 import { MailToast } from "../toasts/MailToast"
 
 export const toast = {

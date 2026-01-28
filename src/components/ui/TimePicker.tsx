@@ -1,5 +1,4 @@
 import { Clock8Icon } from 'lucide-react'
-
 import { Input } from '@/components/ui/Input'
 
 interface TimePickerProps {
@@ -25,4 +24,4 @@ const TimePicker = ({value, onValueChange}: TimePickerProps) => {
     )
 }
 
-export {TimePicker}
+export { TimePicker }

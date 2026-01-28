@@ -1,9 +1,8 @@
-import { requireServerUserId } from "@/lib/serverAuth"
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
-
-const routePath = "/api/notifications/stream"
 
 const isAbortError = (error: unknown) => {
     if (error instanceof DOMException) return error.name === "AbortError"
@@ -18,8 +17,12 @@ export async function GET(req: Request) {
     let userId: string | undefined = undefined
 
     try {
-        const auth = await requireServerUserId(req)
-        userId = auth.userId
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+
+        if (!session) return new Response("Unauthorized", { status: 401 })
+        userId = session.user.id
 
         const channel = `notifications:live:${userId}`
         const url = `${process.env.UPSTASH_REDIS_REST_URL}/subscribe/${encodeURIComponent(channel)}`
@@ -39,7 +42,7 @@ export async function GET(req: Request) {
                 return new Response(null, { status: 499 })
             }
 
-            console.error("api/notifications/stream upstream subscribe failed", error, { route: routePath, method: "GET", userId })
+            console.error("api/notifications/stream upstream subscribe failed", error, { method: "GET", userId })
             return new Response("Upstream subscribe failed", { status: 502 })
         }
 
@@ -61,7 +64,7 @@ export async function GET(req: Request) {
                 await reader.cancel()
             } catch (error) {
                 if (isAbortError(error)) return
-                console.error("api/notifications/stream cancelUpstream error", error, { route: routePath, method: "GET", userId })
+                console.error("api/notifications/stream cancelUpstream error", error, { method: "GET", userId })
             }
         }
 
@@ -140,7 +143,7 @@ export async function GET(req: Request) {
                                 const normalized = `data: ${JSON.stringify(parsed)}\n\n`
                                 controller.enqueue(encoder.encode(normalized))
                             } catch (error) {
-                                console.error("api/notifications/stream parse error", error, { route: routePath, method: "GET", userId })
+                                console.error("api/notifications/stream parse error", error, { method: "GET", userId })
                             }
 
                             boundary = buffer.indexOf("\n\n")
@@ -153,7 +156,7 @@ export async function GET(req: Request) {
                             return
                         }
 
-                        console.error("api/notifications/stream stream error", error, { route: routePath, method: "GET", userId })
+                        console.error("api/notifications/stream stream error", error, { method: "GET", userId })
                         streamClosed = true
                         controller.error(error)
                         await cancelUpstream()
@@ -173,8 +176,7 @@ export async function GET(req: Request) {
                 Connection: "keep-alive",
             }
         })
-    } catch (error) {
-        console.error("api/notifications/stream fatal error", error, { route: routePath, method: "GET", userId })
+    } catch {
         return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500, headers: { "Content-Type": "application/json" } })
     }
 }

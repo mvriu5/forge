@@ -1,7 +1,6 @@
 "use client"
 
-import * as React from "react"
-import {CircleX} from "lucide-react"
+import { CircleX } from "lucide-react"
 
 type ErrorToastProps = {
     title: string
@@ -22,4 +21,4 @@ function ErrorToast({ title }: ErrorToastProps) {
     )
 }
 
-export {ErrorToast}
+export { ErrorToast }

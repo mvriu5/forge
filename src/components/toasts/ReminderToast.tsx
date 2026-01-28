@@ -1,8 +1,7 @@
 "use client"
 
-import * as React from "react"
-import {toast} from "sonner"
-import {BellRing, X} from "lucide-react"
+import { BellRing, X } from "lucide-react"
+import { toast } from "sonner"
 
 type ReminderToastProps = {
     t: string | number
@@ -30,4 +29,4 @@ function ReminderToast({ t, title }: ReminderToastProps) {
     )
 }
 
-export {ReminderToast}
+export { ReminderToast }

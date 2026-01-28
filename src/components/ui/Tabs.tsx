@@ -1,9 +1,8 @@
 "use client"
 
-import * as React from "react"
-import {Tabs as TabsPrimitive} from "radix-ui"
 import { cn } from "@/lib/utils"
-import {ComponentPropsWithRef} from "react"
+import { Tabs as TabsPrimitive } from "radix-ui"
+import { ComponentPropsWithRef } from "react"
 
 const Tabs = TabsPrimitive.Root
 
@@ -26,7 +25,7 @@ const TabsTrigger = ({ className, ...props }: ComponentPropsWithRef<typeof TabsP
                 "inline-flex border-0 border-main/40 items-center justify-center whitespace-nowrap rounded-md h-8 px-3 py-1 text-sm",
                 "font-medium ring-offset-background focus-visible:outline-none disabled:pointer-events-none",
                 "disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary data-[state=active]:shadow-xs data-[state=active]:dark:shadow-md",
-                "data-[state=active]:border-1",
+                "data-[state=active]:border",
                 className
             )}
             {...props}
@@ -47,8 +46,6 @@ const TabsContent = ({ className, ...props }: ComponentPropsWithRef<typeof TabsP
 }
 
 export {
-    Tabs,
-    TabsList,
-    TabsTrigger,
-    TabsContent
+    Tabs, TabsContent, TabsList,
+    TabsTrigger
 }

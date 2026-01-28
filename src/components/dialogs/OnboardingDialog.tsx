@@ -1,6 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/Button"
 import {
     Dialog,
     DialogContent,
@@ -9,12 +8,12 @@ import {
     DialogTitle
 } from "@/components/ui/Dialog"
 import { cn } from "@/lib/utils"
-import { ArrowLeft, ArrowRight, Check, Grid2x2Plus, Plus, Sparkles } from "lucide-react"
+import { ArrowLeft, ArrowRight, Check, Grid2x2Plus, Plus } from "lucide-react"
 import { AnimatePresence, motion } from "motion/react"
 import { useState } from "react"
+import { DotPattern } from "../svg/DotPattern"
 import { ForgeLogo } from "../svg/ForgeLogo"
 import { Github, Google, Notion } from "../svg/Icons"
-import { DotPattern } from "../svg/DotPattern"
 
 interface OnboardingDialogProps {
     open: boolean

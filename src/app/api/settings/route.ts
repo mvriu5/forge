@@ -1,12 +1,17 @@
-import {NextResponse} from "next/server"
-import {createSettings, getSettingsFromUser, updateSettings, getSettingsFromId} from "@/database"
-import { requireServerUserId } from "@/lib/serverAuth"
+import { createSettings, getSettingsFromId, getSettingsFromUser, updateSettings } from "@/database"
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
+import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
-    const auth = await requireServerUserId(req)
-    const userId = auth.userId
-
     try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+
+        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        const userId = session.user.id
+
         const body = await req.json()
         const { config } = body
 
@@ -18,39 +23,40 @@ export async function POST(req: Request) {
         })
 
         return NextResponse.json(settings, { status: 200 })
-    } catch (error) {
-        if (error instanceof NextResponse) throw error
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function GET(req: Request) {
-    const auth = await requireServerUserId(req)
-    const userId = auth.userId
-
     try {
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+
+        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        const userId = session.user.id
+
         const settings = await getSettingsFromUser(userId)
         return NextResponse.json(settings, { status: 200 })
-    } catch (error) {
-        if (error instanceof NextResponse) throw error
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function PUT(req: Request) {
-    const auth = await requireServerUserId(req)
-    const userId = auth.userId
-
-    let id: string | undefined = undefined
-
     try {
-        const body = await req.json()
-        const { lastDashboardId, config, onboardingCompleted, id: bodyId } = body
-        id = bodyId ?? undefined
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
 
-        if (!id) {
-            return NextResponse.json({ error: "Settings id is required" }, { status: 400 })
-        }
+        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        const userId = session.user.id
+
+        const body = await req.json()
+        const { lastDashboardId, config, onboardingCompleted, id } = body
+
+        if (!id) return NextResponse.json({ error: "Settings id is required" }, { status: 400 })
 
         const existing = (await getSettingsFromId(id))[0]
         if (!existing) return NextResponse.json({ error: "Settings not found" }, { status: 404 })
@@ -61,8 +67,7 @@ export async function PUT(req: Request) {
         if (!updatedSettings) return NextResponse.json({ error: "Settings not found or could not be updated" }, { status: 404 })
 
         return NextResponse.json(updatedSettings, { status: 200 })
-    } catch (error) {
-        if (error instanceof NextResponse) throw error
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

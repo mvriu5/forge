@@ -1,9 +1,9 @@
 "use client"
 
-import * as React from "react"
-import {Dialog as DialogPrimitive} from "radix-ui"
-import { X } from "lucide-react"
 import { cn, CONTAINER_STYLES } from "@/lib/utils"
+import { X } from "lucide-react"
+import { Dialog as DialogPrimitive } from "radix-ui"
+import * as React from "react"
 import { ComponentPropsWithRef } from "react"
 
 export const Dialog = DialogPrimitive.Root

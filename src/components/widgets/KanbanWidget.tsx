@@ -35,10 +35,11 @@ import {CSS} from "@dnd-kit/utilities"
 import {Input} from "../ui/Input"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import Compact from "@uiw/react-color-compact"
-import {convertToRGBA} from "@/lib/colorConvert"
+import {convertToRGBA} from "@/lib/utils"
 import {WidgetEmpty} from "@/components/widgets/base/WidgetEmpty"
 import {restrictToFirstScrollableAncestor, restrictToHorizontalAxis, restrictToWindowEdges} from "@dnd-kit/modifiers"
-import {defineWidget, WidgetProps } from "@tryforgeio/sdk"
+import { defineWidget } from "@/lib/widget"
+import { WidgetProps } from "@/lib/definitions"
 
 type Card = {
     id: string

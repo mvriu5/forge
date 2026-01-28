@@ -1,21 +1,127 @@
 "use client"
 
-import React, {useEffect, useState} from "react"
-import {CircleDashed, Filter, FolderOpen, GitPullRequest, RefreshCw} from "lucide-react"
-import {Button} from "@/components/ui/Button"
-import {Badge} from "@/components/ui/Badge"
-import {Input} from "@/components/ui/Input"
-import {DropdownMenu, MenuItem} from "@/components/ui/Dropdown"
-import {Tabs, TabsList, TabsTrigger} from "@/components/ui/Tabs"
-import {Skeleton} from "@/components/ui/Skeleton"
-import {useTooltip} from "@/components/ui/TooltipProvider"
-import {useGithub} from "@/hooks/useGithub"
-import {WidgetHeader} from "@/components/widgets/base/WidgetHeader"
-import {WidgetContent} from "@/components/widgets/base/WidgetContent"
-import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
-import {useSettings} from "@/hooks/data/useSettings"
-import {useNotifications} from "@/hooks/data/useNotifications"
+import { Badge } from "@/components/ui/Badge"
+import { Button } from "@/components/ui/Button"
+import { DropdownMenu, MenuItem } from "@/components/ui/Dropdown"
+import { Input } from "@/components/ui/Input"
+import { Skeleton } from "@/components/ui/Skeleton"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs"
+import { useTooltip } from "@/components/ui/TooltipProvider"
+import { WidgetContent } from "@/components/widgets/base/WidgetContent"
+import { WidgetHeader } from "@/components/widgets/base/WidgetHeader"
+import { getIntegrationByProvider, useIntegrations } from "@/hooks/data/useIntegrations"
+import { useNotifications } from "@/hooks/data/useNotifications"
+import { useSettings } from "@/hooks/data/useSettings"
+import { WidgetProps } from "@/lib/definitions"
+import { queryOptions } from "@/lib/queryOptions"
+import { defineWidget } from "@/lib/widget"
+import { Octokit } from "@octokit/rest"
+import { useQuery } from "@tanstack/react-query"
+import { CircleDashed, Filter, FolderOpen, GitPullRequest, RefreshCw } from "lucide-react"
 import Link from "next/link"
+import React, { useEffect, useMemo, useState } from "react"
+
+// from useGithub.ts
+const GITHUB_QUERY_KEY = (accessToken: string | null) => ["githubIssues", accessToken] as const
+
+type UserRepositoryListResponse = Awaited<ReturnType<Octokit["repos"]["listForAuthenticatedUser"]>>
+type UserRepository = UserRepositoryListResponse["data"][number]
+
+type OrganizationRepositoryListResponse = Awaited<ReturnType<Octokit["repos"]["listForOrg"]>>
+type OrganizationRepository = OrganizationRepositoryListResponse["data"][number]
+
+type Repository = UserRepository | OrganizationRepository
+
+type IssuesListResponse = Awaited<ReturnType<Octokit["issues"]["listForRepo"]>>
+type Issue = IssuesListResponse["data"][number]
+
+interface OpenItemsResponse {
+    allIssues: Issue[]
+    allPullRequests: Issue[]
+}
+
+interface Label {
+    id?: number
+    name?: string
+    color?: string
+}
+
+async function fetchPaginated<T>(fetchFunction: (page: number) => Promise<{ data: T[] }>, perPage = 100): Promise<T[]> {
+    const items: T[] = []
+    let page = 1
+
+    while (true) {
+        const response = await fetchFunction(page)
+        items.push(...response.data)
+        if (response.data.length < perPage) break
+        page += 1
+    }
+
+    return items
+}
+
+async function getAllRepositories(accessToken: string): Promise<{repos: Repository[], octokit: Octokit | null}> {
+    const octokit = new Octokit({auth: accessToken})
+
+    const [userRepos, orgsResponse] = await Promise.all([
+        fetchPaginated(page => octokit.repos.listForAuthenticatedUser({per_page: 100, page})),
+        octokit.orgs.listForAuthenticatedUser(),
+    ])
+
+    const organizationRepositories = await Promise.all(
+        orgsResponse.data.map((org) =>
+            fetchPaginated(page => octokit.repos.listForOrg({org: org.login, per_page: 100, page})),
+        ),
+    )
+
+    const repositories: Repository[] = [...userRepos, ...organizationRepositories.flat()]
+    const uniqueRepositories = Array.from(
+        new Map<number, Repository>(repositories.map(repo => [repo.id, repo])).values(),
+    )
+    return {repos: uniqueRepositories, octokit}
+}
+
+async function fetchOpenIssuesAndPullsFromAllRepos(accessToken: string): Promise<OpenItemsResponse> {
+    const {repos, octokit} = await getAllRepositories(accessToken)
+    if (!octokit) return { allIssues: [], allPullRequests: [] }
+
+    const userResponse = await octokit.request("GET /user", {
+        headers: {"X-GitHub-Api-Version": "2022-11-28"},
+    })
+
+    const login = userResponse.data.login
+
+    const results = await Promise.all(
+        repos.map(async (repo) => {
+            const owner = repo.owner?.login
+            if (!owner) return {issues: [], pulls: []}
+
+            const items = await fetchPaginated(page => octokit.issues.listForRepo({
+                owner,
+                repo: repo.name,
+                state: "open",
+                per_page: 100,
+                page,
+            }))
+
+            const issues = items
+                .filter(item => !item.pull_request)
+                .filter(item => item.assignees?.some((assignee) => assignee.login === login) || item.assignee?.login === login)
+
+            const pulls = items
+                .filter(item => !!item.pull_request)
+                .filter(item => item.assignees?.some((assignee) => assignee.login === login) || item.assignee?.login === login)
+
+            return {issues, pulls}
+        }),
+    )
+
+    return {
+        allIssues: results.flatMap(result => result.issues),
+        allPullRequests: results.flatMap(result => result.pulls),
+    }
+}
+
 
 const formatShortDate = (iso?: string | number | Date | null) => {
     if (!iso) return ""
@@ -27,10 +133,61 @@ const formatShortDate = (iso?: string | number | Date | null) => {
     return `${dd}/${mm}/${yyyy}`
 }
 
-const GithubWidget: React.FC<WidgetProps> = ({widget}) => {
+const GithubWidget: React.FC<WidgetProps> = ({ widget }) => {
     const {settings} = useSettings(widget.userId)
     const {sendGithubNotification} = useNotifications(widget.userId)
-    const {activeTab, setActiveTab, searchQuery, setSearchQuery, selectedLabels, setSelectedLabels, allLabels, filteredIssues, filteredPRs, isLoading, isFetching, refetch} = useGithub()
+    const {integrations} = useIntegrations(widget.userId)
+    const githubIntegration = useMemo(() => getIntegrationByProvider(integrations, "github"), [integrations])
+
+    const [searchQuery, setSearchQuery] = useState<string>("")
+    const [selectedLabels, setSelectedLabels] = useState<string[]>([])
+    const [activeTab, setActiveTab] = useState<string>("issues")
+
+    const {data, isLoading, isFetching, refetch} = useQuery<OpenItemsResponse, Error>(queryOptions({
+        queryKey: GITHUB_QUERY_KEY(githubIntegration?.accessToken ?? null),
+        queryFn: () => fetchOpenIssuesAndPullsFromAllRepos(githubIntegration?.accessToken!),
+        enabled: Boolean(githubIntegration?.accessToken),
+    }))
+
+    const issues = data?.allIssues ?? []
+    const pullRequests = data?.allPullRequests ?? []
+
+    const allLabels = useMemo(() => {
+        const labels = issues.flatMap((issue) => (issue.labels || []) as Label[])
+        const uniqueLabels = new Map<string, Label>()
+        labels.forEach(label => {
+            if (label.name && !uniqueLabels.has(label.name)) {
+                uniqueLabels.set(label.name, label)
+            }
+        })
+        return Array.from(uniqueLabels.values())
+    }, [issues])
+
+    const filteredIssues = useMemo(() => {
+        return issues.filter((issue) => {
+            const matchesSearch =
+                issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                issue.repository_url
+                    .split('/')
+                    .pop()
+                    ?.toLowerCase()
+                    .includes(searchQuery.toLowerCase())
+
+            const issueLabels = (issue.labels || []) as Label[]
+            const matchesLabels = selectedLabels.length === 0 || issueLabels.some((label) => label.name && selectedLabels.includes(label.name))
+            return matchesSearch && matchesLabels
+        })
+    }, [issues, searchQuery, selectedLabels])
+
+    const filteredPRs = useMemo(() => {
+        return pullRequests.filter((pr) =>
+            pr.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            pr.repository_url
+                .split('/')
+                .pop()
+                ?.toLowerCase()
+                .includes(searchQuery.toLowerCase()))
+    }, [pullRequests, searchQuery])
 
     const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -70,7 +227,7 @@ const GithubWidget: React.FC<WidgetProps> = ({widget}) => {
             issues: filteredIssues.length,
             pullRequests: filteredPRs.length
         })
-    }, [sendGithubNotification, isLoading, settings?.config.todoReminder])
+    }, [sendGithubNotification, isLoading, settings?.config.todoReminder, filteredIssues, filteredPRs])
 
     return (
         <>

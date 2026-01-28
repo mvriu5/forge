@@ -1,6 +1,4 @@
-import {useDroppable} from "@dnd-kit/core"
-import React from "react"
-import {map} from "zod"
+import { useDroppable } from "@dnd-kit/core"
 
 interface GridCellProps {
     x: number
@@ -56,4 +54,4 @@ const Grid = ({cells, enabled}: GridProps) => {
     ))
 }
 
-export {Grid}
+export { Grid }

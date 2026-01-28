@@ -8,12 +8,11 @@ import { Spinner } from "@/components/ui/Spinner"
 import { toast } from "@/components/ui/Toast"
 import type { Widget } from "@/database"
 import { useDashboards } from "@/hooks/data/useDashboards"
-import { useSession } from "@/hooks/data/useSession"
 import { useSettings } from "@/hooks/data/useSettings"
 import { useWidgets } from "@/hooks/data/useWidgets"
 import { useResponsiveLayout } from "@/hooks/media/useResponsiveLayout"
+import { authClient } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
-import { Loader2 } from "lucide-react"
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useHotkeys } from "react-hotkeys-hook"
 
@@ -21,10 +20,10 @@ const LazyDashboardDialog = React.lazy(() => import("@/components/dialogs/Dashbo
 const LazyOnboardingDialog = React.lazy(() => import("@/components/dialogs/OnboardingDialog"))
 
 function DashboardContent() {
-    const {userId, isLoading: sessionLoading} = useSession()
-    const {settings, isLoading: settingsLoading, updateSettings} = useSettings(userId)
-    const {dashboards, currentDashboard, isLoading: dashboardsLoading, addDashboard, addDashboardStatus,setSelectedDashboard} = useDashboards(userId, settings)
-    const {widgets, isLoading: widgetsLoading, isReady: widgetsReady, removeWidget, saveWidgetsLayout, updateWidget, updateWidgetPosition, setWidgets} = useWidgets(userId)
+    const {data: session, isPending: sessionLoading} = authClient.useSession()
+    const {settings, isLoading: settingsLoading, updateSettings} = useSettings(session?.user.id)
+    const {dashboards, currentDashboard, isLoading: dashboardsLoading, addDashboard, addDashboardStatus,setSelectedDashboard} = useDashboards(session?.user.id, settings)
+    const {widgets, isLoading: widgetsLoading, isReady: widgetsReady, removeWidget, saveWidgetsLayout, updateWidget, updateWidgetPosition, setWidgets} = useWidgets(session?.user.id)
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
     const [widgetsToRemove, setWidgetsToRemove] = useState<Widget[]>([])
@@ -53,7 +52,7 @@ function DashboardContent() {
     }, [])
 
     useEffect(() => {
-        if (!userId || dashboardsLoading || settingsLoading || !settings) return
+        if (!session?.user.id || dashboardsLoading || settingsLoading || !settings) return
         if (!settings.onboardingCompleted) {
             const timer = setTimeout(() => setOnboardingOpen(true), 500)
             return () => clearTimeout(timer)
@@ -62,7 +61,7 @@ function DashboardContent() {
             const timer = setTimeout(() => setDialogOpen(true), 500)
             return () => clearTimeout(timer)
         }
-    }, [userId, dashboards, dashboardsLoading, settings, settingsLoading])
+    }, [session?.user.id, dashboards, dashboardsLoading, settings, settingsLoading])
 
     const handleOnboardingComplete = useCallback(async () => {
         if (!settings) return
@@ -148,7 +147,7 @@ function DashboardContent() {
                     onDashboardChange={handleDashboardChange}
                     addDashboard={addDashboard}
                     addDashboardStatus={addDashboardStatus}
-                    userId={userId}
+                    userId={session?.user.id}
                 />
             ) :(
                 <div className="h-12 w-full border-b border-main/40" />
@@ -181,7 +180,7 @@ function DashboardContent() {
                     dashboards={dashboards}
                     addDashboard={addDashboard}
                     addDashboardStatus={addDashboardStatus}
-                    userId={userId}
+                    userId={session?.user.id}
                 />
             </Suspense>
             <Suspense fallback={null}>

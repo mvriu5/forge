@@ -1,6 +1,5 @@
 "use client"
 
-import {useSession} from "@/hooks/data/useSession"
 import React, {useRef, useState} from "react"
 import type {PutBlobResult} from "@vercel/blob"
 import {z} from "zod"
@@ -23,8 +22,8 @@ const formSchema = z.object({
 })
 
 function ProfileSection({handleClose}: {handleClose: () => void}) {
-    const {userId, session, updateUser} = useSession()
-    const {settings} = useSettings(userId)
+    const {data: session} = authClient.useSession()
+    const {settings} = useSettings(session?.user.id)
     const [uploading, setUploading] = useState(false)
     const [avatarUrl, setAvatarUrl] = useState<string | undefined>(session?.user?.image ?? "")
     const [blob, setBlob] = useState<PutBlobResult | undefined>(undefined)
@@ -58,7 +57,6 @@ function ProfileSection({handleClose}: {handleClose: () => void}) {
                 name: values.name
             })
 
-            updateUser({ image: imageUrl, name: values.name })
             toast.success("Successfully updated your profile.")
             handleClose()
         } catch (error) {
@@ -102,7 +100,6 @@ function ProfileSection({handleClose}: {handleClose: () => void}) {
             })
 
             await authClient.updateUser({image: null})
-            updateUser({ image: null })
             handleClose()
             toast.success("Successfully removed your avatar.")
         } catch (error) {

@@ -1,4 +1,4 @@
-import {useCallback, useMemo} from "react"
+import { Widget } from "@/database"
 import {
     DragEndEvent,
     DragOverEvent,
@@ -8,9 +8,9 @@ import {
     useSensor,
     useSensors
 } from "@dnd-kit/core"
-import { Widget } from "@/database"
+import { useCallback, useMemo } from "react"
 
-function findFreePosition(relevantWidgets: Widget[], width: number, height: number, excludeId?: string, excludePosition?: { x: number; y: number; width: number; height: number }) {
+function findFreePosition(relevantWidgets: Widget[], width: number, height: number, excludeId?: string, excludePosition?: { x: number, y: number, width: number, height: number }) {
     const occupiedCells: Record<string, boolean> = {}
 
     relevantWidgets.map((widget) => {

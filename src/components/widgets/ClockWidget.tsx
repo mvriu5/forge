@@ -3,7 +3,8 @@
 import React, {useEffect, useState} from "react"
 import {WidgetContent} from "@/components/widgets/base/WidgetContent"
 import {useSettings} from "@/hooks/data/useSettings"
-import {defineWidget, WidgetProps} from "@tryforgeio/sdk"
+import { defineWidget } from "@/lib/widget"
+import { WidgetProps } from "@/lib/definitions"
 
 const ClockWidget: React.FC<WidgetProps> = ({widget}) => {
     const {settings} = useSettings(widget?.userId)

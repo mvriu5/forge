@@ -1,6 +1,6 @@
-import {cva, type VariantProps} from "class-variance-authority"
+import { cn } from "@/lib/utils"
+import { cva, type VariantProps } from "class-variance-authority"
 import type React from "react"
-import {cn} from "@/lib/utils"
 
 const calloutVariants = cva(
     "rounded-md p-2 text-sm leading-normal transition-colors",

@@ -1,10 +1,10 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import {Checkbox as CheckboxPrimitive} from "radix-ui"
+import { cva, type VariantProps } from "class-variance-authority"
+import { Check } from "lucide-react"
+import { Checkbox as CheckboxPrimitive } from "radix-ui"
 import React from "react"
-import {Check} from "lucide-react"
-import {cva, type VariantProps} from "class-variance-authority"
 
 const checkboxVariants = cva(
     "peer shrink-0 border border-main ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring " +

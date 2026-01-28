@@ -1,31 +1,35 @@
-import {redis} from "@/lib/redis"
-import {Notification} from "@/database"
-import {NextResponse} from "next/server"
-import {randomUUID} from "node:crypto"
-import { requireServerUserId } from "@/lib/serverAuth"
+import { Notification } from "@/database"
+import { auth } from "@/lib/auth"
+import { redis } from "@/lib/redis"
+import { headers } from "next/headers"
+import { NextResponse } from "next/server"
+import { randomUUID } from "node:crypto"
 
 export async function GET(req: Request) {
-    let userId: string | undefined = undefined
-
     try {
-        const auth = await requireServerUserId(req)
-        userId = auth.userId
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+
+        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        const userId = session.user.id
 
         const key = `notifications:user:${userId}`
         const items = (await redis.lrange<Notification>(key, 0, 49)) ?? []
         return NextResponse.json(items.reverse(), { status: 200 })
-    } catch (error) {
-        if (error instanceof NextResponse) throw error
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function POST(req: Request) {
-    let userId: string | undefined = undefined;
-
     try {
-        const auth = await requireServerUserId(req)
-        userId = auth.userId
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+
+        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        const userId = session.user.id
 
         const body = await req.json()
         const { type, message } = body
@@ -49,25 +53,25 @@ export async function POST(req: Request) {
         await redis.publish(channel, notification)
 
         return NextResponse.json(notification, { status: 200 })
-    } catch (error) {
-        if (error instanceof NextResponse) throw error
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function DELETE(req: Request) {
-    let userId: string | undefined = undefined
-
     try {
-        const auth = await requireServerUserId(req)
-        userId = auth.userId
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+
+        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        const userId = session.user.id
 
         const key = `notifications:user:${userId}`
         await redis.del(key)
 
         return NextResponse.json({ success: true }, { status: 200 })
-    } catch (error) {
-        if (error instanceof NextResponse) throw error
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

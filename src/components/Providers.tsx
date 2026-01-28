@@ -1,10 +1,10 @@
 "use client"
 
-import {ReactNode, useEffect, useState} from "react"
-import {TooltipProvider} from "@/components/ui/TooltipProvider"
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
-import {Toaster} from "sonner"
+import { TooltipProvider } from "@/components/ui/TooltipProvider"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { ThemeProvider } from "next-themes"
+import { ReactNode, useEffect, useState } from "react"
+import { Toaster } from "sonner"
 
 const queryClient = new QueryClient()
 
@@ -31,4 +31,4 @@ function Providers({children}: {children: ReactNode}) {
     )
 }
 
-export {Providers}
+export { Providers }

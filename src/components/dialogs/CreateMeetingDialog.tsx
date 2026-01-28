@@ -9,12 +9,13 @@ import { Spinner } from "@/components/ui/Spinner"
 import { Switch } from "@/components/ui/Switch"
 import { TimePicker } from "@/components/ui/TimePicker"
 import { useTooltip } from "@/components/ui/TooltipProvider"
-import { useGoogleCalendar } from "@/hooks/useGoogleCalendar"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { UseMutateFunction } from "@tanstack/react-query"
 import { CalendarPlus, Info } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { z } from "zod"
+import { CalendarEvent, GoogleCalendar } from "../widgets/MeetingsWidget"
 
 const formSchema = z.object({
     calendarId: z.string(),
@@ -37,8 +38,16 @@ const formSchema = z.object({
 
 type MeetingFormValues = z.infer<typeof formSchema>
 
-function CreateMeetingDialog() {
-    const {calendars, createEvent, isLoading} = useGoogleCalendar()
+interface CreateMeetingDialogProps {
+    calendars: GoogleCalendar[] | undefined
+    createEvent: UseMutateFunction<CalendarEvent, Error, {
+        calendarId: string
+        eventData: Partial<CalendarEvent>
+    }, unknown>
+    isLoading: boolean
+}
+
+function CreateMeetingDialog({calendars, createEvent, isLoading}: CreateMeetingDialogProps) {
     const [open, setOpen] = useState(false)
 
     const addEventTooltip = useTooltip({

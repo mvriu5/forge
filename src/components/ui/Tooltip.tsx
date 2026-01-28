@@ -1,9 +1,9 @@
 "use client"
 
-import {type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState} from "react"
-import {KeyboardShortcut} from "@/components/ui/KeyboardShortcut"
-import {cn} from "@/lib/utils"
-import {useHoverSupported} from "@/hooks/media/useHoverSupported"
+import { KeyboardShortcut } from "@/components/ui/KeyboardShortcut"
+import { useHoverSupported } from "@/hooks/media/useHoverSupported"
+import { cn } from "@/lib/utils"
+import { type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 
 interface TooltipProps {
     id?: number
@@ -238,6 +238,5 @@ const Tooltip = ({ id, anchor = "rc", width, delay = 1000, icon, message, offset
 }
 
 export {
-    type TooltipProps,
-    Tooltip
+    Tooltip, type TooltipProps
 }

@@ -1,9 +1,8 @@
 "use client"
 
-import * as React from "react"
-import {ToggleGroup as ToggleGroupPrimitive} from "radix-ui"
 import { cn } from "@/lib/utils"
-import {ComponentPropsWithRef} from "react"
+import { ToggleGroup as ToggleGroupPrimitive } from "radix-ui"
+import { ComponentPropsWithRef } from "react"
 
 const ToggleGroup = ({ className, children, ...props }: ComponentPropsWithRef<typeof ToggleGroupPrimitive.Root>) => {
     return (

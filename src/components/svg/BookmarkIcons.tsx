@@ -1,4 +1,4 @@
-import {File} from "lucide-react"
+import { File } from "lucide-react"
 
 const GoogleSheets = () => {
     return (
@@ -251,20 +251,7 @@ const getLogoFromLink = (link: string) => {
 }
 
 export {
-    getLogoFromLink,
-    GoogleSheets,
-    GoogleSlides,
-    GoogleDocs,
-    Loom,
-    Youtube,
-    Github,
-    Amazon,
-    Twitch,
-    X,
-    Instagram,
-    GoogleDrive,
-    Spotify,
-    Soundcloud,
-    LinkedIn,
-    Pinterest,
+    Amazon, getLogoFromLink, Github, GoogleDocs, GoogleDrive, GoogleSheets,
+    GoogleSlides, Instagram, LinkedIn, Loom, Pinterest, Soundcloud, Spotify, Twitch,
+    X, Youtube
 }

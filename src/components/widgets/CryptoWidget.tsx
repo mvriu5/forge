@@ -3,17 +3,59 @@
 import { Skeleton } from "@/components/ui/Skeleton"
 import { WidgetContent } from "@/components/widgets/base/WidgetContent"
 import { WidgetHeader } from "@/components/widgets/base/WidgetHeader"
-import { CryptoCurrency, CryptoProduct, useCoinbase } from "@/hooks/useCoinbase"
-import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
-import { ArrowDownRight, ArrowUpRight, CandlestickChart, ChartCandlestick } from "lucide-react"
-import React, { useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
+import { WidgetProps } from "@/lib/definitions"
+import { cn } from "@/lib/utils"
+import { defineWidget } from "@/lib/widget"
+import { ArrowDownRight, ArrowUpRight, CandlestickChart } from "lucide-react"
+import React, { useCallback, useDeferredValue, useMemo, useState } from "react"
+import { Button } from "../ui/Button"
+import { DropdownMenu, MenuItem } from "../ui/Dropdown"
+import { Input } from "../ui/Input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/Select"
 import { useTooltip } from "../ui/TooltipProvider"
-import { DropdownMenu, MenuItem } from "../ui/Dropdown"
-import { Button } from "../ui/Button"
-import { cn } from "@/lib/utils"
-import { Input } from "../ui/Input"
 import { WidgetError } from "./base/WidgetError"
+import { useQuery } from "@tanstack/react-query"
+import { queryOptions } from "@/lib/queryOptions"
+
+export type CryptoCurrency = {
+    id: string
+    name: string
+}
+
+export type CryptoProduct = {
+    product: string
+    base: string
+    quote: string
+    price: number
+    changePercent: number
+    candles?: Array<{
+        time: number
+        low: number
+        high: number
+        open: number
+        close: number
+    }>
+    error?: string
+}
+
+const COINBASE_CURRENCIES_QUERY_KEY = ["coinbase-currencies"] as const
+const COINBASE_PRODUCT_QUERY_KEY = (products: string[], timeframe: string) => ["coinbase-prices", products, timeframe] as const
+
+const fetchCoinbaseCurrencies = async () => {
+    const response = await fetch("/api/coinbase/currencies")
+    if (!response.ok) throw new Error("Failed to fetch Coinbase currencies.")
+    return response.json() as Promise<CryptoCurrency[]>
+}
+
+const fetchCoinbasePrices = async (products: string[], timeframe: string) => {
+    const params = new URLSearchParams()
+    params.set("products", products.join(","))
+    params.set("timeframe", timeframe)
+    const response = await fetch(`/api/coinbase/prices?${params.toString()}`)
+    if (!response.ok) throw new Error("Failed to fetch Coinbase prices.")
+    return response.json() as Promise<CryptoProduct[]>
+}
+
 
 interface CryptoConfig {
     timeframe: string
@@ -69,7 +111,27 @@ const CryptoWidget: React.FC<WidgetProps<CryptoConfig>> = ({ config, updateConfi
     const [searchTerm, setSearchTerm] = useState("")
     const deferredSearchTerm = useDeferredValue(searchTerm)
 
-    const { currencies, products, productsLoading, productsError, currenciesError } = useCoinbase(selectedProducts, timeframe)
+    const currenciesQuery = useQuery(queryOptions({
+        queryKey: COINBASE_CURRENCIES_QUERY_KEY,
+        queryFn: fetchCoinbaseCurrencies,
+    }))
+
+    const productQuery = useQuery(queryOptions({
+        queryKey: COINBASE_PRODUCT_QUERY_KEY(selectedProducts, timeframe),
+        queryFn: () => fetchCoinbasePrices(selectedProducts, timeframe),
+    }))
+
+    const {
+        data: currencies,
+        isLoading: currenciesLoading,
+        isError: currenciesError
+    } = currenciesQuery
+
+    const {
+        data: products,
+        isLoading: productsLoading,
+        isError: productsError
+    } = productQuery
 
     const filteredCurrencies = useMemo(() => (currencies ?? [])
         .filter((currency) => currency.id !== "USD")
@@ -128,7 +190,7 @@ const CryptoWidget: React.FC<WidgetProps<CryptoConfig>> = ({ config, updateConfi
         }
 
         return items
-    }, [deferredSearchTerm, dropdownOpen, filteredCurrencies, selectedProducts])
+    }, [deferredSearchTerm, dropdownOpen, filteredCurrencies, selectedProducts, updateConfig, timeframe])
 
     const handleTimeframeChange = useCallback(async (value: string) => {
         setTimeframe(value)

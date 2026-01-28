@@ -1,14 +1,8 @@
-import {betterAuth} from "better-auth/minimal"
-import {drizzleAdapter} from "better-auth/adapters/drizzle"
-import {db} from "@/database"
-import {schema} from "@/db/schema"
-import {Resend} from 'resend'
-import {VerificationEmail} from "@/components/emails/VerificationEmail"
-import {ReactNode} from "react"
-import {ResetPasswordEmail} from "@/components/emails/ResetPasswordEmail"
-import {OAuth2Tokens, refreshAccessToken} from "better-auth"
+import { db } from "@/database"
+import { schema } from "@/db/schema"
+import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { betterAuth } from "better-auth/minimal"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const isProd = process.env.NODE_ENV === "production"
 
 export const auth = betterAuth({
@@ -16,36 +10,17 @@ export const auth = betterAuth({
         provider: "pg",
         schema: schema
     }),
-    trustedOrigins: ["http://localhost:3000", "https://tryforge.io", "https://www.tryforge.io"],
+    trustedOrigins: [process.env.NEXT_PUBLIC_APP_URL!],
     account: {
         accountLinking: {
             enabled: true,
             trustedProviders: ["github", "google", "notion"]
         }
     },
-    emailVerification: {
-        autoSignInAfterVerification: true,
-        sendVerificationEmail: async ({ user, url }) => {
-            await resend.emails.send({
-                from: "hello@tryforge.io",
-                to: [user.email],
-                subject: "Welcome to forge!",
-                react: VerificationEmail({url}) as ReactNode
-            })
-        }
-    },
     emailAndPassword: {
         enabled: true,
         autoSignIn: true,
-        requireEmailVerification: true,
-        sendResetPassword: async ({user, url}) => {
-            await resend.emails.send({
-                from: "hello@tryforge.io",
-                to: [user.email],
-                subject: "Reset your password",
-                react: ResetPasswordEmail({url}) as ReactNode
-            })
-        }
+        requireEmailVerification: false
     },
     socialProviders: {
         github: {
@@ -83,5 +58,3 @@ export const auth = betterAuth({
         }
     }
 })
-
-export type Session = typeof auth.$Infer.Session

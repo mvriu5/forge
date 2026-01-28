@@ -6,12 +6,12 @@ import {Github, Google, Notion} from "@/components/svg/Icons"
 import {cn} from "@/lib/utils"
 import {Button} from "@/components/ui/Button"
 import {Check, X} from "lucide-react"
-import {useSession} from "@/hooks/data/useSession"
-import { toast } from "../ui/Toast"
+import { toast } from "@/components/ui/Toast"
+import { authClient } from "@/lib/auth-client"
 
 function IntegrationSection({handleClose}: {handleClose: () => void}) {
-    const {userId} = useSession()
-    const {integrations, removeIntegration, handleIntegrate} = useIntegrations(userId)
+    const {data: session} = authClient.useSession()
+    const {integrations, removeIntegration, handleIntegrate} = useIntegrations(session?.user.id)
     const githubIntegration = useMemo(() => getIntegrationByProvider(integrations, "github"), [integrations])
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
     const notionIntegration = useMemo(() => getIntegrationByProvider(integrations, "notion"), [integrations])

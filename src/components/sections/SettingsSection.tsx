@@ -3,12 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AppWindow, Settings as SettingsIcon } from "lucide-react"
 import { useTheme } from "next-themes"
-import { Suspense, useEffect, useMemo } from "react"
+import { Suspense, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { Settings } from "@/database"
-import { useSession } from "@/hooks/data/useSession"
 import { useSettings } from "@/hooks/data/useSettings"
 
 import { Button } from "@/components/ui/Button"
@@ -25,6 +24,7 @@ import { MultiSelectField } from "@/components/fields/MultiSelectField"
 import { SelectField } from "@/components/fields/SelectField"
 import { SwitchField } from "@/components/fields/SwitchField"
 import { useDashboards } from "@/hooks/data/useDashboards"
+import { authClient } from "@/lib/auth-client"
 
 const TIMEZONES = [
     "UTC",
@@ -142,9 +142,9 @@ const FIELDS: {
 ]
 
 function SettingsSection({ handleClose }: { handleClose: () => void }) {
-    const { userId } = useSession()
-    const { settings, updateSettings, updateSettingsStatus } = useSettings(userId)
-    const { dashboards } = useDashboards(userId, settings)
+    const { data: session } = authClient.useSession()
+    const { settings, updateSettings, updateSettingsStatus } = useSettings(session?.user.id)
+    const { dashboards } = useDashboards(session?.user.id, settings)
     const { theme, setTheme } = useTheme()
 
     const form = useForm<FormValues>({

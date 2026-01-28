@@ -31,26 +31,6 @@ export const siteConfig: Metadata = {
         description: DESCRIPTION,
         images: [`${process.env.NEXT_PUBLIC_APP_URL}/example_layout.png`]
     },
-    category: "",
     alternates: { canonical: "/" },
-    keywords: [
-        "Dashboard",
-        "Widgets",
-        "Next.js",
-        "Forge",
-        "SEO",
-        "Workflow",
-        "Productivity",
-        "Productivity dashboard",
-        "Custom dashboards",
-        "Drag and drop widgets",
-        "Team productivity",
-        "Personal productivity OS",
-        "Workflow automation",
-        "Analytics dashboard",
-        "Workspace customization",
-        "Real-time metrics",
-        "SaaS dashboard"
-    ],
     metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL!),
 }

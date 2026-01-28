@@ -1,6 +1,6 @@
-import {ComponentPropsWithRef} from "react"
-import {RadioGroupItem} from "@/components/ui/RadioGroup"
-import {cn} from "@/lib/utils"
+import { RadioGroupItem } from "@/components/ui/RadioGroup"
+import { cn } from "@/lib/utils"
+import { ComponentPropsWithRef } from "react"
 
 interface RadioGroupItemProps extends ComponentPropsWithRef<"label"> {
     title: string

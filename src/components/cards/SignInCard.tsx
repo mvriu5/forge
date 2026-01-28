@@ -1,22 +1,22 @@
 "use client"
 
-import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
-import {Button} from "@/components/ui/Button"
-import {z} from "zod"
-import {useForm} from "react-hook-form"
-import {zodResolver} from "@hookform/resolvers/zod"
-import {ForgeLogo} from "@/components/svg/ForgeLogo"
+import { ForgeLogo } from "@/components/svg/ForgeLogo"
+import { Github, Google } from "@/components/svg/Icons"
+import { Button } from "@/components/ui/Button"
+import { Form, FormField, FormInput, FormItem, FormLabel, FormMessage } from "@/components/ui/Form"
+import { Spinner } from "@/components/ui/Spinner"
+import { useIntegrations } from "@/hooks/data/useIntegrations"
+import { useAuth } from "@/hooks/useAuth"
+import { authClient } from "@/lib/auth-client"
+import { zodResolver } from "@hookform/resolvers/zod"
 import Link from "next/link"
-import {Spinner} from "@/components/ui/Spinner"
-import {Github, Google} from "@/components/svg/Icons"
-import {useSession} from "@/hooks/data/useSession"
-import {useAuth} from "@/hooks/useAuth"
-import {useIntegrations} from "@/hooks/data/useIntegrations"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 
 function SignInCard() {
-    const {userId} = useSession()
+    const {data: session} = authClient.useSession()
     const {signinSchema, isLoading, handleEmailSignIn} = useAuth()
-    const {handleIntegrate} = useIntegrations(userId)
+    const {handleIntegrate} = useIntegrations(session?.user.id)
 
     const form = useForm<z.infer<typeof signinSchema>>({
         resolver: zodResolver(signinSchema),
@@ -64,16 +64,6 @@ function SignInCard() {
                             )}
                         />
                     </div>
-
-                    <Link href="/forgot">
-                        <Button
-                            type={"button"}
-                            variant="ghost"
-                            className={"bg-transparent hover:bg-transparent hover:text-secondary font-mono text-tertiary font-normal w-max hover:underline text-xs px-0"}
-                        >
-                            Forgot Password
-                        </Button>
-                    </Link>
 
                     <div className={"w-full flex flex-col gap-2 mt-4"}>
                         <Button

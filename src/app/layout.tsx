@@ -1,6 +1,4 @@
 import { siteConfig } from "@/lib/site-config"
-import { Analytics } from "@vercel/analytics/react"
-import { SpeedInsights } from "@vercel/speed-insights/next"
 import type { Metadata } from "next"
 import { Figtree, Geist_Mono } from "next/font/google"
 import Script from "next/script"
@@ -30,8 +28,6 @@ export default function RootLayout({children}: Readonly<{ children: ReactNode }>
                 </head>
             )}
             <body className={`${figtreeSans.variable} ${geistMono.variable} antialiased`}>
-                <Analytics />
-                <SpeedInsights />
                 {children}
             </body>
         </html>

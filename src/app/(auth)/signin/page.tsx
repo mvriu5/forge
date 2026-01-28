@@ -6,7 +6,7 @@ export default function SignIn() {
     return (
         <div className={"h-screen w-full flex items-center justify-center"}>
             <DotPattern className={cn(
-                "[mask-image:radial-gradient(450px_circle_at_center,gray,transparent)]",
+                "mask-[radial-gradient(450px_circle_at_center,gray,transparent)]",
             )}/>
             <SignInCard/>
         </div>

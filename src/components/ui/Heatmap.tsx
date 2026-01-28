@@ -1,8 +1,8 @@
 "use client"
 
-import {cn} from "@/lib/utils"
-import {useMemo} from "react"
-import {useTooltip} from "@/components/ui/TooltipProvider"
+import { useTooltip } from "@/components/ui/TooltipProvider"
+import { cn } from "@/lib/utils"
+import { useMemo } from "react"
 
 interface HeatmapProps {
     data: { date: string, count: number }[] | undefined
@@ -181,4 +181,4 @@ function Heatmap({data, startDate, endDate, cellSize = 12, gap = 2, className}: 
     )
 }
 
-export {Heatmap}
+export { Heatmap }

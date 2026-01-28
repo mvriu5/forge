@@ -5,6 +5,8 @@ import {
     getTitleFromProperties
 } from "@/lib/notion"
 import { NextResponse } from "next/server"
+import { headers } from "next/headers"
+import { auth } from "@/lib/auth"
 
 async function getAccessToken(userId: string) {
     const account = (await getNotionAccount(userId))[0]
@@ -58,14 +60,15 @@ async function fetchPage(accessToken: string, pageId: string) {
 }
 
 export async function GET(req: Request, { params }: { params: Promise<{ pageId: string }> }) {
-    let userId: string | undefined = undefined
-    const { pageId } = await params
-
     try {
-        const { searchParams } = new URL(req.url)
-        userId = searchParams.get("userId") ?? undefined
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
 
-        if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 })
+        const { pageId } = await params
+
+        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        const userId = session.user.id
 
         const accessToken = await getAccessToken(userId)
         if (!accessToken) return NextResponse.json({ error: "Notion integration missing or expired" }, { status: 401 })
@@ -74,8 +77,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ pageId: 
         if (!page) return NextResponse.json({ error: "Unable to load the Notion page" }, { status: 502 })
 
         return NextResponse.json(page, { status: 200 })
-    } catch (error) {
-        if (error instanceof NextResponse) throw error
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

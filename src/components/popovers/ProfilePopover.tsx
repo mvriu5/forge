@@ -1,20 +1,20 @@
 "use client"
 
-import {LogOut, MessageCircleQuestion} from "lucide-react"
-import React, {useState} from "react"
-import {SettingsDialog} from "@/components/dialogs/SettingsDialog"
-import {cn} from "@/lib/utils"
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
-import {Skeleton} from "@/components/ui/Skeleton";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar"
-import {Spinner} from "@/components/ui/Spinner"
-import {useSession} from "@/hooks/data/useSession"
+import { SettingsDialog } from "@/components/dialogs/SettingsDialog"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar"
+import { Button } from "@/components/ui/Button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover"
+import { Skeleton } from "@/components/ui/Skeleton"
+import { Spinner } from "@/components/ui/Spinner"
+import { useAuth } from "@/hooks/useAuth"
+import { authClient } from "@/lib/auth-client"
+import { cn } from "@/lib/utils"
+import { LogOut, MessageCircleQuestion } from "lucide-react"
 import Link from "next/link"
-import {useAuth} from "@/hooks/useAuth"
-import {Button} from "@/components/ui/Button"
+import { useState } from "react"
 
 function ProfilePopover({editMode}: {editMode: boolean}) {
-    const {session, isLoading: sessionLoading, setSession} = useSession()
+    const {data: session, isPending: sessionLoading} = authClient.useSession()
     const {isLoading: signoutLoading, handleSignOut} = useAuth()
 
     const [open, setOpen] = useState(false)
@@ -38,7 +38,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                     {sessionLoading ?
                         <Skeleton className={"size-6 rounded-full"}/> :
                         <Avatar className={"size-6 border border-main/20"}>
-                            <AvatarImage src={session?.user?.image ?? undefined} />
+                            <AvatarImage src={session?.user.image ?? undefined} />
                             <AvatarFallback/>
                         </Avatar>
                     }
@@ -73,10 +73,7 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
                 <button
                     type={"button"}
                     className={"w-full flex gap-2 px-2 py-1 items-center rounded-md hover:bg-error/5 text-error/90 hover:text-error ring-0 outline-0"}
-                    onClick={() => {
-                        void handleSignOut()
-                        setSession(null)
-                    }}
+                    onClick={() => void handleSignOut()}
                 >
                     {signoutLoading ? <Spinner className={"text-error"}/> : <LogOut size={16} className={"text-error/65"}/>}
                     <p>Logout</p>
@@ -86,4 +83,4 @@ function ProfilePopover({editMode}: {editMode: boolean}) {
     )
 }
 
-export {ProfilePopover}
+export { ProfilePopover }

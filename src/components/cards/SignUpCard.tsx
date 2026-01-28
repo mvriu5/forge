@@ -1,22 +1,22 @@
 "use client"
 
-import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
-import {Button} from "@/components/ui/Button"
-import {z} from "zod";
-import {useForm} from "react-hook-form"
-import {zodResolver} from "@hookform/resolvers/zod"
-import {ForgeLogo} from "@/components/svg/ForgeLogo"
-import Link from "next/link"
-import {Spinner} from "@/components/ui/Spinner"
-import {Github, Google} from "@/components/svg/Icons"
-import {useAuth} from "@/hooks/useAuth"
-import {useIntegrations} from "@/hooks/data/useIntegrations"
-import {useSession} from "@/hooks/data/useSession"
+import { ForgeLogo } from "@/components/svg/ForgeLogo";
+import { Github, Google } from "@/components/svg/Icons";
+import { Button } from "@/components/ui/Button";
+import { Form, FormField, FormInput, FormItem, FormLabel, FormMessage } from "@/components/ui/Form";
+import { Spinner } from "@/components/ui/Spinner";
+import { useIntegrations } from "@/hooks/data/useIntegrations";
+import { useAuth } from "@/hooks/useAuth";
+import { authClient } from "@/lib/auth-client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 function SignUpCard() {
-    const {userId} = useSession()
+    const {data: session} = authClient.useSession()
     const {signupSchema, isLoading, handleEmailSignUp} = useAuth()
-    const {handleIntegrate} = useIntegrations(userId)
+    const {handleIntegrate} = useIntegrations(session?.user.id)
 
     const form = useForm<z.infer<typeof signupSchema>>({
         resolver: zodResolver(signupSchema),
@@ -123,4 +123,4 @@ function SignUpCard() {
     )
 }
 
-export { SignUpCard }
+export { SignUpCard };

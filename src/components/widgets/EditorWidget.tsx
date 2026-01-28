@@ -5,17 +5,73 @@ import { useTooltip } from "@/components/ui/TooltipProvider"
 import { WidgetContent } from "@/components/widgets/base/WidgetContent"
 import { WidgetEmpty } from "@/components/widgets/base/WidgetEmpty"
 import { WidgetHeader } from "@/components/widgets/base/WidgetHeader"
-import { useIntegrations } from "@/hooks/data/useIntegrations"
-import { NotionPage, useNotion } from "@/hooks/useNotion"
+import { getIntegrationByProvider, useIntegrations } from "@/hooks/data/useIntegrations"
+import { authClient } from "@/lib/auth-client"
+import { WidgetProps } from "@/lib/definitions"
+import { blocksToJSONContent } from "@/lib/notion"
+import { queryOptions } from "@/lib/queryOptions"
 import { cn } from "@/lib/utils"
-import { defineWidget, WidgetProps } from "@tryforgeio/sdk"
+import { defineWidget } from "@/lib/widget"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { Import, Plus } from "lucide-react"
-import React, { Suspense, useCallback, useMemo, useState } from "react"
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Notion } from "../svg/Icons"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover"
 import { ScrollArea } from "../ui/ScrollArea"
 import { Skeleton } from "../ui/Skeleton"
 import { toast } from "../ui/Toast"
+
+export interface NotionPage {
+    id: string
+    title: string
+    isChild: boolean
+    parentId: string | null
+}
+
+export interface NotionPageContent {
+    id: string
+    title: string
+    content: any
+}
+
+interface NotionPagesResponse {
+    pages?: NotionPage[]
+}
+
+interface NotionPageResponse {
+    id: string
+    title: string
+    blocks?: unknown[]
+}
+
+const NOTION_PAGES_QUERY_KEY = (userId: string | undefined) => ["notionPages", userId] as const
+
+async function fetchPages(userId: string | null): Promise<NotionPage[]> {
+    if (!userId) return []
+
+    const response = await fetch(`/api/notion/pages?userId=${userId}`)
+
+    if (!response.ok) throw new Error("Failed to load Notion pages")
+
+    const data: NotionPagesResponse = await response.json()
+    return data.pages ?? []
+}
+
+async function fetchPageContent(userId: string | null, pageId: string): Promise<NotionPageContent | null> {
+    if (!userId) return null
+
+    const response = await fetch(`/api/notion/pages/${pageId}?userId=${userId}`)
+
+    if (!response.ok) throw new Error("Unable to load the Notion page")
+
+    const data: NotionPageResponse = await response.json()
+
+    return {
+        id: data.id,
+        title: data.title,
+        content: blocksToJSONContent(data.blocks ?? [])
+    }
+}
 
 const LazyNoteDialog = React.lazy(() => import("../../components/dialogs/NoteDialog").then(mod => ({ default: mod.NoteDialog })))
 
@@ -38,9 +94,68 @@ export interface EditorConfig {
     notes: Note[]
 }
 
-const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, updateConfig}) => {
-    const {isConnected, isLoadingPages, isLoadingPageContent, pages, fetchPageContent} = useNotion()
-    const {handleIntegrate} = useIntegrations(widget.userId)
+const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({ widget, config, updateConfig }) => {
+    const { integrations, refetchIntegrations, handleIntegrate } = useIntegrations(widget.userId)
+    const notionIntegration = useMemo(() => getIntegrationByProvider(integrations, "notion"), [integrations])
+    const [accessToken, setAccessToken] = useState<string | null>(null)
+    const isRefreshingToken = useRef(false)
+
+    useEffect(() => {
+        if (!widget.userId) {
+            setAccessToken(null)
+            return
+        }
+
+        if (!notionIntegration) {
+            setAccessToken(null)
+            return
+        }
+
+        const expired = notionIntegration.accessTokenExpiration
+            ? new Date(notionIntegration.accessTokenExpiration).getTime() <= Date.now()
+            : false
+        const missing = !notionIntegration.accessToken
+        const shouldRefresh = expired || missing
+
+        if (shouldRefresh && !isRefreshingToken.current) {
+            isRefreshingToken.current = true
+            const refresh = async () => {
+                try {
+                    await authClient.refreshToken({ providerId: "notion", userId: widget.userId })
+                    await refetchIntegrations()
+                } catch {
+                    toast.error("Unable to refresh Notion access. Try reconnecting.")
+                } finally {
+                    isRefreshingToken.current = false
+                }
+            }
+            void refresh()
+            return
+        }
+
+        setAccessToken(notionIntegration.accessToken ?? null)
+    }, [notionIntegration, refetchIntegrations, widget.userId])
+
+    const hasAccess = Boolean(accessToken)
+
+    const { data: pagesData, isLoading: isLoadingPages, isFetching: isFetchingPages, refetch: refetchPages } = useQuery<NotionPage[], Error>(queryOptions({
+        queryKey: NOTION_PAGES_QUERY_KEY(widget.userId),
+        queryFn: () => fetchPages(widget.userId ?? null),
+        enabled: Boolean(widget.userId && hasAccess),
+    }))
+    const pages = pagesData ?? []
+
+    const fetchPageContentMutation = useMutation({
+        mutationFn: (pageId: string) => fetchPageContent(widget.userId ?? null, pageId),
+        onError: () => {
+            toast.error("Unable to load the Notion page")
+        }
+    })
+
+    const isConnected = Boolean(accessToken)
+    const isLoadingPageContent = fetchPageContentMutation.isPending
+    const fetchPageContentFn = fetchPageContentMutation.mutateAsync
+    // end from useNotion hook
 
     const isLoadingNotionData = isLoadingPages || isLoadingPageContent
 
@@ -77,7 +192,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
             lastUpdated: new Date(),
             notionSync: null
         }
-        await updateConfig({notes: [...config.notes, newNote]})
+        await updateConfig({ notes: [...config.notes, newNote] })
         setOpenNoteId(newNote.id)
     }, [setOpenNoteId, updateConfig, config.notes])
 
@@ -104,12 +219,12 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
         }
 
         const notesWithPending = [...config.notes, pendingNote]
-        await updateConfig({notes: notesWithPending})
+        await updateConfig({ notes: notesWithPending })
         setOpenNoteId(pendingNoteId)
 
-        const pageContent = await fetchPageContent(pageId)
+        const pageContent = await fetchPageContentFn(pageId)
         if (!pageContent) {
-            await updateConfig({notes: config.notes})
+            await updateConfig({ notes: config.notes })
             setOpenNoteId(null)
             toast.error("Failed to load Notion page.")
             return
@@ -126,23 +241,26 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
                     title: pageContent.title,
                     syncedAt: new Date(),
                 }
-            }: note
+            } : note
         )
 
-        await updateConfig({notes: updatedNotes})
+        await updateConfig({ notes: updatedNotes })
         setOpenNoteId(pendingNoteId)
-    }, [fetchPageContent, updateConfig, config.notes])
+    }, [fetchPageContentFn, updateConfig, config.notes])
 
     const buildPageTree = useCallback((notionPages: NotionPage[]): PageNode[] => {
         const nodeMap = new Map<string, PageNode>()
-        notionPages.map((page) => nodeMap.set(page.id, {...page, children: []}))
+        notionPages.forEach((page) => nodeMap.set(page.id, { ...page, children: [] }))
 
         const roots: PageNode[] = []
 
-        notionPages.map((page) => {
+        notionPages.forEach((page) => {
             const node = nodeMap.get(page.id)!
-            if (page.parentId && nodeMap.has(page.parentId)) nodeMap.get(page.parentId)!.children.push(node)
-            else roots.push(node)
+            if (page.parentId && nodeMap.has(page.parentId)) {
+                nodeMap.get(page.parentId)!.children.push(node)
+            } else {
+                roots.push(node)
+            }
         })
 
         return roots
@@ -151,18 +269,18 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
     const pageTree = useMemo(() => buildPageTree(pages), [buildPageTree, pages])
 
     const renderPageButtons = useCallback((nodes: PageNode[], depth = 1): React.ReactNode => (nodes.map((node) => (
-            <React.Fragment key={node.id}>
-                <Button
-                    variant={"ghost"}
-                    className={cn("justify-start h-6 px-2 text-sm shadow-none dark:shadow-none font-normal text-primary", depth > 1 && "text-secondary")}
-                    style={{ paddingLeft: depth * 16 }}
-                    onClick={() => void handleNotionImport(node.id)}
-                >
-                    {node.title}
-                </Button>
-                {node.children.length > 0 && renderPageButtons(node.children, depth + 1)}
-            </React.Fragment>
-        ))
+        <React.Fragment key={node.id}>
+            <Button
+                variant={"ghost"}
+                className={cn("justify-start h-6 px-2 text-sm shadow-none dark:shadow-none font-normal text-primary", depth > 1 && "text-secondary")}
+                style={{ paddingLeft: depth * 16 }}
+                onClick={() => void handleNotionImport(node.id)}
+            >
+                {node.title}
+            </Button>
+            {node.children.length > 0 && renderPageButtons(node.children, depth + 1)}
+        </React.Fragment>
+    ))
     ), [handleNotionImport])
 
     return (
@@ -184,7 +302,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
                                 className="gap-2 border-0 shadow-none dark:shadow-none px-2 rounded-sm"
                                 onClick={() => void handleIntegrate("notion")}
                             >
-                                <Notion className="size-4 fill-secondary"/>
+                                <Notion className="size-4 fill-secondary" />
                                 Connect Notion
                             </Button>
                         ) : (
@@ -217,11 +335,11 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({widget, config, upda
                     onClick={createNewNote}
                     {...addTooltip}
                 >
-                    <Plus size={16}/>
+                    <Plus size={16} />
                 </Button>
             </WidgetHeader>
             {sortedNotes.length === 0 ? (
-                <WidgetEmpty message={"No notes yet."}/>
+                <WidgetEmpty message={"No notes yet."} />
             ) : (
                 <WidgetContent scroll>
                     <div className={"flex flex-col gap-2"}>

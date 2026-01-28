@@ -1,12 +1,12 @@
-import {DndContext} from "@dnd-kit/core"
-import {WidgetRenderer} from "@/components/WidgetRenderer"
-import {useDragAndDrop} from "@/hooks/useDragAndDrop"
-import {Widget} from "@/database"
-import {useGrid} from "@/hooks/useGrid"
+import { Grid } from "@/components/Grid"
+import { WidgetRenderer } from "@/components/WidgetRenderer"
+import { Widget } from "@/database"
+import { useResponsiveLayout } from "@/hooks/media/useResponsiveLayout"
+import { useDragAndDrop } from "@/hooks/useDragAndDrop"
+import { useGrid } from "@/hooks/useGrid"
+import { cn } from "@/lib/utils"
+import { DndContext } from "@dnd-kit/core"
 import React from "react"
-import {Grid} from "@/components/Grid"
-import {cn} from "@/lib/utils"
-import {useResponsiveLayout} from "@/hooks/media/useResponsiveLayout"
 
 interface DashboardGridProps {
     editMode: boolean
@@ -66,4 +66,4 @@ const DashboardGrid = React.memo<DashboardGridProps>(function DashboardGrid({
     )
 })
 
-export {DashboardGrid}
+export { DashboardGrid }

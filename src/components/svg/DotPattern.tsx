@@ -1,4 +1,4 @@
-import {cn} from "@/lib/utils"
+import { cn } from "@/lib/utils"
 
 interface DotPatternProps {
     width?: number
@@ -27,4 +27,4 @@ const DotPattern = ({width = 16, height = 16, className}: DotPatternProps) => {
     )
 }
 
-export {DotPattern}
+export { DotPattern }

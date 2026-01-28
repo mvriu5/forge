@@ -1,5 +1,5 @@
-import React, {ReactNode} from "react"
-import {cn} from "@/lib/utils"
+import { cn } from "@/lib/utils"
+import { ReactNode } from "react"
 
 interface WidgetHeaderProps {
     children?: ReactNode
@@ -22,4 +22,4 @@ const WidgetHeader = ({children, title, icon, className}: WidgetHeaderProps) => 
     )
 }
 
-export {WidgetHeader}
+export { WidgetHeader }

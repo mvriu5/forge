@@ -1,11 +1,11 @@
 "use client"
 
-import {AnimatePresence, motion} from "framer-motion"
-import {Check, Copy, Share2} from "lucide-react"
-import React, {HTMLAttributes, ReactNode, useEffect, useState} from "react"
-import {Button} from "@/components/ui/Button"
-import {cn} from "@/lib/utils"
-import {toast} from "@/components/ui/Toast"
+import { Button } from "@/components/ui/Button"
+import { toast } from "@/components/ui/Toast"
+import { cn } from "@/lib/utils"
+import { AnimatePresence, motion } from "framer-motion"
+import { Check, Copy } from "lucide-react"
+import React, { HTMLAttributes, ReactNode, useEffect, useState } from "react"
 
 interface CopyButtonProps extends HTMLAttributes<HTMLDivElement> {
     copyText: string

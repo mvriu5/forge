@@ -1,9 +1,8 @@
 "use client"
 
-import * as React from "react"
-import {Popover as PopoverPrimitive} from "radix-ui"
 import { cn, CONTAINER_STYLES } from "@/lib/utils"
-import {ComponentPropsWithRef} from "react"
+import { Popover as PopoverPrimitive } from "radix-ui"
+import { ComponentPropsWithRef } from "react"
 
 const Popover = PopoverPrimitive.Root
 
@@ -38,7 +37,5 @@ const PopoverContent = ({ className, align = "center", sideOffset = 4, portalled
 }
 
 export {
-    Popover,
-    PopoverTrigger,
-    PopoverContent
+    Popover, PopoverContent, PopoverTrigger
 }

@@ -1,5 +1,5 @@
-import {Widget} from "@/database"
-import {getWidgetDefinition} from "@/lib/definitions"
+import { Widget } from "@/database"
+import { getWidgetDefinition } from "@/lib/definitions"
 
 export type Breakpoint = "desktop" | "tablet" | "mobile"
 

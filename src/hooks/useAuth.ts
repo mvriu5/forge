@@ -1,8 +1,8 @@
-import {useState} from "react"
-import {z} from "zod"
-import {authClient} from "@/lib/auth-client"
-import {toast} from "@/components/ui/Toast"
-import {useRouter} from "next/navigation"
+import { toast } from "@/components/ui/Toast"
+import { authClient } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { z } from "zod"
 
 export const useAuth = () => {
     const router = useRouter()
@@ -19,14 +19,6 @@ export const useAuth = () => {
         password: z.string()
     })
 
-    const forgotSchema = z.object({
-        email: z.email({message: "Please enter a valid email address."})
-    })
-
-    const resetSchema = z.object({
-        password: z.string().min(8, {message: "Password must be at least 8 characters."}),
-    })
-
     const handleEmailSignUp = async (values: z.infer<typeof signupSchema>) => {
         await authClient.signUp.email({
             email: values.email,
@@ -34,14 +26,14 @@ export const useAuth = () => {
             name: values.name,
             callbackURL: "/dashboard",
         }, {
-            onRequest: (ctx) => {
+            onRequest: () => {
                 setIsLoading(true)
             },
-            onSuccess: (ctx) => {
+            onSuccess: () => {
                 setIsLoading(false)
                 toast.success("We sent you an email! Verify your email to continue.")
             },
-            onError: (ctx) => {
+            onError: () => {
                 setIsLoading(false)
                 toast.error("Something went wrong.")
             },
@@ -54,10 +46,10 @@ export const useAuth = () => {
             password: values.password,
             callbackURL: "/dashboard"
         }, {
-            onRequest: (ctx) => {
+            onRequest: () => {
                 setIsLoading(true)
             },
-            onSuccess: (ctx) => {
+            onSuccess: () => {
                 setIsLoading(false)
             },
             onError: (ctx) => {
@@ -68,50 +60,6 @@ export const useAuth = () => {
                 } else {
                     toast.error("Something went wrong.")
                 }
-                setIsLoading(false)
-            }
-        })
-    }
-
-    const handlePasswordForgot = async (values: z.infer<typeof forgotSchema>) => {
-        await authClient.requestPasswordReset({
-            email: values.email,
-            redirectTo: "/reset"
-        }, {
-            onRequest: (ctx) => {
-                setIsLoading(true)
-            },
-            onSuccess: (ctx) => {
-                toast.success("Reset E-Mail was sent. Please check your inbox.")
-                setIsLoading(false)
-            },
-            onError: (ctx) => {
-                toast.error("Something went wrong.")
-                setIsLoading(false)
-            }
-        })
-    }
-
-    const handlePasswordReset = async (values: z.infer<typeof resetSchema>) => {
-        const token = new URLSearchParams(window.location.search).get("token")
-
-        if (!token) {
-            router.push("/signin")
-            return
-        }
-
-        await authClient.resetPassword({
-            newPassword: values.password,
-            token,
-        }, {
-            onRequest: (ctx) => {
-                setIsLoading(true)
-            },
-            onSuccess: (ctx) => {
-                router.push("/signin")
-            },
-            onError: (ctx) => {
-                toast.error("Something went wrong.")
                 setIsLoading(false)
             }
         })
@@ -133,12 +81,8 @@ export const useAuth = () => {
         isLoading,
         signupSchema,
         signinSchema,
-        forgotSchema,
-        resetSchema,
         handleEmailSignUp,
         handleEmailSignIn,
-        handlePasswordForgot,
-        handlePasswordReset,
         handleSignOut
     }
 }

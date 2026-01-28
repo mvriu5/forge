@@ -1,10 +1,9 @@
 "use client"
 
-import * as React from "react"
-import {RadioGroup as RadioGroupPrimitive} from "radix-ui"
-import { Circle } from "lucide-react"
 import { cn } from "@/lib/utils"
-import {ComponentPropsWithRef} from "react"
+import { Circle } from "lucide-react"
+import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
+import { ComponentPropsWithRef } from "react"
 
 const RadioGroup = ({ className, ...props }: ComponentPropsWithRef<typeof RadioGroupPrimitive.Root>) => {
     return (

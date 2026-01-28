@@ -1,11 +1,10 @@
 "use client"
 
+import { Button } from "@/components/ui/Button"
+import { ScrollArea } from "@/components/ui/ScrollArea"
+import { cn } from "@/lib/utils"
+import { EmojiPicker as FerruccEmojiPicker } from "@ferrucc-io/emoji-picker"
 import React from "react"
-import {EmojiPicker as FerruccEmojiPicker} from "@ferrucc-io/emoji-picker"
-
-import {Button} from "@/components/ui/Button"
-import {ScrollArea} from "@/components/ui/ScrollArea"
-import {cn} from "@/lib/utils"
 
 export interface EmojiPickerProps extends React.ComponentPropsWithoutRef<typeof FerruccEmojiPicker> {
     onEmojiSelect: (emoji: string) => void

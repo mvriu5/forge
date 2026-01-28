@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server"
 import crypto from "crypto"
+import { headers } from "next/headers"
+import { auth } from "@/lib/auth"
 
 const DEFAULT_PRODUCTS = ["BTC-USD", "ETH-USD", "SOL-USD"]
 const DEFAULT_TIMEFRAME = "1d"
@@ -30,6 +32,12 @@ function coinbaseSign(params: { secret: string, timestamp: string, method: strin
 }
 
 export async function GET(request: Request) {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    })
+
+    if (!session) return new NextResponse("Unauthorized", { status: 401 })
+
     const { searchParams } = new URL(request.url)
     const productsParam = searchParams.get("products")
     const timeframeParam = searchParams.get("timeframe") ?? DEFAULT_TIMEFRAME

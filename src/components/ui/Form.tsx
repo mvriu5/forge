@@ -1,7 +1,7 @@
 "use client"
 
+import { Label as LabelPrimitive, Slot } from "radix-ui"
 import * as React from "react"
-import {Slot, Label as LabelPrimitive} from "radix-ui"
 import {
     Controller,
     ControllerProps,
@@ -11,9 +11,9 @@ import {
     useFormContext,
 } from "react-hook-form"
 
-import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/Input"
-import {ComponentPropsWithRef, HTMLAttributes, InputHTMLAttributes, useId} from "react"
+import { cn } from "@/lib/utils"
+import { ComponentPropsWithRef, HTMLAttributes, InputHTMLAttributes, useId } from "react"
 
 const Form = FormProvider
 
@@ -142,13 +142,6 @@ const FormMessage = ({ className, children, ...props }: HTMLAttributes<HTMLParag
 }
 
 export {
-    useFormField,
-    Form,
-    FormItem,
-    FormLabel,
-    FormControl,
-    FormInput,
-    FormDescription,
-    FormMessage,
-    FormField,
+    Form, FormControl, FormDescription, FormField, FormInput, FormItem,
+    FormLabel, FormMessage, useFormField
 }

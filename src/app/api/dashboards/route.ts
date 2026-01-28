@@ -5,15 +5,18 @@ import {
     getDashboardsFromUser,
     updateDashboard
 } from "@/database"
-import { requireServerUserId } from "@/lib/serverAuth"
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
-    let userId: string | undefined = undefined
-
     try {
-        const auth = await requireServerUserId(req)
-        userId = auth.userId
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+
+        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        const userId = session.user.id
 
         const body = await req.json()
         const { name } = body
@@ -26,22 +29,22 @@ export async function POST(req: Request) {
         })
 
         return NextResponse.json(newDashboard, { status: 200 })
-    } catch (error) {
-        if (error instanceof NextResponse) throw error
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function GET(req: Request) {
-    let userId: string | undefined = undefined
-    let id: string | undefined = undefined
-
     try {
-        const auth = await requireServerUserId(req)
-        userId = auth.userId
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+
+        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        const userId = session.user.id
 
         const { searchParams } = new URL(req.url)
-        id = searchParams.get("id") ?? undefined
+        const id = searchParams.get("id") ?? undefined
 
         if (id) {
             const dashboard = (await getDashboardFromId(id))[0]
@@ -54,22 +57,22 @@ export async function GET(req: Request) {
 
         const dashboards = await getDashboardsFromUser(userId)
         return NextResponse.json(dashboards, { status: 200 })
-    } catch (error) {
-        if (error instanceof NextResponse) throw error
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function PUT(req: Request) {
-    let id: string | undefined = undefined
-
     try {
-        const auth = await requireServerUserId(req)
-        const userId = auth.userId
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+
+        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        const userId = session.user.id
 
         const body = await req.json()
-        const { name, id: bodyId } = body
-        id = bodyId ?? undefined
+        const { name, id } = body
 
         if (!id) return NextResponse.json({ error: "Dashboard id is required" }, { status: 400 })
 
@@ -82,21 +85,22 @@ export async function PUT(req: Request) {
         if (!updatedDashboard) return NextResponse.json({ error: "Dashboard not found or could not be updated" }, { status: 404 })
 
         return NextResponse.json(updatedDashboard, { status: 200 })
-    } catch (error) {
-        if (error instanceof NextResponse) throw error
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }
 
 export async function DELETE(req: Request) {
-    let id: string | undefined = undefined
-
     try {
-        const auth = await requireServerUserId(req)
-        const userId = auth.userId
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
+
+        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        const userId = session.user.id
 
         const { searchParams } = new URL(req.url)
-        id = searchParams.get('id') ?? undefined
+        const id = searchParams.get('id') ?? undefined
 
         if (!id) return NextResponse.json({ error: "Dashboard id is required" }, { status: 400 })
 
@@ -110,8 +114,7 @@ export async function DELETE(req: Request) {
         if (!deletedDashboard) return NextResponse.json({ error: "Dashboard not found or could not be deleted" }, { status: 404 })
 
         return NextResponse.json(deletedDashboard, { status: 200 })
-    } catch (error) {
-        if (error instanceof NextResponse) throw error
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

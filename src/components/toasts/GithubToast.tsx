@@ -1,9 +1,8 @@
 "use client"
 
-import * as React from "react"
-import {toast} from "sonner"
-import {X} from "lucide-react"
-import {Github} from "@/components/svg/Icons"
+import { Github } from "@/components/svg/Icons"
+import { X } from "lucide-react"
+import { toast } from "sonner"
 
 type GithubToastProps = {
     t: string | number
@@ -41,4 +40,4 @@ function GithubToast({ t, title, issues, pullRequests }: GithubToastProps) {
     )
 }
 
-export {GithubToast}
+export { GithubToast }

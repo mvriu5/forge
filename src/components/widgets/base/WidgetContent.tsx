@@ -1,6 +1,6 @@
-import React, {ReactNode} from "react"
-import {cn} from "@/lib/utils"
-import {ScrollArea} from "@/components/ui/ScrollArea"
+import { ScrollArea } from "@/components/ui/ScrollArea"
+import { cn } from "@/lib/utils"
+import { ReactNode } from "react"
 
 interface WidgetContentProps {
     children: ReactNode
@@ -24,4 +24,4 @@ const WidgetContent = ({children, className, scroll = false}: WidgetContentProps
     )
 }
 
-export {WidgetContent}
+export { WidgetContent }

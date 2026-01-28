@@ -1,10 +1,10 @@
+import { cn } from '@/lib/utils'
 import {
     LoaderCircleIcon,
     LoaderIcon,
     LoaderPinwheelIcon,
     type LucideProps,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 type SpinnerVariantProps = Omit<SpinnerProps, 'variant'>
 

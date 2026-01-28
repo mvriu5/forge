@@ -2,13 +2,13 @@
 
 import React, {Suspense, useCallback, useMemo} from "react"
 import {WidgetContainer} from "@/components/widgets/base/WidgetContainer"
-import {useSession} from "@/hooks/data/useSession"
 import {getWidgetDefinition} from "@/lib/definitions"
-import {BaseWidget, WidgetRuntimeProps} from "@tryforgeio/sdk"
+import {BaseWidget, WidgetRuntimeProps} from "@/lib/definitions"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {ErrorBoundary} from "react-error-boundary"
 import {Skeleton} from "@/components/ui/Skeleton"
+import { authClient } from "@/lib/auth-client"
 
 const areWidgetsEqual = (a: BaseWidget, b: BaseWidget): boolean => (
     a === b
@@ -35,8 +35,8 @@ const WidgetSkeleton = () => (
 )
 
 const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete, onWidgetUpdate}) => {
-    const {userId, isLoading: isLoadingSession} = useSession()
-    const {integrations, isLoading: isLoadingIntegrations, handleIntegrate} = useIntegrations(userId)
+    const { data: session, isPending: sessionPending } = authClient.useSession()
+    const {integrations, isLoading: isLoadingIntegrations, handleIntegrate} = useIntegrations(session?.user.id)
 
     const definition = useMemo(() => getWidgetDefinition(widget.widgetType), [widget.widgetType])
     const {Component, defaultConfig, name, integration: requiredIntegration, sizes} = definition
@@ -71,8 +71,7 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode
         })
     }, [defaultConfig, onWidgetUpdate, widget])
 
-    // Loading state
-    if (isLoadingSession || isLoadingIntegrations) {
+    if (sessionPending || isLoadingIntegrations) {
         return (
             <WidgetContainer
                 widget={widget}

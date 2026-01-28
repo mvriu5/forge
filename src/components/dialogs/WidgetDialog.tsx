@@ -17,17 +17,17 @@ import { toast } from "@/components/ui/Toast"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/ToggleGroup"
 import { useTooltip } from "@/components/ui/TooltipProvider"
 import { useDashboards } from "@/hooks/data/useDashboards"
-import { useSession } from "@/hooks/data/useSession"
 import { useSettings } from "@/hooks/data/useSettings"
 import { useWidgets } from "@/hooks/data/useWidgets"
 import { definitions } from "@/lib/definitions"
 import { cn } from "@/lib/utils"
 import { capitalizeFirstLetter } from "@better-auth/core/utils"
-import { WidgetDefinition } from "@tryforgeio/sdk"
+import { WidgetDefinition } from "@/lib/definitions"
 import { Grid2x2Plus } from "lucide-react"
 import Image from "next/image"
 import { useMemo, useState } from "react"
 import { useHotkeys } from "react-hotkeys-hook"
+import { authClient } from "@/lib/auth-client"
 
 interface WidgetDialogProps {
     editMode: boolean
@@ -36,10 +36,10 @@ interface WidgetDialogProps {
 }
 
 function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
-    const {userId} = useSession()
-    const {settings} = useSettings(userId)
-    const {currentDashboard} = useDashboards(userId, settings)
-    const {widgets, addWidget, addWidgetStatus} = useWidgets(userId)
+    const { data: session } = authClient.useSession()
+    const {settings} = useSettings(session?.user.id)
+    const {currentDashboard} = useDashboards(session?.user.id, settings)
+    const {widgets, addWidget, addWidgetStatus} = useWidgets(session?.user.id)
 
     const [selectedWidgets, setSelectedWidgets] = useState<WidgetDefinition[]>([])
     const [query, setQuery] = useState("")
@@ -84,12 +84,12 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
     }
 
     const handleAddWidget = async () => {
-        if (selectedWidgets.length <= 0 || !userId || !currentDashboard) return
+        if (selectedWidgets.length <= 0 || !session?.user.id || !currentDashboard) return
 
         try {
             for (const widget of selectedWidgets) {
                 await addWidget({
-                    userId,
+                    userId: session?.user.id,
                     dashboardId: currentDashboard.id,
                     widgetType: widget.name,
                     height: widget.sizes.desktop.height,
@@ -110,7 +110,7 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
         setTagValue("")
     }
 
-    const isAddDisabled =  selectedWidgets.length <= 0 || !userId || !currentDashboard || addWidgetStatus === "pending"
+    const isAddDisabled =  selectedWidgets.length <= 0 || !session?.user.id || !currentDashboard || addWidgetStatus === "pending"
 
     return (
         <Dialog
@@ -123,7 +123,7 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
             }}
         >
             <DialogTrigger asChild>
-                <Button className={"px-1.5 gap-2"} {...widgetTooltip} variant={"brand"} disabled={editMode || !currentDashboard || !userId}>
+                <Button className={"px-1.5 gap-2"} {...widgetTooltip} variant={"brand"} disabled={editMode || !currentDashboard || !session?.user.id}>
                     <Grid2x2Plus size={16}/>
                     {title}
                 </Button>

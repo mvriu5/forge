@@ -3,8 +3,6 @@ import { auth } from "./lib/auth"
 import { headers } from "next/headers"
 
 const authRoutes = ["/signin", "/signup"]
-const passwordRoutes = ["/reset", "/forgot"]
-const landingRoutes = ["/", "/privacy", "/terms", "/imprint", "/sitemap.xml", "/robots.txt"]
 
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl
@@ -14,8 +12,7 @@ export async function proxy(request: NextRequest) {
     })
 
     const isAuthRoute = authRoutes.includes(pathname)
-    const isPasswordRoute = passwordRoutes.includes(pathname)
-    const isLanding = landingRoutes.includes(pathname)
+    const isLanding = pathname === "/"
 
     const referer = request.headers.get("referer") ?? ""
     const cameFromDashboard = referer.includes("/dashboard")
@@ -27,13 +24,11 @@ export async function proxy(request: NextRequest) {
     }
 
     if (!session) {
-        if (isAuthRoute || isPasswordRoute || isLanding) {
-            return NextResponse.next()
-        }
+        if (isAuthRoute || isLanding) return NextResponse.next()
         return NextResponse.redirect(new URL("/", request.url))
     }
 
-    if (session && (isAuthRoute || isPasswordRoute)) {
+    if (session && isAuthRoute) {
         return NextResponse.redirect(new URL("/dashboard", request.url))
     }
 

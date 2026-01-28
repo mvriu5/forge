@@ -1,14 +1,13 @@
 "use client"
 
-import * as React from "react"
-import {DropdownMenu as DropdownMenuPrimitive} from "radix-ui"
-import {Check, ChevronRightIcon} from "lucide-react"
+import { KeyboardShortcut } from "@/components/ui/KeyboardShortcut"
+import { CONTAINER_STYLES, cn } from "@/lib/utils"
+import { Side } from "@floating-ui/utils"
+import { Check, ChevronRightIcon } from "lucide-react"
+import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui"
 import type { ReactNode } from "react"
-import {KeyboardShortcut} from "@/components/ui/KeyboardShortcut"
-import {CONTAINER_STYLES, cn} from "@/lib/utils"
-import {Side} from "@floating-ui/utils"
+import * as React from "react"
 import { ScrollArea } from "./ScrollArea"
-
 
 interface ItemType {
     type: 'item'
@@ -239,10 +238,7 @@ const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, a
 }
 
 export {
-    DropdownMenu,
-    DropdownMenuItem,
-    DropdownMenuCheckboxItem,
-    DropdownMenuLabel,
+    DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuItem, DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuSubItem,
     type MenuItem

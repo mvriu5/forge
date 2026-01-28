@@ -1,9 +1,8 @@
 "use client"
 
-import * as React from "react"
-import {Select as SelectPrimitive} from "radix-ui"
+import { cn, CONTAINER_STYLES } from "@/lib/utils"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
-import {cn, CONTAINER_STYLES} from "@/lib/utils"
+import { Select as SelectPrimitive } from "radix-ui"
 import { ComponentPropsWithRef } from "react"
 
 const Select = SelectPrimitive.Root
@@ -130,14 +129,5 @@ const SelectSeparator = ({ className, ...props }: ComponentPropsWithRef<typeof S
 }
 
 export {
-    Select,
-    SelectGroup,
-    SelectValue,
-    SelectTrigger,
-    SelectContent,
-    SelectLabel,
-    SelectItem,
-    SelectSeparator,
-    SelectScrollUpButton,
-    SelectScrollDownButton,
+    Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue
 }

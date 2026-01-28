@@ -1,18 +1,18 @@
 "use client"
 
-import {Archive, Bell, BellRing, Inbox, Mails, TriangleAlert} from "lucide-react"
-import React, {useMemo, useState} from "react"
-import {cn, getTimeLabel} from "@/lib/utils"
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/Popover"
-import {useSession} from "@/hooks/data/useSession"
-import {useNotifications} from "@/hooks/data/useNotifications"
-import {Button} from "@/components/ui/Button"
-import {ScrollArea} from "@/components/ui/ScrollArea"
-import {useTooltip} from "@/components/ui/TooltipProvider"
+import { Button } from "@/components/ui/Button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover"
+import { ScrollArea } from "@/components/ui/ScrollArea"
+import { useTooltip } from "@/components/ui/TooltipProvider"
+import { useNotifications } from "@/hooks/data/useNotifications"
+import { authClient } from "@/lib/auth-client"
+import { cn, getTimeLabel } from "@/lib/utils"
+import { Archive, Bell, BellRing, Inbox, Mails, TriangleAlert } from "lucide-react"
+import { useMemo, useState } from "react"
 
 function NotificationPopover({editMode}: {editMode: boolean}) {
-    const {userId, isLoading: sessionLoading} = useSession()
-    const {notifications, clearNotifications} = useNotifications(userId)
+    const {data: session, isPending: sessionLoading} = authClient.useSession()
+    const {notifications, clearNotifications} = useNotifications(session?.user.id)
 
     const sortedNotifications = useMemo(() => {
         return [...notifications]
@@ -97,4 +97,4 @@ function NotificationPopover({editMode}: {editMode: boolean}) {
     )
 }
 
-export {NotificationPopover}
+export { NotificationPopover }

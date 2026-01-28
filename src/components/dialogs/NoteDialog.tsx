@@ -1,11 +1,10 @@
 "use client"
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover"
-import { useSession } from "@/hooks/data/useSession"
 import { useSettings } from "@/hooks/data/useSettings"
+import { authClient } from "@/lib/auth-client"
 import SlashSuggestion, { filterCommandItems } from "@/lib/extensions"
 import { formatDate, getUpdateTimeLabel } from "@/lib/utils"
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import type { JSONContent, Editor as TipTapEditor } from "@tiptap/core"
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight"
 import Link from "@tiptap/extension-link"
@@ -61,8 +60,8 @@ function normalizeTipTapContent(value: unknown): JSONContent | string {
 }
 
 function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: NoteDialogProps) {
-    const {userId} = useSession()
-    const {settings} = useSettings(userId)
+    const {data: session} = authClient.useSession()
+    const {settings} = useSettings(session?.user.id)
 
     const [title, setTitle] = useState(note.title)
     const [emoji, setEmoji] = useState(note.emoji)

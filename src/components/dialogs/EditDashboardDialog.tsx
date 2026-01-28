@@ -1,20 +1,19 @@
 "use client"
 
-import {Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/Dialog"
-import {Button} from "@/components/ui/Button"
-import {Pencil} from "lucide-react"
-import {Form, FormField, FormInput, FormItem, FormLabel, FormMessage} from "@/components/ui/Form"
-import {Spinner} from "@/components/ui/Spinner"
-import React, {useCallback, useState} from "react"
-import {useForm} from "react-hook-form"
-import {z} from "zod"
-import {zodResolver} from "@hookform/resolvers/zod"
-import {Dashboard} from "@/database"
-import {useTooltip} from "@/components/ui/TooltipProvider"
-import {toast} from "@/components/ui/Toast"
-import {useDashboards} from "@/hooks/data/useDashboards"
-import {useSession} from "@/hooks/data/useSession"
-import { VisuallyHidden } from "radix-ui"
+import { Button } from "@/components/ui/Button"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/Dialog"
+import { Form, FormField, FormInput, FormItem, FormLabel, FormMessage } from "@/components/ui/Form"
+import { Spinner } from "@/components/ui/Spinner"
+import { toast } from "@/components/ui/Toast"
+import { useTooltip } from "@/components/ui/TooltipProvider"
+import { Dashboard } from "@/database"
+import { useDashboards } from "@/hooks/data/useDashboards"
+import { authClient } from "@/lib/auth-client"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Pencil } from "lucide-react"
+import { useCallback, useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 
 const formSchema = z.object({
     name: z.string()
@@ -23,8 +22,8 @@ const formSchema = z.object({
 })
 
 function EditDashboardDialog({dashboard}: {dashboard: Dashboard}) {
-    const {userId} = useSession()
-    const {dashboards, updateDashboard} = useDashboards(userId, null)
+    const {data: session} = authClient.useSession()
+    const {dashboards, updateDashboard} = useDashboards(session?.user.id, null)
     const [open, setOpen] = useState(false)
 
     const form = useForm<z.infer<typeof formSchema>>({

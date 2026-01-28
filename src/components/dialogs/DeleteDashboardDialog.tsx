@@ -7,11 +7,11 @@ import { toast } from "@/components/ui/Toast"
 import { useTooltip } from "@/components/ui/TooltipProvider"
 import { Dashboard } from "@/database"
 import { useDashboards } from "@/hooks/data/useDashboards"
-import { useSession } from "@/hooks/data/useSession"
 import { Trash } from "lucide-react"
 import { useMemo, useState } from "react"
 import { CopyButton } from "../CopyButton"
 import { Input } from "../ui/Input"
+import { authClient } from "@/lib/auth-client"
 
 interface DeleteDashboardDialogProps {
     dashboard: Dashboard
@@ -20,8 +20,8 @@ interface DeleteDashboardDialogProps {
 }
 
 function DeleteDashboardDialog({dashboard, onDelete, onAllDeleted}: DeleteDashboardDialogProps) {
-    const {userId} = useSession()
-    const {dashboards, removeDashboard} = useDashboards(userId, null)
+    const {data: session} = authClient.useSession()
+    const {dashboards, removeDashboard} = useDashboards(session?.user.id, null)
 
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)

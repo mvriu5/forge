@@ -3,19 +3,19 @@
 import {useDashboards} from "@/hooks/data/useDashboards"
 import {ScrollArea} from "@/components/ui/ScrollArea"
 import React, {Suspense} from "react"
-import {useSession} from "@/hooks/data/useSession"
 import {useSettings} from "@/hooks/data/useSettings"
 import {formatDate} from "@/lib/utils"
 import {Pencil, Trash} from "lucide-react"
 import {Button} from "@/components/ui/Button"
+import { authClient } from "@/lib/auth-client"
 
 const LazyDeleteDashboardDialog = React.lazy(() => import('@/components/dialogs/DeleteDashboardDialog'))
 const LazyEditDashboardDialog = React.lazy(() => import('@/components/dialogs/EditDashboardDialog'))
 
 function DashboardSection({handleClose}: {handleClose?: () => void}) {
-    const {userId} = useSession()
-    const {settings} = useSettings(userId)
-    const {dashboards = []} = useDashboards(userId, null)
+    const {data: session} = authClient.useSession()
+    const {settings} = useSettings(session?.user.id)
+    const {dashboards = []} = useDashboards(session?.user.id, null)
 
     return (
         <ScrollArea className={"h-full"} thumbClassname={"bg-white/5"}>

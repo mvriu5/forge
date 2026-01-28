@@ -1,18 +1,17 @@
 "use client"
 
-import * as React from "react"
+import { Dialog, DialogContent } from "@/components/ui/Dialog"
+import { KeyboardShortcut } from "@/components/ui/KeyboardShortcut"
+import { cn } from "@/lib/utils"
 import { Command as CommandPrimitive } from "cmdk"
 import { Search } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Dialog, DialogContent } from "@/components/ui/Dialog"
-import {KeyboardShortcut} from "@/components/ui/KeyboardShortcut"
-import {ComponentPropsWithRef} from "react"
+import { ComponentPropsWithRef } from "react"
 
 const Command = ({className, ...props}: ComponentPropsWithRef<typeof CommandPrimitive>) => {
     return (
         <CommandPrimitive
             className={cn(
-                "flex h-full w-full flex-col overflow-hidden rounded-md bg-primary text-primary border-1 border-main/40",
+                "flex h-full w-full flex-col overflow-hidden rounded-md bg-primary text-primary border border-main/40",
                 className
             )}
             {...props}
@@ -25,9 +24,9 @@ const CommandDialog = ({children, ...props}: any) => {
         <Dialog {...props}>
             <DialogContent className="overflow-hidden p-0 border-0">
                 <Command className={cn(
-                    "[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-secondary",
-                    "[&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5",
-                    "[&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3",
+                    "**:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:font-medium **:[[cmdk-group-heading]]:text-secondary",
+                    "[&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 **:[[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5",
+                    "[&_[cmdk-input-wrapper]_svg]:w-5 **:[[cmdk-input]]:h-12 **:[[cmdk-item]]:px-2 **:[[cmdk-item]]:py-3",
                     "[&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
                 )}
                 >
@@ -56,7 +55,7 @@ const CommandInput = ({className, ...props}: ComponentPropsWithRef<typeof Comman
 const CommandList = ({className, ...props}: ComponentPropsWithRef<typeof CommandPrimitive.List>) => {
     return (
         <CommandPrimitive.List
-            className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
+            className={cn("max-h-75 overflow-y-auto overflow-x-hidden", className)}
             {...props}
         />
     )
@@ -75,8 +74,8 @@ const CommandGroup = ({className, ...props}: ComponentPropsWithRef<typeof Comman
     return (
         <CommandPrimitive.Group
             className={cn(
-                "overflow-hidden p-1 text-primary [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5",
-                "[&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-normal [&_[cmdk-group-heading]]:text-tertiary",
+                "overflow-hidden p-1 text-primary **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:py-1.5",
+                "**:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-normal **:[[cmdk-group-heading]]:text-tertiary",
                 className
             )}
             {...props}
@@ -115,12 +114,6 @@ const CommandShortcut = ({title}: {title: string}) => {
 
 export {
     Command,
-    CommandDialog,
-    CommandInput,
-    CommandList,
-    CommandEmpty,
-    CommandGroup,
-    CommandItem,
-    CommandShortcut,
-    CommandSeparator
+    CommandDialog, CommandEmpty,
+    CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut
 }

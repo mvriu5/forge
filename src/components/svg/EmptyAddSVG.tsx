@@ -1,5 +1,3 @@
-import type React from "react"
-
 function EmptyAddSVG() {
     return (
         <svg
@@ -63,4 +61,4 @@ function EmptyAddSVG() {
     )
 }
 
-export {EmptyAddSVG}
+export { EmptyAddSVG }

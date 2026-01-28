@@ -1,7 +1,6 @@
 "use client"
 
-import * as React from "react"
-import {Check} from "lucide-react"
+import { Check } from "lucide-react"
 
 type SuccessToastProps = {
     title: string
@@ -22,4 +21,4 @@ function SuccessToast({ title }: SuccessToastProps) {
     )
 }
 
-export {SuccessToast}
+export { SuccessToast }

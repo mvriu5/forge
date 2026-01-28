@@ -1,6 +1,8 @@
-import {NextResponse} from "next/server"
-import {getNotionAccount} from "@/database"
-import {NOTION_VERSION, getTitleFromProperties} from "@/lib/notion"
+import { getNotionAccount } from "@/database"
+import { auth } from "@/lib/auth"
+import { NOTION_VERSION, getTitleFromProperties } from "@/lib/notion"
+import { headers } from "next/headers"
+import { NextResponse } from "next/server"
 
 async function getAccessToken(userId: string) {
     const account = (await getNotionAccount(userId))[0]
@@ -55,13 +57,13 @@ async function fetchChildPages(accessToken: string, pageId: string): Promise<Not
 }
 
 export async function GET(req: Request) {
-    let userId: string | undefined = undefined
-
     try {
-        const { searchParams } = new URL(req.url)
-        userId = searchParams.get("userId") ?? undefined
+        const session = await auth.api.getSession({
+            headers: await headers()
+        })
 
-        if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 })
+        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        const userId = session.user.id
 
         const accessToken = await getAccessToken(userId)
         if (!accessToken) return NextResponse.json({ error: "Notion integration missing or expired" }, { status: 401 })
@@ -116,8 +118,7 @@ export async function GET(req: Request) {
         }
 
         return NextResponse.json({ pages: allPages }, { status: 200 })
-    } catch (error) {
-        if (error instanceof NextResponse) throw error
+    } catch {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
     }
 }

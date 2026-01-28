@@ -1,5 +1,7 @@
-import { NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
 import crypto from "crypto"
+import { headers } from "next/headers"
+import { NextResponse } from "next/server"
 
 const COINBASE_API_BASE = "https://api.exchange.coinbase.com"
 
@@ -20,6 +22,12 @@ function coinbaseSign(params: { secret: string, timestamp: string, method: strin
 }
 
 export async function GET() {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    })
+
+    if (!session) return new NextResponse("Unauthorized", { status: 401 })
+
     const timestamp = Math.floor(Date.now() / 1000).toString()
 
     const signature = coinbaseSign({

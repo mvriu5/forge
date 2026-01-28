@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/Button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/Dialog"
 import { ScrollArea } from "@/components/ui/ScrollArea"
 import { Skeleton } from "@/components/ui/Skeleton"
-import { getHeaderValue, GmailLabel, GmailMessage } from "@/hooks/useGoogleMail"
 import { cn, formatDate, getTimeLabel } from "@/lib/utils"
-import { Link } from "@react-email/components"
 import { CircleDashed, CircleFadingArrowUp, ExternalLink, File, Loader, MessageSquareDot, Send, Speech, ThumbsUp, Trash2, TriangleAlert, UserLock } from "lucide-react"
 import { useCallback, useMemo } from "react"
 import { useTooltip } from "../ui/TooltipProvider"
+import Link from "next/link"
+import { GmailMessage, GmailLabel, getHeaderValue } from "../widgets/InboxWidget"
 
 interface InboxDialogProps {
     open?: boolean

@@ -1,6 +1,5 @@
-import {EmptyAddSVG} from "@/components/svg/EmptyAddSVG"
-import {WidgetDialog} from "@/components/dialogs/WidgetDialog"
-import React from "react"
+import { WidgetDialog } from "@/components/dialogs/WidgetDialog"
+import { EmptyAddSVG } from "@/components/svg/EmptyAddSVG"
 
 export function DashboardEmpty() {
     return (

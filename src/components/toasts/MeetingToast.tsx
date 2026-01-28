@@ -1,9 +1,8 @@
 "use client"
 
-import * as React from "react"
-import {toast} from "sonner"
+import { Headset, X } from "lucide-react"
 import Link from "next/link"
-import {Headset, X} from "lucide-react"
+import { toast } from "sonner"
 
 type MeetingToastProps = {
     t: string | number
@@ -44,4 +43,4 @@ function MeetingToast({ t, title, url }: MeetingToastProps) {
     )
 }
 
-export {MeetingToast}
+export { MeetingToast }

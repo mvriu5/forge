@@ -1,11 +1,9 @@
 "use client"
 
-import * as React from "react"
-import {Accordion} from "radix-ui"
-import { ChevronDown } from "lucide-react"
-
 import { cn } from "@/lib/utils"
-import type {ComponentPropsWithRef} from "react"
+import { ChevronDown } from "lucide-react"
+import { Accordion } from "radix-ui"
+import type { ComponentPropsWithRef } from "react"
 
 
 const AccordionItem = ({ title, children, className, ...props }: ComponentPropsWithRef<typeof Accordion.Item & {title: string}>) => {
@@ -52,7 +50,5 @@ const AccordionContent = ({ className, children, ...props }: ComponentPropsWithR
 }
 
 export {
-    Accordion,
-    AccordionItem,
-    AccordionContent
+    Accordion, AccordionContent, AccordionItem
 }
