@@ -1,5 +1,6 @@
 import { Account, deleteAccount, getGithubAccount, getGoogleAccount, getNotionAccount, updateAccount } from "@/database"
 import { auth } from "@/lib/auth"
+import { deleteAccountSchema, updateAccountSchema } from "@/lib/validations"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 
@@ -33,9 +34,13 @@ export async function DELETE(req: Request) {
         const userId = session.user.id
 
         const { searchParams } = new URL(req.url)
-        const provider = searchParams.get("provider")
+        const query = Object.fromEntries(searchParams.entries())
+        const validationResult = deleteAccountSchema.safeParse(query)
 
-        if (!provider) return NextResponse.json({ error: "Integration provider is required" }, { status: 400 })
+        if (!validationResult.success) {
+            return NextResponse.json("Invalid request body", { status: 400 });
+        }
+        const { provider } = validationResult.data
 
         const deletedAccount = deleteAccount(userId, provider)
         if (!deletedAccount) return NextResponse.json({ error: "Account not found" }, { status: 404 })
@@ -56,9 +61,12 @@ export async function PUT(req: Request) {
         const userId = session.user.id
 
         const body = await req.json()
-        const { provider, refreshToken } = body
+        const validationResult = updateAccountSchema.safeParse(body)
 
-        if (!provider) return NextResponse.json({ error: "Integration provider is required" }, { status: 400 })
+        if (!validationResult.success) {
+            return NextResponse.json("Invalid request body", { status: 400 });
+        }
+        const { provider, refreshToken } = validationResult.data
 
         const updatedAccount = await updateAccount(userId, provider, {refreshToken})
         if (!updatedAccount) return NextResponse.json({ error: "Account not found or could not be updated" }, { status: 404 })

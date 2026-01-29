@@ -1,5 +1,6 @@
 import { createSettings, getSettingsFromId, getSettingsFromUser, updateSettings } from "@/database"
 import { auth } from "@/lib/auth"
+import { createSettingsSchema, updateSettingsSchema } from "@/lib/validations"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 
@@ -13,7 +14,12 @@ export async function POST(req: Request) {
         const userId = session.user.id
 
         const body = await req.json()
-        const { config } = body
+        const validationResult = createSettingsSchema.safeParse(body)
+
+        if (!validationResult.success) {
+            return NextResponse.json("Invalid request body", { status: 400 });
+        }
+        const { config } = validationResult.data
 
         const settings = await createSettings({
             userId,
@@ -54,9 +60,12 @@ export async function PUT(req: Request) {
         const userId = session.user.id
 
         const body = await req.json()
-        const { lastDashboardId, config, onboardingCompleted, id } = body
+        const validationResult = updateSettingsSchema.safeParse(body)
 
-        if (!id) return NextResponse.json({ error: "Settings id is required" }, { status: 400 })
+        if (!validationResult.success) {
+            return NextResponse.json("Invalid request body", { status: 400 });
+        }
+        const { id, lastDashboardId, config, onboardingCompleted } = validationResult.data
 
         const existing = (await getSettingsFromId(id))[0]
         if (!existing) return NextResponse.json({ error: "Settings not found" }, { status: 404 })

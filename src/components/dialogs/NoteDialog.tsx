@@ -307,8 +307,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                                 <PopoverContent className={"p-0 z-60"} align="start" onWheel={(e) => e.stopPropagation()}>
                                     <EmojiPicker
                                         emojisPerRow={6}
-                                        emojiSize={40}
-                                        onEmojiSelect={(emoji) => handleEmojiSelect(emoji)}
+                                        onEmojiSelect={(emoji) => handleEmojiSelect(emoji.emoji)}
                                         onRemove={handleRemoveEmoji}
                                     />
                                 </PopoverContent>

@@ -6,6 +6,7 @@ import {
     updateDashboard
 } from "@/database"
 import { auth } from "@/lib/auth"
+import { createDashboardSchema, deleteDashboardSchema, getDashboardSchema, updateDashboardSchema } from "@/lib/validations"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 
@@ -19,7 +20,12 @@ export async function POST(req: Request) {
         const userId = session.user.id
 
         const body = await req.json()
-        const { name } = body
+        const validationResult = createDashboardSchema.safeParse(body)
+
+        if (!validationResult.success) {
+            return NextResponse.json("Invalid request body", { status: 400 });
+        }
+        const { name } = validationResult.data
 
         const newDashboard = await createDashboard({
             userId,
@@ -44,7 +50,13 @@ export async function GET(req: Request) {
         const userId = session.user.id
 
         const { searchParams } = new URL(req.url)
-        const id = searchParams.get("id") ?? undefined
+        const query = Object.fromEntries(searchParams.entries())
+        const validationResult = getDashboardSchema.safeParse(query)
+
+        if (!validationResult.success) {
+            return NextResponse.json("Invalid request body", { status: 400 });
+        }
+        const { id } = validationResult.data
 
         if (id) {
             const dashboard = (await getDashboardFromId(id))[0]
@@ -72,9 +84,12 @@ export async function PUT(req: Request) {
         const userId = session.user.id
 
         const body = await req.json()
-        const { name, id } = body
+        const validationResult = updateDashboardSchema.safeParse(body)
 
-        if (!id) return NextResponse.json({ error: "Dashboard id is required" }, { status: 400 })
+        if (!validationResult.success) {
+            return NextResponse.json("Invalid request body", { status: 400 });
+        }
+        const { id, name } = validationResult.data
 
         const existing = (await getDashboardFromId(id))[0]
         if (!existing) return NextResponse.json({ error: "Dashboard not found" }, { status: 404 })
@@ -100,9 +115,13 @@ export async function DELETE(req: Request) {
         const userId = session.user.id
 
         const { searchParams } = new URL(req.url)
-        const id = searchParams.get('id') ?? undefined
+        const query = Object.fromEntries(searchParams.entries())
+        const validationResult = deleteDashboardSchema.safeParse(query)
 
-        if (!id) return NextResponse.json({ error: "Dashboard id is required" }, { status: 400 })
+        if (!validationResult.success) {
+            return NextResponse.json("Invalid request body", { status: 400 });
+        }
+        const { id } = validationResult.data
 
         const existing = (await getDashboardFromId(id))[0]
         if (!existing) return NextResponse.json({ error: "Dashboard not found" }, { status: 404 })

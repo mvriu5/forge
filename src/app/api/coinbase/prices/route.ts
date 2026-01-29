@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import crypto from "crypto"
 import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
+import { getCoinbasePricesSchema } from "@/lib/validations"
 
 const DEFAULT_PRODUCTS = ["BTC-USD", "ETH-USD", "SOL-USD"]
 const DEFAULT_TIMEFRAME = "1d"
@@ -39,10 +40,15 @@ export async function GET(request: Request) {
     if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
     const { searchParams } = new URL(request.url)
-    const productsParam = searchParams.get("products")
-    const timeframeParam = searchParams.get("timeframe") ?? DEFAULT_TIMEFRAME
+    const query = Object.fromEntries(searchParams.entries())
+    const validationResult = getCoinbasePricesSchema.safeParse(query)
 
-    const timeframe = TIMEFRAMES[timeframeParam] ?? TIMEFRAMES[DEFAULT_TIMEFRAME]
+    if (!validationResult.success) {
+        return NextResponse.json("Invalid request body", { status: 400 });
+    }
+    const { products: productsParam, timeframe: timeframeParam } = validationResult.data
+
+    const timeframe = TIMEFRAMES[timeframeParam ?? DEFAULT_TIMEFRAME] ?? TIMEFRAMES[DEFAULT_TIMEFRAME]
     const products = productsParam ? productsParam.split(",").map((product) => product.trim()).filter(Boolean) : DEFAULT_PRODUCTS
 
     const results = await Promise.allSettled(

@@ -1,6 +1,7 @@
 import { Notification } from "@/database"
 import { auth } from "@/lib/auth"
 import { redis } from "@/lib/redis"
+import { createNotificationSchema } from "@/lib/validations"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 import { randomUUID } from "node:crypto"
@@ -32,10 +33,12 @@ export async function POST(req: Request) {
         const userId = session.user.id
 
         const body = await req.json()
-        const { type, message } = body
+        const validationResult = createNotificationSchema.safeParse(body)
 
-        if (!type) return NextResponse.json({ error: "type is required in the request body" }, { status: 400 })
-        if (!message) return NextResponse.json({ error: "message is required in the request body" }, { status: 400 })
+        if (!validationResult.success) {
+            return NextResponse.json("Invalid request body", { status: 400 });
+        }
+        const { type, message } = validationResult.data
 
         const notification: Notification = {
             id: randomUUID(),

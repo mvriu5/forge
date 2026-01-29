@@ -64,7 +64,7 @@ export function useSettings(userId: string | undefined) {
     const updateSettingsMutation = useMutation({
         mutationFn: updateSettingsRequest,
         onSuccess: (updatedSettings) => {
-            queryClient.setQueryData(SETTINGS_QUERY_KEY(userId), updatedSettings)
+            queryClient.setQueryData(SETTINGS_QUERY_KEY(updatedSettings.userId), updatedSettings)
         }
     })
 

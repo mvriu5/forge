@@ -91,11 +91,8 @@ export function useNotifications(userId: string | undefined) {
     const sendReminderNotification = useCallback(async (input: { type: Notification["type"], message: string, key?: string }) => {
         if (!userId) return
 
-        // Deduplicate by key if provided
         const notificationKey = input.key ?? `reminder-${input.message}`
         if (hasNotificationBeenSent(notificationKey)) return
-
-        markNotificationSent(notificationKey)
 
         const res = await fetch("/api/notifications", {
             method: "POST",
@@ -106,11 +103,13 @@ export function useNotifications(userId: string | undefined) {
                 message: input.message,
             })
         })
+
         if (res.ok) {
             const created = await res.json() as Notification
-            addNotification({...created, createdAt: new Date(created.createdAt)})
+            addNotification({ ...created, createdAt: new Date(created.createdAt) })
+            markNotificationSent(notificationKey)
+            toast.reminder(input.message)
         }
-        toast.reminder(input.message)
     }, [userId, addNotification])
 
     const sendMeetingNotification = useCallback(async (input: { type: Notification["type"], message: string, url: string, key?: string }) => {
@@ -119,8 +118,6 @@ export function useNotifications(userId: string | undefined) {
         const notificationKey = input.key ?? `meeting-${input.message}`
         if (hasNotificationBeenSent(notificationKey)) return
 
-        markNotificationSent(notificationKey)
-
         const res = await fetch("/api/notifications", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -130,11 +127,13 @@ export function useNotifications(userId: string | undefined) {
                 message: input.message,
             })
         })
+
         if (res.ok) {
             const created = await res.json() as Notification
-            addNotification({...created, createdAt: new Date(created.createdAt)})
+            addNotification({ ...created, createdAt: new Date(created.createdAt) })
+            markNotificationSent(notificationKey)
+            toast.meeting(input.message, input.url)
         }
-        toast.meeting(input.message, input.url)
     }, [userId, addNotification])
 
     const sendGithubNotification = useCallback(async (input: { type: Notification["type"], message: string, issues: number, pullRequests: number, key?: string }) => {
@@ -143,8 +142,6 @@ export function useNotifications(userId: string | undefined) {
         const notificationKey = input.key ?? "github-reminder"
         if (hasNotificationBeenSent(notificationKey)) return
 
-        markNotificationSent(notificationKey)
-
         const res = await fetch("/api/notifications", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -154,11 +151,13 @@ export function useNotifications(userId: string | undefined) {
                 message: input.message,
             })
         })
+
         if (res.ok) {
             const created = await res.json() as Notification
-            addNotification({...created, createdAt: new Date(created.createdAt)})
+            addNotification({ ...created, createdAt: new Date(created.createdAt) })
+            markNotificationSent(notificationKey)
+            toast.github(input.message, input.issues, input.pullRequests)
         }
-        toast.github(input.message, input.issues, input.pullRequests)
     }, [userId, addNotification])
 
     const sendMailNotification = useCallback(async (input: { type: Notification["type"], id: string,  message: string, snippet: string, key?: string }) => {
@@ -167,8 +166,6 @@ export function useNotifications(userId: string | undefined) {
         const notificationKey = input.key ?? `mail-${input.id}`
         if (hasNotificationBeenSent(notificationKey)) return
 
-        markNotificationSent(notificationKey)
-
         const res = await fetch("/api/notifications", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -178,11 +175,13 @@ export function useNotifications(userId: string | undefined) {
                 message: input.message,
             })
         })
+
         if (res.ok) {
             const created = await res.json() as Notification
-            addNotification({...created, createdAt: new Date(created.createdAt)})
+            addNotification({ ...created, createdAt: new Date(created.createdAt) })
+            markNotificationSent(notificationKey)
+            toast.mail(input.message, input.snippet)
         }
-        toast.mail(input.message, input.snippet)
     }, [userId, addNotification])
 
     const clearNotifications = useCallback(async () => {

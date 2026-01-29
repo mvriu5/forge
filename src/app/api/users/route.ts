@@ -1,5 +1,6 @@
 import { getUserFromId } from "@/database"
 import { auth } from "@/lib/auth"
+import { getUserSchema } from "@/lib/validations"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 
@@ -13,7 +14,13 @@ export async function GET(req: Request) {
         const userId = session.user.id
 
         const { searchParams } = new URL(req.url)
-        const id = searchParams.get('id') ?? undefined
+        const query = Object.fromEntries(searchParams.entries())
+        const validationResult = getUserSchema.safeParse(query)
+
+        if (!validationResult.success) {
+            return NextResponse.json("Invalid request body", { status: 400 });
+        }
+        const { id } = validationResult.data
 
         const requestedUserId = id ?? userId
 
