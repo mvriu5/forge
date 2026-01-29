@@ -2,8 +2,10 @@
 
 import { cn } from "@/lib/utils"
 import { EmojiPicker as Emoji } from "frimousse"
-import React from "react"
+import React, { useState } from "react"
 import { Button } from "./Button"
+import { Trash, TrashIcon } from "lucide-react"
+import { ScrollArea } from "./ScrollArea"
 
 export interface EmojiPickerProps {
     onEmojiSelect: (emoji: { emoji: string, label: string }) => void
@@ -14,28 +16,46 @@ export interface EmojiPickerProps {
 }
 
 export const EmojiPicker: React.FC<EmojiPickerProps> = ({onEmojiSelect, onRemove, emojisPerRow = 6, searchPlaceholder = "Search emoji", className, ...props}) => {
+    const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null)
+
+    const handleEmojiSelect = (emoji: { emoji: string, label: string }) => {
+        setSelectedEmoji(emoji.emoji)
+        onEmojiSelect(emoji)
+    }
+
+    const handleRemove = () => {
+        setSelectedEmoji(null)
+        onRemove?.()
+    }
+
     return (
         <Emoji.Root
-            className={cn("isolate flex h-92 w-fit flex-col bg-white dark:bg-neutral-900", className)}
-            onEmojiSelect={onEmojiSelect}
-
+            className={cn("isolate flex h-80 w-max flex-col bg-primary rounded-md", className)}
+            onEmojiSelect={handleEmojiSelect}
             columns={emojisPerRow}
         >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pt-2 px-2">
                 <Emoji.Search
-                    className="z-10 mx-2 mt-2 appearance-none rounded-md bg-neutral-100 px-2.5 py-2 text-sm dark:bg-neutral-800"
+                    className={cn(
+                        "z-10 appearance-none flex h-8 w-full rounded-md outline-0 border border-main/60 bg-primary",
+                        "px-3 py-1 shadow-xs dark:shadow-md transition-colors file:border-0 text-secondary",
+                        "file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-tertiary",
+                        "disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ",
+                        "focus:border-brand focus:bg-brand/5 focus:outline focus:outline-brand/60"
+                    )}
                     placeholder={searchPlaceholder}
                 />
-                <Button onClick={onRemove}>
-                    Remove
-                </Button>
+                {onRemove &&
+                    <Button onClick={handleRemove} className="px-1.5 bg-error/10 text-error border-error/20 hover:bg-error/20 hover:text-error">
+                        <Trash size={16}/>
+                    </Button>
+                }
             </div>
-
             <Emoji.Viewport className="relative flex-1 outline-hidden">
-                <Emoji.Loading className="absolute inset-0 flex items-center justify-center text-neutral-400 text-sm dark:text-neutral-500">
+                <Emoji.Loading className="absolute inset-0 flex items-center justify-center text-tertiary text-sm">
                     Loading…
                 </Emoji.Loading>
-                <Emoji.Empty className="absolute inset-0 flex items-center justify-center text-neutral-400 text-sm dark:text-neutral-500">
+                <Emoji.Empty className="absolute inset-0 flex items-center justify-center text-tertiary text-sm">
                     No emoji found.
                 </Emoji.Empty>
                 <Emoji.List
@@ -43,7 +63,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({onEmojiSelect, onRemove
                     components={{
                         CategoryHeader: ({ category, ...props }) => (
                             <div
-                                className="bg-white px-3 pt-3 pb-1.5 font-medium text-neutral-600 text-xs dark:bg-neutral-900 dark:text-neutral-400"
+                                className="px-3 pt-3 pb-1.5 font-medium bg-primary text-xs text-secondary"
                                 {...props}
                             >
                                 {category.label}
@@ -56,7 +76,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({onEmojiSelect, onRemove
                         ),
                         Emoji: ({ emoji, ...props }) => (
                             <button
-                                className="flex size-8 items-center justify-center rounded-md text-lg data-active:bg-neutral-100 dark:data-active:bg-neutral-800"
+                                className="flex size-8 items-center justify-center rounded-md text-lg data-active:bg-tertiary"
                                 {...props}
                             >
                                 {emoji.emoji}
