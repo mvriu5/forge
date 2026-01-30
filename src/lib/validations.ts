@@ -38,6 +38,7 @@ export const widgetTypeEnum = z.enum([
     "Countdown",
     "Crypto",
     "Editor",
+    "Frame",
     "Github Heatmap",
     "Github",
     "Inbox",

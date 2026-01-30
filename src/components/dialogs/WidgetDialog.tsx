@@ -46,15 +46,8 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
     const [tagValue, setTagValue] = useState("")
     const [dialogOpen, setDialogOpen] = useState(false)
 
-    useHotkeys("mod+s", (event) => {
-        event.preventDefault()
-        if (!title || editMode || isOnboarding) return
-        if (!dialogOpen) setDialogOpen(true)
-    }, [dialogOpen, title])
-
     const widgetTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new widget",
-        shortcut: "S",
         anchor: "bc",
         offset: 12
     })

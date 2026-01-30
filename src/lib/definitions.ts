@@ -13,6 +13,7 @@ import { todoWidgetDefinition } from "@/components/widgets/TodoWidget"
 import { weatherWidgetDefinition } from "@/components/widgets/WeatherWidget"
 import { inboxWidgetDefinition } from "@/components/widgets/InboxWidget"
 import { cryptoWidgetDefinition } from "@/components/widgets/CryptoWidget"
+import { frameWidgetDefinition } from "@/components/widgets/FrameWidget"
 
 export type TypedIntegration = "github" |"google" | "linear" | "atlassian" | string
 
@@ -81,15 +82,16 @@ export const definitions: WidgetDefinition[] = [
     bookmarkWidgetDefinition,
     clockWidgetDefinition,
     countdownWidgetDefinition,
+    cryptoWidgetDefinition,
     editorWidgetDefinition,
+    frameWidgetDefinition,
     githubheatmapWidgetDefinition,
     githubWidgetDefinition,
+    inboxWidgetDefinition,
     kanbanWidgetDefinition,
     meetingsWidgetDefinition,
     todoWidgetDefinition,
-    weatherWidgetDefinition,
-    inboxWidgetDefinition,
-    cryptoWidgetDefinition
+    weatherWidgetDefinition
 ] as const satisfies WidgetDefinition[]
 
 export const getWidgetDefinition = (name: string): WidgetDefinition => {
