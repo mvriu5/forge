@@ -6,29 +6,39 @@
 Forge brings all your most important dashboards and tools into a single app, so you never have to juggle multiple websites or programs again. Track stock prices, check the weather, monitor GitHub activity, manage tasks, or write in Markdown—all from one place.
 
 ## Features
-- **Drag'n drop**: Organize your dashboard as you want
-- **Share** (Coming soon): Create multiple dashboards & share with your friends
+- **Customizable Dashboard**: Drag, drop, and resize widgets to create a layout that fits your workflow.
+- **Multiple Dashboards**: Organize your widgets across multiple dashboards for different contexts.
+- **12+ Widgets**: A wide range of widgets including Meetings, Inbox, GitHub, Todos, and more.
+- **Real-time Updates**: Widgets like Stocks and Weather provide real-time information.
+- **Theming**: Customize the look and feel of your dashboard with different themes.
+- **Responsive Design**: Access your dashboard from any device, be it desktop, tablet, or mobile.
+- **Self-Hosted**: Full control over your data by hosting Forge on your own infrastructure.
+- **OAuth Integrations**: Connect to services like Google, GitHub, Notion, and Coinbase.
 
 ## Widgets
+- **Meetings**: Connect your Google Account and see your next meetings
+- **Inbox**: Connect your Gmail Account and see all your emails in one place
 - **Stocks**: Real‑time prices, watchlists, and custom analyses
 - **Weather**: Local forecasts and global weather maps
 - **GitHub**: Browse repos, track issues & pull requests
 - **Markdown Editor**: Draft notes, documentation, or blog posts inline
-- **Linear**: Watch all your linear issues
 - **Bookmark**: Save all your favorite websites in one store to have them handy
 - **Todo**: Manage your tasks and to-dos
 - **Clock**: Keep track of time with a clock widget
+- **Countdown**: See the time until a certain event is happening
 - **GitHub Heatmap**: Visualize your GitHub contributions over time#
 - **Kanban Board**: Organize tasks in a Kanban-style board
 
 ## Tech Stack
 - **Framework**: Next.js
 - **Styling**: Tailwind CSS
-- **State Management**: Zustand
-- **Database Layer**: Drizzle
+- **Database**: PostgreSQL
+- **Realtime Notifications**: Upstash Redis
+- **ORM**: Drizzle
 - **Formatter/Linter**: BiomeJS
 - **Data Fetching**: React Query
 - **Authentication**: BetterAuth
+- **Validation**: Zod
 
 ## Self-Hosting
 
@@ -58,7 +68,7 @@ Forge is designed to be fully self-hostable. Here's how you can set up your own 
 
 4.  **Run database migrations:**
     ```bash
-    npm run db:push
+    npx drizzle-kit push
     ```
 
 5.  **Start the application:**

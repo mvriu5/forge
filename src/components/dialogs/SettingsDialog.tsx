@@ -35,7 +35,7 @@ function SettingsDialog() {
                     <p>Settings</p>
                 </button>
             </DialogTrigger>
-            <DialogContent className={"p-0 w-200  max-w-[90vw] overflow-hidden"}>
+            <DialogContent className={"p-0 w-200 max-w-[90vw] overflow-hidden"}>
                 <VisuallyHidden>
                     <DialogHeader>
                         <DialogTitle>

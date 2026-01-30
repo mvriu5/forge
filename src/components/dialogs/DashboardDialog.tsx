@@ -91,7 +91,7 @@ function DashboardDialog({open, onOpenChange, showOnClose, editMode = false, das
                 </DialogTrigger>
             }
             <DialogContent
-                className={"md:min-w-75 max-w-[90vw] p-4"}
+                className={"w-152 max-w-[90vw] p-4"}
                 onPointerDownOutside={(e) => !showOnClose && e.preventDefault()}
             >
                 <DialogHeader className={"flex flex-row justify-between items-start"}>
