@@ -10,9 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Spinner } from "@/components/ui/Spinner"
 import { useTooltip } from "@/components/ui/TooltipProvider"
 import { Dashboard, DashboardInsert } from "@/database"
-import { LayoutTemplate, Save, Undo2 } from "lucide-react"
+import { LayoutTemplate, Maximize, Minimize, Save, Undo2 } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Skeleton } from "./ui/Skeleton"
 
 interface HeaderProps {
@@ -30,14 +30,25 @@ interface HeaderProps {
     addDashboard: (input: DashboardInsert) => Promise<Dashboard>
     addDashboardStatus: "idle" | "pending" | "error" | "success"
     userId?: string
+    isFullscreen: boolean
+    toggleFullScreen: () => void
 }
 
-function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, isOnboarding, onDashboardChange, addDashboard, addDashboardStatus, userId}: HeaderProps) {
+function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading = false, handleEditModeSave, handleEditModeCancel, widgetsEmpty = false, isLoading = false, isOnboarding, onDashboardChange, addDashboard, addDashboardStatus, userId, isFullscreen, toggleFullScreen}: HeaderProps) {
     const [dialogOpen, setDialogOpen] = useState(false)
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true)
+    const [isProfilePopoverOpen, setProfilePopoverOpen] = useState(false)
+    const [isNotificationPopoverOpen, setNotificationPopoverOpen] = useState(false)
 
     const layoutTooltip = useTooltip<HTMLButtonElement>({
         message: "Change your dashboard layout",
         shortcut: "E",
+        anchor: "bc",
+        offset: 12
+    })
+
+    const fullscreenTooltip = useTooltip<HTMLButtonElement>({
+        message: `${isFullscreen ? "Minimize" : "Maximize"} your window`,
         anchor: "bc",
         offset: 12
     })
@@ -48,14 +59,50 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
         await onDashboardChange(newDashboard.id)
     }
 
+    useEffect(() => {
+        if (!isFullscreen) setIsHeaderVisible(true)
+    }, [isFullscreen])
+
+    useEffect(() => {
+        let timeout: NodeJS.Timeout;
+
+        const handleMouseMove = (event: MouseEvent) => {
+            if (!isFullscreen) return
+
+            if (event.clientY < 60) {
+                setIsHeaderVisible(true)
+            } else {
+                if (isProfilePopoverOpen || isNotificationPopoverOpen) return
+                clearTimeout(timeout)
+                timeout = setTimeout(() => setIsHeaderVisible(false), 200)
+            }
+        }
+
+        if (isFullscreen) {
+            window.addEventListener("mousemove", handleMouseMove)
+            if (!isProfilePopoverOpen && !isNotificationPopoverOpen) {
+                const initialTimeout = setTimeout(() => setIsHeaderVisible(false), 2000)
+                return () => {
+                    window.removeEventListener("mousemove", handleMouseMove)
+                    clearTimeout(timeout)
+                    clearTimeout(initialTimeout)
+                }
+            }
+        }
+
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove)
+            clearTimeout(timeout)
+        }
+    }, [isFullscreen, isProfilePopoverOpen, isNotificationPopoverOpen])
+
     return (
-        <div className={"w-full top-0 left-0 py-2 px-4 flex justify-between items-center bg-primary border-b border-main/40"}>
+        <div className={`fixed z-50 w-full top-0 left-0 py-2 px-4 flex justify-between items-center bg-primary border-b border-main/40 transition-transform duration-300 ${!isHeaderVisible ? "-translate-y-full" : ""}`}>
             <div className={"flex items-center gap-4"}>
                 <div className={"flex items-center gap-4"}>
                     <Link href={"/"} className={"cursor-default"}>
                         <ForgeLogo/>
                     </Link>
-                    <span className={"hidden md:flex text-xl text-primary font-mono font-semibold"}>forge</span>
                 </div>
                 <div className={"h-6 w-px border-r-2 border-main/40"}/>
                 {editMode ?
@@ -71,8 +118,19 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                     :
                     <div className={"flex gap-2"}>
                         <WidgetDialog editMode={editMode} isOnboarding={isOnboarding} />
-                        <Button className={"size-8 bg-secondary border-main/60 hidden xl:flex"} {...layoutTooltip} onClick={onEdit} disabled={editMode || widgetsEmpty || isLoading}>
-                            <LayoutTemplate size={16}/>
+                        <Button className={"size-8 bg-secondary border-main/60 hidden xl:flex"}
+                            onClick={onEdit}
+                            disabled={editMode || widgetsEmpty || isLoading}
+                            {...layoutTooltip}
+                        >
+                            <LayoutTemplate size={16} />
+                        </Button>
+                        <Button
+                            className="size-8 bg-secondary border-main/60 hidden xl:flex"
+                            onClick={toggleFullScreen}
+                            {...fullscreenTooltip}
+                        >
+                            {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
                         </Button>
                         <div className={"flex"}>
                             <Select
@@ -110,8 +168,8 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                 }
             </div>
             <div className={"flex items-center gap-2"}>
-                <NotificationPopover editMode={editMode}/>
-                <ProfilePopover editMode={editMode}/>
+                <NotificationPopover editMode={editMode} open={isNotificationPopoverOpen} onOpenChange={setNotificationPopoverOpen}/>
+                <ProfilePopover editMode={editMode} open={isProfilePopoverOpen} onOpenChange={setProfilePopoverOpen}/>
             </div>
         </div>
     )

@@ -7,11 +7,11 @@ import { useMemo, useRef } from "react"
 
 const layoutCache = new Map<string, Widget[]>()
 
-const getCacheKey = (widgets: Widget[], breakpoint: Breakpoint): string => {
+const getCacheKey = (widgets: Widget[], breakpoint: Breakpoint, isFullscreen?: boolean): string => {
     const widgetIds = widgets
         .map((w) => `${w.id}-${w.positionX}-${w.positionY}-${w.width}-${w.height}-${w.updatedAt ?? ""}-${JSON.stringify(w.config ?? null)}`)
         .join(",")
-    return `${breakpoint}-${widgetIds}`
+    return `${breakpoint}-${isFullscreen}-${widgetIds}`
 }
 
 const areWidgetsEqual = (a: Widget, b: Widget): boolean => {
@@ -32,10 +32,10 @@ const areWidgetsEqual = (a: Widget, b: Widget): boolean => {
     )
 }
 
-export const useResponsiveLayout = (originalWidgets: Widget[]) => {
+export const useResponsiveLayout = (originalWidgets: Widget[], isFullscreen?: boolean) => {
     const {breakpoint} = useBreakpoint()
     const previousTransformedRef = useRef<Map<string, Widget>>(new Map())
-    const layoutKey = getCacheKey(originalWidgets, breakpoint)
+    const layoutKey = getCacheKey(originalWidgets, breakpoint, isFullscreen)
 
     const transformedWidgets = useMemo(() => {
         if (!originalWidgets || originalWidgets.length === 0) return []
@@ -77,7 +77,7 @@ export const useResponsiveLayout = (originalWidgets: Widget[]) => {
         return widgetsWithStableRefs
     }, [transformedWidgets])
 
-    const gridClasses = useMemo(() => getGridClasses(breakpoint), [breakpoint])
+    const gridClasses = useMemo(() => getGridClasses(breakpoint, isFullscreen), [breakpoint, isFullscreen])
 
     return {
         transformedWidgets: stableWidgets,

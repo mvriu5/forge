@@ -32,16 +32,28 @@ function DashboardContent() {
     const [dialogOpen, setDialogOpen] = useState(false)
     const [onboardingOpen, setOnboardingOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
+    const [isFullscreen, setIsFullscreen] = useState(false)
 
     const currentDashboardId = currentDashboard?.id ?? null
     const currentWidgets = useMemo(() => widgets.filter((widget) => widget.dashboardId === currentDashboardId), [widgets, currentDashboardId])
     const widgetsToRemoveIds = useMemo(() => new Set(widgetsToRemove.map((widget) => widget.id)), [widgetsToRemove])
     const visibleWidgets = useMemo(() => currentWidgets.filter((widget) => !widgetsToRemoveIds.has(widget.id)), [currentWidgets, widgetsToRemoveIds])
 
-    const {isDesktop} = useResponsiveLayout(visibleWidgets)
+    const {isDesktop} = useResponsiveLayout(visibleWidgets, isFullscreen)
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
     const currentWidgetsRef = useRef<Widget[]>([])
+
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen()
+        else if (document.exitFullscreen) document.exitFullscreen()
+    }
+
+    useEffect(() => {
+        const handleFullScreenChange = () => setIsFullscreen(!!document.fullscreenElement)
+        document.addEventListener("fullscreenchange", handleFullScreenChange);
+        return () => document.removeEventListener("fullscreenchange", handleFullScreenChange);
+    }, [])
 
     useEffect(() => {
         currentWidgetsRef.current = currentWidgets
@@ -148,30 +160,35 @@ function DashboardContent() {
                     addDashboard={addDashboard}
                     addDashboardStatus={addDashboardStatus}
                     userId={session?.user.id}
+                    isFullscreen={isFullscreen}
+                    toggleFullScreen={toggleFullScreen}
                 />
             ) :(
                 <div className="h-12 w-full border-b border-main/40" />
             )}
-            {dataLoading && visibleWidgets.length === 0 ? (
-                <div className="flex items-center justify-center w-full h-screen text-tertiary gap-2">
-                    <Spinner size={24}/>
-                    <span className="text-sm font-medium">Widgets loading...</span>
-                </div>
-            ) : visibleWidgets.length === 0 && currentDashboard && !editMode && widgetsReady ? (
-                <DashboardEmpty/>
-            ) : (
-                <DashboardGrid
-                    editMode={editMode}
-                    activeWidgetId={activeWidget?.id ?? null}
-                    currentDashboardId={currentDashboardId}
-                    widgets={visibleWidgets}
-                    activeWidget={activeWidget}
-                    setActiveWidget={setActiveWidget}
-                    updateWidgetPosition={updateWidgetPosition}
-                    onWidgetDelete={handleEditModeDelete}
-                    onWidgetUpdate={updateWidget}
-                />
-            )}
+            <main className={cn("h-full w-full", mounted && !isFullscreen && "pt-12")}>
+                {dataLoading && visibleWidgets.length === 0 ? (
+                    <div className="flex items-center justify-center w-full h-full text-tertiary gap-2">
+                        <Spinner size={24}/>
+                        <span className="text-sm font-medium">Widgets loading...</span>
+                    </div>
+                ) : visibleWidgets.length === 0 && currentDashboard && !editMode && widgetsReady ? (
+                    <DashboardEmpty/>
+                ) : (
+                    <DashboardGrid
+                        editMode={editMode}
+                        activeWidgetId={activeWidget?.id ?? null}
+                        currentDashboardId={currentDashboardId}
+                        widgets={visibleWidgets}
+                        activeWidget={activeWidget}
+                        setActiveWidget={setActiveWidget}
+                        updateWidgetPosition={updateWidgetPosition}
+                        onWidgetDelete={handleEditModeDelete}
+                        onWidgetUpdate={updateWidget}
+                        isFullscreen={isFullscreen}
+                    />
+                )}
+            </main>
             <Suspense fallback={null}>
                 <LazyDashboardDialog
                     open={dialogOpen}

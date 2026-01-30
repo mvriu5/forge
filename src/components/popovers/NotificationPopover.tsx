@@ -10,7 +10,7 @@ import { cn, getTimeLabel } from "@/lib/utils"
 import { Archive, Bell, BellRing, Inbox, Mails, TriangleAlert } from "lucide-react"
 import { useMemo, useState } from "react"
 
-function NotificationPopover({editMode}: {editMode: boolean}) {
+function NotificationPopover({editMode, open, onOpenChange}: {editMode: boolean, open: boolean, onOpenChange: (open: boolean) => void}) {
     const {data: session, isPending: sessionLoading} = authClient.useSession()
     const {notifications, clearNotifications} = useNotifications(session?.user.id)
 
@@ -20,15 +20,13 @@ function NotificationPopover({editMode}: {editMode: boolean}) {
             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     }, [notifications])
 
-    const [open, setOpen] = useState(false)
-
     const archiveTooltip = useTooltip({
         message: "Archive all notifications",
         anchor: "tc",
     })
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={onOpenChange}>
             <PopoverTrigger
                 disabled={sessionLoading || editMode}
                 asChild
@@ -36,7 +34,7 @@ function NotificationPopover({editMode}: {editMode: boolean}) {
                 <Button
                     data-state={open ? "open" : "closed"}
                     className={cn("relative size-8 bg-secondary border-main/60 data-[state=open]:bg-inverted/10 data-[state=open]:text-primary")}
-                    onClick={() => setOpen(!open)}
+                    onClick={() => onOpenChange(!open)}
                 >
                     <Bell size={16}/>
                     {notifications.length > 0 &&

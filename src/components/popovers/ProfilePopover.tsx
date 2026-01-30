@@ -13,14 +13,12 @@ import { LogOut, MessageCircleQuestion } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 
-function ProfilePopover({editMode}: {editMode: boolean}) {
+function ProfilePopover({editMode, open, onOpenChange}: {editMode: boolean, open: boolean, onOpenChange: (open: boolean) => void}) {
     const {data: session, isPending: sessionLoading} = authClient.useSession()
     const {isLoading: signoutLoading, handleSignOut} = useAuth()
 
-    const [open, setOpen] = useState(false)
-
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={onOpenChange}>
             <PopoverTrigger
                 disabled={sessionLoading || editMode}
                 data-state={editMode ? "disabled" : "enabled"}

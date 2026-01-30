@@ -18,6 +18,7 @@ interface DashboardGridProps {
     updateWidgetPosition: (id: string, x: number, y: number) => void
     onWidgetDelete: (id: string) => void
     onWidgetUpdate: (widget: Widget) => Promise<Widget>
+    isFullscreen?: boolean
 }
 
 const DashboardGrid = React.memo<DashboardGridProps>(function DashboardGrid({
@@ -29,9 +30,10 @@ const DashboardGrid = React.memo<DashboardGridProps>(function DashboardGrid({
     setActiveWidget,
     updateWidgetPosition,
     onWidgetDelete,
-    onWidgetUpdate
+    onWidgetUpdate,
+    isFullscreen
 }) {
-    const {transformedWidgets, gridClasses, isDesktop} = useResponsiveLayout(widgets)
+    const {transformedWidgets, gridClasses, isDesktop} = useResponsiveLayout(widgets, isFullscreen)
     const gridCells = useGrid(activeWidget, widgets)
 
     const {sensors, handleDragStart, handleDragEnd, handleDragOver} = useDragAndDrop(
