@@ -88,42 +88,42 @@ export function FrameWidgetDialog({ open, widget, onOpenChange, onSave }: FrameW
                                 <FormField control={form.control} name="desktop_width" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Desktop Width</FormLabel>
-                                        <FormInput type="number" {...field} />
+                                        <FormInput type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
                                         <FormMessage />
                                     </FormItem>
                                 )}/>
                                 <FormField control={form.control} name="desktop_height" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Desktop Height</FormLabel>
-                                        <FormInput type="number"  {...field} />
+                                        <FormInput type="number"  {...field} onChange={(e) => field.onChange(+e.target.value)} />
                                         <FormMessage />
                                     </FormItem>
                                 )}/>
                                 <FormField control={form.control} name="tablet_width" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Tablet Width</FormLabel>
-                                        <FormInput type="number" {...field} />
+                                        <FormInput type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
                                         <FormMessage />
                                     </FormItem>
                                 )}/>
                                 <FormField control={form.control} name="tablet_height" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Tablet Height</FormLabel>
-                                        <FormInput type="number" {...field} />
+                                        <FormInput type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
                                         <FormMessage />
                                     </FormItem>
                                 )}/>
                                 <FormField control={form.control} name="mobile_width" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Mobile Width</FormLabel>
-                                        <FormInput type="number" {...field} />
+                                        <FormInput type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
                                         <FormMessage />
                                     </FormItem>
                                 )}/>
                                 <FormField control={form.control} name="mobile_height" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Mobile Height</FormLabel>
-                                        <FormInput type="number" {...field} />
+                                        <FormInput type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
                                         <FormMessage />
                                     </FormItem>
                                 )}/>

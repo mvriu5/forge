@@ -107,6 +107,7 @@ function DashboardContent() {
             await saveWidgetsLayout()
             toast.success("Successfully updated your layout.")
         } catch (error) {
+            console.log(error)
             toast.error("Something went wrong.")
         } finally {
             setEditMode(false)
@@ -143,7 +144,7 @@ function DashboardContent() {
     ), [sessionLoading, dashboardsLoading, widgetsLoading, settingsLoading])
 
     return (
-        <div className={cn("flex flex-col w-full h-full overflow-hidden", isDesktop && "max-h-screen max-w-screen")}>
+        <div className={cn("flex flex-col w-full h-full", isDesktop && "max-h-screen max-w-screen overflow-hidden")}>
             {mounted ? (
                 <Header
                     onEdit={handleEditModeEnter}
