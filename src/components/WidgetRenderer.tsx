@@ -39,8 +39,9 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode
     const {integrations, isLoading: isLoadingIntegrations, handleIntegrate} = useIntegrations(session?.user.id)
 
     const definition = useMemo(() => getWidgetDefinition(widget.widgetType), [widget.widgetType])
-    const {Component, defaultConfig, name, integration: requiredIntegration, sizes} = definition
+    const {Component, defaultConfig, name, integration: requiredIntegration, sizes: defaultSizes} = definition
     const config = (widget.config ?? defaultConfig) as typeof defaultConfig
+    const sizes = (config as any)?.sizes ?? defaultSizes
 
     const integrationAccount = useMemo(
         () => getIntegrationByProvider(integrations, requiredIntegration),
@@ -48,9 +49,7 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode
     )
     const missingIntegration = requiredIntegration && !integrationAccount?.accessToken
 
-    const updateConfig = useCallback(async (
-        updater: typeof defaultConfig | ((prev: typeof defaultConfig) => typeof defaultConfig)
-    ) => {
+    const updateConfig = useCallback(async (updater: typeof defaultConfig | ((prev: typeof defaultConfig) => typeof defaultConfig)) => {
         const current = (widget.config ?? defaultConfig) as typeof defaultConfig
         const next = typeof updater === "function"
             ? (updater as (prev: typeof defaultConfig) => typeof defaultConfig)(current)

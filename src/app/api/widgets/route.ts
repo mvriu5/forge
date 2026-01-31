@@ -19,7 +19,7 @@ export async function POST(req: Request) {
         if (!validationResult.success) {
             return NextResponse.json("Invalid request body", { status: 400 });
         }
-        const { dashboardId, widgetType, height, width, positionX, positionY } = validationResult.data
+        const { dashboardId, widgetType, height, width, positionX, positionY, config } = validationResult.data
 
         const dashboard = (await getDashboardFromId(dashboardId))[0]
         if (!dashboard) return NextResponse.json({ error: "Dashboard not found" }, { status: 404 })
@@ -31,6 +31,7 @@ export async function POST(req: Request) {
             widgetType,
             height,
             width,
+            config,
             positionX,
             positionY,
             createdAt: new Date(),

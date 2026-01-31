@@ -155,7 +155,6 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({ widget, config, upd
     const isConnected = Boolean(accessToken)
     const isLoadingPageContent = fetchPageContentMutation.isPending
     const fetchPageContentFn = fetchPageContentMutation.mutateAsync
-    // end from useNotion hook
 
     const isLoadingNotionData = isLoadingPages || isLoadingPageContent
 

@@ -166,7 +166,7 @@ function DashboardContent() {
             ) :(
                 <div className="h-12 w-full border-b border-main/40" />
             )}
-            <main className={cn("h-full w-full", mounted && !isFullscreen && "pt-12")}>
+            <main className={cn("h-screen w-full", mounted && !isFullscreen && "pt-12")}>
                 {dataLoading && visibleWidgets.length === 0 ? (
                     <div className="flex items-center justify-center w-full h-full text-tertiary gap-2">
                         <Spinner size={24}/>

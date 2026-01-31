@@ -55,6 +55,7 @@ export const createWidgetSchema = z.object({
     width: z.number(),
     positionX: z.number(),
     positionY: z.number(),
+    config: z.record(z.string(), z.any()).optional(),
 })
 
 export const updateWidgetSchema = z.object({
