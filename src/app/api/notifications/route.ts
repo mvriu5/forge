@@ -1,6 +1,7 @@
 import { Notification } from "@/database"
 import { auth } from "@/lib/auth"
 import { redis } from "@/lib/redis"
+import { realtime } from "@/lib/realtime"
 import { createNotificationSchema } from "@/lib/validations"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
@@ -49,11 +50,13 @@ export async function POST(req: Request) {
         }
 
         const listKey = `notifications:user:${userId}`
-        const channel = `notifications:live:${userId}`
 
         await redis.lpush(listKey, notification)
         await redis.ltrim(listKey, 0, 99)
-        await redis.publish(channel, notification)
+        await realtime.channel(`user-${userId}`).emit("notification.created", {
+            ...notification,
+            createdAt: notification.createdAt.toISOString(),
+        })
 
         return NextResponse.json(notification, { status: 200 })
     } catch {

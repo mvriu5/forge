@@ -1,8 +1,9 @@
 "use client"
 
-import {useCallback, useEffect, useState} from "react"
+import { useCallback, useEffect, useState } from "react"
 import type { Notification } from "@/database"
-import {toast} from "@/components/ui/Toast"
+import { toast } from "@/components/ui/Toast"
+import { useRealtime } from "@/lib/realtime-client"
 
 const NOTIFICATION_SENT_KEY = "forge-notifications-session"
 
@@ -33,7 +34,6 @@ const hasNotificationBeenSent = (key: string): boolean => {
 
 export function useNotifications(userId: string | undefined) {
     const [notifications, setNotifications] = useState<Notification[]>([])
-    const [connected, setConnected] = useState(false)
 
     const addNotification = useCallback((notification: Notification) => {
         setNotifications((prev) => {
@@ -43,10 +43,19 @@ export function useNotifications(userId: string | undefined) {
         })
     }, [])
 
+    const { status } = useRealtime({
+        enabled: !!userId,
+        channels: userId ? [`user-${userId}`] : [],
+        events: ["notification.created"],
+        onData: ({ data }) => {
+            if (!data?.id) return
+            addNotification({ ...data, createdAt: new Date(data.createdAt) })
+        },
+    })
+
     useEffect(() => {
         if (!userId) return
 
-        let es: EventSource | null = null
         const controller = new AbortController();
 
         (async () => {
@@ -59,34 +68,12 @@ export function useNotifications(userId: string | undefined) {
             } catch (error) {
                 return
             }
-
-            es = new EventSource(`/api/notifications/stream?userId=${userId}`)
-            es.onopen = () => setConnected(true)
-            es.onerror = () => {
-                setConnected(false)
-                es?.close()
-            }
-            es.onmessage = (event) => {
-                const jsonStart = event.data.indexOf("{")
-                if (jsonStart === -1) return
-
-                const payload = event.data.slice(jsonStart)
-
-                try {
-                    const notification = JSON.parse(payload) as Notification
-                    if (!notification?.id) return
-
-                    addNotification({...notification, createdAt: new Date(notification.createdAt)})
-                } catch (error) {
-                }
-            }
         })()
 
-        return () => {
-            controller.abort()
-            es?.close()
-        }
+        return () => controller.abort()
     }, [userId])
+
+    const connected = status === "connected"
 
     const sendReminderNotification = useCallback(async (input: { type: Notification["type"], message: string, key?: string }) => {
         if (!userId) return

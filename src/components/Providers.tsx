@@ -2,6 +2,7 @@
 
 import { TooltipProvider } from "@/components/ui/TooltipProvider"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { RealtimeProvider } from "@upstash/realtime/client"
 import { ThemeProvider } from "next-themes"
 import { ReactNode, useEffect, useState } from "react"
 import { Toaster } from "sonner"
@@ -17,16 +18,18 @@ function Providers({children}: {children: ReactNode}) {
 
     return (
         <QueryClientProvider client={queryClient}>
-            <ThemeProvider
-                attribute="class"
-                defaultTheme="dark"
-                disableTransitionOnChange
-            >
-                <TooltipProvider>
-                    {mounted ? <Toaster theme="dark"/> : null}
-                    {children}
-                </TooltipProvider>
-            </ThemeProvider>
+            <RealtimeProvider api={{ url: "/api/realtime", withCredentials: true }} maxReconnectAttempts={5}>
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme="dark"
+                    disableTransitionOnChange
+                >
+                    <TooltipProvider>
+                        {mounted ? <Toaster theme="dark"/> : null}
+                        {children}
+                    </TooltipProvider>
+                </ThemeProvider>
+            </RealtimeProvider>
         </QueryClientProvider>
     )
 }
