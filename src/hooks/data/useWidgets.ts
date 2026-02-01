@@ -45,6 +45,20 @@ async function updateWidgetRequest(widget: Widget): Promise<Widget> {
     return data[0]
 }
 
+type WidgetLayoutUpdate = Pick<Widget, "id" | "width" | "height" | "positionX" | "positionY">
+
+async function updateWidgetLayoutRequest(widget: WidgetLayoutUpdate): Promise<void> {
+    const response = await fetch("/api/widgets", {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(widget)
+    })
+
+    if (!response.ok) {
+        throw new Error(`Error saving widget ${widget.id}`)
+    }
+}
+
 async function deleteWidgetRequest(id: string): Promise<void> {
     const response = await fetch(`/api/widgets?id=${id}`, {method: "DELETE"})
 
@@ -205,17 +219,13 @@ export function useWidgets(userId: string | undefined) {
             const widgets = queryClient.getQueryData<Widget[]>(WIDGETS_QUERY_KEY(userId)) ?? []
 
             await Promise.all(
-                widgets.map(async (widget) => {
-                    const response = await fetch("/api/widgets", {
-                        method: "PUT",
-                        headers: {"Content-Type": "application/json"},
-                        body: JSON.stringify(widget)
-                    })
-
-                    if (!response.ok) {
-                        throw new Error(`Error saving widget ${widget.id}`)
-                    }
-                })
+                widgets.map((widget) => updateWidgetLayoutRequest({
+                    id: widget.id,
+                    width: widget.width,
+                    height: widget.height,
+                    positionX: widget.positionX,
+                    positionY: widget.positionY
+                }))
             )
         }
     })

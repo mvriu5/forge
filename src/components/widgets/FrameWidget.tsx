@@ -26,8 +26,8 @@ export const frameWidgetDefinition = defineWidget({
     name: "Frame",
     component: FrameWidget,
     description: "Embed content from any website using an iframe.",
-    image: "/bookmark_preview.svg",
-    tags: ["custom", "embed"],
+    image: "/frame_preview.svg",
+    tags: [],
     sizes: {
         desktop: { width: 2, height: 2 },
         tablet: { width: 2, height: 2 },

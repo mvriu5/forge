@@ -10,6 +10,7 @@ import {
     DialogTitle,
 } from "@/components/ui/Dialog"
 import { Form, FormField, FormInput, FormItem, FormLabel, FormMessage } from "@/components/ui/Form"
+import { NumberInput } from "@/components/ui/NumberInput"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -86,44 +87,86 @@ export function FrameWidgetDialog({ open, widget, onOpenChange, onSave }: FrameW
                             <h3 className="text-lg font-medium">Sizes</h3>
                             <div className="grid grid-cols-2 gap-4 mt-2">
                                 <FormField control={form.control} name="desktop_width" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Desktop Width</FormLabel>
-                                        <FormInput type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}/>
+                                <FormItem>
+                                    <FormLabel>Desktop Width</FormLabel>
+                                    <NumberInput
+                                        min={1}
+                                        max={4}
+                                        step={1}
+                                        readOnly
+                                        value={field.value ?? ""}
+                                        onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
+                                    />
+                                    <FormMessage />
+                                </FormItem>
+                            )}/>
                                 <FormField control={form.control} name="desktop_height" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Desktop Height</FormLabel>
-                                        <FormInput type="number"  {...field} onChange={(e) => field.onChange(+e.target.value)} />
+                                        <NumberInput
+                                            min={1}
+                                            max={4}
+                                            step={1}
+                                            readOnly
+                                            value={field.value ?? ""}
+                                            onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
+                                        />
                                         <FormMessage />
                                     </FormItem>
                                 )}/>
                                 <FormField control={form.control} name="tablet_width" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Tablet Width</FormLabel>
-                                        <FormInput type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
+                                        <NumberInput
+                                            min={1}
+                                            max={2}
+                                            step={1}
+                                            readOnly
+                                            value={field.value ?? ""}
+                                            onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
+                                        />
                                         <FormMessage />
                                     </FormItem>
                                 )}/>
                                 <FormField control={form.control} name="tablet_height" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Tablet Height</FormLabel>
-                                        <FormInput type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
+                                        <NumberInput
+                                            min={1}
+                                            max={4}
+                                            step={1}
+                                            readOnly
+                                            value={field.value ?? ""}
+                                            onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
+                                        />
                                         <FormMessage />
                                     </FormItem>
                                 )}/>
                                 <FormField control={form.control} name="mobile_width" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Mobile Width</FormLabel>
-                                        <FormInput type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
+                                        <NumberInput
+                                            min={1}
+                                            max={1}
+                                            step={1}
+                                            readOnly
+                                            value={field.value ?? ""}
+                                            onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
+                                        />
                                         <FormMessage />
                                     </FormItem>
                                 )}/>
                                 <FormField control={form.control} name="mobile_height" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Mobile Height</FormLabel>
-                                        <FormInput type="number" {...field} onChange={(e) => field.onChange(+e.target.value)} />
+                                        <NumberInput
+                                            min={1}
+                                            max={4}
+                                            step={1}
+                                            readOnly
+                                            value={field.value ?? ""}
+                                            onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
+                                        />
                                         <FormMessage />
                                     </FormItem>
                                 )}/>
@@ -131,7 +174,7 @@ export function FrameWidgetDialog({ open, widget, onOpenChange, onSave }: FrameW
                         </div>
 
                         <DialogFooter>
-                            <Button type="submit">Save</Button>
+                            <Button variant={"brand"} type="submit">Save</Button>
                         </DialogFooter>
                     </form>
                 </Form>
