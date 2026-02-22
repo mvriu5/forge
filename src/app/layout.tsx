@@ -4,6 +4,7 @@ import { Figtree, Geist_Mono } from "next/font/google"
 import Script from "next/script"
 import type { ReactNode } from "react"
 import "./globals.css"
+import PlausibleProvider from "next-plausible"
 
 const figtreeSans = Figtree({variable: "--font-figtree", subsets: ["latin"]})
 const geistMono = Geist_Mono({variable: "--font-geist-mono", subsets: ["latin"]})
@@ -28,7 +29,9 @@ export default function RootLayout({children}: Readonly<{ children: ReactNode }>
                 </head>
             )}
             <body className={`${figtreeSans.variable} ${geistMono.variable} antialiased`}>
-                {children}
+                <PlausibleProvider domain="tryforge.io" selfHosted customDomain="https://analytics.ahsmus.com">
+                    {children}
+                </PlausibleProvider>
             </body>
         </html>
     )
