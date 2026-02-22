@@ -29,7 +29,7 @@ export default function RootLayout({children}: Readonly<{ children: ReactNode }>
                 </head>
             )}
             <body className={`${figtreeSans.variable} ${geistMono.variable} antialiased`}>
-                <PlausibleProvider domain="tryforge.io" selfHosted customDomain="https://analytics.ahsmus.com">
+                <PlausibleProvider domain="tryforge.io">
                     {children}
                 </PlausibleProvider>
             </body>

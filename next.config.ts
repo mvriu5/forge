@@ -1,4 +1,5 @@
 import type { NextConfig } from "next"
+import { withPlausibleProxy } from "next-plausible"
 
 const nextConfig: NextConfig = {
     reactCompiler: true,
@@ -8,4 +9,6 @@ const nextConfig: NextConfig = {
     skipTrailingSlashRedirect: true,
 }
 
-export default nextConfig
+export default withPlausibleProxy({
+    customDomain: "https://analytics.ahsmus.com",
+})(nextConfig)
