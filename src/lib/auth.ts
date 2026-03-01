@@ -1,6 +1,7 @@
 import { db } from "@/database"
 import { schema } from "@/db/schema"
 import { drizzleAdapter } from "@better-auth/drizzle-adapter"
+import { dash } from "@better-auth/infra"
 import { betterAuth } from "better-auth/minimal"
 
 const isProd = process.env.NODE_ENV === "production"
@@ -56,5 +57,6 @@ export const auth = betterAuth({
         defaultCookieAttributes: {
             secure: isProd
         }
-    }
+    },
+    plugins: [dash()]
 })
