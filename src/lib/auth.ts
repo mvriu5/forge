@@ -1,6 +1,6 @@
 import { db } from "@/database"
 import { schema } from "@/db/schema"
-import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { drizzleAdapter } from "@better-auth/drizzle-adapter"
 import { betterAuth } from "better-auth/minimal"
 
 const isProd = process.env.NODE_ENV === "production"

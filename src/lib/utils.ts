@@ -163,3 +163,8 @@ export function formatWeatherHour(iso?: string | number | Date | null, hourForma
     const ampm = d.getHours() >= 12 ? "PM" : "AM"
     return `${hour} ${ampm}`
 }
+
+export function capitalizeFirstLetter(str: string) {
+    if (!str) return ""
+    return str.charAt(0).toUpperCase() + str.slice(1)
+}
