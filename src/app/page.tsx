@@ -8,7 +8,7 @@ import Link from "next/link"
 
 export default function Page() {
     return (
-        <div className={"dark flex gap-24 bg-primary max-w-screen h-full overflow-hidden"}>
+        <div className={"dark flex gap-24 bg-primary max-w-screen min-h-screen overflow-hidden"}>
             <div className={"flex flex-col items-center gap-8 bg-primary w-full h-full"}>
 
                 <header className="z-50 fixed top-0 left-0 right-0 max-w-screen border-b border-main/20 backdrop-blur-2xl">
@@ -70,6 +70,16 @@ export default function Page() {
                                     quality={75}
                                 />
                             </div>
+                        </div>
+                        <div className="w-full flex gap-2 items-end justify-end pb-16">
+                            <p className="text-sm">made by</p>
+                            <Link
+                                href={`https://ahsmus.com`}
+                                rel="noreferrer"
+                                className="text-brand font-mono tracking-tight hover:underline"
+                            >
+                                Marius Ahsmus
+                            </Link>
                         </div>
                     </div>
                 </div>
