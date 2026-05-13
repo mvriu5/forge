@@ -33,19 +33,7 @@ const TabsTrigger = ({ className, ...props }: ComponentPropsWithRef<typeof TabsP
     )
 }
 
-const TabsContent = ({ className, ...props }: ComponentPropsWithRef<typeof TabsPrimitive.Content>) => {
-    return (
-        <TabsPrimitive.Content
-            className={cn(
-                "ring-offset-background focus-visible:outline-none",
-                className
-            )}
-            {...props}
-        />
-    )
-}
-
 export {
-    Tabs, TabsContent, TabsList,
+    Tabs, TabsList,
     TabsTrigger
 }

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/Button"
 import { toast } from "@/components/ui/Toast"
 import { cn } from "@/lib/utils"
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence, motion } from "motion/react"
 import { Check, Copy } from "lucide-react"
 import React, { HTMLAttributes, ReactNode, useEffect, useState } from "react"
 

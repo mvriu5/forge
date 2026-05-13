@@ -9,7 +9,7 @@ import { ComponentPropsWithRef } from "react"
 export const Dialog = DialogPrimitive.Root
 export const DialogTrigger = DialogPrimitive.Trigger
 
-export const DialogOverlay = ({ className, ...props }: ComponentPropsWithRef<typeof DialogPrimitive.Overlay>) => (
+const DialogOverlay = ({ className, ...props }: ComponentPropsWithRef<typeof DialogPrimitive.Overlay>) => (
     <DialogPrimitive.Overlay
         data-slot="dialog-overlay"
         className={cn(

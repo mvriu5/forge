@@ -251,7 +251,5 @@ const getLogoFromLink = (link: string) => {
 }
 
 export {
-    Amazon, getLogoFromLink, Github, GoogleDocs, GoogleDrive, GoogleSheets,
-    GoogleSlides, Instagram, LinkedIn, Loom, Pinterest, Soundcloud, Spotify, Twitch,
-    X, Youtube
+    getLogoFromLink
 }

@@ -7,7 +7,7 @@ import type React from "react"
 import { useCallback, useMemo, useState } from "react"
 import { DayPicker, labelNext, labelPrevious, useDayPicker, type DayPickerProps } from "react-day-picker"
 
-export type CalendarProps = DayPickerProps & {
+type CalendarProps = DayPickerProps & {
     yearRange?: number
     showYearSwitcher?: boolean
 }

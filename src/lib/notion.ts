@@ -218,22 +218,3 @@ function blocksToNodes(blocks: any[]): any[] {
     return nodes
 }
 
-export function plainTextToJSONContent(text: string): any {
-    const paragraphs = text.split(/\n\n+/).map((paragraph) => paragraph.trim()).filter(Boolean)
-    if (paragraphs.length === 0) {
-        return { type: "doc", content: [{ type: "paragraph", content: [] }] }
-    }
-
-    return {
-        type: "doc",
-        content: paragraphs.map((paragraph) => ({
-            type: "paragraph",
-            content: [
-                {
-                    type: "text",
-                    text: paragraph
-                }
-            ]
-        }))
-    }
-}

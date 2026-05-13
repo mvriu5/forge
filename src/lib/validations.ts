@@ -32,7 +32,7 @@ export const deleteDashboardSchema = z.object({
     id: z.string(),
 })
 
-export const widgetTypeEnum = z.enum([
+const widgetTypeEnum = z.enum([
     "Bookmark",
     "Clock",
     "Countdown",
@@ -75,7 +75,7 @@ export const deleteWidgetSchema = z.object({
     id: z.string(),
 })
 
-export const providerEnum = z.enum(["google", "github", "notion"])
+const providerEnum = z.enum(["google", "github", "notion"])
 
 export const deleteAccountSchema = z.object({
     provider: providerEnum,
@@ -86,7 +86,7 @@ export const updateAccountSchema = z.object({
     refreshToken: z.string(),
 })
 
-export const notificationTypeEnum = z.enum(["message", "alert", "reminder"])
+const notificationTypeEnum = z.enum(["message", "alert", "reminder"])
 
 export const createNotificationSchema = z.object({
     type: notificationTypeEnum,
@@ -97,7 +97,7 @@ export const getUserSchema = z.object({
     id: z.string().optional(),
 })
 
-export const coinbaseTimeframeEnum = z.enum(["1h", "24h", "1w", "1m", "3m", "6m", "1y"])
+const coinbaseTimeframeEnum = z.enum(["1h", "24h", "1w", "1m", "3m", "6m", "1y"])
 
 export const getCoinbasePricesSchema = z.object({
     products: z.string().optional(),

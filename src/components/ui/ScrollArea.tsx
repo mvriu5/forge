@@ -46,4 +46,4 @@ const ScrollBar = ({ className, thumbClassname, orientation = "vertical", ...pro
     )
 }
 
-export { ScrollArea, ScrollBar }
+export { ScrollArea }

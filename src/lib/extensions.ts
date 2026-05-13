@@ -11,7 +11,7 @@ declare module "@tiptap/core" {
     }
 }
 
-export interface SlashSuggestionOptions {
+interface SlashSuggestionOptions {
     suggestion?: Partial<SuggestionOptions>
     commandItems: CommandItem[]
     options?: any

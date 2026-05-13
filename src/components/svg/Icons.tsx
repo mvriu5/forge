@@ -1,64 +1,5 @@
 import type { SVGProps } from "react"
 
-const Linear = (props: SVGProps<SVGSVGElement>) => (
-    <svg {...props} fill="none" viewBox="0 0 100 100">
-        <title>Linear</title>
-        <path
-            fill="currentColor"
-            d="M1.225 61.523c-.222-.949.908-1.546 1.597-.857l36.512 36.512c.69.69.092 1.82-.857 1.597-18.425-4.323-32.93-18.827-37.252-37.252ZM.002 46.889a.99.99 0 0 0 .29.76L52.35 99.71c.201.2.478.307.76.29 2.37-.149 4.695-.46 6.963-.927.765-.157 1.03-1.096.478-1.648L2.576 39.448c-.552-.551-1.491-.286-1.648.479a50.067 50.067 0 0 0-.926 6.962ZM4.21 29.705a.988.988 0 0 0 .208 1.1l64.776 64.776c.289.29.726.375 1.1.208a49.908 49.908 0 0 0 5.185-2.684.981.981 0 0 0 .183-1.54L8.436 24.336a.981.981 0 0 0-1.541.183 49.896 49.896 0 0 0-2.684 5.185Zm8.448-11.631a.986.986 0 0 1-.045-1.354C21.78 6.46 35.111 0 49.952 0 77.592 0 100 22.407 100 50.048c0 14.84-6.46 28.172-16.72 37.338a.986.986 0 0 1-1.354-.045L12.659 18.074Z"
-        />
-    </svg>
-)
-
-const Asana = (props: SVGProps<SVGSVGElement>) => (
-    <svg {...props} fill="none" viewBox="0 0 251 232">
-        <title>Asana</title>
-        <path
-            fill="currentColor"
-            d="M179.383 54.3733c0 30.0166-24.337 54.3737-54.354 54.3737-30.0355 0-54.3733-24.3382-54.3733-54.3737S94.9935 0 125.029 0c30.017 0 54.354 24.3378 54.354 54.3733ZM54.3928 122.33c-30.0166 0-54.373269 24.338-54.373269 54.355 0 30.017 24.337769 54.373 54.373269 54.373 30.0354 0 54.3732-24.338 54.3732-54.373 0-30.017-24.3378-54.355-54.3732-54.355Zm141.2532 0c-30.035 0-54.373 24.338-54.373 54.374 0 30.035 24.338 54.373 54.373 54.373 30.017 0 54.374-24.338 54.374-54.373 0-30.036-24.338-54.374-54.374-54.374Z"
-        />
-    </svg>
-)
-
-const Atlassian = (props: SVGProps<SVGSVGElement>) => (
-    <svg {...props} preserveAspectRatio="xMidYMid" viewBox="0 0 256 256">
-        <title>Atlassian</title>
-        <defs>
-            <linearGradient
-                x1="99.7%"
-                y1="15.8%"
-                x2="39.8%"
-                y2="97.4%"
-                id="atlassian__a"
-            >
-                <stop stopColor="currentColor" offset="0%" stopOpacity={.9}/>
-                <stop stopColor="currentColor" offset="92.3%" stopOpacity={1}/>
-            </linearGradient>
-        </defs>
-        <path
-            d="M76 118c-4-4-10-4-13 1L1 245a7 7 0 0 0 6 10h88c3 0 5-1 6-4 19-39 8-98-25-133Z"
-            fill="url(#atlassian__a)"
-        />
-        <path
-            d="M122 4c-35 56-33 117-10 163l42 84c1 3 4 4 7 4h87a7 7 0 0 0 7-10L134 4c-2-5-9-5-12 0Z"
-            fill="currentColor"
-        />
-    </svg>
-)
-
-const Trello = (props: SVGProps<SVGSVGElement>) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 73.323 64">
-        <title>Trello</title>
-        <defs>
-            <linearGradient id="A" x1="31.52" y1="64.56" x2="31.52" y2="1.51" gradientUnits="userSpaceOnUse">
-                <stop offset=".18" stopColor="currentColor" stopOpacity={.8}/>
-                <stop offset="1" stopColor="currentColor" stopOpacity={1}/>
-            </linearGradient>
-        </defs>
-        <path d="M55.16 1.5H7.88a7.88 7.88 0 0 0-5.572 2.308A7.88 7.88 0 0 0 0 9.39v47.28a7.88 7.88 0 0 0 7.88 7.88h47.28A7.88 7.88 0 0 0 63 56.67V9.4a7.88 7.88 0 0 0-7.84-7.88zM27.42 49.26A3.78 3.78 0 0 1 23.64 53H12a3.78 3.78 0 0 1-3.8-3.74V13.5A3.78 3.78 0 0 1 12 9.71h11.64a3.78 3.78 0 0 1 3.78 3.78zM54.85 33.5a3.78 3.78 0 0 1-3.78 3.78H39.4a3.78 3.78 0 0 1-3.78-3.78v-20a3.78 3.78 0 0 1 3.78-3.79h11.67a3.78 3.78 0 0 1 3.78 3.78z" fill="url(#A)" fillRule="evenodd" transform="matrix(1.163111 0 0 1.163111 .023263 -6.417545)"/>
-    </svg>
-)
-
 const Google = (props: SVGProps<SVGSVGElement>) => (
     <svg fill="none"
          xmlns="http://www.w3.org/2000/svg"
@@ -109,10 +50,6 @@ const Notion = (props: SVGProps<SVGSVGElement>) => (
 
 
 export {
-    Linear,
-    Asana,
-    Atlassian,
-    Trello,
     Google,
     Github,
     Discord,

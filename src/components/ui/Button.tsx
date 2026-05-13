@@ -40,6 +40,5 @@ const Button = ({asChild, variant, className, ...props}: ButtonProps) => {
 }
 
 export {
-    Button,
-    type ButtonProps
+    Button
 }

@@ -11,9 +11,10 @@ import Link from "@tiptap/extension-link"
 import Placeholder from "@tiptap/extension-placeholder"
 import TaskItem from "@tiptap/extension-task-item"
 import TaskList from "@tiptap/extension-task-list"
-import { BubbleMenu, EditorContent, ReactNodeViewRenderer, useEditor } from "@tiptap/react"
+import { EditorContent, ReactNodeViewRenderer, useEditor } from "@tiptap/react"
+import { BubbleMenu } from "@tiptap/react/menus"
+import { createLowlight, common } from "lowlight"
 import StarterKit from "@tiptap/starter-kit"
-import { lowlight } from "lowlight/lib/common.js"
 import { File, Trash } from "lucide-react"
 import { Activity, useCallback, useEffect, useRef, useState } from "react"
 import { Button } from "../ui/Button"
@@ -107,7 +108,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
             addNodeView() {
                 return ReactNodeViewRenderer(Codeblock)
             },
-        }).configure({ lowlight }),
+        }).configure({ lowlight: createLowlight(common) }),
         StarterKit.configure({
             codeBlock: false,
             bulletList: { HTMLAttributes: { class: "list-disc list-outside leading-3 -mt-2" } },
@@ -182,7 +183,7 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                 ? editor.getHTML() === next
                 : JSON.stringify(editor.getJSON()) === JSON.stringify(next)
 
-        if (!isSame) editor.commands.setContent(next, false)
+        if (!isSame) editor.commands.setContent(next)
     }, [editor, note.content, note.id, open])
 
     const didAutoFocus = useRef(false)
@@ -353,10 +354,14 @@ function NoteDialog({open, onOpenChange, note, onSave, onDelete, isPending}: Not
                         <ScrollArea className="h-[72vh]">
                             <div className="sp-2 rounded-md max-h-full min-h-full w-full bg-primary">
                                 <Activity mode={editor ? "visible" : "hidden"}>
-                                    <EditorContent editor={editor} autoFocus={note.title !== ""}/>
-                                    <BubbleMenu editor={editor} tippyOptions={{ placement: "top" }}>
-                                        <TextButtons editor={editor} range={effectiveRange} />
-                                    </BubbleMenu>
+                                    {editor ? (
+                                        <>
+                                            <EditorContent editor={editor} autoFocus={note.title !== ""}/>
+                                            <BubbleMenu editor={editor} options={{ placement: "top" }}>
+                                                <TextButtons editor={editor} range={effectiveRange} />
+                                            </BubbleMenu>
+                                        </>
+                                    ) : null}
                                 </Activity>
                             </div>
                         </ScrollArea>

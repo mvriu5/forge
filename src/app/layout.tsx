@@ -29,7 +29,7 @@ export default function RootLayout({children}: Readonly<{ children: ReactNode }>
                 </head>
             )}
             <body className={`${figtreeSans.variable} ${geistMono.variable} antialiased min-h-screen bg-primary`}>
-                <PlausibleProvider domain="tryforge.io">
+                <PlausibleProvider>
                     {children}
                 </PlausibleProvider>
             </body>

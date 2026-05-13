@@ -13,12 +13,10 @@ export type SelectorItem = {
     isActive: (editor: Editor) => boolean
 }
 
-export const TextButtons = ({ editor, range }: { editor: Editor | null, range: { from: number, to: number } }) => {
+export const TextButtons = ({ editor, range }: { editor: Editor, range: { from: number, to: number } }) => {
     const [commandMenuOpen, setCommandMenuOpen] = useState(false)
     const [commandRange, setCommandRange] = useState(range)
     const [selectedCommandTitle, setSelectedCommandTitle] = useState<string | null>(null)
-
-    if (!editor) return null
 
     const items: SelectorItem[] = [
         {

@@ -92,4 +92,4 @@ const WidgetContainer: React.FC<WidgetContainerProps> = ({
     )
 }
 
-export {WidgetContainer, type WidgetSizes}
+export {WidgetContainer}

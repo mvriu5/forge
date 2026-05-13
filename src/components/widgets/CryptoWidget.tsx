@@ -17,12 +17,12 @@ import { WidgetError } from "./base/WidgetError"
 import { useQuery } from "@tanstack/react-query"
 import { queryOptions } from "@/lib/queryOptions"
 
-export type CryptoCurrency = {
+type CryptoCurrency = {
     id: string
     name: string
 }
 
-export type CryptoProduct = {
+type CryptoProduct = {
     product: string
     base: string
     quote: string

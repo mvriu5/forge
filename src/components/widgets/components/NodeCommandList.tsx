@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Editor, useEditorState } from "@tiptap/react"
 
-export interface NodeCommandListProps {
+interface NodeCommandListProps {
     command?: (item: CommandItem) => void
     editor: Editor
     range: { from: number; to: number }

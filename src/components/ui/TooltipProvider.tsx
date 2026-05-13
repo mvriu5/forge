@@ -25,7 +25,7 @@ type TooltipActions = {
 
 const TooltipContext = createContext<TooltipActions | undefined>(undefined)
 
-export const useTooltipContext = () => {
+const useTooltipContext = () => {
     const ctx = useContext(TooltipContext)
     if (!ctx) throw new Error("useTooltipContext muss innerhalb eines TooltipProviders verwendet werden")
     return ctx

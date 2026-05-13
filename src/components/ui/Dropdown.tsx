@@ -238,8 +238,6 @@ const DropdownMenu = ({side = "bottom", align = "center", onOpenChange, items, a
 }
 
 export {
-    DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuItem, DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuSubItem,
+    DropdownMenu,
     type MenuItem
 }

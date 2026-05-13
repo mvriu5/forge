@@ -10,5 +10,5 @@ const nextConfig: NextConfig = {
 }
 
 export default withPlausibleProxy({
-    customDomain: "https://analytics.ahsmus.com",
+    src: "https://analytics.ahsmus.com/js/script.js",
 })(nextConfig)

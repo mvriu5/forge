@@ -42,7 +42,7 @@ export default function Codeblock({ node, updateAttributes, extension }: Codeblo
                 </SelectContent>
             </Select>
             <pre spellCheck={false}>
-                <NodeViewContent as="code" />
+                <NodeViewContent as="div" />
             </pre>
         </NodeViewWrapper>
     )

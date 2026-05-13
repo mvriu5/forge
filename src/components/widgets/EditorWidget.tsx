@@ -21,14 +21,14 @@ import { ScrollArea } from "../ui/ScrollArea"
 import { Skeleton } from "../ui/Skeleton"
 import { toast } from "../ui/Toast"
 
-export interface NotionPage {
+interface NotionPage {
     id: string
     title: string
     isChild: boolean
     parentId: string | null
 }
 
-export interface NotionPageContent {
+interface NotionPageContent {
     id: string
     title: string
     content: any
@@ -90,7 +90,7 @@ export type Note = {
 
 type PageNode = NotionPage & { children: PageNode[] }
 
-export interface EditorConfig {
+interface EditorConfig {
     notes: Note[]
 }
 

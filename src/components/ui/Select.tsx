@@ -6,7 +6,6 @@ import { Select as SelectPrimitive } from "radix-ui"
 import { ComponentPropsWithRef } from "react"
 
 const Select = SelectPrimitive.Root
-const SelectGroup = SelectPrimitive.Group
 const SelectValue = SelectPrimitive.Value
 
 const SelectTrigger = ({ className, children, ...props }: ComponentPropsWithRef<typeof SelectPrimitive.Trigger>) => {
@@ -85,15 +84,6 @@ const SelectContent = ({ className, children, ...props }: ComponentPropsWithRef<
     )
 }
 
-const SelectLabel = ({ className, ...props }: ComponentPropsWithRef<typeof SelectPrimitive.Label>) => {
-    return (
-        <SelectPrimitive.Label
-            className={cn("py-1.5 px-2 text-xs text-tertiary", className)}
-            {...props}
-        />
-    )
-}
-
 const SelectItem = ({ className, children, checkIcon = true, ...props }: ComponentPropsWithRef<typeof SelectPrimitive.Item> & {checkIcon?: boolean}) => {
     return (
         <SelectPrimitive.Item
@@ -119,15 +109,6 @@ const SelectItem = ({ className, children, checkIcon = true, ...props }: Compone
     )
 }
 
-const SelectSeparator = ({ className, ...props }: ComponentPropsWithRef<typeof SelectPrimitive.Separator>) => {
-    return (
-        <SelectPrimitive.Separator
-            className={cn("-mx-1 my-1 h-1 border-t border-main", className)}
-            {...props}
-        />
-    )
-}
-
 export {
-    Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 }

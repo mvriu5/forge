@@ -3,7 +3,7 @@ import tippy, { Instance as TippyInstance } from "tippy.js"
 import { SuggestionKeyDownProps } from "@tiptap/suggestion"
 import NodeCommandList from "./NodeCommandList"
 
-export interface Range {
+interface Range {
     from: number
     to: number
 }
@@ -17,7 +17,7 @@ export interface CommandItem {
     disabled?: boolean
 }
 
-export interface RenderSuggestionsProps {
+interface RenderSuggestionsProps {
     editor: Editor
     clientRect?: (() => DOMRect) | null
     decorationNode?: Element | null

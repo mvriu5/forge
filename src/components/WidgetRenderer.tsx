@@ -115,7 +115,7 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode
                 fallbackRender={({error, resetErrorBoundary}) => (
                     <WidgetError
                         message={`The ${name} widget failed to load.`}
-                        details={error.message}
+                        details={(error as Error).message}
                         actionLabel="Retry"
                         onAction={resetErrorBoundary}
                     />
