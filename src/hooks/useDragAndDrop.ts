@@ -14,15 +14,15 @@ import { useCallback, useMemo, useState } from "react"
 function findFreePosition(relevantWidgets: Widget[], width: number, height: number, excludeId?: string, excludePosition?: { x: number, y: number, width: number, height: number }) {
     const occupiedCells: Record<string, boolean> = {}
 
-    relevantWidgets.map((widget) => {
-        if (excludeId && widget.id === excludeId) return
+    for (const widget of relevantWidgets) {
+        if (excludeId && widget.id === excludeId) continue
 
         for (let i = 0; i < widget.width; i++) {
             for (let j = 0; j < widget.height; j++) {
                 occupiedCells[`${widget.positionX + i},${widget.positionY + j}`] = true
             }
         }
-    })
+    }
 
     if (excludePosition) {
         for (let i = 0; i < excludePosition.width; i++) {
@@ -64,6 +64,30 @@ export const useDragAndDrop = (editMode: boolean, widgets: Widget[] | undefined,
         const alreadyScoped = widgets.every((widget) => widget.dashboardId === currentDashboardId)
         return alreadyScoped ? widgets : widgets.filter((widget) => widget.dashboardId === currentDashboardId)
     }, [widgets, currentDashboardId])
+
+    const flushPositionUpdates = useCallback(() => {
+        animationFrameRef.current = null
+        const updates = Array.from(pendingPositionUpdatesRef.current.entries())
+        pendingPositionUpdatesRef.current.clear()
+
+        for (const [id, position] of updates) {
+            updateWidgetPosition(id, position.x, position.y)
+        }
+    }, [updateWidgetPosition])
+
+    const scheduleWidgetPositionUpdate = useCallback((id: string, x: number, y: number) => {
+        pendingPositionUpdatesRef.current.set(id, {x, y})
+
+        if (animationFrameRef.current === null) {
+            animationFrameRef.current = window.requestAnimationFrame(flushPositionUpdates)
+        }
+    }, [flushPositionUpdates])
+
+    useEffect(() => () => {
+        if (animationFrameRef.current !== null) {
+            window.cancelAnimationFrame(animationFrameRef.current)
+        }
+    }, [])
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -111,7 +135,7 @@ export const useDragAndDrop = (editMode: boolean, widgets: Widget[] | undefined,
         const conflictingWidgets = getConflictingWidgets(newWidget, x, y, excludeId)
         const movedWidgets: Array<{ id: string; x: number; y: number; width: number; height: number }> = []
 
-        conflictingWidgets.map((widget) => {
+        for (const widget of conflictingWidgets) {
             const updatedWidgets = relevantWidgets.map(w => {
                 const moved = movedWidgets.find(m => m.id === w.id)
                 return moved ? { ...w, positionX: moved.x, positionY: moved.y } : w
@@ -124,10 +148,10 @@ export const useDragAndDrop = (editMode: boolean, widgets: Widget[] | undefined,
                 height: newWidget.height,
             })
 
-            updateWidgetPosition(widget.id, freePosition.x, freePosition.y)
+            scheduleWidgetPositionUpdate(widget.id, freePosition.x, freePosition.y)
             movedWidgets.push({ id: widget.id, x: freePosition.x, y: freePosition.y, width: widget.width, height: widget.height })
-        })
-    }, [getConflictingWidgets, updateWidgetPosition, relevantWidgets])
+        }
+    }, [getConflictingWidgets, scheduleWidgetPositionUpdate, relevantWidgets])
 
     const handleDragStart = useCallback((event: DragStartEvent) => {
         if (!editMode) return

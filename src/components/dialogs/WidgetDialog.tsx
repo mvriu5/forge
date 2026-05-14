@@ -1,14 +1,18 @@
 "use client"
 
+import { Grid2x2Plus } from "lucide-react"
+import Image from "next/image"
+import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import {
     Dialog,
     DialogClose,
-    DialogContent, DialogDescription,
+    DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
+    DialogTrigger,
 } from "@/components/ui/Dialog"
 import { Input } from "@/components/ui/Input"
 import { ScrollArea } from "@/components/ui/ScrollArea"
@@ -20,7 +24,7 @@ import { useDashboards } from "@/hooks/data/useDashboards"
 import { useSettings } from "@/hooks/data/useSettings"
 import { useWidgets } from "@/hooks/data/useWidgets"
 import { authClient } from "@/lib/auth-client"
-import { definitions, WidgetDefinition } from "@/lib/definitions"
+import { definitions, type WidgetDefinition } from "@/lib/definitions"
 import { capitalizeFirstLetter, cn } from "@/lib/utils"
 import { Grid2x2Plus } from "lucide-react"
 import Image from "next/image"
@@ -33,15 +37,20 @@ interface WidgetDialogProps {
     title?: string
 }
 
-function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
+const WIDGET_GRID_COLUMNS = 2
+
+function WidgetDialog({ editMode, title }: WidgetDialogProps) {
     const { data: session } = authClient.useSession()
     const { settings } = useSettings(session?.user.id)
     const { currentDashboard } = useDashboards(session?.user.id, settings)
     const { widgets, addWidget, addWidgetStatus } = useWidgets(session?.user.id)
 
-    const [selectedWidgets, setSelectedWidgets] = useState<WidgetDefinition[]>([])
+    const [selectedWidgets, setSelectedWidgets] = useState<WidgetDefinition[]>(
+        [],
+    )
     const [query, setQuery] = useState("")
     const [tagValue, setTagValue] = useState("")
+    const [activeWidgetIndex, setActiveWidgetIndex] = useState(0)
     const [dialogOpen, setDialogOpen] = useState(false)
     const [frameDialogState, setFrameDialogState] = useState<{open: boolean, widget: WidgetDefinition | null}>({ open: false, widget: null })
     const scrollViewportRef = useRef<HTMLDivElement | null>(null)
@@ -50,18 +59,24 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
     const widgetTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new widget",
         anchor: "bc",
-        offset: 12
+        offset: 12,
     })
 
     const widgetCategories = useMemo(() => {
-        const tags = definitions.flatMap(d => d.tags ?? []);
-        return Array.from(new Set(tags));
+        const tags = definitions.flatMap((d) => d.tags ?? [])
+        return Array.from(new Set(tags))
     }, [])
 
     const filteredWidgets = useMemo(() => {
         return definitions.filter((widget) => {
-            const matchesSearch = widget.name.toLowerCase().includes(query.toLowerCase())
-            const matchesTags = tagValue === "" || widget.tags?.some((tag: any) => tag === tagValue)
+            const normalizedQuery = query.trim().toLowerCase()
+            const matchesSearch =
+                normalizedQuery === "" ||
+                [widget.name, widget.description, ...widget.tags].some(
+                    (value) => value.toLowerCase().includes(normalizedQuery),
+                )
+            const matchesTags =
+                tagValue === "" || widget.tags?.includes(tagValue)
             return matchesSearch && matchesTags
         })
     }, [query, tagValue])
@@ -85,21 +100,56 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
     const handleSelect = (widgetPreview: WidgetDefinition) => {
         if (!currentDashboard) return
 
-        if (widgetPreview.name !== "Frame" && widgets?.find((w) => w.widgetType === widgetPreview?.name && w.dashboardId === currentDashboard.id)) return
+        if (
+            widgetPreview.name !== "Frame" &&
+            widgets?.find(
+                (w) =>
+                    w.widgetType === widgetPreview?.name &&
+                    w.dashboardId === currentDashboard.id,
+            )
+        )
+            return
 
-        setSelectedWidgets(prev => {
-            const exists = prev.some(w => w.name === widgetPreview.name)
-            if (exists) return prev.filter(w => w.name !== widgetPreview.name)
+        setSelectedWidgets((prev) => {
+            const exists = prev.some((w) => w.name === widgetPreview.name)
+            if (exists) return prev.filter((w) => w.name !== widgetPreview.name)
             return [...prev, widgetPreview]
         })
     }
 
+    const handleWidgetKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+        if (filteredWidgets.length === 0) return
+
+        const keyOffset = {
+            ArrowRight: 1,
+            ArrowLeft: -1,
+            ArrowDown: WIDGET_GRID_COLUMNS,
+            ArrowUp: -WIDGET_GRID_COLUMNS,
+        }[event.key]
+
+        if (typeof keyOffset !== "number") return
+
+        event.preventDefault()
+        focusWidget(activeWidgetIndex + keyOffset)
+    }
+
+    const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+        if (event.key !== "ArrowDown" || filteredWidgets.length === 0) return
+
+        event.preventDefault()
+        focusWidget(activeWidgetIndex)
+    }
+
     const handleAddWidget = async () => {
-        if (selectedWidgets.length <= 0 || !session?.user.id || !currentDashboard) return
+        if (
+            selectedWidgets.length <= 0 ||
+            !session?.user.id ||
+            !currentDashboard
+        )
+            return
 
         try {
             for (const widget of selectedWidgets) {
-
                 if (widget.name === "Frame") {
                     setFrameDialogState({ open: true, widget: widget })
                     continue
@@ -114,10 +164,10 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
                     positionX: 0,
                     positionY: 0,
                     createdAt: new Date(),
-                    updatedAt: new Date()
+                    updatedAt: new Date(),
                 })
             }
-        } catch (err) {
+        } catch {
             toast.error("Something went wrong")
         }
 
@@ -125,12 +175,18 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
         setSelectedWidgets([])
         setQuery("")
         setTagValue("")
+        setActiveWidgetIndex(0)
     }
 
-    const isAddDisabled =  selectedWidgets.length <= 0 || !session?.user.id || !currentDashboard || addWidgetStatus === "pending"
+    const isAddDisabled =
+        selectedWidgets.length <= 0 ||
+        !session?.user.id ||
+        !currentDashboard ||
+        addWidgetStatus === "pending"
 
-    const handleSaveFrameWidget = async (data: { url: string, sizes: any }) => {
-        if (!session?.user.id || !currentDashboard || !frameDialogState.widget) return
+    const handleSaveFrameWidget = async (data: { url: string; sizes: any }) => {
+        if (!session?.user.id || !currentDashboard || !frameDialogState.widget)
+            return
 
         try {
             await addWidget({
@@ -146,9 +202,9 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
                     sizes: data.sizes,
                 },
                 createdAt: new Date(),
-                updatedAt: new Date()
+                updatedAt: new Date(),
             })
-        } catch (err) {
+        } catch {
             toast.error("Something went wrong")
         }
 
@@ -163,30 +219,59 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
                 setSelectedWidgets([])
                 setQuery("")
                 setTagValue("")
+                setActiveWidgetIndex(0)
             }}
         >
             <DialogTrigger asChild>
-                <Button className={"px-1.5 gap-2"} {...widgetTooltip} variant={"brand"} disabled={editMode || !currentDashboard || !session?.user.id}>
-                    <Grid2x2Plus size={16}/>
+                <Button
+                    className={"px-1.5 gap-2"}
+                    {...widgetTooltip}
+                    variant={"brand"}
+                    disabled={
+                        editMode || !currentDashboard || !session?.user.id
+                    }
+                >
+                    <Grid2x2Plus size={16} />
                     {title}
                 </Button>
             </DialogTrigger>
-            <DialogContent className={"md:min-w-200 max-w-[90vw] sm:w-max  pl-8 pt-8"}>
-                <DialogHeader className={"flex flex-row justify-between items-center pr-4"}>
+            <DialogContent
+                className={"md:min-w-200 max-w-[90vw] sm:w-max  pl-8 pt-8"}
+            >
+                <DialogHeader
+                    className={
+                        "flex flex-row justify-between items-center pr-4"
+                    }
+                >
                     <DialogTitle>
                         <div className={"flex items-center gap-2"}>
                             <p>Select a widget</p>
-                            <span className={"inline wrap-break-word text-tertiary font-normal bg-tertiary rounded-md px-1 py-1"}>{filteredWidgets.length}</span>
+                            <span
+                                className={
+                                    "inline wrap-break-word text-tertiary font-normal bg-tertiary rounded-md px-1 py-1"
+                                }
+                            >
+                                {filteredWidgets.length}
+                            </span>
                         </div>
                     </DialogTitle>
-                    <DialogDescription className={"sr-only"}/>
-                    <DialogClose/>
+                    <DialogDescription className={"sr-only"}>
+                        Search widgets, filter by category, and use arrow keys
+                        to move through the widget grid.
+                    </DialogDescription>
+                    <DialogClose />
                 </DialogHeader>
                 <div className={"flex pr-4 w-full"}>
                     <Input
                         value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder={"Search widgets"}
+                        onChange={(e) => {
+                            setQuery(e.target.value)
+                            setActiveWidgetIndex(0)
+                        }}
+                        onKeyDown={handleSearchKeyDown}
+                        placeholder={
+                            "Search widgets by name, tag, or description"
+                        }
                         className={"w-full border-main/60 -mb-2"}
                         autoFocus
                     />
@@ -263,14 +348,18 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
                         disabled={isAddDisabled}
                         onClick={handleAddWidget}
                     >
-                        {addWidgetStatus === "pending" && <Spinner/>}
-                        {selectedWidgets.length > 1 ? "Add widgets" : "Add widget"}
+                        {addWidgetStatus === "pending" && <Spinner />}
+                        {selectedWidgets.length > 1
+                            ? "Add widgets"
+                            : "Add widget"}
                     </Button>
                 </DialogFooter>
             </DialogContent>
             <FrameWidgetDialog
                 open={frameDialogState.open}
-                onOpenChange={(open) => setFrameDialogState({ open, widget: null })}
+                onOpenChange={(open) =>
+                    setFrameDialogState({ open, widget: null })
+                }
                 widget={frameDialogState.widget}
                 onSave={handleSaveFrameWidget}
             />

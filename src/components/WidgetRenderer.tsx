@@ -8,7 +8,6 @@ import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegra
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {ErrorBoundary} from "react-error-boundary"
 import {Skeleton} from "@/components/ui/Skeleton"
-import { authClient } from "@/lib/auth-client"
 
 const areWidgetsEqual = (a: BaseWidget, b: BaseWidget): boolean => (
     a === b
@@ -34,17 +33,8 @@ const WidgetSkeleton = () => (
     </div>
 )
 
-const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({
-    widget,
-    editMode,
-    isDragging,
-    previewPosition,
-    isSwapPreview,
-    onWidgetDelete,
-    onWidgetUpdate
-}) => {
-    const { data: session, isPending: sessionPending } = authClient.useSession()
-    const {integrations, isLoading: isLoadingIntegrations, handleIntegrate} = useIntegrations(session?.user.id)
+const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete, onWidgetUpdate}) => {
+    const {integrations, isLoading: isLoadingIntegrations, handleIntegrate} = useIntegrations(widget.userId)
 
     const definition = useMemo(() => getWidgetDefinition(widget.widgetType), [widget.widgetType])
     const {Component, defaultConfig, name, integration: requiredIntegration, sizes: defaultSizes} = definition
@@ -78,7 +68,7 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({
         })
     }, [defaultConfig, onWidgetUpdate, widget])
 
-    if (sessionPending || isLoadingIntegrations) {
+    if (isLoadingIntegrations) {
         return (
             <WidgetContainer
                 widget={widget}

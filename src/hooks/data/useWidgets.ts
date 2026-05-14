@@ -47,16 +47,18 @@ async function updateWidgetRequest(widget: Widget): Promise<Widget> {
 
 type WidgetLayoutUpdate = Pick<Widget, "id" | "width" | "height" | "positionX" | "positionY">
 
-async function updateWidgetLayoutRequest(widget: WidgetLayoutUpdate): Promise<void> {
-    const response = await fetch("/api/widgets", {
-        method: "PUT",
+async function updateWidgetsLayoutRequest(widgets: WidgetLayoutUpdate[]): Promise<Widget[]> {
+    const response = await fetch("/api/widgets/layout", {
+        method: "PATCH",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(widget)
+        body: JSON.stringify({widgets})
     })
 
     if (!response.ok) {
-        throw new Error(`Error saving widget ${widget.id}`)
+        throw new Error("Error saving widget layout")
     }
+
+    return response.json()
 }
 
 async function deleteWidgetRequest(id: string): Promise<void> {
@@ -94,7 +96,7 @@ function findNextAvailablePosition(widgets: Widget[] | undefined, newWidgetWidth
         .fill(false)
         .map(() => Array(gridSize).fill(false))
 
-    relevant.map((widget) => {
+    for (const widget of relevant) {
         for (let i = 0; i < widget.width; i++) {
             for (let j = 0; j < widget.height; j++) {
                 const x = widget.positionX + i
@@ -105,7 +107,7 @@ function findNextAvailablePosition(widgets: Widget[] | undefined, newWidgetWidth
                 }
             }
         }
-    })
+    }
 
     for (let y = 0; y < gridSize; y++) {
         for (let x = 0; x < gridSize; x++) {
@@ -215,18 +217,25 @@ export function useWidgets(userId: string | undefined) {
     })
 
     const saveWidgetsLayoutMutation = useMutation({
-        mutationFn: async () => {
-            const widgets = queryClient.getQueryData<Widget[]>(WIDGETS_QUERY_KEY(userId)) ?? []
+        mutationFn: async (widgetsToSave?: Widget[]) => {
+            const widgets = widgetsToSave ?? queryClient.getQueryData<Widget[]>(WIDGETS_QUERY_KEY(userId)) ?? []
+            if (widgets.length === 0) return []
 
-            await Promise.all(
-                widgets.map((widget) => updateWidgetLayoutRequest({
-                    id: widget.id,
-                    width: widget.width,
-                    height: widget.height,
-                    positionX: widget.positionX,
-                    positionY: widget.positionY
-                }))
-            )
+            return updateWidgetsLayoutRequest(widgets.map((widget) => ({
+                id: widget.id,
+                width: widget.width,
+                height: widget.height,
+                positionX: widget.positionX,
+                positionY: widget.positionY
+            })))
+        },
+        onSuccess: (updatedWidgets) => {
+            if (!updatedWidgets || updatedWidgets.length === 0) return
+            queryClient.setQueryData(WIDGETS_QUERY_KEY(userId), (previous: Widget[] | undefined) => {
+                if (!previous) return previous
+                const updatedById = new Map(updatedWidgets.map((widget) => [widget.id, widget]))
+                return previous.map((widget) => updatedById.get(widget.id) ?? widget)
+            })
         }
     })
 
@@ -262,7 +271,7 @@ export function useWidgets(userId: string | undefined) {
         addWidget: useCallback((widget: WidgetInsert) => addWidgetMutation.mutateAsync(widget), [addWidgetMutation]),
         updateWidget: useCallback((widget: Widget) => refreshWidgetMutation.mutateAsync(widget), [refreshWidgetMutation]),
         removeWidget: useCallback((id: string) => removeWidgetMutation.mutateAsync(id), [removeWidgetMutation]),
-        saveWidgetsLayout: useCallback(() => saveWidgetsLayoutMutation.mutateAsync(), [saveWidgetsLayoutMutation]),
+        saveWidgetsLayout: useCallback((widgetsToSave?: Widget[]) => saveWidgetsLayoutMutation.mutateAsync(widgetsToSave), [saveWidgetsLayoutMutation]),
         updateWidgetPosition,
         getWidget,
         setWidgets,
