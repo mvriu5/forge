@@ -9,8 +9,9 @@ import { toast } from "@/components/ui/Toast"
 import type { Widget } from "@/database"
 import { useDashboards } from "@/hooks/data/useDashboards"
 import { useSettings } from "@/hooks/data/useSettings"
+import { IntegrationsProvider, useIntegrations } from "@/hooks/data/useIntegrations"
 import { useWidgets } from "@/hooks/data/useWidgets"
-import { useResponsiveLayout } from "@/hooks/media/useResponsiveLayout"
+import { useBreakpoint } from "@/hooks/media/useBreakpoint"
 import { authClient } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -23,6 +24,7 @@ function DashboardContent() {
     const {data: session, isPending: sessionLoading} = authClient.useSession()
     const {settings, isLoading: settingsLoading, updateSettings} = useSettings(session?.user.id)
     const {dashboards, currentDashboard, isLoading: dashboardsLoading, addDashboard, addDashboardStatus,setSelectedDashboard} = useDashboards(session?.user.id, settings)
+    const integrations = useIntegrations(session?.user.id)
     const {widgets, isLoading: widgetsLoading, isReady: widgetsReady, removeWidget, saveWidgetsLayout, updateWidget, updateWidgetPosition, setWidgets} = useWidgets(session?.user.id)
 
     const [activeWidget, setActiveWidget] = useState<Widget | null>(null)
@@ -39,7 +41,8 @@ function DashboardContent() {
     const widgetsToRemoveIds = useMemo(() => new Set(widgetsToRemove.map((widget) => widget.id)), [widgetsToRemove])
     const visibleWidgets = useMemo(() => currentWidgets.filter((widget) => !widgetsToRemoveIds.has(widget.id)), [currentWidgets, widgetsToRemoveIds])
 
-    const {isDesktop} = useResponsiveLayout(visibleWidgets, isFullscreen)
+    const {breakpoint} = useBreakpoint()
+    const isDesktop = breakpoint === "desktop"
 
     const cachedWidgetsRef = useRef<Widget[] | null>(null)
     const currentWidgetsRef = useRef<Widget[]>([])
@@ -104,7 +107,19 @@ function DashboardContent() {
             if (widgetsToRemove.length > 0) {
                 await Promise.all(widgetsToRemove.map((widget) => removeWidget(widget.id)))
             }
-            await saveWidgetsLayout()
+            const removedWidgetIds = new Set(widgetsToRemove.map((widget) => widget.id))
+            const cachedWidgets = cachedWidgetsRef.current ?? []
+            const cachedById = new Map(cachedWidgets.map((widget) => [widget.id, widget]))
+            const dirtyWidgets = widgets.filter((widget) => {
+                if (removedWidgetIds.has(widget.id)) return false
+                const cached = cachedById.get(widget.id)
+                return !cached
+                    || cached.width !== widget.width
+                    || cached.height !== widget.height
+                    || cached.positionX !== widget.positionX
+                    || cached.positionY !== widget.positionY
+            })
+            await saveWidgetsLayout(dirtyWidgets)
             toast.success("Successfully updated your layout.")
         } catch (error) {
             console.log(error)
@@ -115,7 +130,7 @@ function DashboardContent() {
             setWidgetsToRemove([])
             cachedWidgetsRef.current = null
         }
-    }, [removeWidget, saveWidgetsLayout, widgetsToRemove])
+    }, [removeWidget, saveWidgetsLayout, widgets, widgetsToRemove])
 
     const handleEditModeCancel = useCallback(() => {
         if (cachedWidgetsRef.current) setWidgets(cachedWidgetsRef.current)
@@ -144,6 +159,7 @@ function DashboardContent() {
     ), [sessionLoading, dashboardsLoading, widgetsLoading, settingsLoading])
 
     return (
+        <IntegrationsProvider value={integrations}>
         <div className={cn("flex flex-col w-full h-full", isDesktop && "max-h-screen max-w-screen overflow-hidden")}>
             {mounted ? (
                 <Header
@@ -209,6 +225,7 @@ function DashboardContent() {
                 />
             </Suspense>
         </div>
+        </IntegrationsProvider>
     )
 }
 

@@ -75,6 +75,16 @@ export const deleteWidgetSchema = z.object({
     id: z.string(),
 })
 
+export const updateWidgetsLayoutSchema = z.object({
+    widgets: z.array(z.object({
+        id: z.string(),
+        height: z.number(),
+        width: z.number(),
+        positionX: z.number(),
+        positionY: z.number(),
+    })),
+})
+
 const providerEnum = z.enum(["google", "github", "notion"])
 
 export const deleteAccountSchema = z.object({
