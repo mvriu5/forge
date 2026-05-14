@@ -8,7 +8,7 @@ import { useNotifications } from "@/hooks/data/useNotifications"
 import { authClient } from "@/lib/auth-client"
 import { cn, getTimeLabel } from "@/lib/utils"
 import { Archive, Bell, BellRing, Inbox, Mails, TriangleAlert } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 
 function NotificationPopover({editMode, open, onOpenChange}: {editMode: boolean, open: boolean, onOpenChange: (open: boolean) => void}) {
     const {data: session, isPending: sessionLoading} = authClient.useSession()

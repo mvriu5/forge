@@ -10,6 +10,24 @@ const sortWidgetsByPosition = (widgets: Widget[]): Widget[] => {
     })
 }
 
+const getResponsiveSize = (widget: Widget, breakpoint: Breakpoint) => {
+    const definition = getWidgetDefinition(widget.widgetType)
+    const configSizes = (widget.config as { sizes?: Record<Breakpoint, { width: number; height: number }> } | null)?.sizes
+    const configured = configSizes?.[breakpoint]
+
+    if (
+        configured
+        && Number.isFinite(configured.width)
+        && Number.isFinite(configured.height)
+        && configured.width > 0
+        && configured.height > 0
+    ) {
+        return configured
+    }
+
+    return definition.sizes[breakpoint]
+}
+
 const placeWidgetsInGrid = (widgets: Widget[], breakpoint: Breakpoint, maxCols: number) => {
     const grid: (Widget | null)[][] = []
     const placedWidgets: Widget[] = []
@@ -19,10 +37,7 @@ const placeWidgetsInGrid = (widgets: Widget[], breakpoint: Breakpoint, maxCols: 
     }
 
     widgets.map((widget) => {
-        const definition = getWidgetDefinition(widget.widgetType)
-        if (!definition || !definition.sizes) return
-
-        const responsiveSize = definition.sizes[breakpoint]
+        const responsiveSize = getResponsiveSize(widget, breakpoint)
 
         const widgetWidth = responsiveSize.width
         const widgetHeight = responsiveSize.height
@@ -83,10 +98,7 @@ export const transformLayout = (widgets: Widget[], breakpoint: Breakpoint): Widg
         let currentRow = 0
 
         for (const widget of sortedWidgets) {
-            const definition = getWidgetDefinition(widget.widgetType)
-            if (!definition || !definition.sizes) continue
-
-            const responsiveSize = definition.sizes[breakpoint]
+            const responsiveSize = getResponsiveSize(widget, breakpoint)
 
             placedWidgets.push({
                 ...widget,
@@ -106,8 +118,7 @@ export const transformLayout = (widgets: Widget[], breakpoint: Breakpoint): Widg
     }
 
     return sortedWidgets.map((widget) => {
-        const definition = getWidgetDefinition(widget.widgetType)
-        const responsiveSize = definition.sizes[breakpoint]
+        const responsiveSize = getResponsiveSize(widget, breakpoint)
 
         return {
             ...widget,

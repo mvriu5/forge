@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AppWindow, Settings as SettingsIcon } from "lucide-react"
 import { useTheme } from "next-themes"
-import { Suspense, useMemo } from "react"
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -25,6 +25,7 @@ import { SelectField } from "@/components/fields/SelectField"
 import { SwitchField } from "@/components/fields/SwitchField"
 import { useDashboards } from "@/hooks/data/useDashboards"
 import { authClient } from "@/lib/auth-client"
+import { notificationsEnabledClient } from "@/lib/notifications-client"
 
 const TIMEZONES = [
     "UTC",
@@ -166,6 +167,8 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
     const lightTooltip = useTooltip<HTMLDivElement>({ message: "Light Theme", anchor: "tc" })
     const darkTooltip = useTooltip<HTMLDivElement>({ message: "Dark Theme", anchor: "tc" })
     const systemTooltip = useTooltip<HTMLDivElement>({ message: "System Theme", anchor: "tc" })
+    const scrollViewportRef = useRef<HTMLDivElement | null>(null)
+    const [scrollEdges, setScrollEdges] = useState({ canScrollUp: false, canScrollDown: false })
 
     const meetingReminderOptions = useMemo( () => ["0", "5", "10", "15", "30", "60"].map((minutes) => ({
         label: `${minutes} minutes before`,
@@ -174,8 +177,30 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
 
     const fields = useMemo(() => {
         const dashboardOptions = [...(dashboards ?? []).map(d => ({ label: d.name, value: d.id })), ({ label: "None", value: "None"})]
-        return FIELDS.map(f => f.name === "openDashboard" ? { ...f, options: dashboardOptions } : f)
+        return FIELDS
+            .filter((f) => {
+                if (notificationsEnabledClient) return true
+
+                return !["meetingReminders", "todoReminder", "countdownReminder", "githubReminder", "mailReminder"].includes(f.name)
+            })
+            .map(f => f.name === "openDashboard" ? { ...f, options: dashboardOptions } : f)
     }, [dashboards])
+
+    const updateScrollEdges = useCallback(() => {
+        const viewport = scrollViewportRef.current
+        if (!viewport) return
+
+        const maxScrollTop = viewport.scrollHeight - viewport.clientHeight
+        setScrollEdges({
+            canScrollUp: viewport.scrollTop > 1,
+            canScrollDown: viewport.scrollTop < maxScrollTop - 1,
+        })
+    }, [])
+
+    useEffect(() => {
+        const frame = requestAnimationFrame(updateScrollEdges)
+        return () => cancelAnimationFrame(frame)
+    }, [fields, updateScrollEdges])
 
     const onSubmit = async (values: FormValues) => {
         if (!settings) return
@@ -282,27 +307,39 @@ function SettingsSection({ handleClose }: { handleClose: () => void }) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="h-full">
                 <Suspense fallback={<Spinner />}>
                     <div className="flex flex-col justify-between gap-4 h-full">
-                        <ScrollArea className="h-full pr-4">
-                            <div className="flex flex-col gap-2">
-                                <div className="flex items-center gap-2">
-                                    <SettingsIcon className="p-1 bg-secondary rounded-md border border-main/40 text-tertiary" />
-                                    <p className="font-mono text-primary">General</p>
-                                </div>
+                        <div className="relative min-h-0 flex-1">
+                            <ScrollArea
+                                className="h-full pr-4"
+                                viewportRef={scrollViewportRef}
+                                onViewportScroll={updateScrollEdges}
+                            >
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <SettingsIcon className="p-1 bg-secondary rounded-md border border-main/40 text-tertiary" />
+                                        <p className="font-mono text-primary">General</p>
+                                    </div>
 
-                                <div className="w-full flex flex-col gap-4 sm:gap-2 p-2 bg-secondary rounded-md border border-main/40">
-                                    {fields.filter((f) => f.section === "general").map(renderField)}
-                                </div>
+                                    <div className="w-full flex flex-col gap-4 sm:gap-2 p-2 bg-secondary rounded-md border border-main/40">
+                                        {fields.filter((f) => f.section === "general").map(renderField)}
+                                    </div>
 
-                                <div className="flex items-center gap-2 mt-2">
-                                    <AppWindow className="p-1 bg-secondary rounded-md border border-main/40 text-tertiary" />
-                                    <p className="font-mono text-primary">Widget</p>
-                                </div>
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <AppWindow className="p-1 bg-secondary rounded-md border border-main/40 text-tertiary" />
+                                        <p className="font-mono text-primary">Widget</p>
+                                    </div>
 
-                                <div className="w-full flex flex-col gap-4 sm:gap-2 items-center p-2 bg-secondary rounded-md border border-main/40">
-                                {fields.filter((f) => f.section === "widget").map(renderField)}
+                                    <div className="w-full flex flex-col gap-4 sm:gap-2 items-center p-2 bg-secondary rounded-md border border-main/40">
+                                    {fields.filter((f) => f.section === "widget").map(renderField)}
+                                    </div>
                                 </div>
-                            </div>
-                        </ScrollArea>
+                            </ScrollArea>
+                            {scrollEdges.canScrollUp && (
+                                <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-linear-to-b from-primary to-transparent" />
+                            )}
+                            {scrollEdges.canScrollDown && (
+                                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-primary to-transparent" />
+                            )}
+                        </div>
 
                         <div className="w-full flex gap-2 justify-end pr-4">
                             <Button type="button" className="w-max" onClick={handleClose}>

@@ -34,11 +34,11 @@ const DashboardGrid = React.memo<DashboardGridProps>(function DashboardGrid({
     isFullscreen
 }) {
     const {transformedWidgets, gridClasses, isDesktop} = useResponsiveLayout(widgets, isFullscreen)
-    const gridCells = useGrid(activeWidget, widgets)
+    const gridCells = useGrid(activeWidget, transformedWidgets)
 
-    const {sensors, handleDragStart, handleDragEnd, handleDragOver} = useDragAndDrop(
+    const {sensors, handleDragStart, handleDragEnd, handleDragOver, handleDragCancel, swapPreview} = useDragAndDrop(
         editMode,
-        widgets,
+        transformedWidgets,
         currentDashboardId,
         updateWidgetPosition,
         setActiveWidget
@@ -50,15 +50,31 @@ const DashboardGrid = React.memo<DashboardGridProps>(function DashboardGrid({
             onDragStart={editMode ? handleDragStart : undefined}
             onDragEnd={editMode ? handleDragEnd : undefined}
             onDragOver={editMode ? handleDragOver : undefined}
+            onDragCancel={editMode ? handleDragCancel : undefined}
         >
             <div className={cn("relative w-full", gridClasses)}>
                 <Grid cells={gridCells} enabled={isDesktop}/>
+                {swapPreview?.drop && (
+                    <div
+                        className="pointer-events-none rounded-md border-2 border-dashed border-main bg-tertiary"
+                        style={{
+                            gridColumnStart: swapPreview.drop.x + 1,
+                            gridRowStart: swapPreview.drop.y + 1,
+                            gridColumnEnd: swapPreview.drop.x + 1 + swapPreview.drop.width,
+                            gridRowEnd: swapPreview.drop.y + 1 + swapPreview.drop.height,
+                            minHeight: `${swapPreview.drop.height * 180}px`,
+                            zIndex: 25,
+                        }}
+                    />
+                )}
                 {transformedWidgets?.map(widget => (
                     <WidgetRenderer
                         key={widget.id}
                         widget={widget}
                         editMode={editMode}
                         isDragging={activeWidgetId === widget.id}
+                        isSwapPreview={swapPreview?.widgetId === widget.id}
+                        previewPosition={swapPreview?.widgetId === widget.id ? { x: swapPreview.x, y: swapPreview.y } : null}
                         onWidgetDelete={onWidgetDelete}
                         onWidgetUpdate={onWidgetUpdate}
                     />

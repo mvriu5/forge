@@ -7,6 +7,8 @@ import * as React from "react"
 interface ScrollAreaProps extends React.ComponentPropsWithRef<typeof ScrollAreaPrimitive.Root> {
     thumbClassname?: string
     orientation?: "vertical" | "horizontal"
+    viewportRef?: React.Ref<HTMLDivElement>
+    onViewportScroll?: React.UIEventHandler<HTMLDivElement>
 }
 
 interface ScrollBarProps extends React.ComponentPropsWithRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar> {
@@ -14,13 +16,17 @@ interface ScrollBarProps extends React.ComponentPropsWithRef<typeof ScrollAreaPr
     thumbClassname?: string
 }
 
-const ScrollArea = ({ className, thumbClassname, orientation = "vertical", children, ...props }: ScrollAreaProps) => {
+const ScrollArea = ({ className, thumbClassname, orientation = "vertical", viewportRef, onViewportScroll, children, ...props }: ScrollAreaProps) => {
     return (
         <ScrollAreaPrimitive.Root
             className={cn("relative overflow-hidden", className)}
             {...props}
         >
-            <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
+            <ScrollAreaPrimitive.Viewport
+                ref={viewportRef}
+                onScroll={onViewportScroll}
+                className="h-full w-full rounded-[inherit]"
+            >
                 {children}
             </ScrollAreaPrimitive.Viewport>
             <ScrollBar thumbClassname={thumbClassname} orientation={orientation}/>

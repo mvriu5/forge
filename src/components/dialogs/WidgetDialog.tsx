@@ -24,7 +24,7 @@ import { definitions, WidgetDefinition } from "@/lib/definitions"
 import { capitalizeFirstLetter, cn } from "@/lib/utils"
 import { Grid2x2Plus } from "lucide-react"
 import Image from "next/image"
-import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FrameWidgetDialog } from "./FrameWidgetDialog"
 
 interface WidgetDialogProps {
@@ -44,6 +44,8 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
     const [tagValue, setTagValue] = useState("")
     const [dialogOpen, setDialogOpen] = useState(false)
     const [frameDialogState, setFrameDialogState] = useState<{open: boolean, widget: WidgetDefinition | null}>({ open: false, widget: null })
+    const scrollViewportRef = useRef<HTMLDivElement | null>(null)
+    const [scrollEdges, setScrollEdges] = useState({ canScrollUp: false, canScrollDown: false })
 
     const widgetTooltip = useTooltip<HTMLButtonElement>({
         message: "Add a new widget",
@@ -63,6 +65,22 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
             return matchesSearch && matchesTags
         })
     }, [query, tagValue])
+
+    const updateScrollEdges = useCallback(() => {
+        const viewport = scrollViewportRef.current
+        if (!viewport) return
+
+        const maxScrollTop = viewport.scrollHeight - viewport.clientHeight
+        setScrollEdges({
+            canScrollUp: viewport.scrollTop > 1,
+            canScrollDown: viewport.scrollTop < maxScrollTop - 1,
+        })
+    }, [])
+
+    useEffect(() => {
+        const frame = requestAnimationFrame(updateScrollEdges)
+        return () => cancelAnimationFrame(frame)
+    }, [filteredWidgets, dialogOpen, updateScrollEdges])
 
     const handleSelect = (widgetPreview: WidgetDefinition) => {
         if (!currentDashboard) return
@@ -176,56 +194,68 @@ function WidgetDialog({editMode, isOnboarding, title}: WidgetDialogProps) {
                 <div className={"flex"}>
                     <ToggleGroup type="single" className={"border-0 bg-transparent px-0"} value={tagValue} onValueChange={(tag) => setTagValue(tag)}>
                         {widgetCategories.map(category => (
-                            <ToggleGroupItem key={category} value={category} className={"px-2 h-8 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
+                            <ToggleGroupItem key={category} value={category} className={"px-2 h-7 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
                                 {capitalizeFirstLetter((category))}
                             </ToggleGroupItem>
                         ))}
                     </ToggleGroup>
                 </div>
 
-                <ScrollArea className="h-96 pr-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {filteredWidgets.map((widget) => {
-                            const isWidgetInUse = widget.name !== 'Frame' && widgets?.find((w) => w.widgetType === widget.name && w.dashboardId === currentDashboard?.id);
-                            return (
-                                <div
-                                    key={widget.name}
-                                    data-used={isWidgetInUse ? "true" : "false"}
-                                    data-selected={selectedWidgets.some((w) => w.name === widget.name) ? "true" : "false"}
-                                    className={cn(
-                                        "relative group cursor-default col-span-1 flex flex-col p-2 m-1 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
-                                        "data-[selected=true]:border-brand/30 data-[used=true]:border-success/30",
-                                        "data-[used=true]:ring-4 data-[used=true]:ring-success/10",
-                                        "data-[selected=true]:ring-4 data-[selected=true]:ring-brand/10"
-                                    )}
-                                    onClick={() => handleSelect(widget)}
-                                >
-                                    <div className={"flex justify-between items-center"}>
-                                        <p className={"text-primary relative z-10"}>{widget.name}</p>
-                                        <div className={"px-2 rounded-md bg-white/5 border border-main/40 group-data-[used=true]:bg-success/10 group-data-[used=true]:text-success group-data-[used=true]:border-success/20"}>
-                                            {isWidgetInUse ?
-                                                "In use" :
-                                                `${widget.sizes.desktop.width}x${widget.sizes.desktop.height}`
-                                            }
+                <div className="relative">
+                    <ScrollArea
+                        className="h-96 pr-4"
+                        viewportRef={scrollViewportRef}
+                        onViewportScroll={updateScrollEdges}
+                    >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {filteredWidgets.map((widget) => {
+                                const isWidgetInUse = widget.name !== 'Frame' && widgets?.find((w) => w.widgetType === widget.name && w.dashboardId === currentDashboard?.id);
+                                return (
+                                    <div
+                                        key={widget.name}
+                                        data-used={isWidgetInUse ? "true" : "false"}
+                                        data-selected={selectedWidgets.some((w) => w.name === widget.name) ? "true" : "false"}
+                                        className={cn(
+                                            "relative group cursor-default col-span-1 flex flex-col p-2 m-1 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
+                                            "data-[selected=true]:border-brand/30 data-[used=true]:border-success/30",
+                                            "data-[used=true]:ring-4 data-[used=true]:ring-success/10",
+                                            "data-[selected=true]:ring-4 data-[selected=true]:ring-brand/10"
+                                        )}
+                                        onClick={() => handleSelect(widget)}
+                                    >
+                                        <div className={"flex justify-between items-center"}>
+                                            <p className={"text-primary relative z-10"}>{widget.name}</p>
+                                            <div className={"px-2 rounded-md bg-white/5 border border-main/40 group-data-[used=true]:bg-success/10 group-data-[used=true]:text-success group-data-[used=true]:border-success/20"}>
+                                                {isWidgetInUse ?
+                                                    "In use" :
+                                                    `${widget.sizes.desktop.width}x${widget.sizes.desktop.height}`
+                                                }
+                                            </div>
+                                        </div>
+                                        <p className={"text-sm text-secondary relative z-10"}>{widget.description}</p>
+                                        <div className={"absolute left-4 -bottom-32 sm:-bottom-8 md:-bottom-16 rounded-xl shadow-md pt-0.5 pl-0.5 ml-4 border border-main/40 bg-secondary pointer-events-none z-0"}>
+                                            <Image
+                                                src={widget.image}
+                                                alt={widget.name}
+                                                width="0"
+                                                height="0"
+                                                sizes="100vw"
+
+                                                className="w-full h-full object-cover"
+                                            />
                                         </div>
                                     </div>
-                                    <p className={"text-sm text-secondary relative z-10"}>{widget.description}</p>
-                                    <div className={"absolute left-4 -bottom-32 sm:-bottom-8 md:-bottom-16 rounded-xl shadow-md pt-0.5 pl-0.5 ml-4 border border-main/40 bg-secondary pointer-events-none z-0"}>
-                                        <Image
-                                            src={widget.image}
-                                            alt={widget.name}
-                                            width="0"
-                                            height="0"
-                                            sizes="100vw"
-
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </ScrollArea>
+                                )
+                            })}
+                        </div>
+                    </ScrollArea>
+                    {scrollEdges.canScrollUp && (
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-linear-to-b from-primary to-transparent" />
+                    )}
+                    {scrollEdges.canScrollDown && (
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-primary to-transparent" />
+                    )}
+                </div>
 
                 <DialogFooter className={"pr-4"}>
                     <Button

@@ -14,6 +14,7 @@ import { useNotifications } from "@/hooks/data/useNotifications"
 import { useSettings } from "@/hooks/data/useSettings"
 import { WidgetProps } from "@/lib/definitions"
 import { queryOptions } from "@/lib/queryOptions"
+import { cn } from "@/lib/utils"
 import { defineWidget } from "@/lib/widget"
 import { Octokit } from "@octokit/rest"
 import { useQuery } from "@tanstack/react-query"
@@ -368,7 +369,15 @@ const PulLRequestCard = ({pr}: {pr: any}) => {
                     </div>
                     <div className="flex flex-wrap gap-1 mt-1">
                         {pr.labels.map((label: any) => (
-                            <Badge key={label.id} title={label.name} variant={"default"} className="text-xs px-1.5 py-0" style={{color: `#${label.color}`}}/>
+                            <Badge
+                                key={label.id}
+                                title={label.name}
+                                variant={"default"}
+                                className={cn("text-xs px-1.5 py-0 bg-white/10")}
+                                style={{
+                                    color: `#${label.color}`,
+                                }}
+                            />
                         ))}
                     </div>
                 </div>

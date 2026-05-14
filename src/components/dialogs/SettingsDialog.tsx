@@ -45,7 +45,7 @@ function SettingsDialog() {
                     </DialogHeader>
                 </VisuallyHidden>
                 <div className={"flex flex-col sm:flex-row h-130 max-h-130"}>
-                    <div className={"flex flex-col sm:bg-secondary w-full sm:w-max sm:h-full rounded-none sm:rounded-l-md border-b sm:border-r border-main/40 p-2 pb-4 sm:pb-2"}>
+                    <div className={"flex flex-col sm:bg-secondary w-full sm:w-max sm:h-full rounded-none sm:rounded-l-md border-b sm:border-b-0 sm:border-r border-main/40 p-2 pb-4 sm:pb-2"}>
 
                         <ToggleGroup
                             type="single"

@@ -1,5 +1,6 @@
 import { Notification } from "@/database"
 import { auth } from "@/lib/auth"
+import { notificationsEnabledServer } from "@/lib/notifications-server"
 import { redis } from "@/lib/redis"
 import { realtime } from "@/lib/realtime"
 import { createNotificationSchema } from "@/lib/validations"
@@ -8,6 +9,10 @@ import { NextResponse } from "next/server"
 import { randomUUID } from "node:crypto"
 
 export async function GET(req: Request) {
+    if (!notificationsEnabledServer || !redis) {
+        return NextResponse.json([], { status: 200 })
+    }
+
     try {
         const session = await auth.api.getSession({
             headers: await headers()
@@ -25,6 +30,10 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+    if (!notificationsEnabledServer || !redis || !realtime) {
+        return NextResponse.json({ error: "Notifications disabled" }, { status: 503 })
+    }
+
     try {
         const session = await auth.api.getSession({
             headers: await headers()
@@ -65,6 +74,10 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+    if (!notificationsEnabledServer || !redis) {
+        return NextResponse.json({ success: true }, { status: 200 })
+    }
+
     try {
         const session = await auth.api.getSession({
             headers: await headers()

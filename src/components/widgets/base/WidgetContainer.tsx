@@ -2,8 +2,7 @@ import {Button} from "@/components/ui/Button"
 import {useTooltip} from "@/components/ui/TooltipProvider"
 import {useBreakpoint} from "@/hooks/media/useBreakpoint"
 import {cn} from "@/lib/utils"
-import {useDraggable} from "@dnd-kit/core"
-import {CSS} from "@dnd-kit/utilities"
+import {useDraggable, useDroppable} from "@dnd-kit/core"
 import {Trash} from "lucide-react"
 import type {HTMLAttributes} from "react"
 import React from "react"
@@ -21,6 +20,8 @@ interface WidgetContainerProps extends HTMLAttributes<HTMLDivElement> {
     widget: Widget
     sizes: WidgetSizes
     editMode: boolean
+    previewPosition?: { x: number; y: number } | null
+    previewOpacity?: boolean
     onWidgetDelete?: (id: string) => void
 }
 
@@ -31,14 +32,21 @@ const WidgetContainer: React.FC<WidgetContainerProps> = ({
     widget,
     sizes,
     editMode,
+    previewPosition,
+    previewOpacity,
     onWidgetDelete
 }) => {
     const {breakpoint} = useBreakpoint()
     const responsiveSize = sizes[breakpoint]
 
-    const {attributes, listeners, setNodeRef, transform, isDragging} = useDraggable({
+    const {attributes, listeners, setNodeRef: setDraggableNodeRef, transform, isDragging} = useDraggable({
         id: widget.id,
         data: {widget},
+        disabled: !editMode
+    })
+    const {setNodeRef: setDroppableNodeRef} = useDroppable({
+        id: `widget-drop-${widget.id}`,
+        data: { widgetId: widget.id, x: widget.positionX, y: widget.positionY },
         disabled: !editMode
     })
 
@@ -48,23 +56,29 @@ const WidgetContainer: React.FC<WidgetContainerProps> = ({
         offset: 8
     })
 
+    const gridPosition = previewPosition ?? { x: widget.positionX, y: widget.positionY }
+
     const style = {
-        transform: transform ? CSS.Transform.toString(transform) : undefined,
+        transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
         transition: isDragging ? "none" : "transform 200ms ease",
-        gridColumnStart: widget.positionX + 1,
-        gridRowStart: widget.positionY + 1,
-        gridColumnEnd: widget.positionX + 1 + responsiveSize.width,
-        gridRowEnd: widget.positionY + 1 + responsiveSize.height,
+        gridColumnStart: gridPosition.x + 1,
+        gridRowStart: gridPosition.y + 1,
+        gridColumnEnd: gridPosition.x + 1 + responsiveSize.width,
+        gridRowEnd: gridPosition.y + 1 + responsiveSize.height,
         zIndex: isDragging ? 30 : 20,
     }
 
     return (
         <div
-            ref={setNodeRef}
+            ref={(node) => {
+                setDraggableNodeRef(node)
+                setDroppableNodeRef(node)
+            }}
             className={cn(
                 "h-full flex flex-col gap-2 rounded-md bg-tertiary border border-main/40 p-2 overflow-hidden",
                 editMode && "relative cursor-grab active:cursor-grabbing animate-[wiggle_1s_ease-in-out_infinite]",
                 editMode && isDragging && "opacity-70 animate-none border-2 border-dashed border-main/60",
+                editMode && previewOpacity && !isDragging && "opacity-45",
                 className
             )}
             style={style}

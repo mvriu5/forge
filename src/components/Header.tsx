@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Spinner } from "@/components/ui/Spinner"
 import { useTooltip } from "@/components/ui/TooltipProvider"
 import { Dashboard, DashboardInsert } from "@/database"
+import { notificationsEnabledClient } from "@/lib/notifications-client"
 import { LayoutTemplate, Maximize, Minimize, Save, Undo2 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -168,7 +169,9 @@ function Header({dashboards, currentDashboard, onEdit, editMode, editModeLoading
                 }
             </div>
             <div className={"flex items-center gap-2"}>
-                <NotificationPopover editMode={editMode} open={isNotificationPopoverOpen} onOpenChange={setNotificationPopoverOpen}/>
+                {notificationsEnabledClient && (
+                    <NotificationPopover editMode={editMode} open={isNotificationPopoverOpen} onOpenChange={setNotificationPopoverOpen}/>
+                )}
                 <ProfilePopover editMode={editMode} open={isProfilePopoverOpen} onOpenChange={setProfilePopoverOpen}/>
             </div>
         </div>

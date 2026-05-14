@@ -26,21 +26,23 @@ const GEOCODING_QUERY_KEY = (coords: { lat: number, lon: number } | null) => ["r
 const WEATHER_QUERY_KEY = (coords: { lat: number, lon: number } | null) => ["weather", coords] as const
 
 const GEO_COORDS_STORAGE_KEY = "weatherWidgetCoords"
-const GEO_PERMISSION_STORAGE_KEY = "weatherWidgetPermission"
-
-const USER_AGENT_HEADER = { "User-Agent": "Forge (tryforge.io)" }
 
 const fetchReverseGeocoding = async (lat: number, lon: number) => {
-    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`, {
-        headers: USER_AGENT_HEADER,
-    })
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
 
     if (!res.ok) throw new Error("Reverse-Geocoding Fehler")
     return res.json()
 }
 
 const fetchWeatherData = async (lat: number, lon: number) => {
-    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode`)
+    const params = new URLSearchParams({
+        latitude: String(lat),
+        longitude: String(lon),
+        hourly: "temperature_2m,weather_code",
+        timezone: "auto",
+        forecast_days: "2",
+    })
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?${params.toString()}`)
 
     if (!res.ok) throw new Error("Weatherdata-Error")
     return res.json()
@@ -55,7 +57,36 @@ const WeatherWidget: React.FC<WidgetProps> = ({ widget }) => {
 
     // from useWeather hook
     const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null)
-    const [geolocationError, setGeolocationError] = useState(false)
+    const [geolocationErrorMessage, setGeolocationErrorMessage] = useState<string | null>(null)
+
+    const requestGeolocation = useCallback(() => {
+        if (!("geolocation" in navigator)) {
+            setGeolocationErrorMessage("Geolocation is not supported by your browser.")
+            return
+        }
+
+        navigator.geolocation.getCurrentPosition((position) => {
+            const newCoords = { lat: position.coords.latitude, lon: position.coords.longitude }
+            setCoords(newCoords)
+            setGeolocationErrorMessage(null)
+            try {
+                window.localStorage.setItem(GEO_COORDS_STORAGE_KEY, JSON.stringify(newCoords))
+            } catch {
+                // ignore storage errors
+            }
+        }, (error) => {
+            if (error.code === error.PERMISSION_DENIED) {
+                setGeolocationErrorMessage("Please enable your geolocation info.")
+                return
+            }
+
+            setGeolocationErrorMessage("Could not determine your location. Please try again.")
+        }, {
+            enableHighAccuracy: false,
+            timeout: 20_000,
+            maximumAge: 15 * 60 * 1000,
+        })
+    }, [])
 
     useEffect(() => {
         if (typeof window === "undefined") return
@@ -66,6 +97,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({ widget }) => {
                 const parsed = JSON.parse(storedCoords) as { lat?: number; lon?: number }
                 if (typeof parsed?.lat === "number" && typeof parsed?.lon === "number") {
                     setCoords({ lat: parsed.lat, lon: parsed.lon })
+                    setGeolocationErrorMessage(null)
                     return
                 }
             } catch {
@@ -73,37 +105,17 @@ const WeatherWidget: React.FC<WidgetProps> = ({ widget }) => {
             }
         }
 
-        const storedPermission = window.localStorage.getItem(GEO_PERMISSION_STORAGE_KEY)
-        if (storedPermission === "denied") {
-            setGeolocationError(true)
-            return
+        requestGeolocation()
+
+        const handleWindowFocus = () => {
+            if (!coords) requestGeolocation()
         }
 
-        if (!("geolocation" in navigator)) {
-            setGeolocationError(true)
-            return
-        }
+        window.addEventListener("focus", handleWindowFocus)
+        return () => window.removeEventListener("focus", handleWindowFocus)
+    }, [coords, requestGeolocation])
 
-        navigator.geolocation.getCurrentPosition((position) => {
-            const newCoords = { lat: position.coords.latitude, lon: position.coords.longitude }
-            setCoords(newCoords)
-            try {
-                window.localStorage.setItem(GEO_COORDS_STORAGE_KEY, JSON.stringify(newCoords))
-                window.localStorage.removeItem(GEO_PERMISSION_STORAGE_KEY)
-            } catch {
-                // ignore storage errors
-            }
-        }, () => {
-            setGeolocationError(true)
-            try {
-                window.localStorage.setItem(GEO_PERMISSION_STORAGE_KEY, "denied")
-            } catch {
-                // ignore storage errors
-            }
-        })
-    }, [])
-
-    const isGeoLoading = coords === null && !geolocationError
+    const isGeoLoading = coords === null && !geolocationErrorMessage
 
     const { data: locationData } = useQuery({
         queryKey: GEOCODING_QUERY_KEY(coords),
@@ -113,7 +125,12 @@ const WeatherWidget: React.FC<WidgetProps> = ({ widget }) => {
         refetchOnMount: false
     })
 
-    const location = locationData?.address?.town ?? null
+    const location =
+        locationData?.address?.city
+        ?? locationData?.address?.town
+        ?? locationData?.address?.village
+        ?? locationData?.address?.municipality
+        ?? null
 
     const { data: weatherData, isLoading: isWeatherLoading, isError } = useQuery({
         queryKey: WEATHER_QUERY_KEY(coords),
@@ -129,7 +146,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({ widget }) => {
     const currentWeather = (() => {
         if (!weatherData) return null
         const now = new Date()
-        const { time, temperature_2m, weathercode } = weatherData.hourly
+        const { time, temperature_2m, weather_code } = weatherData.hourly
 
         const index = time.findLastIndex((t: string) => new Date(t) <= now)
         if (index === -1) return null
@@ -137,14 +154,14 @@ const WeatherWidget: React.FC<WidgetProps> = ({ widget }) => {
         return {
             time: time[index],
             temperature: temperature_2m[index],
-            weathercode: weathercode[index]
+            weathercode: weather_code[index]
         }
     })()
 
     const nextWeather = (() => {
         if (!weatherData) return null
         const now = new Date()
-        const { time, temperature_2m, weathercode } = weatherData.hourly
+        const { time, temperature_2m, weather_code } = weatherData.hourly
 
         const currentIndex = time.findLastIndex((t: string) => new Date(t) <= now)
         if (currentIndex === -1) return null
@@ -154,7 +171,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({ widget }) => {
             result.push({
                 time: time[i],
                 temperature: temperature_2m[i],
-                weathercode: weathercode[i]
+                weathercode: weather_code[i]
             })
         }
         return result
@@ -180,12 +197,12 @@ const WeatherWidget: React.FC<WidgetProps> = ({ widget }) => {
         }
     }, [])
 
-    if (isError || geolocationError) {
+    if (isError || geolocationErrorMessage) {
         return (
             <WidgetError message={
                 isError
                     ? "An error occurred, while getting the weather data. Try again later."
-                    : "Please enable your geolocation info."
+                    : geolocationErrorMessage ?? "An error occurred, while getting the weather data. Try again later."
             } />
         )
     }

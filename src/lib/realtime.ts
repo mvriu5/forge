@@ -1,5 +1,6 @@
-import { Realtime, type InferRealtimeEvents } from "@upstash/realtime"
+import { Realtime } from "@upstash/realtime"
 import { z } from "zod/v4"
+import { notificationsEnabledServer } from "@/lib/notifications-server"
 import { redis } from "@/lib/redis"
 
 const notificationSchema = z.object({
@@ -10,13 +11,19 @@ const notificationSchema = z.object({
     createdAt: z.string(),
 })
 
-export const realtime = new Realtime({
-    redis,
-    schema: {
-        notification: {
-            created: notificationSchema,
+export const realtime = notificationsEnabledServer && redis
+    ? new Realtime({
+        redis,
+        schema: {
+            notification: {
+                created: notificationSchema,
+            },
         },
-    },
-})
+    })
+    : null
 
-export type RealtimeEvents = InferRealtimeEvents<typeof realtime>
+export type RealtimeEvents = {
+    notification: {
+        created: typeof notificationSchema
+    }
+}

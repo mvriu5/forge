@@ -34,7 +34,15 @@ const WidgetSkeleton = () => (
     </div>
 )
 
-const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete, onWidgetUpdate}) => {
+const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({
+    widget,
+    editMode,
+    isDragging,
+    previewPosition,
+    isSwapPreview,
+    onWidgetDelete,
+    onWidgetUpdate
+}) => {
     const { data: session, isPending: sessionPending } = authClient.useSession()
     const {integrations, isLoading: isLoadingIntegrations, handleIntegrate} = useIntegrations(session?.user.id)
 
@@ -77,6 +85,8 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode
                 name={name}
                 sizes={sizes}
                 editMode={editMode}
+                previewPosition={previewPosition}
+                previewOpacity={isSwapPreview}
                 onWidgetDelete={onWidgetDelete}
             >
                 <WidgetSkeleton/>
@@ -91,6 +101,8 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode
                 name={name}
                 sizes={sizes}
                 editMode={editMode}
+                previewPosition={previewPosition}
+                previewOpacity={isSwapPreview}
                 onWidgetDelete={onWidgetDelete}
             >
                 <WidgetError
@@ -108,6 +120,8 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode
             name={name}
             sizes={sizes}
             editMode={editMode}
+            previewPosition={previewPosition}
+            previewOpacity={isSwapPreview}
             onWidgetDelete={onWidgetDelete}
         >
             <ErrorBoundary
@@ -141,6 +155,9 @@ export const WidgetRenderer = React.memo(WidgetRendererComponent, (prev, next) =
     areWidgetsEqual(prev.widget as BaseWidget, next.widget as BaseWidget)
     && prev.editMode === next.editMode
     && prev.isDragging === next.isDragging
+    && prev.isSwapPreview === next.isSwapPreview
+    && (prev.previewPosition?.x ?? null) === (next.previewPosition?.x ?? null)
+    && (prev.previewPosition?.y ?? null) === (next.previewPosition?.y ?? null)
     && prev.onWidgetDelete === next.onWidgetDelete
     && prev.onWidgetUpdate === next.onWidgetUpdate
 ))

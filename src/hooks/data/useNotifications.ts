@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import type { Notification } from "@/database"
 import { toast } from "@/components/ui/Toast"
+import { notificationsEnabledClient } from "@/lib/notifications-client"
 import { useRealtime } from "@/lib/realtime-client"
 
 const NOTIFICATION_SENT_KEY = "forge-notifications-session"
@@ -44,7 +45,7 @@ export function useNotifications(userId: string | undefined) {
     }, [])
 
     const { status } = useRealtime({
-        enabled: !!userId,
+        enabled: notificationsEnabledClient && !!userId,
         channels: userId ? [`user-${userId}`] : [],
         events: ["notification.created"],
         onData: ({ data }) => {
@@ -54,6 +55,7 @@ export function useNotifications(userId: string | undefined) {
     })
 
     useEffect(() => {
+        if (!notificationsEnabledClient) return
         if (!userId) return
 
         const controller = new AbortController();
@@ -76,6 +78,7 @@ export function useNotifications(userId: string | undefined) {
     const connected = status === "connected"
 
     const sendReminderNotification = useCallback(async (input: { type: Notification["type"], message: string, key?: string }) => {
+        if (!notificationsEnabledClient) return
         if (!userId) return
 
         const notificationKey = input.key ?? `reminder-${input.message}`
@@ -100,6 +103,7 @@ export function useNotifications(userId: string | undefined) {
     }, [userId, addNotification])
 
     const sendMeetingNotification = useCallback(async (input: { type: Notification["type"], message: string, url: string, key?: string }) => {
+        if (!notificationsEnabledClient) return
         if (!userId) return
 
         const notificationKey = input.key ?? `meeting-${input.message}`
@@ -124,6 +128,7 @@ export function useNotifications(userId: string | undefined) {
     }, [userId, addNotification])
 
     const sendGithubNotification = useCallback(async (input: { type: Notification["type"], message: string, issues: number, pullRequests: number, key?: string }) => {
+        if (!notificationsEnabledClient) return
         if (!userId) return
 
         const notificationKey = input.key ?? "github-reminder"
@@ -148,6 +153,7 @@ export function useNotifications(userId: string | undefined) {
     }, [userId, addNotification])
 
     const sendMailNotification = useCallback(async (input: { type: Notification["type"], id: string,  message: string, snippet: string, key?: string }) => {
+        if (!notificationsEnabledClient) return
         if (!userId) return
 
         const notificationKey = input.key ?? `mail-${input.id}`
@@ -172,6 +178,10 @@ export function useNotifications(userId: string | undefined) {
     }, [userId, addNotification])
 
     const clearNotifications = useCallback(async () => {
+        if (!notificationsEnabledClient) {
+            setNotifications([])
+            return
+        }
         if (!userId) return
 
         await fetch(`/api/notifications?userId=${userId}`, { method: "DELETE" })

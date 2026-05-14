@@ -41,6 +41,8 @@ export interface WidgetRuntimeProps<W extends BaseWidget = BaseWidget, Config = 
     widget: W
     editMode: boolean
     isDragging?: boolean
+    previewPosition?: { x: number; y: number } | null
+    isSwapPreview?: boolean
     onWidgetUpdate?: (widget: W) => Promise<BaseWidget>
     onWidgetDelete?: (id: string) => void
     config?: Config

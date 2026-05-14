@@ -16,11 +16,6 @@ export default function RootLayout({children}: Readonly<{ children: ReactNode }>
         <html lang="en" suppressHydrationWarning>
             {process.env.NODE_ENV === "development" && (
                 <head>
-                    <Script
-                        src="//unpkg.com/react-grab/dist/index.global.js"
-                        crossOrigin="anonymous"
-                        strategy="beforeInteractive"
-                    />
                     <script
                         crossOrigin="anonymous"
                         src="//unpkg.com/react-scan/dist/auto.global.js"
