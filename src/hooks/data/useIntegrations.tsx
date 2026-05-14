@@ -93,7 +93,7 @@ export function IntegrationsProvider({children, value}: {children: ReactNode; va
     return <IntegrationsContext.Provider value={value}>{children}</IntegrationsContext.Provider>
 }
 
-export function useIntegrations(userId: string | undefined) {
+export function useIntegrations(userId: string | undefined): IntegrationsValue {
     const context = useContext(IntegrationsContext)
     const queryClient = useQueryClient()
     const hasScopedContext = context?.userId === userId
@@ -106,7 +106,7 @@ export function useIntegrations(userId: string | undefined) {
 
     const { refetch: refetchIntegrations, data, isLoading } = integrationsQuery
 
-    const isLoadingIntegrations = hasScopedContext ? context.isLoading : isLoading && !data
+    const isLoadingIntegrations = hasScopedContext ? context?.isLoading : isLoading && !data
 
     const removeIntegrationMutation = useMutation({
         mutationFn: unlinkIntegration,
@@ -145,10 +145,10 @@ export function useIntegrations(userId: string | undefined) {
         })
     }, [refetchIntegrations])
 
-    const fallbackValue = useMemo(() => ({
+    const fallbackValue: IntegrationsValue = useMemo(() => ({
         userId,
         integrations: data ?? [],
-        isLoading: isLoadingIntegrations,
+        isLoading: isLoadingIntegrations ?? false,
         handleIntegrate,
         refetchIntegrations,
         removeIntegration: (provider: string) => removeIntegrationMutation.mutateAsync(provider),
@@ -165,7 +165,7 @@ export function useIntegrations(userId: string | undefined) {
         userId,
     ])
 
-    return hasScopedContext ? context : fallbackValue
+    return hasScopedContext && context ? context : fallbackValue
 }
 
 export function getIntegrationByProvider(integrations: Integration[], provider: string | undefined) {

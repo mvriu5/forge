@@ -9,7 +9,7 @@ import {
     useSensor,
     useSensors
 } from "@dnd-kit/core"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState, useEffect } from "react"
 
 function findFreePosition(relevantWidgets: Widget[], width: number, height: number, excludeId?: string, excludePosition?: { x: number, y: number, width: number, height: number }) {
     const occupiedCells: Record<string, boolean> = {}
@@ -64,30 +64,6 @@ export const useDragAndDrop = (editMode: boolean, widgets: Widget[] | undefined,
         const alreadyScoped = widgets.every((widget) => widget.dashboardId === currentDashboardId)
         return alreadyScoped ? widgets : widgets.filter((widget) => widget.dashboardId === currentDashboardId)
     }, [widgets, currentDashboardId])
-
-    const flushPositionUpdates = useCallback(() => {
-        animationFrameRef.current = null
-        const updates = Array.from(pendingPositionUpdatesRef.current.entries())
-        pendingPositionUpdatesRef.current.clear()
-
-        for (const [id, position] of updates) {
-            updateWidgetPosition(id, position.x, position.y)
-        }
-    }, [updateWidgetPosition])
-
-    const scheduleWidgetPositionUpdate = useCallback((id: string, x: number, y: number) => {
-        pendingPositionUpdatesRef.current.set(id, {x, y})
-
-        if (animationFrameRef.current === null) {
-            animationFrameRef.current = window.requestAnimationFrame(flushPositionUpdates)
-        }
-    }, [flushPositionUpdates])
-
-    useEffect(() => () => {
-        if (animationFrameRef.current !== null) {
-            window.cancelAnimationFrame(animationFrameRef.current)
-        }
-    }, [])
 
     const sensors = useSensors(
         useSensor(MouseSensor, {
@@ -148,10 +124,10 @@ export const useDragAndDrop = (editMode: boolean, widgets: Widget[] | undefined,
                 height: newWidget.height,
             })
 
-            scheduleWidgetPositionUpdate(widget.id, freePosition.x, freePosition.y)
+            updateWidgetPosition(widget.id, freePosition.x, freePosition.y)
             movedWidgets.push({ id: widget.id, x: freePosition.x, y: freePosition.y, width: widget.width, height: widget.height })
         }
-    }, [getConflictingWidgets, scheduleWidgetPositionUpdate, relevantWidgets])
+    }, [getConflictingWidgets, relevantWidgets, updateWidgetPosition])
 
     const handleDragStart = useCallback((event: DragStartEvent) => {
         if (!editMode) return

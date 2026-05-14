@@ -1,8 +1,5 @@
 "use client"
 
-import { Grid2x2Plus } from "lucide-react"
-import Image from "next/image"
-import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/Button"
 import {
     Dialog,
@@ -28,7 +25,14 @@ import { definitions, type WidgetDefinition } from "@/lib/definitions"
 import { capitalizeFirstLetter, cn } from "@/lib/utils"
 import { Grid2x2Plus } from "lucide-react"
 import Image from "next/image"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+    type KeyboardEvent as ReactKeyboardEvent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react"
 import { FrameWidgetDialog } from "./FrameWidgetDialog"
 
 interface WidgetDialogProps {
@@ -50,10 +54,11 @@ function WidgetDialog({ editMode, title }: WidgetDialogProps) {
     )
     const [query, setQuery] = useState("")
     const [tagValue, setTagValue] = useState("")
-    const [activeWidgetIndex, setActiveWidgetIndex] = useState(0)
+    const [, setActiveWidgetIndex] = useState(0)
     const [dialogOpen, setDialogOpen] = useState(false)
     const [frameDialogState, setFrameDialogState] = useState<{open: boolean, widget: WidgetDefinition | null}>({ open: false, widget: null })
     const scrollViewportRef = useRef<HTMLDivElement | null>(null)
+    const widgetButtonRefs = useRef<Array<HTMLButtonElement | null>>([])
     const [scrollEdges, setScrollEdges] = useState({ canScrollUp: false, canScrollDown: false })
 
     const widgetTooltip = useTooltip<HTMLButtonElement>({
@@ -97,6 +102,15 @@ function WidgetDialog({ editMode, title }: WidgetDialogProps) {
         return () => cancelAnimationFrame(frame)
     }, [filteredWidgets, dialogOpen, updateScrollEdges])
 
+    const focusWidget = useCallback((index: number) => {
+        const widgetCount = filteredWidgets.length
+        if (widgetCount === 0) return
+
+        const wrappedIndex = ((index % widgetCount) + widgetCount) % widgetCount
+        setActiveWidgetIndex(wrappedIndex)
+        widgetButtonRefs.current[wrappedIndex]?.focus()
+    }, [filteredWidgets.length])
+
     const handleSelect = (widgetPreview: WidgetDefinition) => {
         if (!currentDashboard) return
 
@@ -117,7 +131,10 @@ function WidgetDialog({ editMode, title }: WidgetDialogProps) {
         })
     }
 
-    const handleWidgetKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    const handleWidgetKeyDown = (
+        event: ReactKeyboardEvent<HTMLButtonElement>,
+        index: number,
+    ) => {
         if (filteredWidgets.length === 0) return
 
         const keyOffset = {
@@ -130,14 +147,16 @@ function WidgetDialog({ editMode, title }: WidgetDialogProps) {
         if (typeof keyOffset !== "number") return
 
         event.preventDefault()
-        focusWidget(activeWidgetIndex + keyOffset)
+        focusWidget(index + keyOffset)
     }
 
-    const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    const handleSearchKeyDown = (
+        event: ReactKeyboardEvent<HTMLInputElement>,
+    ) => {
         if (event.key !== "ArrowDown" || filteredWidgets.length === 0) return
 
         event.preventDefault()
-        focusWidget(activeWidgetIndex)
+        focusWidget(0)
     }
 
     const handleAddWidget = async () => {
@@ -277,7 +296,10 @@ function WidgetDialog({ editMode, title }: WidgetDialogProps) {
                     />
                 </div>
                 <div className={"flex"}>
-                    <ToggleGroup type="single" className={"border-0 bg-transparent px-0"} value={tagValue} onValueChange={(tag) => setTagValue(tag)}>
+                    <ToggleGroup type="single" className={"border-0 bg-transparent px-0"} value={tagValue} onValueChange={(tag) => {
+                        setTagValue(tag)
+                        setActiveWidgetIndex(0)
+                    }}>
                         {widgetCategories.map(category => (
                             <ToggleGroupItem key={category} value={category} className={"px-2 h-7 data-[state=on]:bg-brand/5 data-[state=on]:text-brand data-[state=on]:border-brand/20 border border-main/60"}>
                                 {capitalizeFirstLetter((category))}
@@ -293,20 +315,27 @@ function WidgetDialog({ editMode, title }: WidgetDialogProps) {
                         onViewportScroll={updateScrollEdges}
                     >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {filteredWidgets.map((widget) => {
+                            {filteredWidgets.map((widget, index) => {
                                 const isWidgetInUse = widget.name !== 'Frame' && widgets?.find((w) => w.widgetType === widget.name && w.dashboardId === currentDashboard?.id);
                                 return (
-                                    <div
+                                    <button
+                                        type="button"
                                         key={widget.name}
+                                        ref={(node) => {
+                                            widgetButtonRefs.current[index] = node
+                                        }}
                                         data-used={isWidgetInUse ? "true" : "false"}
                                         data-selected={selectedWidgets.some((w) => w.name === widget.name) ? "true" : "false"}
                                         className={cn(
-                                            "relative group cursor-default col-span-1 flex flex-col p-2 m-1 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
+                                            "relative group text-left cursor-default col-span-1 flex flex-col p-2 m-1 h-48 bg-secondary rounded-md overflow-hidden border border-main/40",
                                             "data-[selected=true]:border-brand/30 data-[used=true]:border-success/30",
                                             "data-[used=true]:ring-4 data-[used=true]:ring-success/10",
-                                            "data-[selected=true]:ring-4 data-[selected=true]:ring-brand/10"
+                                            "data-[selected=true]:ring-4 data-[selected=true]:ring-brand/10",
+                                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
                                         )}
                                         onClick={() => handleSelect(widget)}
+                                        onKeyDown={(event) => handleWidgetKeyDown(event, index)}
+                                        onFocus={() => setActiveWidgetIndex(index)}
                                     >
                                         <div className={"flex justify-between items-center"}>
                                             <p className={"text-primary relative z-10"}>{widget.name}</p>
@@ -329,7 +358,7 @@ function WidgetDialog({ editMode, title }: WidgetDialogProps) {
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
-                                    </div>
+                                    </button>
                                 )
                             })}
                         </div>

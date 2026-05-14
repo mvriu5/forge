@@ -33,7 +33,15 @@ const WidgetSkeleton = () => (
     </div>
 )
 
-const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({widget, editMode, isDragging, onWidgetDelete, onWidgetUpdate}) => {
+const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({
+    widget,
+    editMode,
+    isDragging,
+    previewPosition,
+    isSwapPreview,
+    onWidgetDelete,
+    onWidgetUpdate
+}) => {
     const {integrations, isLoading: isLoadingIntegrations, handleIntegrate} = useIntegrations(widget.userId)
 
     const definition = useMemo(() => getWidgetDefinition(widget.widgetType), [widget.widgetType])
