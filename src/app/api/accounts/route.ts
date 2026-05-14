@@ -1,4 +1,4 @@
-import { Account, deleteAccount, getGithubAccount, getGoogleAccount, getNotionAccount, updateAccount } from "@/database"
+import { deleteAccount, getAccountsFromUser, updateAccount } from "@/database"
 import { auth } from "@/lib/auth"
 import { deleteAccountSchema, updateAccountSchema } from "@/lib/validations"
 import { headers } from "next/headers"
@@ -13,10 +13,7 @@ export async function GET(req: Request) {
         if (!session) return new NextResponse("Unauthorized", { status: 401 })
         const userId = session.user.id
 
-        const accounts: Account[] = []
-        accounts.push((await getGoogleAccount(userId))[0])
-        accounts.push((await getGithubAccount(userId))[0])
-        accounts.push((await getNotionAccount(userId))[0])
+        const accounts = await getAccountsFromUser(userId)
 
         return NextResponse.json(accounts, { status: 200 })
     } catch {

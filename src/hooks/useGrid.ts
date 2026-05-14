@@ -1,67 +1,59 @@
 import { Widget } from "@/database"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
+
+type GridCell = {
+    x: number
+    y: number
+    width: number
+    height: number
+    isDroppable: boolean
+}
+
+const GRID_SIZE = 4
 
 export const useGrid = (activeWidget: Widget | null, widgets: Widget[] | undefined) => {
-    const filteredWidgets = useMemo(() => widgets ?? [], [widgets])
+    return useMemo<GridCell[]>(() => {
+        if (!activeWidget) return []
 
-    const [gridCells, setGridCells] = useState<{
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        isDroppable: boolean
-    }[]>([])
+        const occupiedCells = new Set<string>()
+        const filteredWidgets = widgets ?? []
 
-    const getOccupiedCells = () => {
-        const occupiedCells: Record<string, boolean> = {}
+        for (const widget of filteredWidgets) {
+            if (widget.id === activeWidget.id) continue
 
-        filteredWidgets?.map((widget) => {
-            if (activeWidget && widget.id === activeWidget.id) return
-            const { width, height, positionX, positionY } = widget
-
-            for (let i = 0; i < width; i++) {
-                for (let j = 0; j < height; j++) {
-                    occupiedCells[`${positionX + i},${positionY + j}`] = true
+            for (let i = 0; i < widget.width; i++) {
+                for (let j = 0; j < widget.height; j++) {
+                    occupiedCells.add(`${widget.positionX + i},${widget.positionY + j}`)
                 }
             }
-        })
+        }
 
-        return occupiedCells
-    }
+        const canPlaceWidget = (x: number, y: number) => {
+            if (x + activeWidget.width > GRID_SIZE || y + activeWidget.height > GRID_SIZE) return false
 
-    const canPlaceWidget = (widget: { width: number; height: number }, x: number, y: number) => {
-        const { width, height } = widget
-        const occupiedCells = getOccupiedCells()
-
-        if (x + width > 4 || y + height > 4) return false
-
-        for (let i = 0; i < width; i++) {
-            for (let j = 0; j < height; j++) {
-                const cellKey = `${x + i},${y + j}`
-                if (occupiedCells[cellKey]) return false
+            for (let i = 0; i < activeWidget.width; i++) {
+                for (let j = 0; j < activeWidget.height; j++) {
+                    if (occupiedCells.has(`${x + i},${y + j}`)) return false
+                }
             }
-        }
-        return true
-    }
 
-    useEffect(() => {
-        if (!activeWidget) {
-            setGridCells([])
-            return
+            return true
         }
 
-        const cells = []
-        const { width, height } = activeWidget
+        const cells: GridCell[] = []
 
-        for (let y = 0; y <= 4 - height; y++) {
-            for (let x = 0; x <= 4 - width; x++) {
-                const isDroppable = canPlaceWidget(activeWidget, x, y)
-                cells.push({ x, y, width, height, isDroppable })
+        for (let y = 0; y <= GRID_SIZE - activeWidget.height; y++) {
+            for (let x = 0; x <= GRID_SIZE - activeWidget.width; x++) {
+                cells.push({
+                    x,
+                    y,
+                    width: activeWidget.width,
+                    height: activeWidget.height,
+                    isDroppable: canPlaceWidget(x, y),
+                })
             }
         }
 
-        setGridCells(cells)
-    }, [activeWidget, filteredWidgets])
-
-    return gridCells
+        return cells
+    }, [activeWidget, widgets])
 }

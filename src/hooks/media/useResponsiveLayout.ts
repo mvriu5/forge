@@ -9,7 +9,7 @@ const layoutCache = new Map<string, Widget[]>()
 
 const getCacheKey = (widgets: Widget[], breakpoint: Breakpoint, isFullscreen?: boolean): string => {
     const widgetIds = widgets
-        .map((w) => `${w.id}-${w.positionX}-${w.positionY}-${w.width}-${w.height}-${w.updatedAt ?? ""}-${JSON.stringify(w.config ?? null)}`)
+        .map((w) => `${w.id}-${w.positionX}-${w.positionY}-${w.width}-${w.height}-${w.updatedAt ?? ""}`)
         .join(",")
     return `${breakpoint}-${isFullscreen}-${widgetIds}`
 }

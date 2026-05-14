@@ -38,6 +38,28 @@ export const updateWidget = async (id: string, data: Partial<WidgetInsert>) => {
         .returning()
 }
 
+export type WidgetLayoutUpdate = Pick<WidgetInsert, "height" | "width" | "positionX" | "positionY"> & { id: string }
+
+export const updateWidgetsLayout = async (updates: WidgetLayoutUpdate[]) => {
+    const now = new Date()
+
+    return db.transaction(async (tx) => {
+        const updatedWidgets = []
+
+        for (const { id, ...data } of updates) {
+            const updated = await tx
+                .update(widget)
+                .set({...data, updatedAt: now})
+                .where(eq(widget.id, id))
+                .returning()
+
+            updatedWidgets.push(...updated)
+        }
+
+        return updatedWidgets
+    })
+}
+
 export const deleteWidget = async (id: string) => {
     return db
         .delete(widget)
@@ -200,6 +222,13 @@ export const getNotionAccount = async (userId: string): Promise<Account[]> => {
             eq(account.userId, userId),
             eq(account.providerId, "notion")
         ))
+}
+
+export const getAccountsFromUser = async (userId: string): Promise<Account[]> => {
+    return db
+        .select()
+        .from(account)
+        .where(eq(account.userId, userId))
 }
 
 export const updateAccount = async (userId: string, provider: string, data: Partial<AccountInsert>) => {

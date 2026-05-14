@@ -1,10 +1,13 @@
+"use client"
+
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Account} from "@/database"
 import {authClient} from "@/lib/auth-client"
 import {toast} from "@/components/ui/Toast"
 import { queryOptions } from "@/lib/queryOptions"
+import { createContext, ReactNode, useCallback, useContext, useMemo } from "react"
 
-interface Integration {
+export interface Integration {
     id: string
     accountId: string
     userId: string
@@ -72,18 +75,38 @@ async function updateIntegrationRequest({provider, userId, data}: UpdateIntegrat
     return result[0]
 }
 
+type IntegrationsValue = {
+    userId: string | undefined
+    integrations: Integration[]
+    isLoading: boolean
+    handleIntegrate: (provider: string, callback?: boolean) => Promise<void>
+    refetchIntegrations: () => Promise<unknown>
+    removeIntegration: (provider: string) => Promise<void>
+    removeIntegrationStatus: string
+    updateIntegration: (args: UpdateIntegrationArgs) => Promise<Integration>
+    updateIntegrationStatus: string
+}
+
+const IntegrationsContext = createContext<IntegrationsValue | null>(null)
+
+export function IntegrationsProvider({children, value}: {children: ReactNode; value: IntegrationsValue}) {
+    return <IntegrationsContext.Provider value={value}>{children}</IntegrationsContext.Provider>
+}
+
 export function useIntegrations(userId: string | undefined) {
+    const context = useContext(IntegrationsContext)
     const queryClient = useQueryClient()
+    const hasScopedContext = context?.userId === userId
 
     const integrationsQuery = useQuery<Integration[], Error>(queryOptions({
         queryKey: INTEGRATIONS_QUERY_KEY(userId),
         queryFn: () => fetchIntegrations(userId!),
-        enabled: Boolean(userId),
+        enabled: Boolean(userId) && !hasScopedContext,
     }))
 
     const { refetch: refetchIntegrations, data, isLoading } = integrationsQuery
 
-    const isLoadingIntegrations = isLoading && !data
+    const isLoadingIntegrations = hasScopedContext ? context.isLoading : isLoading && !data
 
     const removeIntegrationMutation = useMutation({
         mutationFn: unlinkIntegration,
@@ -108,21 +131,22 @@ export function useIntegrations(userId: string | undefined) {
         }
     })
 
-    const handleIntegrate = async (provider: string, callback = true) => {
-        const data = await authClient.signIn.social({
+    const handleIntegrate = useCallback(async (provider: string, callback = true): Promise<void> => {
+        await authClient.signIn.social({
             provider,
             callbackURL: callback ? CALLBACK_URL : undefined,
         }, {
-            onRequest: (ctx) => {
+            onRequest: () => {
                 void refetchIntegrations()
             },
-            onError: (ctx) => {
+            onError: () => {
                 toast.error("Something went wrong.")
             }
         })
-    }
+    }, [refetchIntegrations])
 
-    return {
+    const fallbackValue = useMemo(() => ({
+        userId,
         integrations: data ?? [],
         isLoading: isLoadingIntegrations,
         handleIntegrate,
@@ -131,7 +155,17 @@ export function useIntegrations(userId: string | undefined) {
         removeIntegrationStatus: removeIntegrationMutation.status,
         updateIntegration: (args: UpdateIntegrationArgs) => updateIntegrationMutation.mutateAsync(args),
         updateIntegrationStatus: updateIntegrationMutation.status,
-    }
+    }), [
+        data,
+        handleIntegrate,
+        isLoadingIntegrations,
+        refetchIntegrations,
+        removeIntegrationMutation,
+        updateIntegrationMutation,
+        userId,
+    ])
+
+    return hasScopedContext ? context : fallbackValue
 }
 
 export function getIntegrationByProvider(integrations: Integration[], provider: string | undefined) {
