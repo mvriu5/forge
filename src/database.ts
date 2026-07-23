@@ -194,36 +194,6 @@ export const getSettingsFromId = async (id: string): Promise<SettingsSelect[]> =
 export type Account = typeof account.$inferSelect
 export type AccountInsert = typeof account.$inferInsert
 
-export const getGoogleAccount = async (userId: string): Promise<Account[]> => {
-    return db
-        .select()
-        .from(account)
-        .where(and(
-            eq(account.userId, userId),
-            eq(account.providerId, "google")
-        ))
-}
-
-export const getGithubAccount = async (userId: string): Promise<Account[]> => {
-    return db
-        .select()
-        .from(account)
-        .where(and(
-            eq(account.userId, userId),
-            eq(account.providerId, "github")
-        ))
-}
-
-export const getNotionAccount = async (userId: string): Promise<Account[]> => {
-    return db
-        .select()
-        .from(account)
-        .where(and(
-            eq(account.userId, userId),
-            eq(account.providerId, "notion")
-        ))
-}
-
 export const getAccountsFromUser = async (userId: string): Promise<Account[]> => {
     return db
         .select()
