@@ -7,7 +7,7 @@ import {BaseWidget, WidgetRuntimeProps} from "@/lib/definitions"
 import {getIntegrationByProvider, useIntegrations} from "@/hooks/data/useIntegrations"
 import {WidgetError} from "@/components/widgets/base/WidgetError"
 import {ErrorBoundary} from "react-error-boundary"
-import {Skeleton} from "@/components/ui/Skeleton"
+import { WidgetLoading } from "@/components/widgets/base/WidgetLoading"
 
 const areWidgetsEqual = (a: BaseWidget, b: BaseWidget): boolean => (
     a === b
@@ -26,12 +26,11 @@ const areWidgetsEqual = (a: BaseWidget, b: BaseWidget): boolean => (
     )
 )
 
-const WidgetSkeleton = () => (
-    <div className="h-full w-full flex flex-col gap-2 p-2">
-        <Skeleton className="h-6 w-24"/>
-        <Skeleton className="h-full w-full"/>
-    </div>
-)
+const resolveWidgetSizes = (config: unknown, fallback: ReturnType<typeof getWidgetDefinition>["sizes"]) => {
+    if (!config || typeof config !== "object" || !("sizes" in config)) return fallback
+    const sizes = config.sizes
+    return sizes && typeof sizes === "object" ? sizes as typeof fallback : fallback
+}
 
 const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({
     widget,
@@ -47,7 +46,7 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({
     const definition = useMemo(() => getWidgetDefinition(widget.widgetType), [widget.widgetType])
     const {Component, defaultConfig, name, integration: requiredIntegration, sizes: defaultSizes} = definition
     const config = (widget.config ?? defaultConfig) as typeof defaultConfig
-    const sizes = (config as any)?.sizes ?? defaultSizes
+    const sizes = resolveWidgetSizes(config, defaultSizes)
 
     const integrationAccount = useMemo(
         () => getIntegrationByProvider(integrations, requiredIntegration),
@@ -87,7 +86,7 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({
                 previewOpacity={isSwapPreview}
                 onWidgetDelete={onWidgetDelete}
             >
-                <WidgetSkeleton/>
+                <WidgetLoading/>
             </WidgetContainer>
         )
     }
@@ -133,7 +132,7 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({
                     />
                 )}
             >
-                <Suspense fallback={<WidgetSkeleton/>}>
+                <Suspense fallback={<WidgetLoading/>}>
                     <Component
                         widget={widget as BaseWidget}
                         config={config}

@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth"
 import { createDashboardSchema, deleteDashboardSchema, getDashboardSchema, updateDashboardSchema } from "@/lib/validations"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
+import { apiError, internalError, validationError } from "@/lib/api-response"
 
 export async function POST(req: Request) {
     try {
@@ -16,14 +17,14 @@ export async function POST(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const body = await req.json()
         const validationResult = createDashboardSchema.safeParse(body)
 
         if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 });
+            return validationError(validationResult.error)
         }
         const { name } = validationResult.data
 
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json(newDashboard, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }
 
@@ -46,7 +47,7 @@ export async function GET(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const { searchParams } = new URL(req.url)
@@ -54,7 +55,7 @@ export async function GET(req: Request) {
         const validationResult = getDashboardSchema.safeParse(query)
 
         if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 });
+            return validationError(validationResult.error)
         }
         const { id } = validationResult.data
 
@@ -70,7 +71,7 @@ export async function GET(req: Request) {
         const dashboards = await getDashboardsFromUser(userId)
         return NextResponse.json(dashboards, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }
 
@@ -80,14 +81,14 @@ export async function PUT(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const body = await req.json()
         const validationResult = updateDashboardSchema.safeParse(body)
 
         if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 });
+            return validationError(validationResult.error)
         }
         const { id, name } = validationResult.data
 
@@ -101,7 +102,7 @@ export async function PUT(req: Request) {
 
         return NextResponse.json(updatedDashboard, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }
 
@@ -111,7 +112,7 @@ export async function DELETE(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const { searchParams } = new URL(req.url)
@@ -119,7 +120,7 @@ export async function DELETE(req: Request) {
         const validationResult = deleteDashboardSchema.safeParse(query)
 
         if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 });
+            return validationError(validationResult.error)
         }
         const { id } = validationResult.data
 
@@ -134,6 +135,6 @@ export async function DELETE(req: Request) {
 
         return NextResponse.json(deletedDashboard, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }

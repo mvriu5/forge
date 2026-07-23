@@ -180,10 +180,10 @@ const DropdownMenuSubItem = ({item, width, disableFocusOnHover, children}: Dropd
 const DropdownMenuActions = ({ items, width, disableFocusOnHover }: DropdownMenuActionsProps) => {
     return items.map((item, i) => {
         const stableKey = (() => {
-            if ((item as any).type === 'checkbox') return `checkbox-${(item as any).label}`
-            if ((item as any).type === 'item') return `item-${(item as any).label}`
-            if ((item as any).type === 'sub') return `sub-${(item as any).label}`
-            if ((item as any).type === 'label') return `label-${(item as any).label}`
+            if (item.type === "checkbox") return `checkbox-${item.label}`
+            if (item.type === "item") return `item-${item.label}`
+            if (item.type === "sub") return `sub-${item.label}`
+            if (item.type === "label") return `label-${item.label}`
             return `sep-${i}`
         })()
 

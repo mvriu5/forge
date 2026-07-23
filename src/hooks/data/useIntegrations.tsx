@@ -5,6 +5,7 @@ import {authClient} from "@/lib/auth-client"
 import {toast} from "@/components/ui/Toast"
 import { queryOptions } from "@/lib/queryOptions"
 import { createContext, ReactNode, useCallback, useContext, useMemo } from "react"
+import { apiCommand, apiRequest } from "@/lib/api-client"
 
 export interface Integration {
     id: string
@@ -20,19 +21,11 @@ const INTEGRATIONS_QUERY_KEY = (userId: string | undefined) => ["integrations", 
 const CALLBACK_URL = "/dashboard"
 
 async function fetchIntegrations(userId: string): Promise<Integration[]> {
-    const response = await fetch(`/api/accounts?userId=${userId}`)
-
-    if (!response.ok) return []
-
-    return response.json()
+    return apiRequest<Integration[]>(`/api/accounts?userId=${userId}`)
 }
 
 async function unlinkIntegration(provider: string) {
-    const response = await fetch(`/api/accounts?provider=${provider}`, { method: "DELETE" })
-
-    if (!response.ok) {
-        throw new Error("Failed to unlink integration")
-    }
+    await apiCommand(`/api/accounts?provider=${provider}`, { method: "DELETE" })
 }
 
 type IntegrationsValue = {

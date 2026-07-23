@@ -7,7 +7,7 @@ import { NumberInput } from "@/components/ui/NumberInput"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { WidgetDefinition } from "@/lib/definitions"
+import { WidgetDefinition, type WidgetSizes } from "@/lib/definitions"
 import { isSafeFrameUrl } from "@/lib/frameUrl"
 
 const formSchema = z.object({
@@ -24,7 +24,7 @@ interface FrameWidgetDialogProps {
     open: boolean
     widget: WidgetDefinition | null
     onOpenChange: (open: boolean) => void
-    onSave: (data: { url: string; sizes: any }) => void
+    onSave: (data: { url: string; sizes: WidgetSizes }) => void
 }
 
 export function FrameWidgetDialog({ open, widget, onOpenChange, onSave }: FrameWidgetDialogProps) {

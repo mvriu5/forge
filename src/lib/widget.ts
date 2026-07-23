@@ -15,18 +15,18 @@ type WidgetComponentWithConfig<Config, W extends BaseWidget = BaseWidget> = Reac
 type WidgetComponentNoConfig<W extends BaseWidget = BaseWidget> = React.FC<WidgetPropsBase<W>>
 
 type InferConfig<C> =
-    C extends WidgetComponentWithConfig<infer Config, any>
+    C extends WidgetComponentWithConfig<infer Config, infer _W>
         ? Config
         : undefined
 
 type InferWidget<C> =
-    C extends WidgetComponentWithConfig<any, infer W>
+    C extends WidgetComponentWithConfig<infer _Config, infer W>
         ? W
         : C extends WidgetComponentNoConfig<infer W2>
             ? W2
             : BaseWidget
 
-export function defineWidget<C extends React.ComponentType<any>>(opts: {
+export function defineWidget<C>(opts: {
     name: string
     component: C
     description: string
@@ -58,7 +58,7 @@ export function defineWidget<C extends React.ComponentType<any>>(opts: {
 
             try {
                 if (providedUpdateConfig) await providedUpdateConfig(nextConfig)
-                else if (onWidgetUpdate) await onWidgetUpdate({ ...(widget as any), config: nextConfig } as W)
+                else if (onWidgetUpdate) await onWidgetUpdate({ ...widget, config: nextConfig } as unknown as W)
                 await onConfigChange?.(widget as W, nextConfig)
             } catch (err) {
                 console.error("[Forge SDK] updateConfig error:", err)
@@ -70,7 +70,7 @@ export function defineWidget<C extends React.ComponentType<any>>(opts: {
             await onWidgetUpdate?.(nextWidget)
         }, [widget, onWidgetUpdate])
 
-        const TypedComponent = component as React.ComponentType<any>
+        const TypedComponent = component as React.ComponentType<WidgetPropsBase<W> | WidgetPropsWithConfig<Config, W>>
 
         const componentProps = useMemo(() => {
             return {
@@ -86,7 +86,10 @@ export function defineWidget<C extends React.ComponentType<any>>(opts: {
             }
         }, [resolvedConfig, editMode, isDragging, onWidgetDelete, updateConfig, updateWidget, widget])
 
-        return useMemo(() => (React.createElement(TypedComponent, componentProps as any)), [TypedComponent, componentProps])
+        return useMemo(
+            () => React.createElement(TypedComponent, componentProps as WidgetPropsBase<W> | WidgetPropsWithConfig<Config, W>),
+            [TypedComponent, componentProps],
+        )
     }
 
     return {

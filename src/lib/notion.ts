@@ -1,220 +1,160 @@
+import type { JSONContent } from "@tiptap/core"
+
 export const NOTION_VERSION = "2025-09-03"
 
-export function getTitleFromProperties(properties: Record<string, any> | undefined) {
+type RichText = {
+    plain_text?: string
+    text?: { content?: string }
+    href?: string | null
+    annotations?: {
+        bold?: boolean
+        italic?: boolean
+        underline?: boolean
+        strikethrough?: boolean
+        code?: boolean
+    }
+}
+
+type BlockData = {
+    rich_text?: RichText[]
+    language?: string
+    checked?: boolean
+    icon?: { emoji?: string }
+}
+
+export type NotionBlock = {
+    type?: string
+    children?: NotionBlock[]
+    [key: string]: unknown
+}
+
+type NotionProperty = { type?: string; title?: RichText[] }
+
+const getBlockData = (block: NotionBlock): BlockData => {
+    if (!block.type) return {}
+    const value = block[block.type]
+    return value && typeof value === "object" ? value as BlockData : {}
+}
+
+export function getTitleFromProperties(properties: Record<string, unknown> | undefined) {
     if (!properties) return "Untitled"
-    for (const key of Object.keys(properties)) {
-        const prop = properties[key]
-        if (prop?.type === "title" && Array.isArray(prop?.title) && prop.title.length > 0) {
-            return prop.title.map((t: any) => t.plain_text ?? "").join("").trim() || "Untitled"
+    for (const value of Object.values(properties)) {
+        const property = value && typeof value === "object" ? value as NotionProperty : null
+        if (property?.type === "title" && Array.isArray(property.title)) {
+            return property.title.map((text) => text.plain_text ?? "").join("").trim() || "Untitled"
         }
     }
     return "Untitled"
 }
 
-function reduceBlockToPlainText(block: any): string {
-    if (!block) return ""
-    const richText = block[block.type]?.rich_text ?? []
-    if (Array.isArray(richText)) {
-        return richText.map((text: any) => text.plain_text ?? text.text?.content ?? "").join("")
-    }
-    return ""
+function reduceBlockToPlainText(block: NotionBlock): string {
+    return (getBlockData(block).rich_text ?? [])
+        .map((text) => text.plain_text ?? text.text?.content ?? "")
+        .join("")
 }
 
-export function blocksToPlainText(blocks: any[]): string {
-    return blocks
-        .map(reduceBlockToPlainText)
-        .filter(Boolean)
-        .join("\n\n")
+export function blocksToPlainText(blocks: NotionBlock[]): string {
+    return blocks.map(reduceBlockToPlainText).filter(Boolean).join("\n\n")
 }
 
-function reduceBlockToJSON(block: any): any | null {
-    if (!block?.type) return null
+function richTextToTextNodes(richText: RichText[] | undefined): JSONContent[] {
+    if (!richText?.length) return []
 
-    const richText = block[block.type]?.rich_text ?? []
-    const text = Array.isArray(richText)
-        ? richText.map((t: any) => t.plain_text ?? t.text?.content ?? "").join("")
-        : ""
+    return richText.flatMap((item): JSONContent[] => {
+        const text = item.plain_text ?? item.text?.content
+        if (!text) return []
 
-    if (!text || typeof text !== "string") return null
+        const marks: NonNullable<JSONContent["marks"]> = []
+        if (item.annotations?.bold) marks.push({ type: "bold" })
+        if (item.annotations?.italic) marks.push({ type: "italic" })
+        if (item.annotations?.underline) marks.push({ type: "underline" })
+        if (item.annotations?.strikethrough) marks.push({ type: "strike" })
+        if (item.annotations?.code) marks.push({ type: "code" })
+        if (item.href) marks.push({ type: "link", attrs: { href: item.href } })
 
-    if (block.type.startsWith("heading_")) {
-        const level = Number(block.type.replace("heading_", ""))
-        const clampedLevel = Math.min(Math.max(level || 1, 1), 3)
-
-        return {
-            type: "heading",
-            attrs: { level: clampedLevel },
-            content: [{ type: "text", text }]
-        }
-    }
-
-    return {
-        type: "paragraph",
-        content: [{ type: "text", text }]
-    }
+        return [{ type: "text", text, ...(marks.length ? { marks } : {}) }]
+    })
 }
 
-export function blocksToJSONContent(blocks: any[]): any {
-    const nodes = blocks
-        .map(reduceBlockToJSON)
-        .filter(Boolean) as any[]
-
-    if (nodes.length === 0) {
-        return { type: "doc", content: [{ type: "paragraph", content: [] }] }
-    }
-
-    return {
-        type: "doc",
-        content: nodes
-    }
-}
-
-function richTextToTextNodes(richText: any[] | undefined): any[] {
-    if (!Array.isArray(richText) || richText.length === 0) return []
-
-    return richText
-        .map((item: any) => {
-            const text = item?.plain_text ?? item?.text?.content
-            if (!text) return null
-
-            const marks: any[] = []
-            const annotations = item?.annotations ?? {}
-
-            if (annotations.bold) marks.push({ type: "bold" })
-            if (annotations.italic) marks.push({ type: "italic" })
-            if (annotations.underline) marks.push({ type: "underline" })
-            if (annotations.strikethrough) marks.push({ type: "strike" })
-            if (annotations.code) marks.push({ type: "code" })
-
-            if (item?.href) {
-                marks.push({ type: "link", attrs: { href: item.href } })
-            }
-
-            return {
-                type: "text",
-                text,
-                ...(marks.length > 0 ? { marks } : {})
-            }
-        })
-        .filter(Boolean) as any[]
-}
-
-function paragraphFromRichText(richText: any[] | undefined, prefixText?: string): any {
+function paragraphFromRichText(richText: RichText[] | undefined, prefixText?: string): JSONContent {
     const content = richTextToTextNodes(richText)
-
-    if (prefixText) {
-        content.unshift({ type: "text", text: prefixText })
-    }
-
-    return {
-        type: "paragraph",
-        content: content.length > 0 ? content : [{ type: "text", text: "" }]
-    }
+    if (prefixText) content.unshift({ type: "text", text: prefixText })
+    return { type: "paragraph", content: content.length ? content : [] }
 }
 
-function buildListItem(block: any): any {
-    const blockData = block?.[block.type] ?? {}
-    const itemContent: any[] = [paragraphFromRichText(blockData.rich_text)]
-
-    const children = Array.isArray(block?.children) ? block.children : []
-    const childNodes = blocksToNodes(children)
-    if (childNodes.length > 0) itemContent.push(...childNodes)
-
-    return { type: "listItem", content: itemContent }
+function buildListItem(block: NotionBlock): JSONContent {
+    const content = [paragraphFromRichText(getBlockData(block).rich_text), ...blocksToNodes(block.children ?? [])]
+    return { type: "listItem", content }
 }
 
-function convertBlock(block: any): any | any[] | null {
-    if (!block?.type) return null
+function convertBlock(block: NotionBlock): JSONContent | JSONContent[] | null {
+    if (!block.type) return null
+    const data = getBlockData(block)
 
-    const blockData = block[block.type] ?? {}
-
-    if (block.type === "paragraph") {
-        return paragraphFromRichText(blockData.rich_text)
-    }
-
-    if (block.type === "heading_1" || block.type === "heading_2" || block.type === "heading_3") {
-        const level = block.type === "heading_1" ? 1 : block.type === "heading_2" ? 2 : 3
+    if (block.type === "paragraph") return paragraphFromRichText(data.rich_text)
+    if (["heading_1", "heading_2", "heading_3"].includes(block.type)) {
         return {
             type: "heading",
-            attrs: { level },
-            content: richTextToTextNodes(blockData.rich_text)
+            attrs: { level: Number(block.type.at(-1)) },
+            content: richTextToTextNodes(data.rich_text),
         }
     }
-
     if (block.type === "quote") {
-        const quoteContent: any[] = [paragraphFromRichText(blockData.rich_text)]
-        const children = blocksToNodes(block.children ?? [])
-        if (children.length > 0) quoteContent.push(...children)
-        return { type: "blockquote", content: quoteContent }
+        return { type: "blockquote", content: [paragraphFromRichText(data.rich_text), ...blocksToNodes(block.children ?? [])] }
     }
-
     if (block.type === "code") {
-        const text = (blockData.rich_text ?? []).map((rt: any) => rt?.plain_text ?? rt?.text?.content ?? "").join("")
         return {
             type: "codeBlock",
-            attrs: { language: blockData.language ?? null },
-            content: [{ type: "text", text }]
+            attrs: { language: data.language ?? null },
+            content: richTextToTextNodes(data.rich_text),
         }
     }
-
     if (block.type === "to_do") {
-        const checked = Boolean(blockData.checked)
-        const prefix = checked ? "[x] " : "[ ] "
-        const paragraph = paragraphFromRichText(blockData.rich_text, prefix)
-        const children = blocksToNodes(block.children ?? [])
-        if (children.length === 0) return paragraph
-        return [paragraph, ...children]
+        return [
+            paragraphFromRichText(data.rich_text, data.checked ? "[x] " : "[ ] "),
+            ...blocksToNodes(block.children ?? []),
+        ]
     }
-
     if (block.type === "callout") {
-        const emoji = blockData.icon?.emoji
-        const prefix = emoji ? `${emoji} ` : "💡 "
-        const calloutContent: any[] = [paragraphFromRichText(blockData.rich_text, prefix)]
-        const children = blocksToNodes(block.children ?? [])
-        if (children.length > 0) calloutContent.push(...children)
-        return { type: "blockquote", content: calloutContent }
+        return {
+            type: "blockquote",
+            content: [
+                paragraphFromRichText(data.rich_text, data.icon?.emoji ? `${data.icon.emoji} ` : "💡 "),
+                ...blocksToNodes(block.children ?? []),
+            ],
+        }
     }
 
     const text = reduceBlockToPlainText(block)
-    if (text) {
-        return {
-            type: "paragraph",
-            content: [{ type: "text", text }]
-        }
-    }
-
-    return null
+    return text ? { type: "paragraph", content: [{ type: "text", text }] } : null
 }
 
-function blocksToNodes(blocks: any[]): any[] {
-    const nodes: any[] = []
+function blocksToNodes(blocks: NotionBlock[]): JSONContent[] {
+    const nodes: JSONContent[] = []
     let index = 0
 
     while (index < blocks.length) {
-        const block = blocks[index]
-        const type = block?.type
-
+        const type = blocks[index]?.type
         if (type === "bulleted_list_item" || type === "numbered_list_item") {
-            const listType = type === "bulleted_list_item" ? "bulletList" : "orderedList"
-            const listItems: any[] = []
-
+            const items: JSONContent[] = []
             while (index < blocks.length && blocks[index]?.type === type) {
-                listItems.push(buildListItem(blocks[index]))
+                items.push(buildListItem(blocks[index]))
                 index += 1
             }
-
-            nodes.push({ type: listType, content: listItems })
+            nodes.push({ type: type === "bulleted_list_item" ? "bulletList" : "orderedList", content: items })
             continue
         }
 
-        const node = convertBlock(block)
-
+        const node = convertBlock(blocks[index])
         if (Array.isArray(node)) nodes.push(...node)
         else if (node) nodes.push(node)
-
         index += 1
     }
 
     return nodes
 }
 
+export function blocksToJSONContent(blocks: NotionBlock[]): JSONContent {
+    const nodes = blocksToNodes(blocks)
+    return { type: "doc", content: nodes.length ? nodes : [{ type: "paragraph", content: [] }] }
+}

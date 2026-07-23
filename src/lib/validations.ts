@@ -12,13 +12,13 @@ export const blobDeleteSchema = z.object({
 })
 
 export const createSettingsSchema = z.object({
-    config: z.record(z.string(), z.any()),
+    config: z.record(z.string(), z.unknown()),
 })
 
 export const updateSettingsSchema = z.object({
     id: z.string(),
     lastDashboardId: z.string().optional(),
-    config: z.record(z.string(), z.any()).optional(),
+    config: z.record(z.string(), z.unknown()).optional(),
     onboardingCompleted: z.boolean().optional(),
 })
 
@@ -62,7 +62,7 @@ export const createWidgetSchema = z.object({
     width: z.number(),
     positionX: z.number(),
     positionY: z.number(),
-    config: z.record(z.string(), z.any()).optional(),
+    config: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const updateWidgetSchema = z.object({
@@ -71,7 +71,7 @@ export const updateWidgetSchema = z.object({
     width: z.number().optional(),
     positionX: z.number().optional(),
     positionY: z.number().optional(),
-    config: z.record(z.string(), z.any()).optional(),
+    config: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const getWidgetsSchema = z.object({

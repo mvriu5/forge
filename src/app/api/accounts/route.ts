@@ -3,14 +3,15 @@ import { auth } from "@/lib/auth"
 import { deleteAccountSchema } from "@/lib/validations"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
+import { apiError, internalError, validationError } from "@/lib/api-response"
 
-export async function GET(req: Request) {
+export async function GET() {
     try {
         const session = await auth.api.getSession({
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const accounts = (await getAccountsFromUser(userId)).map((account) => ({
@@ -25,7 +26,7 @@ export async function GET(req: Request) {
 
         return NextResponse.json(accounts, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }
 
@@ -35,7 +36,7 @@ export async function DELETE(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const { searchParams } = new URL(req.url)
@@ -43,16 +44,16 @@ export async function DELETE(req: Request) {
         const validationResult = deleteAccountSchema.safeParse(query)
 
         if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 });
+            return validationError(validationResult.error)
         }
         const { provider } = validationResult.data
 
         const deletedAccount = deleteAccount(userId, provider)
-        if (!deletedAccount) return NextResponse.json({ error: "Account not found" }, { status: 404 })
+        if (!deletedAccount) return apiError(404, "NOT_FOUND", "Account not found.")
 
         return NextResponse.json(deletedAccount, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }
 

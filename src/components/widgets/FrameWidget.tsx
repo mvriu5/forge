@@ -6,10 +6,11 @@ import React from "react"
 import { WidgetContent } from "./base/WidgetContent"
 import { WidgetError } from "./base/WidgetError"
 import { isSafeFrameUrl } from "@/lib/frameUrl"
+import type { WidgetSizes } from "@/lib/definitions"
 
 interface FrameConfig {
     url: string
-    sizes?: any
+    sizes?: WidgetSizes
 }
 
 const FrameWidget: React.FC<WidgetProps<FrameConfig>> = ({ config }) => {

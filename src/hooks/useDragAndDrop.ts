@@ -80,7 +80,7 @@ export const useDragAndDrop = (editMode: boolean, widgets: Widget[] | undefined,
     )
 
     const getConflictingWidgets = useCallback((newWidget: { width: number; height: number }, x: number, y: number, excludeId: string) => {
-        return relevantWidgets.filter((widget: { id: string; positionX: number; width: any; positionY: number; height: any }) => {
+        return relevantWidgets.filter((widget: { id: string; positionX: number; width: number; positionY: number; height: number }) => {
             if (widget.id === excludeId) return false
 
             return !(

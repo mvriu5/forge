@@ -32,8 +32,8 @@ export default function useResizeObserver<T extends Element = Element>(targetRef
             let width = entry.contentRect?.width ?? 0
             let height = entry.contentRect?.height ?? 0
 
-            if ((entry as any).contentBoxSize) {
-                const s = (entry as any).contentBoxSize
+            if (entry.contentBoxSize) {
+                const s = entry.contentBoxSize
                 const boxSize = Array.isArray(s) ? s[0] : s
                 if (boxSize) {
                     width = boxSize.inlineSize ?? width
@@ -56,14 +56,14 @@ export default function useResizeObserver<T extends Element = Element>(targetRef
             }
         }
 
-        if (typeof window !== "undefined" && typeof (window as any).ResizeObserver !== "undefined") {
-            roRef.current = new (window as any).ResizeObserver((entries: ResizeObserverEntry[]) => {
+        if (typeof window !== "undefined" && typeof window.ResizeObserver !== "undefined") {
+            roRef.current = new window.ResizeObserver((entries: ResizeObserverEntry[]) => {
                 for (const entry of entries) {
                     if (entry.target === el) handleEntry(entry)
                 }
             })
             try {
-                (roRef.current as any).observe(el, { box })
+                roRef.current.observe(el, { box })
             } catch {
                 roRef.current?.observe(el)
             }

@@ -252,9 +252,9 @@ const MeetingsWidget: React.FC<WidgetProps> = ({ widget }) => {
         if (!sortedEvents || !settings?.config.meetingReminders?.length) return
 
         const reminderMinutes = settings.config.meetingReminders
-            .map((value: any) => Number(value))
-            .filter((value: unknown) => !Number.isNaN(value))
-            .sort((a: number, b: number) => a - b)
+            .map(Number)
+            .filter((value) => !Number.isNaN(value))
+            .sort((a, b) => a - b)
 
         if (!reminderMinutes.length) return
 
@@ -272,16 +272,16 @@ const MeetingsWidget: React.FC<WidgetProps> = ({ widget }) => {
                 if (now > startTime + reminderGraceMs) return
 
                 const dueReminders = reminderMinutes
-                    .map((minutes: number) => ({
+                    .map((minutes) => ({
                         minutes,
                         key: `meeting-${event.id}-${minutes}`,
                         reminderTime: startTime - minutes * 60_000,
                     }))
-                    .filter(({ reminderTime }: { reminderTime: any }) => reminderTime <= now && now <= reminderTime + reminderGraceMs)
+                    .filter(({ reminderTime }) => reminderTime <= now && now <= reminderTime + reminderGraceMs)
 
                 if (!dueReminders.length) return
 
-                const nearestReminder = dueReminders.reduce((closest: { minutes: number }, current: { minutes: number }) => (
+                const nearestReminder = dueReminders.reduce((closest, current) => (
                     current.minutes < closest.minutes ? current : closest
                 ))
 
@@ -304,7 +304,7 @@ const MeetingsWidget: React.FC<WidgetProps> = ({ widget }) => {
         return () => clearInterval(interval)
     }, [sortedEvents, settings?.config.meetingReminders, settings?.config.hourFormat, sendMeetingNotification])
 
-    const dropdownFilterItems: MenuItem[] = useMemo(() => Array.from(new Set(calendars?.map((cal: any) => ({
+    const dropdownFilterItems: MenuItem[] = useMemo(() => Array.from(new Set(calendars?.map((cal) => ({
         type: "checkbox",
         icon: <div className={"size-3 rounded-sm"} style={{ backgroundColor: cal.backgroundColor ?? "white" }} />,
         key: cal.id,

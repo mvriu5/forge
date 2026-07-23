@@ -1,15 +1,8 @@
-import { getAccountsFromUser } from "@/database";
 import { auth } from "@/lib/auth";
-import { NOTION_VERSION, getTitleFromProperties } from "@/lib/notion";
+import { NOTION_VERSION, getTitleFromProperties, type NotionBlock } from "@/lib/notion";
+import { getIntegrationAccessToken } from "@/lib/integration-token";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-
-async function getAccessToken(userId: string) {
-  const account = (await getAccountsFromUser(userId)).find(
-    (acc) => acc.providerId === "notion",
-  );
-  return account?.accessToken ?? null;
-}
 
 type NotionPage = {
   id: string;
@@ -44,12 +37,12 @@ async function fetchChildPages(
       throw new Error(`Unable to load child pages: ${detail}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as { results?: NotionBlock[]; next_cursor?: string | null };
     const pages = (data.results ?? [])
-      .filter((block: any) => block.type === "child_page")
-      .map((block: any) => ({
-        id: block.id as string,
-        title: block.child_page?.title ?? "Untitled",
+      .filter((block) => block.type === "child_page")
+      .map((block) => ({
+        id: String(block.id),
+        title: (block.child_page as { title?: string } | undefined)?.title ?? "Untitled",
         isChild: true,
         parentId: pageId,
       }));
@@ -70,7 +63,7 @@ export async function GET(req: Request) {
     if (!session) return new NextResponse("Unauthorized", { status: 401 });
     const userId = session.user.id;
 
-    const accessToken = await getAccessToken(userId);
+    const accessToken = await getIntegrationAccessToken("notion", userId, await headers());
     if (!accessToken)
       return NextResponse.json(
         { error: "Notion integration missing or expired" },
@@ -98,9 +91,9 @@ export async function GET(req: Request) {
       );
     }
 
-    const data = await response.json();
-    const initialPages = (data.results ?? []).map((result: any) => ({
-      id: result.id as string,
+    const data = await response.json() as { results?: Array<{ id: string; properties?: Record<string, unknown>; parent?: { page_id?: string } }> };
+    const initialPages = (data.results ?? []).map((result) => ({
+      id: result.id,
       title: getTitleFromProperties(result.properties),
       isChild: false,
       parentId: result.parent?.page_id ?? null,

@@ -45,9 +45,16 @@ export interface GmailMessage {
     labelIds?: string[]
     snippet?: string
     internalDate?: string
-    payload?: any
+    payload?: GmailPayload
     payloadHeaders?: { name: string; value: string }[]
     raw?: string
+}
+
+export interface GmailPayload {
+    mimeType?: string
+    body?: { data?: string }
+    headers?: { name: string; value: string }[]
+    parts?: GmailPayload[]
 }
 
 interface GmailMessagesPage {

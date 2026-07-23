@@ -11,5 +11,5 @@ export function queryOptions<TData, TError = Error>(
         refetchOnReconnect: false,
         retry: 3,
         ...options
-    } as any as UseQueryOptions<TData, TError>
+    } as UseQueryOptions<TData, TError>
 }

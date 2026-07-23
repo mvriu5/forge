@@ -7,9 +7,9 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "check": "biome check .",
+        "check": "biome check src",
         "format": "biome format --write .",
-        "lint": "biome lint .",
+        "lint": "biome lint src",
         "typecheck": "tsc --noEmit",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build"

@@ -2,19 +2,13 @@ import {
   NOTION_VERSION,
   blocksToPlainText,
   getTitleFromProperties,
+  type NotionBlock,
 } from "@/lib/notion";
 import { getNotionPageSchema } from "@/lib/validations";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { getAccountsFromUser } from "@/database";
-
-async function getAccessToken(userId: string) {
-  const account = (await getAccountsFromUser(userId)).find(
-    (acc) => acc.providerId === "notion",
-  );
-  return account?.accessToken ?? null;
-}
+import { getIntegrationAccessToken } from "@/lib/integration-token";
 
 async function fetchPage(accessToken: string, pageId: string) {
   const fetchWithAuth = (url: string) =>
@@ -33,7 +27,7 @@ async function fetchPage(accessToken: string, pageId: string) {
   const pageData = await pageResponse.json();
 
   // Top-level blocks
-  const allBlocks: any[] = [];
+  const allBlocks: NotionBlock[] = [];
   let cursor: string | undefined;
 
   do {
@@ -44,18 +38,18 @@ async function fetchPage(accessToken: string, pageId: string) {
     const blocksResponse = await fetchWithAuth(url.toString());
     if (!blocksResponse.ok) return null;
 
-    const blocksData = await blocksResponse.json();
+    const blocksData = await blocksResponse.json() as { results?: NotionBlock[]; next_cursor?: string | null };
     allBlocks.push(...(blocksData.results ?? []));
     cursor = blocksData.next_cursor ?? undefined;
   } while (cursor);
 
   // Nested children
-  const expandChildren = async (blocks: any[]): Promise<any[]> => {
+  const expandChildren = async (blocks: NotionBlock[]): Promise<NotionBlock[]> => {
     const expandedBlocks = await Promise.all(
-      blocks.map(async (block: any) => {
+      blocks.map(async (block) => {
         if (!block?.has_children) return block;
 
-        const allChildren: any[] = [];
+        const allChildren: NotionBlock[] = [];
         let cursor: string | undefined;
 
         do {
@@ -68,7 +62,7 @@ async function fetchPage(accessToken: string, pageId: string) {
           const childResponse = await fetchWithAuth(url.toString());
           if (!childResponse.ok) return block;
 
-          const childData = await childResponse.json();
+          const childData = await childResponse.json() as { results?: NotionBlock[]; next_cursor?: string | null };
           allChildren.push(...(childData.results ?? []));
           cursor = childData.next_cursor ?? undefined;
         } while (cursor);
@@ -113,7 +107,7 @@ export async function GET(
     if (!session) return new NextResponse("Unauthorized", { status: 401 });
     const userId = session.user.id;
 
-    const accessToken = await getAccessToken(userId);
+    const accessToken = await getIntegrationAccessToken("notion", userId, await headers());
     if (!accessToken)
       return NextResponse.json(
         { error: "Notion integration missing or expired" },

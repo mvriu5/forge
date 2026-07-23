@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { createWidgetSchema, deleteWidgetSchema, getWidgetsSchema, updateWidgetSchema } from "@/lib/validations"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
+import { apiError, internalError, validationError } from "@/lib/api-response"
 
 export async function POST(req: Request) {
     try {
@@ -10,14 +11,14 @@ export async function POST(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const body = await req.json()
         const validationResult = createWidgetSchema.safeParse(body)
 
         if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 });
+            return validationError(validationResult.error)
         }
         const { dashboardId, widgetType, height, width, positionX, positionY, config } = validationResult.data
 
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json(newWidget, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }
 
@@ -50,7 +51,7 @@ export async function GET(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const { searchParams } = new URL(req.url)
@@ -58,7 +59,7 @@ export async function GET(req: Request) {
         const validationResult = getWidgetsSchema.safeParse(query)
 
         if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 });
+            return validationError(validationResult.error)
         }
         const { dashboardId } = validationResult.data
 
@@ -75,7 +76,7 @@ export async function GET(req: Request) {
         const widgets = await getWidgetsFromUser(userId)
         return NextResponse.json(widgets, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }
 
@@ -85,14 +86,14 @@ export async function PUT(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const body = await req.json()
         const validationResult = updateWidgetSchema.safeParse(body)
 
         if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 });
+            return validationError(validationResult.error)
         }
         const { id, ...updateData } = validationResult.data
 
@@ -105,7 +106,7 @@ export async function PUT(req: Request) {
 
         return NextResponse.json(updatedWidget, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }
 
@@ -115,7 +116,7 @@ export async function DELETE(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const { searchParams } = new URL(req.url)
@@ -123,7 +124,7 @@ export async function DELETE(req: Request) {
         const validationResult = deleteWidgetSchema.safeParse(query)
 
         if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 });
+            return validationError(validationResult.error)
         }
         const { id } = validationResult.data
 
@@ -136,6 +137,6 @@ export async function DELETE(req: Request) {
 
         return NextResponse.json(deletedWidget, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }

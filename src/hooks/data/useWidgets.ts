@@ -2,71 +2,47 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Widget, WidgetInsert} from "@/database"
 import {useCallback, useMemo, useRef} from "react"
 import { queryOptions } from "@/lib/queryOptions"
+import { apiCommand, apiRequest } from "@/lib/api-client"
 
 const WIDGETS_QUERY_KEY = (userId: string | undefined) => ["widgets", userId] as const
 
 async function fetchWidgets(userId: string): Promise<Widget[]> {
-    const response = await fetch(`/api/widgets?userId=${userId}`)
-
-    if (!response.ok) {
-        throw new Error("Failed to fetch widgets")
-    }
-
-    return response.json()
+    return apiRequest<Widget[]>(`/api/widgets?userId=${userId}`)
 }
 
 async function createWidget(widget: WidgetInsert & { userId: string }): Promise<Widget> {
-    const response = await fetch("/api/widgets", {
+    const data = await apiRequest<Widget[]>("/api/widgets", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(widget)
     })
 
-    if (!response.ok) {
-        throw new Error("Failed to create widget")
-    }
-
-    const data = await response.json()
     return data[0]
 }
 
 async function updateWidgetRequest(widget: Widget): Promise<Widget> {
-    const response = await fetch(`/api/widgets?id=${widget.id}`, {
+    const data = await apiRequest<Widget[]>(`/api/widgets?id=${widget.id}`, {
         method: "PUT",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(widget)
     })
 
-    if (!response.ok) {
-        throw new Error("Failed to update widget")
-    }
-
-    const data = await response.json()
     return data[0]
 }
 
 type WidgetLayoutUpdate = Pick<Widget, "id" | "width" | "height" | "positionX" | "positionY">
 
 async function updateWidgetsLayoutRequest(widgets: WidgetLayoutUpdate[]): Promise<Widget[]> {
-    const response = await fetch("/api/widgets/layout", {
+    return apiRequest<Widget[]>("/api/widgets/layout", {
         method: "PATCH",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({widgets})
     })
 
-    if (!response.ok) {
-        throw new Error("Error saving widget layout")
-    }
-
-    return response.json()
 }
 
 async function deleteWidgetRequest(id: string): Promise<void> {
-    const response = await fetch(`/api/widgets?id=${id}`, {method: "DELETE"})
-
-    if (!response.ok) {
-        throw new Error("Failed to delete widget")
-    }
+    await apiCommand(`/api/widgets?id=${id}`, {method: "DELETE"})
 }
 
 const areWidgetsEqual = (a: Widget, b: Widget): boolean => {

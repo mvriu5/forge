@@ -21,7 +21,7 @@ import { useDashboards } from "@/hooks/data/useDashboards"
 import { useSettings } from "@/hooks/data/useSettings"
 import { useWidgets } from "@/hooks/data/useWidgets"
 import { authClient } from "@/lib/auth-client"
-import { definitions, type WidgetDefinition } from "@/lib/definitions"
+import { definitions, type WidgetDefinition, type WidgetSizes } from "@/lib/definitions"
 import { capitalizeFirstLetter, cn } from "@/lib/utils"
 import { Grid2x2Plus } from "lucide-react"
 import Image from "next/image"
@@ -203,7 +203,7 @@ function WidgetDialog({ editMode, title }: WidgetDialogProps) {
         !currentDashboard ||
         addWidgetStatus === "pending"
 
-    const handleSaveFrameWidget = async (data: { url: string; sizes: any }) => {
+    const handleSaveFrameWidget = async (data: { url: string; sizes: WidgetSizes }) => {
         if (!session?.user.id || !currentDashboard || !frameDialogState.widget)
             return
 

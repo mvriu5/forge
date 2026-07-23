@@ -2,55 +2,36 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Dashboard, DashboardInsert, Settings} from "@/database"
 import {useMemo, useState} from "react"
 import { queryOptions } from "@/lib/queryOptions"
+import { apiCommand, apiRequest } from "@/lib/api-client"
 
 const DASHBOARD_QUERY_KEY = (userId: string | undefined) => ["dashboards", userId] as const
 
 async function fetchDashboards(userId: string): Promise<Dashboard[]> {
-    const response = await fetch(`/api/dashboards?userId=${userId}`)
-
-    if (!response.ok) {
-        throw new Error("Failed to fetch dashboards")
-    }
-
-    return response.json()
+    return apiRequest<Dashboard[]>(`/api/dashboards?userId=${userId}`)
 }
 
 async function createDashboard(userId: string, dashboard: DashboardInsert): Promise<Dashboard> {
-    const response = await fetch("/api/dashboards", {
+    const data = await apiRequest<Dashboard[]>("/api/dashboards", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({...dashboard, userId})
     })
 
-    if (!response.ok) {
-        throw new Error("Failed to create dashboard")
-    }
-
-    const data = await response.json()
     return data[0]
 }
 
 async function updateDashboardRequest(dashboard: Dashboard): Promise<Dashboard> {
-    const response = await fetch(`/api/dashboards?id=${dashboard.id}`, {
+    const data = await apiRequest<Dashboard[]>(`/api/dashboards?id=${dashboard.id}`, {
         method: "PUT",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(dashboard)
     })
 
-    if (!response.ok) {
-        throw new Error("Failed to update dashboard")
-    }
-
-    const data = await response.json()
     return data[0]
 }
 
 async function deleteDashboardRequest(id: string): Promise<void> {
-    const response = await fetch(`/api/dashboards?id=${id}`, {method: "DELETE"})
-
-    if (!response.ok) {
-        throw new Error("Failed to delete dashboard")
-    }
+    await apiCommand(`/api/dashboards?id=${id}`, {method: "DELETE"})
 }
 
 export function useDashboards(userId: string | undefined, settings: Settings | null) {

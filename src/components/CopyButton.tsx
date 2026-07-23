@@ -10,7 +10,7 @@ import React, { HTMLAttributes, ReactNode, useEffect, useState } from "react"
 interface CopyButtonProps extends HTMLAttributes<HTMLDivElement> {
     copyText: string
     copyIcon?: ReactNode
-    tooltip?: any
+    tooltip?: Partial<React.ComponentProps<typeof Button>>
     size?: number
     strokeWidth?: number
 }

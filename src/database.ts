@@ -11,7 +11,7 @@ export type Widget = {
     widgetType: string
     height: number
     width: number
-    config: Record<string, any>
+    config: Record<string, unknown>
     positionX: number
     positionY: number
     createdAt: Date
@@ -150,7 +150,18 @@ export type Settings = {
     id: string
     userId: string
     lastDashboardId: string | null
-    config: Record<string, any>
+    config: {
+        theme?: "light" | "dark" | "system"
+        hourFormat?: "12" | "24"
+        timezone?: string
+        todoReminder?: boolean
+        countdownReminder?: boolean
+        githubReminder?: boolean
+        mailReminder?: boolean
+        meetingReminders?: Array<"0" | "5" | "10" | "15" | "30" | "60">
+        deleteTodos?: boolean
+        openDashboard?: string
+    }
     onboardingCompleted: boolean
     createdAt: Date
     updatedAt: Date

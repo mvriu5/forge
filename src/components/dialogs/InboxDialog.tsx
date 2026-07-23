@@ -23,7 +23,7 @@ import { useCallback, useMemo } from "react"
 import DOMPurify from "dompurify"
 import { useTooltip } from "../ui/TooltipProvider"
 import Link from "next/link"
-import { GmailMessage, GmailLabel, getHeaderValue } from "../widgets/InboxWidget"
+import { GmailMessage, GmailLabel, type GmailPayload, getHeaderValue } from "../widgets/InboxWidget"
 
 interface InboxDialogProps {
     open?: boolean
@@ -61,7 +61,7 @@ function base64UrlDecodeToString(base64UrlData: string) {
     }
 }
 
-function findBodyPart(payload: any): { mimeType: string; data: string } | null {
+function findBodyPart(payload: GmailPayload | undefined): { mimeType: string; data: string } | null {
     if (!payload) return null
 
     if (payload.body && payload.body.data && payload.mimeType) {

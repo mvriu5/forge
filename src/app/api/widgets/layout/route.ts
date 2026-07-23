@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { updateWidgetsLayoutSchema } from "@/lib/validations"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
+import { apiError, internalError, validationError } from "@/lib/api-response"
 
 export async function PATCH(req: Request) {
     try {
@@ -10,14 +11,14 @@ export async function PATCH(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const body = await req.json()
         const validationResult = updateWidgetsLayoutSchema.safeParse(body)
 
         if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 })
+            return validationError(validationResult.error)
         }
 
         const { widgets } = validationResult.data
@@ -38,6 +39,6 @@ export async function PATCH(req: Request) {
 
         return NextResponse.json(updatedWidgets, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }

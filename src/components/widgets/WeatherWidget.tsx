@@ -27,6 +27,12 @@ const WEATHER_QUERY_KEY = (coords: { lat: number, lon: number } | null) => ["wea
 
 const GEO_COORDS_STORAGE_KEY = "weatherWidgetCoords"
 
+interface WeatherHour {
+    time: string
+    temperature: number
+    weathercode: number
+}
+
 const fetchReverseGeocoding = async (lat: number, lon: number) => {
     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
 
@@ -235,7 +241,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({ widget }) => {
                             </div>
                             <p className={"text-info/80 font-semibold"}>{`${currentWeather?.temperature}°C`}</p>
                         </div>
-                        {nextWeather?.map((weather: any) =>
+                        {nextWeather?.map((weather: WeatherHour) =>
                             <div className={"h-full flex flex-col items-center justify-center"} key={weather.time}>
                                 <p className={"text-xs font-medium text-tertiary"}>
                                     {formatWeatherHour(weather.time, settings?.config.hourFormat ?? "24")}

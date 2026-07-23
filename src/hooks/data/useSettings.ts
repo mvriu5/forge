@@ -1,6 +1,7 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import type {Settings} from "@/database"
 import { queryOptions } from "@/lib/queryOptions"
+import { ApiError, apiRequest } from "@/lib/api-client"
 
 const SETTINGS_QUERY_KEY = (userId: string | undefined) => ["settings", userId] as const
 
@@ -16,39 +17,29 @@ const DEFAULT_SETTINGS = {
 }
 
 async function fetchSettings(userId: string): Promise<Settings | null> {
-    const response = await fetch(`/api/settings?userId=${userId}`)
-
-    if (response.ok) {
-        const settings = await response.json()
+    try {
+        const settings = await apiRequest<Settings[]>(`/api/settings?userId=${userId}`)
         if (settings[0]) return settings[0]
+    } catch (error) {
+        if (!(error instanceof ApiError) || error.status !== 404) throw error
     }
 
-    const createRes = await fetch("/api/settings", {
+    const newSettings = await apiRequest<Settings[]>("/api/settings", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({userId, config: DEFAULT_SETTINGS}),
     })
 
-    if (!createRes.ok) {
-        throw new Error("Failed to create settings")
-    }
-
-    const newSettings = await createRes.json()
     return newSettings[0]
 }
 
 async function updateSettingsRequest(settings: Settings): Promise<Settings> {
-    const response = await fetch(`/api/settings?id=${settings.id}`, {
+    const data = await apiRequest<Settings[]>(`/api/settings?id=${settings.id}`, {
         method: "PUT",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(settings)
     })
 
-    if (!response.ok) {
-        throw new Error("Failed to update settings")
-    }
-
-    const data = await response.json()
     return data[0]
 }
 

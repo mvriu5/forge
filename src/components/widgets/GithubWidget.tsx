@@ -47,6 +47,9 @@ interface Label {
     color?: string
 }
 
+const isLabel = (label: Issue["labels"][number]): label is Exclude<typeof label, string> =>
+    typeof label !== "string"
+
 async function fetchPaginated<T>(fetchFunction: (page: number) => Promise<{ data: T[] }>, perPage = 100): Promise<T[]> {
     const items: T[] = []
     let page = 1
@@ -317,7 +320,7 @@ const GithubWidget: React.FC<WidgetProps> = ({ widget }) => {
 }
 
 
-const IssueCard = ({issue}: { issue: any }) => {
+const IssueCard = ({issue}: { issue: Issue }) => {
     return (
         <a href={issue.html_url}>
             <div
@@ -335,7 +338,7 @@ const IssueCard = ({issue}: { issue: any }) => {
                         <span className={"text-tertiary font-mono"}>{formatShortDate(issue.created_at)}</span>
                     </div>
                     <div className="flex flex-wrap gap-1 mt-1">
-                        {issue.labels.map((label: any) => (
+                        {issue.labels.filter(isLabel).map((label) => (
                             <Badge key={label.id} title={label.name} variant={"default"} className="text-xs px-1.5 py-0" style={{color: `#${label.color}`}}/>
                         ))}
                     </div>
@@ -345,7 +348,7 @@ const IssueCard = ({issue}: { issue: any }) => {
     )
 }
 
-const PulLRequestCard = ({pr}: {pr: any}) => {
+const PulLRequestCard = ({pr}: {pr: Issue}) => {
     return (
         <Link
             href={pr.html_url}
@@ -367,7 +370,7 @@ const PulLRequestCard = ({pr}: {pr: any}) => {
                         <span className={"text-tertiary font-mono"}>{formatShortDate(pr.created_at)}</span>
                     </div>
                     <div className="flex flex-wrap gap-1 mt-1">
-                        {pr.labels.map((label: any) => (
+                        {pr.labels.filter(isLabel).map((label) => (
                             <Badge
                                 key={label.id}
                                 title={label.name}

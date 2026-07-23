@@ -4,14 +4,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { NodeViewContent, NodeViewWrapper, ReactNodeViewProps } from "@tiptap/react"
 import { useCallback, useEffect, useState } from "react"
 
-interface CodeblockProps extends ReactNodeViewProps {
-    updateAttributes: (attrs: { language?: string | null } & Record<string, any>) => void
-    [key: string]: any
-}
-
-export default function Codeblock({ node, updateAttributes, extension }: CodeblockProps) {
+export default function Codeblock({ node, updateAttributes, extension }: ReactNodeViewProps) {
     const [selectedLanguage, setSelectedLanguage] = useState(node.attrs.language ?? "null")
-    const languages = extension?.options?.lowlight?.listLanguages ? extension.options.lowlight.listLanguages() : []
+    const languages: string[] = extension?.options?.lowlight?.listLanguages ? extension.options.lowlight.listLanguages() : []
 
     useEffect(() => {
         setSelectedLanguage(node.attrs.language ?? "null")
@@ -34,7 +29,7 @@ export default function Codeblock({ node, updateAttributes, extension }: Codeblo
                 </SelectTrigger>
                 <SelectContent className={"w-32 border-main/40"} align={"end"}>
                     <SelectItem value={"null"} className="h-6">auto</SelectItem>
-                    {languages.map((lang: any) => (
+                    {languages.map((lang) => (
                         <SelectItem key={lang} value={lang} className="h-6">
                             {lang}
                         </SelectItem>

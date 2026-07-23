@@ -7,7 +7,7 @@ import { WidgetEmpty } from "@/components/widgets/base/WidgetEmpty"
 import { WidgetHeader } from "@/components/widgets/base/WidgetHeader"
 import { getIntegrationByProvider, useIntegrations } from "@/hooks/data/useIntegrations"
 import { WidgetProps } from "@/lib/definitions"
-import { blocksToJSONContent } from "@/lib/notion"
+import { blocksToJSONContent, type NotionBlock } from "@/lib/notion"
 import { queryOptions } from "@/lib/queryOptions"
 import { cn } from "@/lib/utils"
 import { defineWidget } from "@/lib/widget"
@@ -19,6 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover"
 import { ScrollArea } from "../ui/ScrollArea"
 import { Skeleton } from "../ui/Skeleton"
 import { toast } from "../ui/Toast"
+import type { JSONContent } from "@tiptap/core"
 
 interface NotionPage {
     id: string
@@ -30,7 +31,7 @@ interface NotionPage {
 interface NotionPageContent {
     id: string
     title: string
-    content: any
+    content: JSONContent
 }
 
 interface NotionPagesResponse {
@@ -40,7 +41,7 @@ interface NotionPagesResponse {
 interface NotionPageResponse {
     id: string
     title: string
-    blocks?: unknown[]
+    blocks?: NotionBlock[]
 }
 
 const NOTION_PAGES_QUERY_KEY = (userId: string | undefined) => ["notionPages", userId] as const
@@ -77,7 +78,7 @@ const LazyNoteDialog = React.lazy(() => import("../../components/dialogs/NoteDia
 export type Note = {
     id: string
     title: string
-    content: any
+    content: JSONContent
     emoji: string
     lastUpdated: Date | string
     notionSync?: {
@@ -145,7 +146,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({ widget, config, upd
         const newNote: Note = {
             id: crypto.randomUUID(),
             title: "",
-            content: {} as any,
+            content: {},
             emoji: "",
             lastUpdated: new Date(),
             notionSync: null
@@ -170,7 +171,7 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({ widget, config, upd
         const pendingNote: Note = {
             id: pendingNoteId,
             title: "",
-            content: {} as any,
+            content: {},
             emoji: "",
             lastUpdated: new Date(),
             notionSync: null

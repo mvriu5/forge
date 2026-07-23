@@ -1,7 +1,7 @@
-import { getAccountsFromUser } from "@/database"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
-import { NextResponse } from "next/server"
+import { apiError } from "@/lib/api-response"
+import { getIntegrationAccessToken } from "@/lib/integration-token"
 
 type Provider = "github" | "google"
 
@@ -35,22 +35,22 @@ const isAllowedRequest = (provider: Provider, method: string, path: string): boo
 
 async function proxyIntegrationRequest(request: Request, { params }: { params: Promise<{ provider: string; path: string[] }> }) {
     const session = await auth.api.getSession({ headers: await headers() })
-    if (!session) return new NextResponse("Unauthorized", { status: 401 })
+    if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
 
     const { provider: rawProvider, path: pathSegments } = await params
     if (rawProvider !== "github" && rawProvider !== "google") {
-        return NextResponse.json({ error: "Unsupported integration" }, { status: 404 })
+        return apiError(404, "NOT_FOUND", "Unsupported integration.")
     }
 
     const provider: Provider = rawProvider
     const path = pathSegments.join("/")
     if (!isAllowedRequest(provider, request.method, path)) {
-        return NextResponse.json({ error: "Integration operation is not allowed" }, { status: 403 })
+        return apiError(403, "FORBIDDEN", "Integration operation is not allowed.")
     }
 
-    const account = (await getAccountsFromUser(session.user.id)).find((candidate) => candidate.providerId === provider)
-    if (!account?.accessToken) {
-        return NextResponse.json({ error: "Integration is not connected" }, { status: 401 })
+    const accessToken = await getIntegrationAccessToken(provider, session.user.id, await headers())
+    if (!accessToken) {
+        return apiError(401, "UNAUTHORIZED", "Integration is not connected.")
     }
 
     const incomingUrl = new URL(request.url)
@@ -58,7 +58,7 @@ async function proxyIntegrationRequest(request: Request, { params }: { params: P
     upstreamUrl.search = incomingUrl.search
 
     const requestHeaders = new Headers({
-        Authorization: `Bearer ${account.accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         Accept: "application/json",
     })
     const contentType = request.headers.get("content-type")

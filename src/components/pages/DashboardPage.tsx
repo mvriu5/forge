@@ -3,7 +3,6 @@
 import { DashboardGrid } from "@/components/DashboardGrid"
 import { DashboardEmpty } from "@/components/empty/DashboardEmpty"
 import { Header } from "@/components/Header"
-import { Providers } from "@/components/Providers"
 import { Spinner } from "@/components/ui/Spinner"
 import { toast } from "@/components/ui/Toast"
 import type { Widget } from "@/database"
@@ -213,9 +212,5 @@ function DashboardContent() {
 }
 
 export default function DashboardPage() {
-    return (
-        <Providers>
-            <DashboardContent />
-        </Providers>
-    )
+    return <DashboardContent />
 }

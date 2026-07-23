@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { createSettingsSchema, updateSettingsSchema } from "@/lib/validations"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
+import { apiError, internalError, validationError } from "@/lib/api-response"
 
 export async function POST(req: Request) {
     try {
@@ -10,14 +11,14 @@ export async function POST(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const body = await req.json()
         const validationResult = createSettingsSchema.safeParse(body)
 
         if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 });
+            return validationError(validationResult.error)
         }
         const { config } = validationResult.data
 
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json(settings, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }
 
@@ -40,13 +41,13 @@ export async function GET(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const settings = await getSettingsFromUser(userId)
         return NextResponse.json(settings, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }
 
@@ -56,14 +57,14 @@ export async function PUT(req: Request) {
             headers: await headers()
         })
 
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
+        if (!session) return apiError(401, "UNAUTHORIZED", "Authentication required.")
         const userId = session.user.id
 
         const body = await req.json()
         const validationResult = updateSettingsSchema.safeParse(body)
 
         if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 });
+            return validationError(validationResult.error)
         }
         const { id, lastDashboardId, config, onboardingCompleted } = validationResult.data
 
@@ -77,6 +78,6 @@ export async function PUT(req: Request) {
 
         return NextResponse.json(updatedSettings, { status: 200 })
     } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+        return internalError()
     }
 }

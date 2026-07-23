@@ -469,7 +469,7 @@ function KanbanColumn({column, height, onAddCardToColumn, onDeleteColumn, onDele
                     type="text"
                     placeholder="Add new task..."
                     value={newCardTitle}
-                    onChange={(e: any) => setNewCardTitle(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewCardTitle(e.target.value)}
                     className={"shadow-none dark:shadow-none bg-0 border-0 focus:border-0 focus:bg-0 focus:outline-0"}
                 />
                 <Button

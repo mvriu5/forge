@@ -1,16 +1,38 @@
 "use client"
 
 import { TooltipProvider } from "@/components/ui/TooltipProvider"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { MutationCache, QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { RealtimeProvider } from "@upstash/realtime/client"
 import { ThemeProvider } from "next-themes"
 import { ReactNode, useEffect, useState } from "react"
 import { Toaster } from "sonner"
+import { toast } from "@/components/ui/Toast"
 
-const queryClient = new QueryClient()
+const createQueryClient = () => new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 5 * 60 * 1000,
+            gcTime: 30 * 60 * 1000,
+            refetchOnWindowFocus: false,
+            retry: (failureCount, error) => {
+                const status = error && typeof error === "object" && "status" in error
+                    ? Number(error.status)
+                    : 0
+                return status < 400 || status >= 500 ? failureCount < 3 : false
+            },
+        },
+    },
+    mutationCache: new MutationCache({
+        onError: (error, _variables, _context, mutation) => {
+            if (mutation.meta?.silentError) return
+            toast.error(error.message || "The action could not be completed.")
+        },
+    }),
+})
 
 function Providers({children}: {children: ReactNode}) {
     const [mounted, setMounted] = useState(false)
+    const [queryClient] = useState(createQueryClient)
 
     useEffect(() => {
         setMounted(true)
