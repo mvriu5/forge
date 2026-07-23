@@ -167,7 +167,7 @@ const WeatherWidget: React.FC<WidgetProps> = ({ widget }) => {
         if (currentIndex === -1) return null
 
         const result = []
-        for (let i = currentIndex + 1; i < Math.min(currentIndex + 8, time.length); i++) {
+        for (let i = currentIndex + 1; i < Math.min(currentIndex + 9, time.length); i++) {
             result.push({
                 time: time[i],
                 temperature: temperature_2m[i],

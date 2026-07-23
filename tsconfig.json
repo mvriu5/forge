@@ -36,8 +36,6 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
-    ".storybook",
-    "src/stories"
+    "node_modules"
   ]
 }
