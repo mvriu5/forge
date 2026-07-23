@@ -5,8 +5,22 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, Di
 import { ScrollArea } from "@/components/ui/ScrollArea"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { cn, formatDate, getTimeLabel } from "@/lib/utils"
-import { CircleDashed, CircleFadingArrowUp, ExternalLink, File, Loader, MessageSquareDot, Send, Speech, ThumbsUp, Trash2, TriangleAlert, UserLock } from "lucide-react"
+import {
+    CircleDashed,
+    CircleFadingArrowUp,
+    ExternalLink,
+    File,
+    Loader,
+    MessageSquareDot,
+    Send,
+    Speech,
+    ThumbsUp,
+    Trash2,
+    TriangleAlert,
+    UserLock,
+} from "lucide-react"
 import { useCallback, useMemo } from "react"
+import DOMPurify from "dompurify"
 import { useTooltip } from "../ui/TooltipProvider"
 import Link from "next/link"
 import { GmailMessage, GmailLabel, getHeaderValue } from "../widgets/InboxWidget"
@@ -74,25 +88,29 @@ function findBodyPart(payload: any): { mimeType: string; data: string } | null {
 function InboxDialog({ open, onOpenChange, message, labels = [], isPending = false }: InboxDialogProps) {
     const subject = useMemo(() => getHeaderValue(message, "Subject") ?? "(No subject)", [message])
     const sender = useMemo(() => getHeaderValue(message, "From") ?? "", [message])
-    const senderTitle = useMemo(() => sender.split('<')[0], [sender])
-    const senderMail = useMemo(() => sender.split('<')[1]?.replace(/[<>]/g, ""), [sender])
+    const senderTitle = useMemo(() => sender.split("<")[0], [sender])
+    const senderMail = useMemo(() => sender.split("<")[1]?.replace(/[<>]/g, ""), [sender])
     const date = useMemo(() => getHeaderValue(message, "Date") ?? "", [message])
 
     const openGmailTooltip = useTooltip<HTMLButtonElement>({
         message: "Open in Gmail",
-        anchor: "tc"
+        anchor: "tc",
     })
 
-    const transformedLabels = useMemo(() => (labels ?? []).map((label) => {
-        let name = (label.name ?? "").toString()
+    const transformedLabels = useMemo(
+        () =>
+            (labels ?? []).map((label) => {
+                let name = (label.name ?? "").toString()
 
-        if (name.startsWith("CATEGORY_")) name = name.slice("CATEGORY_".length)
-        name = name.replace(/_/g, " ").toLowerCase().trim()
+                if (name.startsWith("CATEGORY_")) name = name.slice("CATEGORY_".length)
+                name = name.replace(/_/g, " ").toLowerCase().trim()
 
-        const displayName = name.charAt(0).toUpperCase() + name.slice(1)
+                const displayName = name.charAt(0).toUpperCase() + name.slice(1)
 
-        return { ...label, displayName }
-    }), [labels])
+                return { ...label, displayName }
+            }),
+        [labels]
+    )
 
     const renderedBody = useMemo(() => {
         if (!message) return null
@@ -130,13 +148,16 @@ function InboxDialog({ open, onOpenChange, message, labels = [], isPending = fal
         return null
     }, [message])
 
-    const stripGlobalTags = useCallback((html: string) => (
-        html.replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
-            .replace(/<link[\s\S]*?>/gi, '')
-            .replace(/<meta[\s\S]*?>/gi, '')
-    ), [])
-
-    const cleanedBody = useMemo(() => stripGlobalTags(renderedBody?.html || ''), [renderedBody])
+    const cleanedBody = useMemo(
+        () =>
+            DOMPurify.sanitize(renderedBody?.html ?? "", {
+                USE_PROFILES: { html: true },
+                FORBID_TAGS: ["base", "embed", "form", "iframe", "input", "link", "meta", "object", "script", "style"],
+                FORBID_ATTR: ["formaction", "srcdoc", "style"],
+                ALLOW_UNKNOWN_PROTOCOLS: false,
+            }),
+        [renderedBody]
+    )
 
     const renderLabels = useCallback(() => {
         return (
@@ -149,17 +170,17 @@ function InboxDialog({ open, onOpenChange, message, labels = [], isPending = fal
                             label.name === "IMPORTANT" && "bg-error/5 border-error/20 text-error",
                             label.name === "UNREAD" && "bg-brand/5 border-brand/20 text-brand",
                             label.name === "SENT" && "bg-warning/5 border-warning/20 text-warning",
-                            label.name === "SPAM" || label.name === "DRAFT" && "bg-purple-500/5 border-purple-500/20 text-purple-500",
+                            label.name === "SPAM" || (label.name === "DRAFT" && "bg-purple-500/5 border-purple-500/20 text-purple-500"),
                             label.name === "INBOX" && "hidden"
                         )}
                     >
-                        {label.name === "IMPORTANT" && <TriangleAlert size={12}/>}
-                        {label.name === "UNREAD" && <MessageSquareDot size={12}/>}
-                        {label.name === "CATEGORY_FORUMS" && <Speech size={12}/>}
-                        {label.name === "CATEGORY_UPDATES" && <Loader size={12}/>}
-                        {label.name === "CATEGORY_PERSONAL" && <UserLock size={12}/>}
-                        {label.name === "CATEGORY_PROMOTIONS" && <CircleFadingArrowUp size={12}/>}
-                        {label.name === "CATEGORY_SOCIAL" && <ThumbsUp size={12}/>}
+                        {label.name === "IMPORTANT" && <TriangleAlert size={12} />}
+                        {label.name === "UNREAD" && <MessageSquareDot size={12} />}
+                        {label.name === "CATEGORY_FORUMS" && <Speech size={12} />}
+                        {label.name === "CATEGORY_UPDATES" && <Loader size={12} />}
+                        {label.name === "CATEGORY_PERSONAL" && <UserLock size={12} />}
+                        {label.name === "CATEGORY_PROMOTIONS" && <CircleFadingArrowUp size={12} />}
+                        {label.name === "CATEGORY_SOCIAL" && <ThumbsUp size={12} />}
                         {label.name === "SENT" && <Send size={12} />}
                         {label.name === "SPAM" && <Trash2 size={12} />}
                         {label.name === "DRAFT" && <CircleDashed size={12} />}
@@ -191,12 +212,9 @@ function InboxDialog({ open, onOpenChange, message, labels = [], isPending = fal
 
                         <DialogTitle className={"flex items-center gap-2 text-lg font-semibold wrap-break-word"}>
                             {isPending ? <Skeleton className={"h-6 w-48"} /> : subject}
-                            <Link
-                                href={`https://mail.google.com/mail/u/0/#search/${encodeURIComponent(subject)}`}
-                                target="_blank"
-                                rel="noreferrer noopener">
+                            <Link href={`https://mail.google.com/mail/u/0/#search/${encodeURIComponent(subject)}`} target="_blank" rel="noreferrer noopener">
                                 <Button variant={"ghost"} className={"px-1.5"} {...openGmailTooltip}>
-                                    <ExternalLink size={16}/>
+                                    <ExternalLink size={16} />
                                 </Button>
                             </Link>
                         </DialogTitle>
@@ -211,14 +229,12 @@ function InboxDialog({ open, onOpenChange, message, labels = [], isPending = fal
                                         <span className="font-medium text-primary">{senderTitle}</span>
                                         <span className="font-medium text-tertiary">{senderMail}</span>
                                     </div>
-                                    <div className="text-xs font-mono text-tertiary">
-                                        {date ? formatDate(date, undefined) : ""}
-                                    </div>
+                                    <div className="text-xs font-mono text-tertiary">{date ? formatDate(date, undefined) : ""}</div>
                                 </div>
                             )}
                         </div>
                     </div>
-                    <DialogDescription className={"sr-only"}/>
+                    <DialogDescription className={"sr-only"} />
                     <DialogClose className={"p-1"} />
                 </DialogHeader>
 
@@ -233,10 +249,7 @@ function InboxDialog({ open, onOpenChange, message, labels = [], isPending = fal
                     ) : (
                         <ScrollArea className="h-[72vh] bg-primary">
                             {renderedBody ? (
-                                <div
-                                    className=" max-w-full"
-                                    dangerouslySetInnerHTML={{ __html: cleanedBody }}
-                                />
+                                <div className=" max-w-full" dangerouslySetInnerHTML={{ __html: cleanedBody }} />
                             ) : (
                                 <div className="flex flex-col items-center justify-center gap-2 text-tertiary p-8">
                                     <div className="size-16 flex items-center justify-center rounded-md bg-secondary/10">

@@ -1,7 +1,14 @@
 import { z } from "zod"
 
 export const fileUploadSchema = z.object({
-    filename: z.string().min(1, { message: "Filename is required" }),
+    filename: z.string()
+        .min(1, {message: "Filename is required"})
+        .max(128)
+        .regex(/^[a-zA-Z0-9._-]+$/, {message: "Invalid filename"}),
+})
+
+export const blobDeleteSchema = z.object({
+    url: z.url(),
 })
 
 export const createSettingsSchema = z.object({
@@ -89,11 +96,6 @@ const providerEnum = z.enum(["google", "github", "notion"])
 
 export const deleteAccountSchema = z.object({
     provider: providerEnum,
-})
-
-export const updateAccountSchema = z.object({
-    provider: providerEnum,
-    refreshToken: z.string(),
 })
 
 const notificationTypeEnum = z.enum(["message", "alert", "reminder"])

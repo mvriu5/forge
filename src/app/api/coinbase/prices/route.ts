@@ -39,6 +39,14 @@ export async function GET(request: Request) {
 
     if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
+    const apiKey = process.env.COINBASE_CLIENT_ID
+    const apiSecret = process.env.COINBASE_CLIENT_SECRET
+    const passphrase = process.env.COINBASE_PASSPHRASE
+
+    if (!apiKey || !apiSecret || !passphrase) {
+        return NextResponse.json({ error: "Coinbase credentials are not configured." }, { status: 503 })
+    }
+
     const { searchParams } = new URL(request.url)
     const query = Object.fromEntries(searchParams.entries())
     const validationResult = getCoinbasePricesSchema.safeParse(query)
@@ -56,7 +64,7 @@ export async function GET(request: Request) {
             const timestamp = Math.floor(Date.now() / 1000).toString()
 
             const signature = coinbaseSign({
-                secret: process.env.COINBASE_CLIENT_SECRET!,
+                secret: apiSecret,
                 timestamp,
                 method: "GET",
                 requestPath: `/products/${product}/candles`,
@@ -66,8 +74,8 @@ export async function GET(request: Request) {
             const candlesResponse = await fetch(`${COINBASE_API_BASE}/products/${product}/candles?granularity=${timeframe.granularity}`, {
                 headers: {
                     "User-Agent": "Forge (tryforge.io)",
-                    "CB-ACCESS-KEY": process.env.COINBASE_CLIENT_ID!!,
-                    "CB-ACCESS-PASSPHRASE": process.env.COINBASE_CLIENT_SECRET!!,
+                    "CB-ACCESS-KEY": apiKey,
+                    "CB-ACCESS-PASSPHRASE": passphrase,
                     "CB-ACCESS-SIGN": signature,
                     "CB-ACCESS-TIMESTAMP": timestamp
                 },

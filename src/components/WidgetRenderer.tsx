@@ -53,7 +53,7 @@ const WidgetRendererComponent: React.FC<WidgetRuntimeProps> = ({
         () => getIntegrationByProvider(integrations, requiredIntegration),
         [integrations, requiredIntegration]
     )
-    const missingIntegration = requiredIntegration && !integrationAccount?.accessToken
+    const missingIntegration = requiredIntegration && !integrationAccount?.connected
 
     const updateConfig = useCallback(async (updater: typeof defaultConfig | ((prev: typeof defaultConfig) => typeof defaultConfig)) => {
         const current = (widget.config ?? defaultConfig) as typeof defaultConfig

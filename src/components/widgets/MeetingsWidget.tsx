@@ -10,7 +10,6 @@ import { WidgetHeader } from "@/components/widgets/base/WidgetHeader"
 import { getIntegrationByProvider, useIntegrations } from "@/hooks/data/useIntegrations"
 import { useNotifications } from "@/hooks/data/useNotifications"
 import { useSettings } from "@/hooks/data/useSettings"
-import { authClient } from "@/lib/auth-client"
 import { WidgetProps } from "@/lib/definitions"
 import { queryOptions } from "@/lib/queryOptions"
 import { convertToRGBA, formatDateHeader, formatTime, isSameDay } from "@/lib/utils"
@@ -18,11 +17,11 @@ import { defineWidget } from "@/lib/widget"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { CalendarPlus, Filter, RefreshCw } from "lucide-react"
 import Link from "next/link"
-import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from "react"
 
 
-const GOOGLE_CALENDAR_QUERY_KEY = (accessToken: string | null) => ["googleCalendarList", accessToken] as const
-const GOOGLE_EVENT_QUERY_KEY = (accessToken: string | null, calendars: string[]) => ["googleCalendarEvents", accessToken, calendars] as const
+const GOOGLE_CALENDAR_QUERY_KEY = ["googleCalendarList", "google"] as const
+const GOOGLE_EVENT_QUERY_KEY = (calendars: string[]) => ["googleCalendarEvents", "google", calendars] as const
 
 export interface GoogleCalendar {
     id: string
@@ -60,12 +59,8 @@ interface EventsListResponse {
     nextPageToken?: string
 }
 
-async function fetchCalendarList(accessToken: string | null): Promise<GoogleCalendar[]> {
-    if (!accessToken) return []
-
-    const res = await fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-    })
+async function fetchCalendarList(): Promise<GoogleCalendar[]> {
+    const res = await fetch("/api/integrations/google/calendar/v3/users/me/calendarList")
 
     if (!res.ok) throw new Error("Failed to fetch calendar list")
 
@@ -73,9 +68,7 @@ async function fetchCalendarList(accessToken: string | null): Promise<GoogleCale
     return data.items ?? []
 }
 
-async function fetchEventInstances(accessToken: string | null, calendarId: string, eventId: string, timeMin: string): Promise<CalendarEvent[]> {
-    if (!accessToken) return []
-
+async function fetchEventInstances(calendarId: string, eventId: string, timeMin: string): Promise<CalendarEvent[]> {
     let events: CalendarEvent[] = []
     let nextPageToken: string | undefined
 
@@ -87,9 +80,7 @@ async function fetchEventInstances(accessToken: string | null, calendarId: strin
 
         if (nextPageToken) params.set("pageToken", nextPageToken)
 
-        const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}/instances?${params}`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-        })
+        const res = await fetch(`/api/integrations/google/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}/instances?${params}`)
 
         if (!res.ok) return []
 
@@ -102,9 +93,7 @@ async function fetchEventInstances(accessToken: string | null, calendarId: strin
     return events
 }
 
-async function fetchCalendarEvents(accessToken: string | null, calendarId: string): Promise<CalendarEvent[]> {
-    if (!accessToken) return []
-
+async function fetchCalendarEvents(calendarId: string): Promise<CalendarEvent[]> {
     const baseParams = new URLSearchParams({
         maxResults: "1000",
         orderBy: "updated",
@@ -117,9 +106,7 @@ async function fetchCalendarEvents(accessToken: string | null, calendarId: strin
         const params = new URLSearchParams(baseParams)
         if (nextPageToken) params.set("pageToken", nextPageToken)
 
-        const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-        })
+        const res = await fetch(`/api/integrations/google/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?${params}`)
 
         if (!res.ok) return []
 
@@ -132,24 +119,21 @@ async function fetchCalendarEvents(accessToken: string | null, calendarId: strin
     const recurringEvents = events.filter((event) => (event.recurrence ?? []).length > 0)
     const nonRecurringEvents = events.filter((event) => (event.recurrence ?? []).length === 0)
 
-    const instanceResults = await Promise.all(recurringEvents.map((event) => fetchEventInstances(accessToken, calendarId, event.id, new Date().toISOString())))
+    const instanceResults = await Promise.all(recurringEvents.map((event) => fetchEventInstances(calendarId, event.id, new Date().toISOString())))
 
     return [...nonRecurringEvents, ...instanceResults.flat()]
 }
 
-async function createCalendarEvent(accessToken: string | null, calendarId: string, eventData: Partial<CalendarEvent>): Promise<CalendarEvent> {
-    if (!accessToken) throw new Error("Missing access token")
-
-    const baseUrl = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`
-    const requestUrl = new URL(baseUrl)
+async function createCalendarEvent(calendarId: string, eventData: Partial<CalendarEvent>): Promise<CalendarEvent> {
+    const params = new URLSearchParams()
     if (eventData.conferenceData) {
-        requestUrl.searchParams.set("conferenceDataVersion", "1")
+        params.set("conferenceDataVersion", "1")
     }
 
-    const res = await fetch(requestUrl, {
+    const suffix = params.size ? `?${params}` : ""
+    const res = await fetch(`/api/integrations/google/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events${suffix}`, {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
         },
         body: JSON.stringify(eventData),
@@ -166,68 +150,17 @@ const MeetingsWidget: React.FC<WidgetProps> = ({ widget }) => {
     const { settings } = useSettings(widget.userId)
     const { sendMeetingNotification } = useNotifications(widget.userId)
 
-    const { integrations, refetchIntegrations } = useIntegrations(widget.userId)
+    const { integrations } = useIntegrations(widget.userId)
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
 
     const [selectedCalendars, setSelectedCalendars] = useState<string[]>([])
-    const [accessToken, setAccessToken] = useState<string | null>(null)
-
     const queryClient = useQueryClient()
-    const previousUserId = useRef<string | undefined>(undefined)
-    const isRefreshingToken = useRef(false)
-
-    useEffect(() => {
-        if (!widget.userId) {
-            previousUserId.current = undefined
-            isRefreshingToken.current = false
-            setAccessToken(null)
-            return
-        }
-
-        const userChanged = previousUserId.current !== widget.userId
-        previousUserId.current = widget.userId
-        if (userChanged) {
-            isRefreshingToken.current = false
-        }
-
-        if (!googleIntegration) {
-            setAccessToken(null)
-            return
-        }
-
-        const tokenExpired = googleIntegration.accessTokenExpiration
-            ? new Date(googleIntegration.accessTokenExpiration).getTime() <= new Date().getTime()
-            : false
-        const missingToken = !googleIntegration.accessToken
-        const shouldRefreshToken = tokenExpired || missingToken || userChanged
-
-        if (shouldRefreshToken && !isRefreshingToken.current) {
-            isRefreshingToken.current = true
-            const refreshAccessToken = async () => {
-                try {
-                    await authClient.refreshToken({
-                        providerId: "google",
-                        userId: widget.userId,
-                    })
-                    await refetchIntegrations()
-                } catch {
-                    setAccessToken(googleIntegration.accessToken ?? null)
-                } finally {
-                    isRefreshingToken.current = false
-                }
-            }
-
-            void refreshAccessToken()
-            return
-        }
-
-        setAccessToken(googleIntegration.accessToken)
-    }, [googleIntegration, refetchIntegrations, widget.userId])
+    const isConnected = Boolean(googleIntegration?.connected)
 
     const { data: calendars, isLoading: calendarLoading, isFetching: calendarFetching, isError: calendarError, isFetched: calendarsFetched } = useQuery<GoogleCalendar[], Error>(queryOptions({
-        queryKey: GOOGLE_CALENDAR_QUERY_KEY(accessToken),
-        queryFn: () => fetchCalendarList(accessToken),
-        enabled: Boolean(accessToken)
+        queryKey: GOOGLE_CALENDAR_QUERY_KEY,
+        queryFn: fetchCalendarList,
+        enabled: isConnected
     }))
 
     useEffect(() => {
@@ -237,21 +170,21 @@ const MeetingsWidget: React.FC<WidgetProps> = ({ widget }) => {
     }, [calendars, selectedCalendars.length])
 
     const { data: eventsData, isLoading: eventsLoading, isFetching: eventsFetching, isError: eventsError, isFetched: eventsFetched } = useQuery<CalendarEvent[], Error>(queryOptions({
-        queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars),
+        queryKey: GOOGLE_EVENT_QUERY_KEY(selectedCalendars),
         queryFn: async (): Promise<CalendarEvent[]> => {
-            if (!accessToken || !calendars) return []
+            if (!isConnected || !calendars) return []
 
             const selectedCalendarObjects = calendars.filter((cal) => selectedCalendars.includes(cal.id))
 
             const calendarPromises = selectedCalendarObjects.map(async (calendar) => {
-                const calendarEvents = await fetchCalendarEvents(accessToken, calendar.id)
+                const calendarEvents = await fetchCalendarEvents(calendar.id)
                 return calendarEvents.map((event) => ({ ...event, calendarId: calendar.id }))
             })
 
             const results = await Promise.all(calendarPromises)
             return results.flat()
         },
-        enabled: Boolean(accessToken) && Boolean(calendars?.length)
+        enabled: isConnected && Boolean(calendars?.length)
     }))
 
     const events = useMemo(() => (
@@ -260,18 +193,18 @@ const MeetingsWidget: React.FC<WidgetProps> = ({ widget }) => {
 
     const createEventMutation = useMutation({
         mutationFn: (variables: { calendarId: string; eventData: Partial<CalendarEvent> }) =>
-            createCalendarEvent(accessToken, variables.calendarId, variables.eventData),
+            createCalendarEvent(variables.calendarId, variables.eventData),
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars) })
+            await queryClient.invalidateQueries({ queryKey: GOOGLE_EVENT_QUERY_KEY(selectedCalendars) })
         }
     })
 
     const refetch = useCallback(async () => {
         await Promise.all([
-            queryClient.invalidateQueries({ queryKey: GOOGLE_CALENDAR_QUERY_KEY(accessToken) }),
-            queryClient.invalidateQueries({ queryKey: GOOGLE_EVENT_QUERY_KEY(accessToken, selectedCalendars) }),
+            queryClient.invalidateQueries({ queryKey: GOOGLE_CALENDAR_QUERY_KEY }),
+            queryClient.invalidateQueries({ queryKey: GOOGLE_EVENT_QUERY_KEY(selectedCalendars) }),
         ])
-    }, [queryClient, accessToken, selectedCalendars])
+    }, [queryClient, selectedCalendars])
 
     const isLoading = calendarLoading || eventsLoading;
     const isFetching = calendarFetching || eventsFetching;

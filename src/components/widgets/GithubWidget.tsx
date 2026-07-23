@@ -23,7 +23,7 @@ import Link from "next/link"
 import React, { useEffect, useMemo, useState } from "react"
 
 // from useGithub.ts
-const GITHUB_QUERY_KEY = (accessToken: string | null) => ["githubIssues", accessToken] as const
+const GITHUB_QUERY_KEY = ["githubIssues", "github"] as const
 
 type UserRepositoryListResponse = Awaited<ReturnType<Octokit["repos"]["listForAuthenticatedUser"]>>
 type UserRepository = UserRepositoryListResponse["data"][number]
@@ -61,8 +61,8 @@ async function fetchPaginated<T>(fetchFunction: (page: number) => Promise<{ data
     return items
 }
 
-async function getAllRepositories(accessToken: string): Promise<{repos: Repository[], octokit: Octokit | null}> {
-    const octokit = new Octokit({auth: accessToken})
+async function getAllRepositories(): Promise<{repos: Repository[], octokit: Octokit}> {
+    const octokit = new Octokit({baseUrl: `${window.location.origin}/api/integrations/github`})
 
     const [userRepos, orgsResponse] = await Promise.all([
         fetchPaginated(page => octokit.repos.listForAuthenticatedUser({per_page: 100, page})),
@@ -82,9 +82,8 @@ async function getAllRepositories(accessToken: string): Promise<{repos: Reposito
     return {repos: uniqueRepositories, octokit}
 }
 
-async function fetchOpenIssuesAndPullsFromAllRepos(accessToken: string): Promise<OpenItemsResponse> {
-    const {repos, octokit} = await getAllRepositories(accessToken)
-    if (!octokit) return { allIssues: [], allPullRequests: [] }
+async function fetchOpenIssuesAndPullsFromAllRepos(): Promise<OpenItemsResponse> {
+    const {repos, octokit} = await getAllRepositories()
 
     const userResponse = await octokit.request("GET /user", {
         headers: {"X-GitHub-Api-Version": "2022-11-28"},
@@ -145,9 +144,9 @@ const GithubWidget: React.FC<WidgetProps> = ({ widget }) => {
     const [activeTab, setActiveTab] = useState<string>("issues")
 
     const {data, isLoading, isFetching, refetch} = useQuery<OpenItemsResponse, Error>(queryOptions({
-        queryKey: GITHUB_QUERY_KEY(githubIntegration?.accessToken ?? null),
-        queryFn: () => fetchOpenIssuesAndPullsFromAllRepos(githubIntegration?.accessToken!),
-        enabled: Boolean(githubIntegration?.accessToken),
+        queryKey: GITHUB_QUERY_KEY,
+        queryFn: fetchOpenIssuesAndPullsFromAllRepos,
+        enabled: Boolean(githubIntegration?.connected),
     }))
 
     const issues = data?.allIssues ?? []

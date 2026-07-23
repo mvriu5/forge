@@ -1,29 +1,23 @@
 "use client"
 
 import { Button } from "@/components/ui/Button"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/Dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/Dialog"
 import { Form, FormField, FormInput, FormItem, FormLabel, FormMessage } from "@/components/ui/Form"
 import { NumberInput } from "@/components/ui/NumberInput"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { WidgetDefinition } from "@/lib/definitions"
+import { isSafeFrameUrl } from "@/lib/frameUrl"
 
 const formSchema = z.object({
-    url: z.url({ message: "Please enter a valid URL." }),
+    url: z.url({ message: "Please enter a valid URL." }).refine(isSafeFrameUrl, "Only public HTTPS URLs are allowed."),
     desktop_width: z.number().min(1).max(4),
     desktop_height: z.number().min(1).max(4),
     tablet_width: z.number().min(1).max(2),
     tablet_height: z.number().min(1).max(4),
     mobile_width: z.number().min(1).max(1),
-    mobile_height: z.number().min(1).max(4)
+    mobile_height: z.number().min(1).max(4),
 })
 
 interface FrameWidgetDialogProps {
@@ -53,8 +47,8 @@ export function FrameWidgetDialog({ open, widget, onOpenChange, onSave }: FrameW
             sizes: {
                 desktop: { width: values.desktop_width, height: values.desktop_height },
                 tablet: { width: values.tablet_width, height: values.tablet_height },
-                mobile: { width: values.mobile_width, height: values.mobile_height }
-            }
+                mobile: { width: values.mobile_width, height: values.mobile_height },
+            },
         })
         onOpenChange(false)
         form.reset()
@@ -65,9 +59,7 @@ export function FrameWidgetDialog({ open, widget, onOpenChange, onSave }: FrameW
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Configure Frame Widget</DialogTitle>
-                    <DialogDescription>
-                        Enter the URL to embed and configure the widget size for different screen sizes.
-                    </DialogDescription>
+                    <DialogDescription>Enter the URL to embed and configure the widget size for different screen sizes.</DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -86,95 +78,121 @@ export function FrameWidgetDialog({ open, widget, onOpenChange, onSave }: FrameW
                         <div>
                             <h3 className="text-lg font-medium">Sizes</h3>
                             <div className="grid grid-cols-2 gap-4 mt-2">
-                                <FormField control={form.control} name="desktop_width" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Desktop Width</FormLabel>
-                                    <NumberInput
-                                        min={1}
-                                        max={4}
-                                        step={1}
-                                        readOnly
-                                        value={field.value ?? ""}
-                                        onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
-                                    />
-                                    <FormMessage />
-                                </FormItem>
-                            )}/>
-                                <FormField control={form.control} name="desktop_height" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Desktop Height</FormLabel>
-                                        <NumberInput
-                                            min={1}
-                                            max={4}
-                                            step={1}
-                                            readOnly
-                                            value={field.value ?? ""}
-                                            onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
-                                        />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}/>
-                                <FormField control={form.control} name="tablet_width" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Tablet Width</FormLabel>
-                                        <NumberInput
-                                            min={1}
-                                            max={2}
-                                            step={1}
-                                            readOnly
-                                            value={field.value ?? ""}
-                                            onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
-                                        />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}/>
-                                <FormField control={form.control} name="tablet_height" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Tablet Height</FormLabel>
-                                        <NumberInput
-                                            min={1}
-                                            max={4}
-                                            step={1}
-                                            readOnly
-                                            value={field.value ?? ""}
-                                            onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
-                                        />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}/>
-                                <FormField control={form.control} name="mobile_width" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Mobile Width</FormLabel>
-                                        <NumberInput
-                                            min={1}
-                                            max={1}
-                                            step={1}
-                                            readOnly
-                                            value={field.value ?? ""}
-                                            onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
-                                        />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}/>
-                                <FormField control={form.control} name="mobile_height" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Mobile Height</FormLabel>
-                                        <NumberInput
-                                            min={1}
-                                            max={4}
-                                            step={1}
-                                            readOnly
-                                            value={field.value ?? ""}
-                                            onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
-                                        />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}/>
+                                <FormField
+                                    control={form.control}
+                                    name="desktop_width"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Desktop Width</FormLabel>
+                                            <NumberInput
+                                                min={1}
+                                                max={4}
+                                                step={1}
+                                                readOnly
+                                                value={field.value ?? ""}
+                                                onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
+                                            />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="desktop_height"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Desktop Height</FormLabel>
+                                            <NumberInput
+                                                min={1}
+                                                max={4}
+                                                step={1}
+                                                readOnly
+                                                value={field.value ?? ""}
+                                                onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
+                                            />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="tablet_width"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Tablet Width</FormLabel>
+                                            <NumberInput
+                                                min={1}
+                                                max={2}
+                                                step={1}
+                                                readOnly
+                                                value={field.value ?? ""}
+                                                onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
+                                            />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="tablet_height"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Tablet Height</FormLabel>
+                                            <NumberInput
+                                                min={1}
+                                                max={4}
+                                                step={1}
+                                                readOnly
+                                                value={field.value ?? ""}
+                                                onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
+                                            />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="mobile_width"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Mobile Width</FormLabel>
+                                            <NumberInput
+                                                min={1}
+                                                max={1}
+                                                step={1}
+                                                readOnly
+                                                value={field.value ?? ""}
+                                                onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
+                                            />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="mobile_height"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Mobile Height</FormLabel>
+                                            <NumberInput
+                                                min={1}
+                                                max={4}
+                                                step={1}
+                                                readOnly
+                                                value={field.value ?? ""}
+                                                onChange={(e) => field.onChange(e.currentTarget.valueAsNumber)}
+                                            />
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             </div>
                         </div>
 
                         <DialogFooter>
-                            <Button variant={"brand"} type="submit">Save</Button>
+                            <Button variant={"brand"} type="submit">
+                                Save
+                            </Button>
                         </DialogFooter>
                     </form>
                 </Form>

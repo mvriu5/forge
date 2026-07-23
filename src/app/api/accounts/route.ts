@@ -1,6 +1,6 @@
-import { deleteAccount, getAccountsFromUser, updateAccount } from "@/database"
+import { deleteAccount, getAccountsFromUser } from "@/database"
 import { auth } from "@/lib/auth"
-import { deleteAccountSchema, updateAccountSchema } from "@/lib/validations"
+import { deleteAccountSchema } from "@/lib/validations"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 
@@ -13,7 +13,15 @@ export async function GET(req: Request) {
         if (!session) return new NextResponse("Unauthorized", { status: 401 })
         const userId = session.user.id
 
-        const accounts = await getAccountsFromUser(userId)
+        const accounts = (await getAccountsFromUser(userId)).map((account) => ({
+            id: account.id,
+            accountId: account.accountId,
+            userId: account.userId,
+            provider: account.providerId,
+            connected: Boolean(account.accessToken || account.refreshToken),
+            accessTokenExpiresAt: account.accessTokenExpiresAt,
+            createdAt: account.createdAt,
+        }))
 
         return NextResponse.json(accounts, { status: 200 })
     } catch {
@@ -48,28 +56,3 @@ export async function DELETE(req: Request) {
     }
 }
 
-export async function PUT(req: Request) {
-    try {
-        const session = await auth.api.getSession({
-            headers: await headers()
-        })
-
-        if (!session) return new NextResponse("Unauthorized", { status: 401 })
-        const userId = session.user.id
-
-        const body = await req.json()
-        const validationResult = updateAccountSchema.safeParse(body)
-
-        if (!validationResult.success) {
-            return NextResponse.json("Invalid request body", { status: 400 });
-        }
-        const { provider, refreshToken } = validationResult.data
-
-        const updatedAccount = await updateAccount(userId, provider, {refreshToken})
-        if (!updatedAccount) return NextResponse.json({ error: "Account not found or could not be updated" }, { status: 404 })
-
-        return NextResponse.json(updatedAccount, { status: 200 })
-    } catch {
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
-    }
-}

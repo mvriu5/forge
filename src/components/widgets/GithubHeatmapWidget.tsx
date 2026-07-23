@@ -13,7 +13,7 @@ import { Octokit } from "@octokit/rest"
 import { useQuery } from "@tanstack/react-query"
 import { authClient } from "@/lib/auth-client"
 
-const GITHUB_QUERY_KEY = (accessToken: string | null, name: string | undefined) => ["githubHeatmap", accessToken, name] as const
+const GITHUB_QUERY_KEY = (name: string | undefined) => ["githubHeatmap", "github", name] as const
 
 interface GitHubContribution {
     date: string
@@ -52,10 +52,10 @@ interface ContributionsResponse {
     }
 }
 
-async function getContributions(accessToken: string | null, username: string | undefined): Promise<GitHubContribution[]> {
-    if (!accessToken || !username) return []
+async function getContributions(username: string | undefined): Promise<GitHubContribution[]> {
+    if (!username) return []
 
-    const octokit = new Octokit({auth: accessToken})
+    const octokit = new Octokit({baseUrl: `${window.location.origin}/api/integrations/github`})
 
     const to = new Date()
     const from = new Date(to.getFullYear() - 1, to.getMonth(), to.getDate())
@@ -93,9 +93,9 @@ const GithubHeatmapWidget: React.FC<WidgetProps> = ({ widget }) => {
     const githubIntegration = getIntegrationByProvider(integrations, "github")
 
     const {data, isLoading, isFetching} = useQuery<GitHubContribution[], Error>(queryOptions({
-        queryKey: GITHUB_QUERY_KEY(githubIntegration?.accessToken ?? null, session?.user?.name),
-        queryFn: () => getContributions(githubIntegration?.accessToken ?? null, session?.user?.name),
-        enabled: Boolean(githubIntegration?.accessToken),
+        queryKey: GITHUB_QUERY_KEY(session?.user?.name),
+        queryFn: () => getContributions(session?.user?.name),
+        enabled: Boolean(githubIntegration?.connected),
     }))
 
     const {tailwindBreakpoint} = useBreakpoint()

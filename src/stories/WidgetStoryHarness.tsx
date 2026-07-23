@@ -20,7 +20,6 @@ export type WidgetStoryArgs = {
 
 const USER_ID = "storybook-user"
 const DASHBOARD_ID = "storybook-dashboard"
-const MOCK_TOKEN = "storybook-token"
 const WEATHER_COORDS = { lat: 52.52, lon: 13.405 }
 const now = new Date("2026-01-01T10:00:00.000Z")
 
@@ -29,11 +28,8 @@ const integrations: Integration[] = ["github", "google", "notion"].map((provider
     accountId: provider,
     userId: USER_ID,
     provider,
-    accessToken: MOCK_TOKEN,
-    refreshToken: `storybook-${provider}-refresh`,
-    idToken: null,
-    accessTokenExpiration: new Date("2099-01-01T00:00:00.000Z"),
-    refreshTokenExpiration: new Date("2099-01-01T00:00:00.000Z"),
+    connected: true,
+    accessTokenExpiresAt: new Date("2099-01-01T00:00:00.000Z"),
     createdAt: now,
 }))
 
@@ -77,17 +73,17 @@ const seedMockQueries = (client: QueryClient, data: StoryMockData) => {
     })
     client.setQueryData(["coinbase-currencies"], data.currencies ?? [])
     client.setQueryData(["coinbase-prices", data.products ?? [], data.timeframe ?? "24h"], data.prices ?? [])
-    client.setQueryData(["githubIssues", MOCK_TOKEN], { allIssues: data.issues ?? [], allPullRequests: data.pullRequests ?? [] })
-    client.setQueryData(["githubHeatmap", MOCK_TOKEN, undefined], data.contributions ?? [])
+    client.setQueryData(["githubIssues", "github"], { allIssues: data.issues ?? [], allPullRequests: data.pullRequests ?? [] })
+    client.setQueryData(["githubHeatmap", "github", undefined], data.contributions ?? [])
     client.setQueryData(["notionPages", USER_ID], data.pages ?? [])
-    client.setQueryData(["gmailLabels", MOCK_TOKEN], data.labels ?? [])
+    client.setQueryData(["gmailLabels", "google"], data.labels ?? [])
     const gmailData = { pages: [{ messages: data.messages ?? [] }], pageParams: [undefined] }
-    client.setQueryData(["gmailMessages", MOCK_TOKEN, []], gmailData)
-    client.setQueryData(["gmailMessages", MOCK_TOKEN, ["INBOX"]], gmailData)
+    client.setQueryData(["gmailMessages", "google", []], gmailData)
+    client.setQueryData(["gmailMessages", "google", ["INBOX"]], gmailData)
     const calendars = (data.calendars ?? []) as Array<{ id: string }>
-    client.setQueryData(["googleCalendarList", MOCK_TOKEN], calendars)
-    client.setQueryData(["googleCalendarEvents", MOCK_TOKEN, []], data.events ?? [])
-    client.setQueryData(["googleCalendarEvents", MOCK_TOKEN, calendars.map(({ id }) => id)], data.events ?? [])
+    client.setQueryData(["googleCalendarList", "google"], calendars)
+    client.setQueryData(["googleCalendarEvents", "google", []], data.events ?? [])
+    client.setQueryData(["googleCalendarEvents", "google", calendars.map(({ id }) => id)], data.events ?? [])
     client.setQueryData(["reverse-geocoding", WEATHER_COORDS], data.location ?? {})
     client.setQueryData(["weather", WEATHER_COORDS], data.weather ?? null)
 }
@@ -127,12 +123,6 @@ export const WidgetStory = ({ widgetType, config, mockData }: WidgetStoryArgs) =
             refetchIntegrations: async () => integrations,
             removeIntegration: async () => undefined,
             removeIntegrationStatus: "idle" as const,
-            updateIntegration: async ({ provider, userId, data }: { provider: string; userId: string; data: Partial<Integration> }) => ({
-                ...integrations.find((item) => item.provider === provider)!,
-                userId,
-                ...data,
-            }),
-            updateIntegrationStatus: "idle" as const,
         }),
         []
     )

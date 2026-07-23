@@ -95,7 +95,7 @@ function ProfileSection({handleClose}: {handleClose: () => void}) {
             const filename = session?.user?.image
             if (!filename) return
 
-            await fetch(`/api/upload?filename=${encodeURIComponent(filename)}`, {
+            await fetch(`/api/upload?url=${encodeURIComponent(filename)}`, {
                 method: "DELETE"
             })
 
@@ -154,7 +154,7 @@ function ProfileSection({handleClose}: {handleClose: () => void}) {
                                 <Input
                                     id="picture"
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/jpeg,image/png,image/webp"
                                     ref={inputFileRef}
                                     onChange={() => setAvatarUrl(URL.createObjectURL(inputFileRef.current!.files![0]))}
                                     className="hidden"

@@ -4,6 +4,8 @@ import { WidgetProps } from "@/lib/definitions"
 import { defineWidget } from "@/lib/widget"
 import React from "react"
 import { WidgetContent } from "./base/WidgetContent"
+import { WidgetError } from "./base/WidgetError"
+import { isSafeFrameUrl } from "@/lib/frameUrl"
 
 interface FrameConfig {
     url: string
@@ -11,12 +13,18 @@ interface FrameConfig {
 }
 
 const FrameWidget: React.FC<WidgetProps<FrameConfig>> = ({ config }) => {
+    if (!isSafeFrameUrl(config.url)) {
+        return <WidgetError message="Only public HTTPS URLs are allowed." />
+    }
+
     return (
         <WidgetContent className="flex-1 flex items-center justify-center -m-2">
             <iframe
                 src={config.url}
+                title="Embedded content"
                 className="w-full h-full border-0"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+                sandbox="allow-scripts allow-forms allow-popups allow-presentation"
+                referrerPolicy="no-referrer"
             />
         </WidgetContent>
     )

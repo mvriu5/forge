@@ -111,8 +111,9 @@ Forge is designed to be fully self-hostable. Here's how you can set up your own 
 | `GOOGLE_CLIENT_SECRET` | Client secret from Google Cloud. | Optional |
 | `NOTION_CLIENT_ID` | Client ID for your Notion integration. | Optional |
 | `NOTION_CLIENT_SECRET` | Client secret for your Notion integration. | Optional |
-| `COINBASE_CLIENT_ID` | Client ID for your Coinbase OAuth2 application for crypto widgets. | Optional |
-| `COINBASE_CLIENT_SECRET` | Client secret for your Coinbase OAuth2 application. | Optional |
+| `COINBASE_CLIENT_ID` | API key for Coinbase Exchange crypto widgets. | Optional |
+| `COINBASE_CLIENT_SECRET` | Base64 API secret for Coinbase Exchange. | Optional |
+| `COINBASE_PASSPHRASE` | Passphrase for the Coinbase Exchange API key. | Optional |
 
 ## Development
 

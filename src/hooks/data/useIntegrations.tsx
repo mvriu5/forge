@@ -1,7 +1,6 @@
 "use client"
 
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
-import type {Account} from "@/database"
 import {authClient} from "@/lib/auth-client"
 import {toast} from "@/components/ui/Toast"
 import { queryOptions } from "@/lib/queryOptions"
@@ -12,11 +11,8 @@ export interface Integration {
     accountId: string
     userId: string
     provider: string
-    accessToken: string | null
-    refreshToken: string | null
-    idToken: string | null
-    accessTokenExpiration: Date | null
-    refreshTokenExpiration: Date | null
+    connected: boolean
+    accessTokenExpiresAt: Date | null
     createdAt: Date
 }
 
@@ -28,22 +24,7 @@ async function fetchIntegrations(userId: string): Promise<Integration[]> {
 
     if (!response.ok) return []
 
-    const accounts: Account[] = await response.json()
-
-    return accounts
-        .filter((account): account is Account => !!account)
-        .map((account) => ({
-            id: account.id,
-            accountId: account.accountId,
-            userId: account.userId,
-            provider: account.providerId,
-            accessToken: account.accessToken,
-            refreshToken: account.refreshToken,
-            idToken: account.idToken,
-            accessTokenExpiration: account.accessTokenExpiresAt,
-            refreshTokenExpiration: account.refreshTokenExpiresAt,
-            createdAt: account.createdAt,
-        }))
+    return response.json()
 }
 
 async function unlinkIntegration(provider: string) {
@@ -54,27 +35,6 @@ async function unlinkIntegration(provider: string) {
     }
 }
 
-interface UpdateIntegrationArgs {
-    provider: string
-    userId: string
-    data: Partial<Integration>
-}
-
-async function updateIntegrationRequest({provider, userId, data}: UpdateIntegrationArgs): Promise<Integration> {
-    const response = await fetch("/api/accounts", {
-        method: "PUT",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({...data, userId, provider})
-    })
-
-    if (!response.ok) {
-        throw new Error("Failed to update integration")
-    }
-
-    const result = await response.json()
-    return result[0]
-}
-
 type IntegrationsValue = {
     userId: string | undefined
     integrations: Integration[]
@@ -83,8 +43,6 @@ type IntegrationsValue = {
     refetchIntegrations: () => Promise<unknown>
     removeIntegration: (provider: string) => Promise<void>
     removeIntegrationStatus: string
-    updateIntegration: (args: UpdateIntegrationArgs) => Promise<Integration>
-    updateIntegrationStatus: string
 }
 
 const IntegrationsContext = createContext<IntegrationsValue | null>(null)
@@ -121,16 +79,6 @@ export function useIntegrations(userId: string | undefined): IntegrationsValue {
         }
     })
 
-    const updateIntegrationMutation = useMutation({
-        mutationFn: updateIntegrationRequest,
-        onSuccess: (updatedIntegration) => {
-            queryClient.setQueryData(INTEGRATIONS_QUERY_KEY(userId), (previous: Integration[] | undefined) => {
-                if (!previous) return [updatedIntegration]
-                return previous.map((integration) => integration.provider === updatedIntegration.provider ? updatedIntegration : integration)
-            })
-        }
-    })
-
     const handleIntegrate = useCallback(async (provider: string, callback = true): Promise<void> => {
         await authClient.signIn.social({
             provider,
@@ -153,15 +101,12 @@ export function useIntegrations(userId: string | undefined): IntegrationsValue {
         refetchIntegrations,
         removeIntegration: (provider: string) => removeIntegrationMutation.mutateAsync(provider),
         removeIntegrationStatus: removeIntegrationMutation.status,
-        updateIntegration: (args: UpdateIntegrationArgs) => updateIntegrationMutation.mutateAsync(args),
-        updateIntegrationStatus: updateIntegrationMutation.status,
     }), [
         data,
         handleIntegrate,
         isLoadingIntegrations,
         refetchIntegrations,
         removeIntegrationMutation,
-        updateIntegrationMutation,
         userId,
     ])
 

@@ -6,7 +6,6 @@ import { WidgetContent } from "@/components/widgets/base/WidgetContent"
 import { WidgetEmpty } from "@/components/widgets/base/WidgetEmpty"
 import { WidgetHeader } from "@/components/widgets/base/WidgetHeader"
 import { getIntegrationByProvider, useIntegrations } from "@/hooks/data/useIntegrations"
-import { authClient } from "@/lib/auth-client"
 import { WidgetProps } from "@/lib/definitions"
 import { blocksToJSONContent } from "@/lib/notion"
 import { queryOptions } from "@/lib/queryOptions"
@@ -14,7 +13,7 @@ import { cn } from "@/lib/utils"
 import { defineWidget } from "@/lib/widget"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { Import, Plus } from "lucide-react"
-import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { Suspense, useCallback, useMemo, useState } from "react"
 import { Notion } from "../svg/Icons"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover"
 import { ScrollArea } from "../ui/ScrollArea"
@@ -95,53 +94,14 @@ interface EditorConfig {
 }
 
 const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({ widget, config, updateConfig }) => {
-    const { integrations, refetchIntegrations, handleIntegrate } = useIntegrations(widget.userId)
+    const { integrations, handleIntegrate } = useIntegrations(widget.userId)
     const notionIntegration = useMemo(() => getIntegrationByProvider(integrations, "notion"), [integrations])
-    const [accessToken, setAccessToken] = useState<string | null>(null)
-    const isRefreshingToken = useRef(false)
-
-    useEffect(() => {
-        if (!widget.userId) {
-            setAccessToken(null)
-            return
-        }
-
-        if (!notionIntegration) {
-            setAccessToken(null)
-            return
-        }
-
-        const expired = notionIntegration.accessTokenExpiration
-            ? new Date(notionIntegration.accessTokenExpiration).getTime() <= Date.now()
-            : false
-        const missing = !notionIntegration.accessToken
-        const shouldRefresh = expired || missing
-
-        if (shouldRefresh && !isRefreshingToken.current) {
-            isRefreshingToken.current = true
-            const refresh = async () => {
-                try {
-                    await authClient.refreshToken({ providerId: "notion", userId: widget.userId })
-                    await refetchIntegrations()
-                } catch {
-                    toast.error("Unable to refresh Notion access. Try reconnecting.")
-                } finally {
-                    isRefreshingToken.current = false
-                }
-            }
-            void refresh()
-            return
-        }
-
-        setAccessToken(notionIntegration.accessToken ?? null)
-    }, [notionIntegration, refetchIntegrations, widget.userId])
-
-    const hasAccess = Boolean(accessToken)
+    const isConnected = Boolean(notionIntegration?.connected)
 
     const { data: pagesData, isLoading: isLoadingPages, isFetching: isFetchingPages, refetch: refetchPages } = useQuery<NotionPage[], Error>(queryOptions({
         queryKey: NOTION_PAGES_QUERY_KEY(widget.userId),
         queryFn: () => fetchPages(widget.userId ?? null),
-        enabled: Boolean(widget.userId && hasAccess),
+        enabled: Boolean(widget.userId && isConnected),
     }))
     const pages = pagesData ?? []
 
@@ -152,7 +112,6 @@ const EditorWidget: React.FC<WidgetProps<EditorConfig>> = ({ widget, config, upd
         }
     })
 
-    const isConnected = Boolean(accessToken)
     const isLoadingPageContent = fetchPageContentMutation.isPending
     const fetchPageContentFn = fetchPageContentMutation.mutateAsync
 

@@ -3,7 +3,6 @@
 import { getIntegrationByProvider, useIntegrations } from "@/hooks/data/useIntegrations"
 import { useNotifications } from "@/hooks/data/useNotifications"
 import { useSettings } from "@/hooks/data/useSettings"
-import { authClient } from "@/lib/auth-client"
 import { WidgetProps } from "@/lib/definitions"
 import { queryOptions } from "@/lib/queryOptions"
 import { defineWidget } from "@/lib/widget"
@@ -19,8 +18,8 @@ import { WidgetContent } from "./base/WidgetContent"
 import { WidgetEmpty } from "./base/WidgetEmpty"
 import { WidgetHeader } from "./base/WidgetHeader"
 
-const GMAIL_LABELS_QUERY_KEY = (accessToken: string | null) => ["gmailLabels", accessToken] as const
-const GMAIL_MESSAGES_QUERY_KEY = (accessToken: string | null, selectedLabels: string[]) => ["gmailMessages", accessToken, selectedLabels] as const
+const GMAIL_LABELS_QUERY_KEY = ["gmailLabels", "google"] as const
+const GMAIL_MESSAGES_QUERY_KEY = (selectedLabels: string[]) => ["gmailMessages", "google", selectedLabels] as const
 
 export interface GmailLabel {
     id: string
@@ -62,12 +61,8 @@ export function getHeaderValue(message: GmailMessage | null, name: string): stri
     return header?.value ?? null
 }
 
-async function fetchGmailLabels(accessToken: string | null): Promise<GmailLabel[]> {
-    if (!accessToken) return []
-
-    const res = await fetch("https://www.googleapis.com/gmail/v1/users/me/labels", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-    })
+async function fetchGmailLabels(): Promise<GmailLabel[]> {
+    const res = await fetch("/api/integrations/google/gmail/v1/users/me/labels")
 
     if (!res.ok) throw new Error("Failed to fetch Gmail labels")
 
@@ -75,23 +70,20 @@ async function fetchGmailLabels(accessToken: string | null): Promise<GmailLabel[
     return (data.labels ?? []) as GmailLabel[]
 }
 
-async function fetchMessageListPage(accessToken: string, labelQuery?: string | null, pageToken?: string, pageSize = 10): Promise<GmailListResponse> {
+async function fetchMessageListPage(labelQuery?: string | null, pageToken?: string, pageSize = 10): Promise<GmailListResponse> {
     const params = new URLSearchParams({ maxResults: String(Math.min(pageSize, 500)) })
     if (labelQuery) params.set("q", labelQuery)
     if (pageToken) params.set("pageToken", pageToken)
 
-    const url = `https://www.googleapis.com/gmail/v1/users/me/messages?${params.toString()}`
-
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } })
+    const url = `/api/integrations/google/gmail/v1/users/me/messages?${params.toString()}`
+    const res = await fetch(url)
     if (!res.ok) return {}
 
     return res.json()
 }
 
-async function fetchMessageDetails(accessToken: string, messageId: string): Promise<GmailMessage | null> {
-    const res = await fetch(`https://www.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(messageId)}?format=full`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-    })
+async function fetchMessageDetails(messageId: string): Promise<GmailMessage | null> {
+    const res = await fetch(`/api/integrations/google/gmail/v1/users/me/messages/${encodeURIComponent(messageId)}?format=full`)
 
     if (!res.ok) return null
     return res.json()
@@ -131,65 +123,20 @@ const InboxWidget: React.FC<WidgetProps> = ({ widget }) => {
     const { settings } = useSettings(widget.userId)
     const { sendMailNotification } = useNotifications(widget.userId)
 
-    const { integrations, refetchIntegrations } = useIntegrations(widget.userId)
+    const { integrations } = useIntegrations(widget.userId)
     const googleIntegration = useMemo(() => getIntegrationByProvider(integrations, "google"), [integrations])
     const queryClient = useQueryClient()
 
     const [selectedLabels, setSelectedLabels] = useState<string[]>([])
-    const [accessToken, setAccessToken] = useState<string | null>(null)
     const [filterLoading, setFilterLoading] = useState<boolean>(false)
 
-    const previousUserId = useRef<string | undefined>(undefined)
-    const isRefreshingToken = useRef(false)
     const hasSeenInitialSelection = useRef(false)
-
-    useEffect(() => {
-        if (!widget.userId) {
-            previousUserId.current = undefined
-            isRefreshingToken.current = false
-            setAccessToken(null)
-            return
-        }
-
-        const userChanged = previousUserId.current !== widget.userId
-        previousUserId.current = widget.userId
-        if (userChanged) isRefreshingToken.current = false
-
-        if (!googleIntegration) {
-            setAccessToken(null)
-            return
-        }
-
-        const tokenExpired = googleIntegration.accessTokenExpiration
-            ? new Date(googleIntegration.accessTokenExpiration).getTime() <= new Date().getTime()
-            : false
-        const missingToken = !googleIntegration.accessToken
-        const shouldRefreshToken = tokenExpired || missingToken || userChanged
-
-        if (shouldRefreshToken && !isRefreshingToken.current) {
-            isRefreshingToken.current = true
-            const refreshAccessToken = async () => {
-                try {
-                    await authClient.refreshToken({ providerId: "google", userId: widget.userId })
-                    await refetchIntegrations()
-                } catch {
-                    setAccessToken(googleIntegration.accessToken ?? null)
-                } finally {
-                    isRefreshingToken.current = false
-                }
-            }
-
-            void refreshAccessToken()
-            return
-        }
-
-        setAccessToken(googleIntegration.accessToken)
-    }, [googleIntegration, refetchIntegrations, widget.userId])
+    const isConnected = Boolean(googleIntegration?.connected)
 
     const { data: labels, isLoading: labelsLoading, isError: labelsError, isFetched: labelsFetched } = useQuery<GmailLabel[], Error>(queryOptions({
-        queryKey: GMAIL_LABELS_QUERY_KEY(accessToken),
-        queryFn: () => fetchGmailLabels(accessToken),
-        enabled: Boolean(accessToken)
+        queryKey: GMAIL_LABELS_QUERY_KEY,
+        queryFn: fetchGmailLabels,
+        enabled: isConnected
     }))
 
     useEffect(() => {
@@ -219,8 +166,8 @@ const InboxWidget: React.FC<WidgetProps> = ({ widget }) => {
     }, [labels, selectedLabels])
 
     const messagesQuery = useInfiniteQuery<GmailMessagesPage, Error>({
-        queryKey: GMAIL_MESSAGES_QUERY_KEY(accessToken, selectedLabels),
-        enabled: Boolean(accessToken && labelQuery),
+        queryKey: GMAIL_MESSAGES_QUERY_KEY(selectedLabels),
+        enabled: Boolean(isConnected && labelQuery),
         staleTime: 5 * 60 * 1000,
         gcTime: 30 * 60 * 1000,
         refetchInterval: 5 * 60 * 1000,
@@ -229,10 +176,10 @@ const InboxWidget: React.FC<WidgetProps> = ({ widget }) => {
         retry: 3,
         initialPageParam: undefined,
         queryFn: async ({ pageParam }) => {
-            if (!accessToken || !labelQuery) return { messages: [] }
-            const res = await fetchMessageListPage(accessToken, labelQuery, pageParam as string, 50)
+            if (!isConnected || !labelQuery) return { messages: [] }
+            const res = await fetchMessageListPage(labelQuery, pageParam as string, 50)
             const ids = (res.messages ?? []).map((m) => m.id).filter(Boolean)
-            const details = await fetchWithConcurrency(ids, (id) => fetchMessageDetails(accessToken, id), 8)
+            const details = await fetchWithConcurrency(ids, fetchMessageDetails, 8)
             const parsed = details.filter(Boolean) as GmailMessage[]
             return { messages: parsed, nextPageToken: res.nextPageToken }
         },
@@ -250,9 +197,9 @@ const InboxWidget: React.FC<WidgetProps> = ({ widget }) => {
     }, [messagesQuery])
 
     const refetch = useCallback(async () => {
-        await queryClient.invalidateQueries({ queryKey: GMAIL_MESSAGES_QUERY_KEY(accessToken, selectedLabels) })
+        await queryClient.invalidateQueries({ queryKey: GMAIL_MESSAGES_QUERY_KEY(selectedLabels) })
         await messagesQuery.refetch()
-    }, [accessToken, messagesQuery, queryClient, selectedLabels])
+    }, [messagesQuery, queryClient, selectedLabels])
 
     useEffect(() => {
         if (hasSeenInitialSelection.current) setFilterLoading(true)
