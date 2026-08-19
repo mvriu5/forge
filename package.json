@@ -30,7 +30,7 @@
         "@tailwindcss/postcss": "^4.3.3",
         "@tanstack/react-query": "^5.101.4",
         "@tiptap/core": "^3.28.0",
-        "@tiptap/extension-code-block-lowlight": "^3.28.0",
+        "@tiptap/extension-code-block-lowlight": "^3.30.1",
         "@tiptap/extension-link": "^3.28.0",
         "@tiptap/extension-placeholder": "^3.28.0",
         "@tiptap/extension-task-item": "^3.28.0",
